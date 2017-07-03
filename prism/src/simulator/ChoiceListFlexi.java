@@ -214,17 +214,19 @@ public class ChoiceListFlexi implements Choice
 	@Override
 	public State computeTarget(int i, State currentState) throws PrismLangException
 	{
+		BitSet changed = new BitSet();
 		State newState = new State(currentState);
 		for (Update up : updates.get(i))
-			up.update(currentState, newState);
+			up.update(currentState, newState, changed);
 		return newState;
 	}
 
 	@Override
 	public void computeTarget(int i, State currentState, State newState) throws PrismLangException
 	{
+		BitSet changed = new BitSet();
 		for (Update up : updates.get(i))
-			up.update(currentState, newState);
+			up.update(currentState, newState, changed);
 	}
 
 	@Override
