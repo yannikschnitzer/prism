@@ -478,7 +478,7 @@ public class NormalizedDTMC extends DTMCExplicit implements DTMC, BidirectionalD
 		return matrix.getTransitionsIterator(s);
 	}
 	@Override
-	public void doForEachCandidateTransition(int src, TransitionConsumer f) throws PrismException {
+	public void doForEachCandidateTransition(int src, explicit.TransitionConsumer f) throws PrismException {
 		matrix.doForEachTransition(src, f);
 	}
 
@@ -486,7 +486,7 @@ public class NormalizedDTMC extends DTMCExplicit implements DTMC, BidirectionalD
 		return matrix.getTransitionId(s1, s2);
 	}
 
-	public void doForEachTransition(int src, TransitionConsumer f, BitSet except) throws PrismException {
+	public void doForEachTransition(int src, explicit.TransitionConsumer f, BitSet except) throws PrismException {
 		matrix.doForEachTransition(src, f, except);
 	}
 	

@@ -171,7 +171,7 @@ public class CriticalSubsystem extends ProbabilisticCounterexample implements Bi
 		explicitDijkstraCandidates.add(state);
 		
 		try {
-			reverseMatrix.doForEachTransition(state, new TransitionConsumer()
+			reverseMatrix.doForEachTransition(state, new explicit.TransitionConsumer()
 			{
 				@Override
 				public void accept(int pred, double prob) throws PrismException
@@ -190,7 +190,7 @@ public class CriticalSubsystem extends ProbabilisticCounterexample implements Bi
 				}
 			});
 			
-			matrix.doForEachTransition(state, new TransitionConsumer()
+			matrix.doForEachTransition(state, new explicit.TransitionConsumer()
 			{
 				@Override
 				public void accept(int succ, double prob) throws PrismException
@@ -387,7 +387,7 @@ public class CriticalSubsystem extends ProbabilisticCounterexample implements Bi
 	}
 	
 	@Override
-	public void doForEachCandidateTransition(int src, TransitionConsumer f) throws PrismException {
+	public void doForEachCandidateTransition(int src, explicit.TransitionConsumer f) throws PrismException {
 		matrix.doForEachTransition(src, f, processedTrans);
 	}
 	
