@@ -308,7 +308,7 @@ public class DTMCTransformationsBuilder
 		 * @param labelStrings The labels to keep in the copy
 		 * @return New simple or sparse DTMC with the transformations applied
 		 */
-		public DTMC run(final DTMC dtmc, final PrismLog log, final String... labelStrings) {
+		public DTMC run(final DTMC dtmc, final PrismLog log, final String... labelStrings) throws PrismException {
 
 			DTMCSimple newDtmc = new DTMCSimple(dtmc, labelStrings);
 
