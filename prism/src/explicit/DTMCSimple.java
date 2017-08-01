@@ -91,6 +91,39 @@ public class DTMCSimple extends DTMCExplicit implements ModelSimple
 		numTransitions = dtmc.numTransitions;
 	}
 
+	/**
+	 * Copy constructor from arbitrary DTMC implementation,
+	 * @param dtmc DTMC to copy
+	 * @param labelStrings Optional list of labels to keep. If none is passed, the constructor will try to copy over all labels, but this is only possible if the given DTMC extends ModelExplicit
+	 */
+	public DTMCSimple(DTMC dtmc, String... labelStrings)
+	{
+		this(dtmc.getNumStates());
+		
+		for (int in : dtmc.getInitialStates()) {
+			addInitialState(in);
+		}
+		for (int dl : dtmc.getDeadlockStates()) {
+			addDeadlockState(dl);
+		}
+		
+		// Shallow copy of read-only stuff
+		statesList = dtmc.getStatesList();
+		constantValues = dtmc.getConstantValues();
+		
+		if (labelStrings.length == 0 && dtmc instanceof ModelExplicit) {
+			for (String label : ((ModelExplicit)dtmc).getAssociatedLabels()) {
+				if (dtmc.getLabelStates(label) != null)
+					labels.put(label, dtmc.getLabelStates(label));
+			}
+		} else {
+			for (String label : labelStrings) {
+				if (dtmc.getLabelStates(label) != null)
+					labels.put(label, dtmc.getLabelStates(label));
+			}
+		}
+	}
+	
 	// Mutators (for ModelSimple)
 
 	@Override
