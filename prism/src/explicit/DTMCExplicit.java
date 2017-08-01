@@ -152,6 +152,17 @@ public abstract class DTMCExplicit extends ModelExplicit implements DTMC
 		return new AddDefaultActionToTransitionsIterator(getTransitionsIterator(s), null);
 	}
 
+	@Override
+	public Distribution getTransitions(int s) {
+		Distribution result = new Distribution();
+		Iterator<Entry<Integer,Double>> it = getTransitionsIterator(s);
+		while (it.hasNext()) {
+			Entry<Integer,Double> entry = it.next();
+			result.set(entry.getKey(), entry.getValue());
+		}
+		return result;
+	}
+
 	public class AddDefaultActionToTransitionsIterator implements Iterator<Map.Entry<Integer, Pair<Double, Object>>>
 	{
 		private Iterator<Entry<Integer, Double>> transIter;

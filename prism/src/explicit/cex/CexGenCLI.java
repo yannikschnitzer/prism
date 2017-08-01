@@ -243,8 +243,8 @@ public class CexGenCLI
 		}
 
 		for (int i = 0; i < m1.getNumStates(); i++) {
-			Distribution d1 = m1.getDistribution(i);
-			Distribution d2 = m2.getDistribution(i);
+			Distribution d1 = m1.getTransitions(i);
+			Distribution d2 = m2.getTransitions(i);
 			if (!d1.getSupport().equals(d2.getSupport())) {
 				System.out.println("Different succs of state " + i + ": " + d1.getSupport() + " / " + d2.getSupport());
 				assert(false);

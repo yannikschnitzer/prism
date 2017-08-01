@@ -56,6 +56,11 @@ public interface DTMC extends Model
 	public Iterator<Entry<Integer, Pair<Double, Object>>> getTransitionsAndActionsIterator(int s);
 
 	/**
+	 * Get the transitions (a distribution) for state s.
+	 */
+	public Distribution getTransitions(int s);
+
+	/**
 	 * Functional interface for a consumer,
 	 * accepting transitions (s,t,d), i.e.,
 	 * from state s to state t with value d.

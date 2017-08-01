@@ -32,14 +32,14 @@ public class DTMCMatrix
 		List<Distribution> dists = new ArrayList<>();
 		if (!reverse) {
 			for (int i = 0; i < model.getNumStates(); i++) {
-				dists.add(model.getDistribution(i));
+				dists.add(model.getTransitions(i));
 			}
 		} else {
 			for (int i = 0; i < model.getNumStates(); i++) {
 				dists.add(new Distribution());
 			}
 			for (int i = 0; i < model.getNumStates(); i++) {
-				for (Iterator<Entry<Integer,Double>> it = model.getDistribution(i).iterator(); it.hasNext(); ) {
+				for (Iterator<Entry<Integer,Double>> it = model.getTransitions(i).iterator(); it.hasNext(); ) {
 					Entry<Integer,Double> e = it.next();
 					dists.get(e.getKey()).set(i, e.getValue());
 				}

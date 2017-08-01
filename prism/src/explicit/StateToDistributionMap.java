@@ -8,6 +8,6 @@ public interface StateToDistributionMap
 	
 	public int getNumTransitions();
 
-	public Distribution getDistribution(int i);
+	public Distribution getTransitions(int i);
 
 }

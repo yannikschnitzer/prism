@@ -381,7 +381,7 @@ public class CriticalSubsystem extends ProbabilisticCounterexample implements Bi
 	public Iterator<Entry<Integer, Double>> getTransitionsIterator(int s)
 	{
 		if (statesInSubsystem.get(s))
-			return getDistribution(s).iterator();
+			return getTransitions(s).iterator();
 		else
 			return new Distribution().iterator();
 	}
@@ -564,7 +564,7 @@ public class CriticalSubsystem extends ProbabilisticCounterexample implements Bi
 	}
 
 	@Override
-	public Distribution getDistribution(int s)
+	public Distribution getTransitions(int s)
 	{
 		// TODO: If this still needs to be called often (which shouldn't be the case), it might be worthwhile to only recompute this when necessary	
 		
@@ -650,7 +650,7 @@ public class CriticalSubsystem extends ProbabilisticCounterexample implements Bi
 		double d, prob;
 		Distribution distr;
 
-		distr = getDistribution(s);
+		distr = getTransitions(s);
 		d = 0.0;
 		for (Map.Entry<Integer, Double> e : distr) {
 			k = (Integer) e.getKey();
@@ -685,7 +685,7 @@ public class CriticalSubsystem extends ProbabilisticCounterexample implements Bi
 		double diag, d, prob;
 		Distribution distr;
 
-		distr = getDistribution(s);
+		distr = getTransitions(s);
 		if (!(Math.abs(1.0d - distr.sum()) < 1e-8)) {
 			log.println("Invalid distr for " + s + " sum: " + distr.sum() + ", transitions: " + distr, PrismLog.VL_HIGH);
 			assert (false);
@@ -735,7 +735,7 @@ public class CriticalSubsystem extends ProbabilisticCounterexample implements Bi
 		double d, prob;
 		Distribution distr;
 
-		distr = getDistribution(s);
+		distr = getTransitions(s);
 		d = mcRewards.getStateReward(s);
 		for (Map.Entry<Integer, Double> e : distr) {
 			k = (Integer) e.getKey();
@@ -760,7 +760,7 @@ public class CriticalSubsystem extends ProbabilisticCounterexample implements Bi
 		}
 		// Go through matrix elements (by row)
 		for (i = 0; i < numStates; i++) {
-			distr = getDistribution(i);
+			distr = getTransitions(i);
 			for (Map.Entry<Integer, Double> e : distr) {
 				j = (Integer) e.getKey();
 				prob = (Double) e.getValue();
@@ -852,7 +852,7 @@ public class CriticalSubsystem extends ProbabilisticCounterexample implements Bi
 	{
 		StringBuilder result = new StringBuilder();
 		for (int i = 0; i < getNumStates(); i++) {
-			Distribution distr = getDistribution(i);
+			Distribution distr = getTransitions(i);
 
 			if (distr.get(dummySinkState) < 1.0 || i == dummySinkState) {
 				// Actually have a transition

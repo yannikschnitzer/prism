@@ -502,11 +502,11 @@ public class NormalizedDTMC extends DTMCExplicit implements DTMC, BidirectionalD
 	}
 
 	@Override
-	public Distribution getDistribution(int s)
+	public Distribution getTransitions(int s)
 	{
 		switch (getStateType(s)) {
 		case ORIGINAL:
-			return dtmc.getDistribution(s);
+			return dtmc.getTransitions(s);
 		case MODIFIED_OLD_TARGET:
 			return targetStateDistribution;
 		case NEW_TARGET:
@@ -526,7 +526,7 @@ public class NormalizedDTMC extends DTMCExplicit implements DTMC, BidirectionalD
 		Distribution distr;
 		for (i = 0; i < numStates; i++) {
 			if (subset.get(i)) {
-				distr = getDistribution(i);
+				distr = getTransitions(i);
 				result.set(i, distr.containsOneOf(u));
 			}
 		}
@@ -539,7 +539,7 @@ public class NormalizedDTMC extends DTMCExplicit implements DTMC, BidirectionalD
 		Distribution distr;
 		for (i = 0; i < numStates; i++) {
 			if (subset.get(i)) {
-				distr = getDistribution(i);
+				distr = getTransitions(i);
 				result.set(i, distr.containsOneOf(v) && distr.isSubsetOf(u));
 			}
 		}
@@ -552,7 +552,7 @@ public class NormalizedDTMC extends DTMCExplicit implements DTMC, BidirectionalD
 		double d, prob;
 		Distribution distr;
 
-		distr = getDistribution(s);
+		distr = getTransitions(s);
 		d = 0.0;
 		for (Map.Entry<Integer, Double> e : distr) {
 			k = (Integer) e.getKey();
@@ -570,7 +570,7 @@ public class NormalizedDTMC extends DTMCExplicit implements DTMC, BidirectionalD
 		double diag, d, prob;
 		Distribution distr;
 
-		distr = getDistribution(s);
+		distr = getTransitions(s);
 		diag = 1.0;
 		d = 0.0;
 		for (Map.Entry<Integer, Double> e : distr) {
@@ -595,7 +595,7 @@ public class NormalizedDTMC extends DTMCExplicit implements DTMC, BidirectionalD
 		double d, prob;
 		Distribution distr;
 
-		distr = getDistribution(s);
+		distr = getTransitions(s);
 		d = mcRewards.getStateReward(s);
 		for (Map.Entry<Integer, Double> e : distr) {
 			k = (Integer) e.getKey();
@@ -619,7 +619,7 @@ public class NormalizedDTMC extends DTMCExplicit implements DTMC, BidirectionalD
 		}
 		// Go through matrix elements (by row)
 		for (i = 0; i < numStates; i++) {
-			distr = getDistribution(i);
+			distr = getTransitions(i);
 			for (Map.Entry<Integer, Double> e : distr) {
 				j = (Integer) e.getKey();
 				prob = (Double) e.getValue();
@@ -661,7 +661,7 @@ public class NormalizedDTMC extends DTMCExplicit implements DTMC, BidirectionalD
 
 	public Entry<Integer, Double> getEntry(int src, int trg)
 	{
-		return getDistribution(src).getEntry(trg);
+		return getTransitions(src).getEntry(trg);
 	}
 
 	@Override
@@ -669,7 +669,7 @@ public class NormalizedDTMC extends DTMCExplicit implements DTMC, BidirectionalD
 
 		StringBuilder result = new StringBuilder();
 		for (int i = 0; i < getNumStates(); i++) {
-			Distribution distr = getDistribution(i);
+			Distribution distr = getTransitions(i);
 
 			result.append(i + " to ");
 

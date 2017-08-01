@@ -271,11 +271,7 @@ public class DTMCSimple extends DTMCExplicit implements ModelSimple
 		return trans.get(s).iterator();
 	}
 
-	// Accessors (other)
-
-	/**
-	 * Get the transitions (a distribution) for state s.
-	 */
+	@Override
 	public Distribution getTransitions(int s)
 	{
 		return trans.get(s);

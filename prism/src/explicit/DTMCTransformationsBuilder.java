@@ -237,7 +237,7 @@ public class DTMCTransformationsBuilder
 				// Set up new transition relation for non-bscc nodes
 				for (int oldSrc = notInBSCCs.nextSetBit(0); oldSrc != -1; oldSrc = notInBSCCs.nextSetBit(oldSrc+1)) {
 					int newSrc = indexMap.get(oldSrc);
-					Distribution oldDistr = dtmc.getDistribution(oldSrc);
+					Distribution oldDistr = dtmc.getTransitions(oldSrc);
 					for (int oldSucc : oldDistr.getSupport()) {
 						int newTrg = indexMap.get(oldSucc);
 						result.setProbability(newSrc, newTrg, oldDistr.get(newTrg));
