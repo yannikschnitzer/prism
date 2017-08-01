@@ -27,6 +27,7 @@
 package explicit;
 
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -185,6 +186,19 @@ public class Distribution implements Iterable<Entry<Integer, Double>>
 		return map.entrySet().iterator();
 	}
 
+	public Collection<Entry<Integer, Double>> asCollection()
+	{
+		return map.entrySet();
+	}
+
+	public Entry<Integer, Double> getEntry(int trg)
+	{
+		for (Entry<Integer, Double> entry : map.entrySet()) {
+			if (entry.getKey() == trg) return entry;
+		}
+		return null;
+	}
+	
 	/**
 	 * Returns true if the distribution is empty.
 	 */
