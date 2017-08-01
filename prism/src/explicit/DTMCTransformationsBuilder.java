@@ -154,7 +154,7 @@ public class DTMCTransformationsBuilder
 		transformations.add(new DTMCTransformation()
 		{
 			@Override
-			public void apply(DTMCSimple dtmc, PrismLog log)
+			public void apply(DTMCSimple dtmc, PrismLog log) throws PrismException
 			{ 
 				BitSet newRemain = new BitSet();
 				BitSet newTargets = new BitSet();
@@ -169,9 +169,10 @@ public class DTMCTransformationsBuilder
 				}
 
 				// ...or until we are in a bottom SCC that contains neither a remain nor a target state
-				SCCComputer comp;
-				comp = SCCComputer.createSCCComputer(null, dtmc);
-				List<BitSet> bsccs = comp.getBSCCs();
+				SCCConsumerStore sccStore = new SCCConsumerStore();
+				SCCComputer sccComputer = SCCComputer.createSCCComputer(null, dtmc, sccStore);
+				sccComputer.computeSCCs();
+				List<BitSet> bsccs = sccStore.getBSCCs();
 				for (BitSet bs : bsccs) {
 					boolean noneRemainNoneTarget = true;
 					for (int s = bs.nextSetBit(0); s >= 0; s = bs.nextSetBit(s+1)) {
@@ -200,9 +201,11 @@ public class DTMCTransformationsBuilder
 			@Override
 			public void apply(DTMCSimple dtmc, PrismLog log)
 			{
-				SCCComputer comp = SCCComputer.createSCCComputer(null, dtmc);
-				List<BitSet> bsccs = comp.getBSCCs();
-				BitSet notInBsccs = comp.getNotInBSCCs();
+				SCCConsumerStore sccStore = new SCCConsumerStore();
+				SCCComputer sccComputer = SCCComputer.createSCCComputer(null, dtmc, sccStore);
+				sccComputer.computeSCCs();
+				List<BitSet> bsccs = sccStore.getBSCCs();
+				BitSet notInBSCCs = sccStore.getNotInBSCCs();
 
 				// Make a new DTMC with the reduced number of states
 				DTMCSimple result = new DTMCSimple();
@@ -212,7 +215,7 @@ public class DTMCTransformationsBuilder
 
 				// Create the new state space and save a mapping between state spaces
 				for (int i = 0; i < dtmc.getNumStates(); i++) {
-					if (notInBsccs.get(i)) {
+					if (notInBSCCs.get(i)) {
 						int newState = result.addState();
 						indexMap.put(i, newState);
 					}
@@ -232,7 +235,7 @@ public class DTMCTransformationsBuilder
 				}
 
 				// Set up new transition relation for non-bscc nodes
-				for (int oldSrc = notInBsccs.nextSetBit(0); oldSrc != -1; oldSrc = notInBsccs.nextSetBit(oldSrc+1)) {
+				for (int oldSrc = notInBSCCs.nextSetBit(0); oldSrc != -1; oldSrc = notInBSCCs.nextSetBit(oldSrc+1)) {
 					int newSrc = indexMap.get(oldSrc);
 					Distribution oldDistr = dtmc.getDistribution(oldSrc);
 					for (int oldSucc : oldDistr.getSupport()) {
@@ -264,7 +267,7 @@ public class DTMCTransformationsBuilder
 				List<State> newStateList = new ArrayList<>();
 				for (int i = 0; i < dtmc.getNumStates(); i++) {
 					State next = it.next();
-					if (notInBsccs.get(i)) {
+					if (notInBSCCs.get(i)) {
 						newStateList.add(next);
 					}
 				}
@@ -343,7 +346,7 @@ public class DTMCTransformationsBuilder
 	 * A single executable DTMC transformation
 	 */
 	protected interface DTMCTransformation {
-		public void apply(DTMCSimple dtmc, PrismLog log);
+		public void apply(DTMCSimple dtmc, PrismLog log) throws PrismException;
 	}
 
 }
