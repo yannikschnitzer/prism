@@ -27,7 +27,6 @@ import explicit.Model;
 import explicit.ModelCheckerResult;
 import explicit.PredecessorRelation;
 import explicit.StateValues;
-import explicit.TransitionConsumer;
 import explicit.cex.BidirectionalDTMCWrapper;
 import explicit.cex.NormalizedDTMC;
 import explicit.cex.gens.ShortestPathFinder;
@@ -391,7 +390,7 @@ public class CriticalSubsystem extends ProbabilisticCounterexample implements Bi
 		matrix.doForEachTransition(src, f, processedTrans);
 	}
 	
-	public void doForEachTransition(int src, TransitionConsumer f) throws PrismException {
+	public void doForEachTransition(int src, explicit.TransitionConsumer f) throws PrismException {
 		matrix.doForEachTransition(src, f, unprocessedTrans);
 	}
 	
@@ -571,7 +570,7 @@ public class CriticalSubsystem extends ProbabilisticCounterexample implements Bi
 		final Distribution res = new Distribution();
 		if (s < dummySinkState) {
 			try {
-				doForEachTransition(s, new TransitionConsumer(){
+				doForEachTransition(s, new explicit.TransitionConsumer(){
 
 					@Override
 					public void accept(int target, double prob)
