@@ -154,6 +154,14 @@ public abstract class ModelExplicit implements Model
 	}
 
 	/**
+	 * Remove state i from the set of initial states.
+	 */
+	public void removeFromInitialStates(int i)
+	{
+		initialStates.remove(initialStates.indexOf(i));
+	}
+
+	/**
 	 * Add a state to the list of deadlock states.
 	 */
 	public void addDeadlockState(int i)
