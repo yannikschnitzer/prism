@@ -452,6 +452,16 @@ public abstract class ModelExplicit implements Model
 		return s;
 	}
 	
+	// Accessors (other)
+	
+	/**
+	 * Returns a (possibly empty) iterable over all labels associated with this model 
+	 * @return Iterable over associated labels
+	 */
+	public Iterable<String> getAssociatedLabels() {
+		return labels.keySet();
+	}
+	
 	@Override
 	public boolean equals(Object o)
 	{
