@@ -42,6 +42,7 @@ import parser.State;
 import parser.Values;
 import parser.VarList;
 import explicit.DTMC;
+import explicit.Distribution;
 
 /**
  * A view of a DTMC where for selected states the transitions are changed.
@@ -171,6 +172,17 @@ public class DTMCAlteredDistributions extends DTMCView
 			return model.getTransitionsIterator(state);
 		}
 		return new FilteringIterator.Of<>(transitions, nonZero);
+	}
+
+	@Override
+	public Distribution getTransitions(int s) {
+		Distribution result = new Distribution();
+		Iterator<Entry<Integer,Double>> it = getTransitionsIterator(s);
+		while (it.hasNext()) {
+			Entry<Integer,Double> entry = it.next();
+			result.set(entry.getKey(), entry.getValue());
+		}
+		return result;
 	}
 
 
