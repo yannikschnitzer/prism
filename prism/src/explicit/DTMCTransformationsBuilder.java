@@ -199,7 +199,7 @@ public class DTMCTransformationsBuilder
 		transformations.add(new DTMCTransformation()
 		{
 			@Override
-			public void apply(DTMCSimple dtmc, PrismLog log)
+			public void apply(DTMCSimple dtmc, PrismLog log) throws PrismException
 			{
 				SCCConsumerStore sccStore = new SCCConsumerStore();
 				SCCComputer sccComputer = SCCComputer.createSCCComputer(null, dtmc, sccStore);
