@@ -111,7 +111,7 @@ public class Benchmark implements Runnable
 		isFinished = false;
 		
 		System.out.println("Starting benchmark " + this);
-		PrismLog log = new PrismPrintStreamLog(System.out, true);
+		PrismLog log = new PrismPrintStreamLog(System.out);
 		log.setVerbosityLevel(PrismLog.VL_HIGH);
 		CexGenerator gen = method.makeGenerator(normalizedModel, params, new PrismDevNullLog());
 

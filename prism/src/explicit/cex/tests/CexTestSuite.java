@@ -21,7 +21,7 @@ public class CexTestSuite
 		return Math.min(MAX_VERBOSITY, level);
 	}
 	
-	public static final PrismLog testLog = new PrismPrintStreamLog(System.out, true);
+	public static final PrismLog testLog = new PrismPrintStreamLog(System.out);
 
 	public static void setTestLogVerbosityLevel(int verbosity)
 	{

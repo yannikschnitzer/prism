@@ -59,7 +59,7 @@ public class CexGenCLI
 
 	final boolean constructModelDirectly = true;
 
-	private PrismLog log = new PrismPrintStreamLog(System.out, true);
+	private PrismLog log = new PrismPrintStreamLog(System.out);
 
 	private ModulesFile modulesFile = null;
 
