@@ -37,7 +37,7 @@ public class ModelPreprocessor
 		// Create the bitsets that we refer to in counterexample computation
 		// TODO: Move into SimplifiedExprProb
 		explicit.StateModelChecker mc = explicit.StateModelChecker.createModelChecker(currentModelExpl.getModelType(), prism);
-		mc.setModulesFileAndPropertiesFile(currentModulesFile, propertiesFile);
+		mc.setModulesFileAndPropertiesFile(currentModulesFile, propertiesFile, null);
 		ArrayList<String> propNames = new ArrayList<String>();
 		ArrayList<BitSet> propBSs = new ArrayList<BitSet>();
 		Expression exprNew = mc.checkMaximalPropositionalFormulas(currentModelExpl, prop.getExpression().deepCopy(), propNames, propBSs);
