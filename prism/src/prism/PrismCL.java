@@ -35,6 +35,11 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+import cex.CexError;
+import cex.Counterexample;
+import explicit.cex.CexSettings;
+import explicit.cex.cex.ProbabilisticCounterexample;
+import explicit.exporters.StateExporter;
 import parser.Values;
 import parser.ast.Expression;
 import parser.ast.ExpressionReward;
@@ -100,7 +105,8 @@ public class PrismCL implements PrismModelListener
 	private boolean nobuild = false;
 	private boolean test = false;
 	private boolean testExitsOnFail = true;
-
+	private boolean genCex = false;
+	
 	// property info
 	private Object propertyToCheck = null;
 	private String propertyString = "";
@@ -201,6 +207,8 @@ public class PrismCL implements PrismModelListener
 	private String[] paramUpperBounds = null;
 	private String[] paramNames = null;
 
+	// counterexample settings
+	private CexSettings cexSettings = null;
 
 	/**
 	 * Entry point: call run method, catch CuddOutOfMemoryException
@@ -403,20 +411,29 @@ public class PrismCL implements PrismModelListener
 						// store result of model checking
 						results[j].setResult(definedMFConstants, definedPFConstants, res.getResult());
 
+						// generate a counterexample if applicable
+						// TODO: Also support "counterexamples" for numerical properties
+						if (res.getResult() instanceof Boolean) {
+							if (!((Boolean)res.getResult()) && genCex) {
+								Counterexample cex = generateCexForConstantValuation(propertiesToCheck.get(j), undefinedConstants[j], cexSettings);
+								res.setCounterexample(cex);
+							}
+						}
+
 						// if a counterexample was generated, display it
-						Object cex = res.getCounterexample();
+						Counterexample cex = res.getCounterexample();
 						if (cex != null) {
-							mainLog.println("\nCounterexample/witness:");
-							mainLog.println(cex);
-							/*SimulatorEngine engine = prism.getSimulator();
+							printCex(cex);
+						}
+
+						// if a cex was generated, and we need to export it, do so
+						if (genCex) {
 							try {
-								engine.loadPath(modulesFile, (CexPathStates) cex);
-								engine.exportPath(null, true, ",", null);
-							} catch (PrismException e) {
+								doExportCounterexample(res);
+							}
+							// in case of error, report it and proceed
+							catch (PrismException e) {
 								error(e.getMessage());
-							}*/
-							if (cex instanceof cex.CexPathAsBDDs) {
-								((cex.CexPathAsBDDs) cex).clear();
 							}
 						}
 
@@ -504,8 +521,158 @@ public class PrismCL implements PrismModelListener
 			tmpLog.close();
 		}
 
+		if (genCex) {
+			try {
+				doExportCounterexamples(propertiesToCheck, undefinedConstants, results);
+			} catch (PrismException e) {
+				error(e.getMessage());
+			}
+		}
+		
 		// close down
 		closeDown();
+	}
+
+	private Counterexample generateCexForConstantValuation(Property prop, UndefinedConstants undefConst, CexSettings cs) {
+
+		Counterexample cex = null;
+		try {
+			// Set values for PropertiesFile constants
+			if (propertiesFile != null) {
+				definedPFConstants = undefConst.getPFConstantValues();
+				propertiesFile.setSomeUndefinedConstants(definedPFConstants);
+			}
+			cex = prism.computeProbabilisticCounterexample(propertiesFile, prop, undefConst, cs);
+		} catch (PrismException e) {
+			// in case of error, report it, store exception as the result and proceed
+			error(e.getMessage(), true);
+			cex = new CexError(e);
+		}
+
+		return cex;
+	}
+
+	/**
+	 * Prints counterexample object to main log
+	 * @param cex Counterexample to print
+	 */
+	private void printCex(Counterexample cex)
+	{
+		mainLog.println("\nCounterexample/witness:");
+		mainLog.println(cex.getSummaryString());
+		
+		if (genCex) {
+			if (cexSettings.counterexampleResultFilename == null || cexSettings.counterexampleResultFilename.equals("stdout")) {
+				mainLog.println(cex);
+			}
+		}
+		
+		/*SimulatorEngine engine = prism.getSimulator();
+		try {
+			engine.loadPath(modulesFile, (CexPathStates) cex);
+			engine.exportPath(null, true, ",", null);
+		} catch (PrismException e) {
+			error(e.getMessage());
+		}*/
+		if (cex instanceof cex.CexPathAsBDDs) {
+			((cex.CexPathAsBDDs) cex).clear();
+		}
+	}
+
+	/**
+	 * Exports one counterexample
+	 * @param checkedProperties Properties that have been checked
+	 * @param undefConst Undefined constants whose possible valuations were iterated
+	 * @param results Corresponding result objects storing the counterexamples, if any
+	 * @throws PrismException 
+	 */
+	private void doExportCounterexample(Result res) throws PrismException
+	{
+		// Counterexample export
+		if (cexSettings.counterexampleResultFilename != null && !cexSettings.counterexampleResultFilename.equals("stdout")) {
+			// Initialize export format based on settings
+			StateExporter exp = cexSettings.makeStateExporter(prism.getBuiltModelExplicit(), modulesFile);
+			// Extract filename Template
+			int dotAt = cexSettings.counterexampleResultFilename.lastIndexOf(".");
+			String baseName = cexSettings.counterexampleResultFilename.substring(0, dotAt);
+			String ext = cexSettings.counterexampleResultFilename.substring(dotAt + 1);
+
+			if (res.getCounterexample() != null) {
+				String filename = baseName + "." + ext;
+				PrismFileLog tmpLog = new PrismFileLog(filename);
+				if (!tmpLog.ready()) {
+					errorAndExit("Couldn't open file \"" + filename + "\" for output");
+				}
+				Counterexample cex = res.getCounterexample();
+				if (cexSettings.doExportFullProcessedModel && cex instanceof ProbabilisticCounterexample) {
+					((ProbabilisticCounterexample) cex).enableFullExportMode(cexSettings.doExportFullProcessedModel);
+				}
+				cex.export(tmpLog, exp);
+				tmpLog.close();
+			}
+		}
+	}
+
+	/**
+	 * Exports the counterexample for each property that has been refuted.
+	 * @param checkedProperties Properties that have been checked
+	 * @param undefConst Undefined constants whose possible valuations were iterated
+	 * @param results Corresponding result objects storing the counterexamples, if any
+	 * @throws PrismException 
+	 */
+	private void doExportCounterexamples(List<Property> checkedProperties, UndefinedConstants[] undefConst, ResultsCollection[] results) throws PrismException
+	{
+		int numPropertiesToCheck = checkedProperties.size();
+		assert(results.length == numPropertiesToCheck);
+		// Counterexample export
+		if (genCex) {
+			if (cexSettings.counterexampleResultFilename != null && !cexSettings.counterexampleResultFilename.equals("stdout")) {
+				
+				// Initialize export format based on settings
+				StateExporter exp = cexSettings.makeStateExporter(prism.getBuiltModelExplicit(), modulesFile);
+				
+				// Extract filename Template
+				int dotAt = cexSettings.counterexampleResultFilename.lastIndexOf(".");
+				String baseName = cexSettings.counterexampleResultFilename.substring(0, dotAt);
+				String ext = cexSettings.counterexampleResultFilename.substring(dotAt+1);
+
+				// Export loop
+				int exportNr = 0;
+				for (int i = 0; i < numPropertiesToCheck; i++) {
+					for (int j = 0; j < undefConst[i].getNumPropertyIterations(); j++) {
+						Object o = results[i].getResult(undefConst[i].getPFConstantValues());
+						if (o instanceof Result) {
+							Result res = (Result) o;
+							if (res.getCounterexample() != null) {
+								exportNr++;
+								String filename = baseName + (exportNr > 1 ? ""+exportNr : "") + "." + ext;
+								
+								String consts = undefConst[i].getPFConstantValues().toString();
+								mainLog.println("Exporting counterxample for property " + checkedProperties.get(i) 
+										+ (consts.equals("") ? "" : " and constant valuation " + consts) + " to " + filename);
+								
+								PrismFileLog tmpLog = new PrismFileLog(filename);
+								if (!tmpLog.ready()) {
+									errorAndExit("Couldn't open file \"" + filename + "\" for output");
+								}
+								
+								Counterexample cex = res.getCounterexample();
+								if (cexSettings.doExportFullProcessedModel && cex instanceof ProbabilisticCounterexample) {
+									((ProbabilisticCounterexample)cex).enableFullExportMode(cexSettings.doExportFullProcessedModel);
+								}
+								cex.export(tmpLog, exp);
+								tmpLog.close();
+							}
+						} else {
+							mainLog.printWarning("Result instance of " + (o != null ? o.getClass().getName() : "null") + ", no counterexample information available");
+						}
+					}
+					
+					undefConst[i].iterateProperty();
+				}
+
+			}
+		}
 	}
 
 	/**
@@ -1774,6 +1941,18 @@ public class PrismCL implements PrismModelListener
 					prism.setDoBisim(true);
 				}
 
+				// COUNTEREXAMPLES
+
+				else if (sw.equals("cex")) {
+					if (i < args.length - 1) {
+						// Parse filename/options
+						s = args[++i];
+						processCounterexampleSwitch(s);
+					} else {
+						errorAndExit("No file/options specified for -" + sw + " switch");
+					}
+				}
+
 				// Other switches - pass to PrismSettings
 
 				else {
@@ -2023,6 +2202,77 @@ public class PrismCL implements PrismModelListener
 				throw new PrismException("Unknown option \"" + opt + "\" for -exportstrat switch");
 			}
 		}
+	}
+
+	/**
+	 * Process the arguments (files, options) to the -cex (counterexample generation) switch
+	 * @param optionsString Argument to the -cex switch
+	 */
+	private void processCounterexampleSwitch(String optionsString)
+	{
+		cexSettings = new CexSettings();
+
+		// Assume use of : to split filename/options
+		String halves[] = splitFilesAndOptions(optionsString);
+		cexSettings.counterexampleResultFilename = halves[0];
+		String ss[] = halves[1].split(",");
+		for (int k = 0; k < ss.length; k++) {
+			String optionName = "";
+			String optionValue = "";
+			if (ss[k].contains("=")) {
+				optionName = ss[k].split("=")[0];
+				optionValue = ss[k].split("=")[1];
+			} else {
+				optionName = ss[k];
+			}
+
+			switch (optionName) {
+			case "method":
+				if (optionValue.equals("kpath") || optionValue.equals("local") || optionValue.equals("smt")) {
+					cexSettings.methodString = optionValue;
+				} else {
+					errorAndExit("Unknown counterexample method \"" + optionValue + "\"");
+				}
+				break;
+			case "printvars":
+				String[] varsToPrint = optionValue.split("&");
+				if (varsToPrint[0].equals("")) {
+					cexSettings.printAllVars = true;
+				} else {
+					for (String varName : varsToPrint) {
+						if (!varName.equals("")) cexSettings.varsToPrint.add(varName);
+					}
+				}
+				break;
+			case "maxnumpaths":
+				try {
+					cexSettings.maxNumPaths = Integer.parseInt(optionValue);
+				} catch (NumberFormatException e) {
+					errorAndExit("Integer argument expected for maxnumpaths, received \"" + optionValue + "\" instead");
+				}
+				break;
+			case "timeout":
+				try {
+					cexSettings.timeoutInSecs = Integer.parseInt(optionValue);
+				} catch (NumberFormatException e) {
+					errorAndExit("Integer argument expected for timeout, received \"" + optionValue + "\" instead");
+				}
+				break;
+			case "exportfullmodel":
+				cexSettings.doExportFullProcessedModel = true;
+				break;
+			case "printprogress":
+				cexSettings.printProgress = true;
+				break;
+			case "":
+				// Double comma, ignore
+				break;
+			default:
+				errorAndExit("Unknown option \"" + ss[k] + "\" for -cex switch");
+			}
+		}
+
+		genCex = true;
 	}
 
 	/**
@@ -2302,6 +2552,7 @@ public class PrismCL implements PrismModelListener
 		mainLog.println("-steadystate (or -ss) .......... Compute steady-state probabilities (D/CTMCs only)");
 		mainLog.println("-transient <x> (or -tr <x>) .... Compute transient probabilities for time (or time range) <x> (D/CTMCs only)");
 		mainLog.println("-simpath <options> <file>....... Generate a random path with the simulator");
+		mainLog.println("-cex <file[:options]> .......... Compute counterexamples for refuted properties");
 		mainLog.println("-nobuild ....................... Skip model construction (just do parse/export)");
 		mainLog.println("-test .......................... Enable \"test\" mode");
 		mainLog.println("-testall ....................... Enable \"test\" mode, but don't exit on error");
@@ -2431,6 +2682,27 @@ public class PrismCL implements PrismModelListener
 			mainLog.println(" * rows - export matrices with one row/distribution on each line");
 			mainLog.println(" * ordered - output states indices in ascending order [default]");
 			mainLog.println(" * unordered - don't output states indices in ascending order");
+		}
+		// -cex
+		else if (sw.equals("cex")) {
+			mainLog.println("Switch: -cex <file[:options]>\n");
+			mainLog.println("Compute a counterexample and write it to <file> (or screen if <file>=\"stdout\").");
+			mainLog.println("Currently only available for non-nested probabilistic reachability of DTMCs/MDPs");
+			mainLog.println("If provided, <options> is a comma-separated list of options taken from:");
+			mainLog.println(" * method=(kpath|local|smt)");
+			mainLog.println("   - kpath: Compute set of most probable paths [default]");
+			mainLog.println("   - local: Compute critical subsystems using local search");
+			mainLog.println("   - smt: Compute critical subsystem using z3 (needs to be in path)");
+			mainLog.println(" * timeout=<seconds>    Timeout for counterexample computation");
+			mainLog.println(" * maxnumpaths          If method=kpath: Max. number of paths to compute");
+			mainLog.println(" * exportfullmodel    If method=local: ");
+			mainLog.println("       Export legal DTMC/MDP model rather than only a subsystem");
+			mainLog.println("       (May lead to introduction of new states)");
+			mainLog.println(" * printvars[=var1&var2&...]");
+			mainLog.println("       Without argument: Include all variable valuations in the result file");
+			mainLog.println("       With &-separated list of variables: Include just these valuations");
+			mainLog.println("       [default: Include no valuations, just state indices akin to .tra files]");
+			mainLog.println(" * printprogress        Repeatedly inform about progress during computation");
 		}
 		// Try PrismSettings
 		else if (PrismSettings.printHelpSwitch(mainLog, sw)) {

@@ -35,7 +35,7 @@ import simulator.PathFullInfo;;
  * Class to store a counterexample/witness comprising a single path,
  * represented as a list of states, stored as State objects. 
  */
-public class CexPathStates implements PathFullInfo
+public class CexPathStates extends QualitativeCounterexample implements PathFullInfo
 {
 	protected prism.Model model;
 	protected ArrayList<State> states;
@@ -191,5 +191,11 @@ public class CexPathStates implements PathFullInfo
 				s += "\n";
 		}
 		return s;
+	}
+	
+	@Override
+	public String getSummaryString()
+	{
+		return "Path of " + states.size() + " states";
 	}
 }

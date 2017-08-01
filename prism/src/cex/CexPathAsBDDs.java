@@ -38,7 +38,7 @@ import simulator.PathFullInfo;;
  * The basic contents of the path is is a sequence of states (BDDs).
  * Optionally, action labels can also be included.
  */
-public class CexPathAsBDDs implements PathFullInfo
+public class CexPathAsBDDs extends QualitativeCounterexample implements PathFullInfo
 {
 	protected prism.Model model;
 	protected ArrayList<JDDNode> states;
@@ -197,5 +197,11 @@ public class CexPathAsBDDs implements PathFullInfo
 				s += "\n";
 		}
 		return s;
+	}
+	
+	@Override
+	public String getSummaryString()
+	{
+		return "Path of " + states.size() + " states";
 	}
 }

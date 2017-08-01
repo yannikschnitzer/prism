@@ -80,6 +80,20 @@ public class Values //implements Comparable
 	}
 	
 	/**
+	 * Construct a new Values object by copying and merging one or more existing ones.
+	 * There is no checking for duplicates.
+	 */
+	public Values(Values... vs)
+	{
+		this();
+		for (int i = 0; i < vs.length; i++) {
+			if (vs[i] != null) {
+				this.addValues((Values)vs[i].clone());
+			}
+		}
+	}
+	
+	/**
 	 * Construct a new Values object by copying existing State object.
 	 * Need access to model info for variable names.
 	 * @param s State object to copy.

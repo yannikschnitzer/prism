@@ -28,6 +28,7 @@
 
 package prism;
 
+import cex.Counterexample;
 import strat.Strategy;
 
 /**
@@ -42,7 +43,7 @@ public class Result
 	// Explanatory text for result (optional)
 	private String explanation;
 	// Counterexample (optional)
-	private Object cex;
+	private Counterexample cex;
 	// Strategy (optional)
 	private Strategy strat;
 	// Solution vector (optional)
@@ -88,7 +89,7 @@ public class Result
 	/**
 	 * Set the counterexample (null denotes n/a).
 	 */
-	public void setCounterexample(Object cex)
+	public void setCounterexample(Counterexample cex)
 	{
 		this.cex = cex;
 	}
@@ -128,7 +129,7 @@ public class Result
 	/**
 	 * Get the counterexample (null denotes n/a).
 	 */
-	public Object getCounterexample()
+	public Counterexample getCounterexample()
 	{
 		return cex;
 	}

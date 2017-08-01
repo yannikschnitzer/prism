@@ -38,6 +38,7 @@ import parser.ast.ExpressionForAll;
 import parser.ast.ExpressionTemporal;
 import parser.ast.ExpressionUnaryOp;
 import parser.ast.PropertiesFile;
+import cex.CexActionSequence;
 import cex.CexPathAsBDDs;
 import cex.CexPathStates;
 
@@ -420,7 +421,7 @@ public class NonProbModelChecker extends StateModelChecker
 						}
 						JDD.Deref(cexDDs.get(0));
 						mainLog.println("Counterexample (action sequence): " + cexActions);
-						result.setCounterexample(cexActions);
+						result.setCounterexample(new CexActionSequence(cexActions));
 					}
 					// Otherwise, convert list of BDDs to list of states
 					else {
