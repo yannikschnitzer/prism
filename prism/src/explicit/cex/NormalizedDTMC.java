@@ -6,13 +6,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
-import parser.State;
-import parser.Values;
-import prism.ModelType;
-import prism.PrismException;
 import explicit.DTMC;
 import explicit.DTMCExplicit;
 import explicit.DTMCMatrix;
@@ -21,7 +16,10 @@ import explicit.StateValues;
 import explicit.SuccessorsIterator;
 import explicit.cex.util.CexParams;
 import explicit.cex.util.DummyState;
-import explicit.rewards.MCRewards;
+import parser.State;
+import parser.Values;
+import prism.ModelType;
+import prism.PrismException;
 
 /**
  * Given a DTMC and a set of target states, this class provides access to a modified graph with
@@ -522,117 +520,6 @@ public class NormalizedDTMC extends DTMCExplicit implements DTMC, BidirectionalD
 		default:
 			assert (false);
 			return null;
-		}
-	}
-
-
-	@Override
-	public void prob0step(BitSet subset, BitSet u, BitSet result)
-	{
-		int i;
-		Distribution distr;
-		for (i = 0; i < numStates; i++) {
-			if (subset.get(i)) {
-				distr = getTransitions(i);
-				result.set(i, distr.containsOneOf(u));
-			}
-		}
-	}
-
-	@Override
-	public void prob1step(BitSet subset, BitSet u, BitSet v, BitSet result)
-	{
-		int i;
-		Distribution distr;
-		for (i = 0; i < numStates; i++) {
-			if (subset.get(i)) {
-				distr = getTransitions(i);
-				result.set(i, distr.containsOneOf(v) && distr.isSubsetOf(u));
-			}
-		}
-	}
-
-	@Override
-	public double mvMultSingle(int s, double vect[])
-	{
-		int k;
-		double d, prob;
-		Distribution distr;
-
-		distr = getTransitions(s);
-		d = 0.0;
-		for (Map.Entry<Integer, Double> e : distr) {
-			k = (Integer) e.getKey();
-			prob = (Double) e.getValue();
-			d += prob * vect[k];
-		}
-
-		return d;
-	}
-
-	@Override
-	public double mvMultJacSingle(int s, double vect[])
-	{
-		int k;
-		double diag, d, prob;
-		Distribution distr;
-
-		distr = getTransitions(s);
-		diag = 1.0;
-		d = 0.0;
-		for (Map.Entry<Integer, Double> e : distr) {
-			k = (Integer) e.getKey();
-			prob = (Double) e.getValue();
-			if (k != s) {
-				d += prob * vect[k];
-			} else {
-				diag -= prob;
-			}
-		}
-		if (diag > 0)
-			d /= diag;
-
-		return d;
-	}
-
-	@Override
-	public double mvMultRewSingle(int s, double vect[], MCRewards mcRewards)
-	{
-		int k;
-		double d, prob;
-		Distribution distr;
-
-		distr = getTransitions(s);
-		d = mcRewards.getStateReward(s);
-		for (Map.Entry<Integer, Double> e : distr) {
-			k = (Integer) e.getKey();
-			prob = (Double) e.getValue();
-			d += prob * vect[k];
-		}
-
-		return d;
-	}
-
-	@Override
-	public void vmMult(double vect[], double result[])
-	{
-		int i, j;
-		double prob;
-		Distribution distr;
-
-		// Initialise result to 0
-		for (j = 0; j < numStates; j++) {
-			result[j] = 0;
-		}
-		// Go through matrix elements (by row)
-		for (i = 0; i < numStates; i++) {
-			distr = getTransitions(i);
-			for (Map.Entry<Integer, Double> e : distr) {
-				j = (Integer) e.getKey();
-				prob = (Double) e.getValue();
-				result[j] += prob * vect[i];
-			}
-
 		}
 	}
 
