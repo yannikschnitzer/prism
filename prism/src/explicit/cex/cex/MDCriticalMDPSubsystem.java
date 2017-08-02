@@ -1,5 +1,6 @@
 package explicit.cex.cex;
 
+import java.io.File;
 import java.util.BitSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -142,7 +143,7 @@ public class MDCriticalMDPSubsystem extends NondetCounterexample implements MDP
 		throw new UnsupportedOperationException();
 	}
 
-	@Override
+	//@Override
 	public void exportWithStrat(PrismLog out, ExportType modelExportType, int[] strat) throws PrismException
 	{
 		ModelExporter modelExporter = ModelExporter.makeExporter(this, modelExportType);
@@ -296,7 +297,7 @@ public class MDCriticalMDPSubsystem extends NondetCounterexample implements MDP
 		throw new UnsupportedOperationException();
 	}
 
-	@Override
+	//@Override
 	public void export(PrismLog out, ExportType modelExportType) throws PrismException
 	{
 		ModelExporter modelExporter = ModelExporter.makeExporter(this, modelExportType);
@@ -523,4 +524,72 @@ public class MDCriticalMDPSubsystem extends NondetCounterexample implements MDP
 		return false;
 	}
 
+	@Override
+	public void exportToPrismExplicit(String baseFilename) throws PrismException
+	{
+		exportToPrismExplicitTra(baseFilename + ".tra");
+	}
+
+	@Override
+	public void exportToPrismExplicitTra(String filename) throws PrismException
+	{
+		try {
+			ModelExporter modelExporter = ModelExporter.makeExporter(this, ExportType.EXPLICIT_TRA);
+			if (!fullExportModeEnabled) modelExporter.restrictExportTo(getUnderlyingModel());
+			modelExporter.export(filename);
+		} catch (PrismException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void exportToPrismExplicitTra(File file) throws PrismException
+	{
+		try {
+			ModelExporter modelExporter = ModelExporter.makeExporter(this, ExportType.EXPLICIT_TRA);
+			if (!fullExportModeEnabled) modelExporter.restrictExportTo(getUnderlyingModel());
+			modelExporter.export(file);
+		} catch (PrismException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void exportToPrismExplicitTra(PrismLog log)
+	{
+		try {
+			ModelExporter modelExporter = ModelExporter.makeExporter(this, ExportType.EXPLICIT_TRA);
+			if (!fullExportModeEnabled) modelExporter.restrictExportTo(getUnderlyingModel());
+			modelExporter.export(log);
+		} catch (PrismException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void exportToPrismLanguage(String filename) throws PrismException
+	{
+		try {
+			ModelExporter modelExporter = ModelExporter.makeExporter(this, ExportType.PRISM_LANG);
+			if (!fullExportModeEnabled) modelExporter.restrictExportTo(getUnderlyingModel());
+			modelExporter.export(filename);
+		} catch (PrismException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void exportToDotFileWithStrat(PrismLog out, BitSet mark, int[] strat)
+	{
+		try {
+			exportWithStrat(out, ExportType.EXPLICIT_TRA, strat);
+		} catch (PrismException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }
