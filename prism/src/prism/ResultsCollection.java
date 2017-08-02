@@ -150,14 +150,7 @@ public class ResultsCollection
 	 */
 	public int setResult(Values mfValues, Values pfValues, Object result)
 	{
-		// merge mfValues and pfValues
-		Values merged = new Values();
-		if (mfValues != null)
-			merged.addValues(mfValues);
-		if (pfValues != null)
-			merged.addValues(pfValues);
-
-		return setResult(merged, result);
+		return setResult(new Values(mfValues, pfValues), result);
 	}
 
 	/** Sets the result to an error for a particular set of values.
@@ -186,14 +179,7 @@ public class ResultsCollection
 	  */
 	public int setMultipleErrors(Values mfValues, Values pfValues, Exception error)
 	{
-		// merge mfValues and pfValues
-		Values merged = new Values();
-		if (mfValues != null)
-			merged.addValues(mfValues);
-		if (pfValues != null)
-			merged.addValues(pfValues);
-
-		return setMultipleErrors(merged, error);
+		return setMultipleErrors(new Values(mfValues, pfValues), error);
 	}
 
 	/**
