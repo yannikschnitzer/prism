@@ -27,6 +27,7 @@ import explicit.Model;
 import explicit.ModelCheckerResult;
 import explicit.PredecessorRelation;
 import explicit.StateValues;
+import explicit.SuccessorsIterator;
 import explicit.cex.BidirectionalDTMCWrapper;
 import explicit.cex.NormalizedDTMC;
 import explicit.cex.gens.ShortestPathFinder;
@@ -368,6 +369,12 @@ public class CriticalSubsystem extends ProbabilisticCounterexample implements Bi
 	public Iterator<Integer> getSuccessorsIterator(int s)
 	{
 		return matrix.getSuccessorsIterator(s);
+	}
+
+	@Override
+	public SuccessorsIterator getSuccessors(int s)
+	{
+		return SuccessorsIterator.from(getSuccessorsIterator(s), true);
 	}
 
 	@Override

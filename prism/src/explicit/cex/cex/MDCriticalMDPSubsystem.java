@@ -20,6 +20,7 @@ import explicit.MDP;
 import explicit.Model;
 import explicit.PredecessorRelation;
 import explicit.StateValues;
+import explicit.SuccessorsIterator;
 import explicit.cex.gens.MDPViaDTMCCexGenerator.DeterministicChoiceResolver;
 import explicit.cex.util.CexParams;
 import explicit.cex.util.CexStatistics;
@@ -253,6 +254,11 @@ public class MDCriticalMDPSubsystem extends NondetCounterexample implements MDP
 			return new LinkedList<Integer>().iterator();
 	}
 
+	@Override
+	public SuccessorsIterator getSuccessors(int s)
+	{
+		return SuccessorsIterator.from(getSuccessorsIterator(s), true);
+	}
 
 	@Override
 	public boolean isSuccessor(int s1, int s2)
