@@ -16,10 +16,13 @@ import explicit.StateValues;
 import explicit.SuccessorsIterator;
 import explicit.cex.util.CexParams;
 import explicit.cex.util.DummyState;
+import explicit.exporters.ExportType;
+import explicit.exporters.ModelExporter;
 import parser.State;
 import parser.Values;
 import prism.ModelType;
 import prism.PrismException;
+import prism.PrismLog;
 
 /**
  * Given a DTMC and a set of target states, this class provides access to a modified graph with
@@ -558,6 +561,11 @@ public class NormalizedDTMC extends DTMCExplicit implements DTMC, BidirectionalD
 		return getTransitions(src).getEntry(trg);
 	}
 
+	public void export(PrismLog out, ExportType type) throws PrismException
+	{
+		ModelExporter.makeExporter(this, type).export(out);
+	}
+	
 	@Override
 	public String toString() {
 
