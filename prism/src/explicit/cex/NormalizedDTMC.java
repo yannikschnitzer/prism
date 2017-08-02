@@ -18,7 +18,7 @@ import explicit.DTMCExplicit;
 import explicit.DTMCMatrix;
 import explicit.Distribution;
 import explicit.StateValues;
-import explicit.TransitionConsumer;
+import explicit.SuccessorsIterator;
 import explicit.cex.util.CexParams;
 import explicit.cex.util.DummyState;
 import explicit.rewards.MCRewards;
@@ -398,6 +398,12 @@ public class NormalizedDTMC extends DTMCExplicit implements DTMC, BidirectionalD
 	}
 
 	@Override
+	public SuccessorsIterator getSuccessors(int s)
+	{
+		return SuccessorsIterator.from(getSuccessorsIterator(s), true);
+	}
+
+	@Override
 	public Iterator<Integer> getCandidatePredecessorsIterator(int targetNode)
 	{
 		return predecessors.get(targetNode).iterator();
@@ -518,6 +524,7 @@ public class NormalizedDTMC extends DTMCExplicit implements DTMC, BidirectionalD
 			return null;
 		}
 	}
+
 
 	@Override
 	public void prob0step(BitSet subset, BitSet u, BitSet result)
@@ -685,5 +692,4 @@ public class NormalizedDTMC extends DTMCExplicit implements DTMC, BidirectionalD
 		}
 		return result.toString();
 	}
-
 }
