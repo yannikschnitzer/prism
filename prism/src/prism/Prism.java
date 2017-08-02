@@ -42,6 +42,13 @@ import explicit.DTMCModelChecker;
 import explicit.ExplicitFiles2Model;
 import explicit.FastAdaptiveUniformisation;
 import explicit.FastAdaptiveUniformisationModelChecker;
+import explicit.cex.CexGenRunner;
+import explicit.cex.CexSettings;
+import explicit.cex.CounterexampleMethod;
+import explicit.cex.ModelPreprocessor;
+import explicit.cex.cex.ProbabilisticCounterexample;
+import explicit.cex.gens.CexGenerator;
+import explicit.cex.util.CexParams;
 import hybrid.PrismHybrid;
 import jdd.JDD;
 import jdd.JDDNode;
@@ -58,6 +65,7 @@ import parser.PrismParser;
 import parser.State;
 import parser.Values;
 import parser.ast.Expression;
+import parser.ast.ExpressionProb;
 import parser.ast.ForLoop;
 import parser.ast.LabelList;
 import parser.ast.ModulesFile;
@@ -265,6 +273,8 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	// Built model storage - symbolic or explicit - at most one is non-null
 	private Model currentModel = null;
 	private explicit.Model currentModelExpl = null;
+	// Most recently computed counterexample, if any
+	private ProbabilisticCounterexample currentCex = null;
 	// Are we doing digital clocks translation for PTAs?
 	boolean digital = false;
 
@@ -2949,6 +2959,85 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 
 		// Return result
 		return res;
+	}
+
+	public ProbabilisticCounterexample computeProbabilisticCounterexample(PropertiesFile propertiesFile, Property prop, UndefinedConstants constValuation, CexSettings cs) throws PrismException
+	{	
+		mainLog.println("Will start counterexample computation for " + prop);
+		// Make sure the property is of the form supported in counterexample computation
+		if (!(prop.getExpression() instanceof ExpressionProb)) {
+			mainLog.printWarning(prop.getExpression() + " does not start with a P operator -- counterexample generation not supported");
+			return null;
+		} else if (!((ExpressionProb)prop.getExpression()).getExpression().isSimplePathFormula()) {
+			mainLog.printWarning(prop.getExpression() + ": P operator not applied to simple path formula -- counterexample generation not supported");
+			return null;
+		}
+		
+		if (!prop.getType().getTypeString().equals("bool")) {
+			// TODO: Enable computation of approximation instead
+			mainLog.printWarning("Not a Boolean property -- will skip counterexample generation");
+			return null;
+		}
+		
+		ProbabilisticCounterexample cex = null;
+		
+		boolean engineSwitch = false;
+		int lastEngine = -1;
+
+		if (!getExplicit()) {
+			mainLog.printWarning("Switching to explicit engine to enable counterexample computation.");
+			engineSwitch = true;
+			lastEngine = getEngine();
+			setEngine(Prism.EXPLICIT);
+		}
+
+		try {
+			// Build model, if necessary
+			buildModelIfRequired();
+			
+			CounterexampleMethod method = cs.getMethod(currentModelExpl);
+			
+			if (method == CounterexampleMethod.UNKNOWN) {
+				mainLog.printWarning("\"" + cs.methodString + "\" is not a valid counterexample generation method -- will skip counterexample generation");
+				return null;
+			} else {
+				mainLog.println("Will perform \"" + method + "\" to find counterexample for " + prop.getExpression());
+			}
+			
+			ModelPreprocessor modelProc = new ModelPreprocessor(currentModelExpl, prop, constValuation, currentModulesFile, propertiesFile, this);
+
+			explicit.Model preprocessedModel = modelProc.doPreprocessing();
+			
+			CexParams params = modelProc.getCexParams();
+			
+			CexGenerator gen = method.makeGenerator(currentModelExpl, params, mainLog);
+
+			CexGenRunner runner = new CexGenRunner(mainLog);
+			
+			cex = runner.generateCex(gen, cs.timeoutInSecs * 1000, cs.printProgress);
+			mainLog.println("Counterexample computation complete: " + cex.getSummaryString());
+			
+			// Note: Export moved out of the counterexample computation
+			/*if (cs.counterexampleResultFilename != null && cs.counterexampleResultFilename != "") {
+				mainLog.println("Counterexample exported to " + cs.counterexampleResultFilename);
+				PrismFileLog resultFileLog = new PrismFileLog(cs.counterexampleResultFilename);
+				cex.export(resultFileLog, new StateExporter());
+			}*/
+			
+			currentCex = cex;
+			
+		} finally {
+			// Undo auto-switch (if any)
+			if (engineSwitch) {
+				setEngine(lastEngine);
+			}
+		}
+		
+		return cex;
+	}
+	
+	public ProbabilisticCounterexample getMostRecentCounterexample() {
+		return currentCex;
 	}
 
 	/**
