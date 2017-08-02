@@ -113,7 +113,7 @@ public class NormalizedDTMC extends DTMCExplicit implements DTMC, BidirectionalD
 	 */
 	public NormalizedDTMC(DTMC dtmc, CexParams params)
 	{
-		super(dtmc.getNumStates());
+		initialise(dtmc.getNumStates());
 		this.targetLabel = params.getTargetLabel();
 		this.originalTargets = params.getTargetSet();
 		
