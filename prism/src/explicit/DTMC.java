@@ -38,7 +38,7 @@ import explicit.rewards.MCRewards;
 /**
  * Interface for classes that provide (read) access to an explicit-state DTMC.
  */
-public interface DTMC extends Model
+public interface DTMC extends Model, StateToDistributionMap
 {
 	/**
 	 * Get the number of transitions from state s.
