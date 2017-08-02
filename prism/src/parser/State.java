@@ -290,6 +290,24 @@ public class State implements Comparable<State>
 
 	/**
 	 * Get string representation, e.g. "(a=0,b=true,c=5)", 
+	 * but only for the variables whose names and indices are in the parameter lists 
+	 */
+	public String toPartialString(List<Integer> varIndices, List<String> varNames)
+	{
+		int i, n;
+		String s = "(";
+		n = varIndices.size();
+		for (i = 0; i < n; i++) {
+			if (i > 0)
+				s += ",";
+			s += varNames.get(i) + "=" + varValues[varIndices.get(i)];
+		}
+		s += ")";
+		return s;
+	}
+
+	/**
+	 * Get string representation, e.g. "(a=0,b=true,c=5)", 
 	 * with variables names (taken from model info). 
 	 */
 	public String toString(ModelInfo modelInfo)
