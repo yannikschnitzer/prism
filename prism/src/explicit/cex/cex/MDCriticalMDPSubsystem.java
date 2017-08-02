@@ -262,6 +262,12 @@ public class MDCriticalMDPSubsystem extends NondetCounterexample implements MDP
 	}
 
 	@Override
+	public SuccessorsIterator getSuccessors(int s, int i)
+	{
+		return SuccessorsIterator.from(getSuccessorsIterator(s, i), true);
+	}
+	
+	@Override
 	public boolean isSuccessor(int s1, int s2)
 	{
 		return cs.isSuccessor(s1, s2);
