@@ -109,6 +109,8 @@ public class PrismSettings implements Observer
 	public static final String PRISM_SCC_METHOD						= "prism.sccMethod";
 	public static final String PRISM_SYMM_RED_PARAMS					= "prism.symmRedParams";
 	public static final	String PRISM_EXACT_ENABLED					= "prism.exact.enabled";
+	public static final	String PRISM_RECUR_ENABLED					= "prism.recur.enabled";
+	public static final	String PRISM_RECUR_VAR						= "prism.recur.var";
 	public static final String PRISM_PTA_METHOD					= "prism.ptaMethod";
 	public static final String PRISM_TRANSIENT_METHOD				= "prism.transientMethod";
 	public static final String PRISM_AR_OPTIONS					= "prism.arOptions";
@@ -234,7 +236,11 @@ public class PrismSettings implements Observer
 			{ CHOICE_TYPE,		PRISM_ENGINE,							"Engine",								"2.1",			"Hybrid",																	"MTBDD,Sparse,Hybrid,Explicit",																		
 																			"Which engine (hybrid, sparse, MTBDD, explicit) should be used for model checking." },
 			{ BOOLEAN_TYPE,		PRISM_EXACT_ENABLED,					"Do exact model checking",			"4.2.1",			new Boolean(false),															"",
-																			"Perform exact model checking." },
+			"Perform exact model checking." },
+			{ BOOLEAN_TYPE,		PRISM_RECUR_ENABLED,					"Do model checking with recurrence relations",			"4.3",			new Boolean(false),															"",
+			"Model checking with recurrence relations." },
+			{ STRING_TYPE,		PRISM_RECUR_VAR,						"Variable for model checking with recurrence relations",			"4.3",			"",															"",
+			"Variable for model checking with recurrence relations." },
 																			
 			{ CHOICE_TYPE,		PRISM_PTA_METHOD,						"PTA model checking method",			"3.3",			"Stochastic games",																	"Digital clocks,Stochastic games,Backwards reachability",																
 																			"Which method to use for model checking of PTAs." },
@@ -929,6 +935,15 @@ public class PrismSettings implements Observer
 		// Exact model checking
 		else if (sw.equals("exact")) {
 			set(PRISM_EXACT_ENABLED, true);
+		}
+		// Recurrence relation model checking
+		else if (sw.equals("recur")) {
+			if (i < args.length - 1) {
+				set(PRISM_RECUR_ENABLED, true);
+				set(PRISM_RECUR_VAR, args[++i]);
+			} else {
+				throw new PrismException("No value specified for -" + sw + " switch");
+			}
 		}
 		// PTA model checking methods
 		else if (sw.equals("ptamethod")) {

@@ -27,14 +27,14 @@
 
 package param;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import explicit.IndexedSet;
-import explicit.StateStorage;
 import parser.State;
+import parser.VarList;
 import parser.ast.Expression;
 import parser.ast.ExpressionBinaryOp;
 import parser.ast.ExpressionConstant;
@@ -49,6 +49,10 @@ import prism.PrismException;
 import prism.PrismLangException;
 import prism.PrismNotSupportedException;
 import prism.PrismSettings;
+import recurrence.utils.expression.ExpressionChecker;
+import explicit.IndexedSet;
+import explicit.StateStorage;
+
 
 /**
  * Class to construct a parametric Markov model.
@@ -71,8 +75,17 @@ public final class ModelBuilder extends PrismComponent
 	private double dagMaxError;
 
 	/** local storage made static for use in anonymous class */
-	private static Map<String,Expression> constExprs;
-	
+	private static Map<String, Expression> constExprs;
+
+	// List of variables
+	private VarList varList;
+	// Add initial states apart from the model description to explore the recurrence block
+	private List<State> recurBlockInitStates;
+	// Expression checker
+	ExpressionChecker ec = null;
+	// Param Model
+	ParamModel model;
+
 	/**
 	 * Constructor
 	 */
@@ -85,7 +98,7 @@ public final class ModelBuilder extends PrismComponent
 			dagMaxError = settings.getDouble(PrismSettings.PRISM_PARAM_DAG_MAX_ERROR);
 		}
 	}
-	
+
 	/**
 	 * Transform PRISM expression to rational function.
 	 * If successful, a function representing the given expression will be
@@ -145,7 +158,7 @@ public final class ModelBuilder extends PrismComponent
 			default:
 				throw new PrismNotSupportedException("parametric analysis with rate/probability of " + expr + " not implemented");
 			}
-		} else if (expr instanceof ExpressionITE){
+		} else if (expr instanceof ExpressionITE) {
 			ExpressionITE iteExpr = (ExpressionITE) expr;
 			// ITE expressions where the if-expression does not
 			// depend on a parametric constant are supported
@@ -194,6 +207,13 @@ public final class ModelBuilder extends PrismComponent
 		return Arrays.asList(paramNames);
 	}
 
+	public ParamModel constructModel(List<State> recurBlockInitStates, ModelGeneratorSymbolic modelGenSym, String[] paramNames, String[] lowerStr,
+			String[] upperStr) throws PrismException
+	{
+		this.recurBlockInitStates = recurBlockInitStates;
+		return constructModel(modelGenSym, paramNames, lowerStr, upperStr);
+	}
+
 	/**
 	 * Construct a parametric model and return it.
 	 * All of {@code paramNames}, {@code lower}, {@code} upper must have the same length,
@@ -219,7 +239,7 @@ public final class ModelBuilder extends PrismComponent
 			lower[param] = new BigRational(lowerStr[param]);
 			upper[param] = new BigRational(upperStr[param]);
 		}
-		
+
 		// Create function factory
 		if (functionType.equals("JAS")) {
 			functionFactory = new JasFunctionFactory(paramNames, lower, upper);
@@ -230,7 +250,7 @@ public final class ModelBuilder extends PrismComponent
 		}
 		// And pass it to the model generator
 		modelGenSym.setSymbolic(this, functionFactory);
-		
+
 		// First, set values for any constants in the model
 		// (but do this *symbolically* - partly because some constants are parameters and therefore unknown,
 		// but also to keep values like 1/3 as expressions rather than being converted to doubles,
@@ -246,15 +266,15 @@ public final class ModelBuilder extends PrismComponent
 				return (expr != null) ? expr.deepCopy() : e;
 			}
 		});*/
-		
+
 		// Build/return model
 		mainLog.print("\nBuilding model...\n");
 		long time = System.currentTimeMillis();
 		ParamModel modelExpl = doModelConstruction(modelGenSym);
 		time = System.currentTimeMillis() - time;
-		mainLog.print("\n"+modelExpl.infoStringTable());
+		mainLog.print("\n" + modelExpl.infoStringTable());
 		mainLog.println("\nTime for model construction: " + time / 1000.0 + " seconds.");
-		
+
 		return modelExpl;
 	}
 
@@ -276,15 +296,27 @@ public final class ModelBuilder extends PrismComponent
 		int numTotalChoices = 0;
 		int numTotalSuccessors = 0;
 
+		// Display a warning if there are unbounded vars
+		varList = modelGenSym.createVarList();
+
 		LinkedList<State> explore = new LinkedList<State>();
 
-		State state = modelGenSym.getInitialState();
-		states.add(state);
-		explore.add(state);
-		numStates++;
+		// Add initial state(s) to 'explore', 'states' and to the model
+		List<State> initStates;
+		if (recurBlockInitStates != null) {
+			initStates = recurBlockInitStates;
+		} else {
+			initStates = modelGenSym.getInitialStates();
+		}
+
+		for (State initState : initStates) {
+			explore.add(initState);
+			states.add(initState);
+			numStates++;
+		}
 
 		while (!explore.isEmpty()) {
-			state = explore.removeFirst();
+			State state = explore.removeFirst();
 			modelGenSym.exploreState(state);
 			int numChoices = modelGenSym.getNumChoices();
 			if (isNonDet) {
@@ -296,7 +328,7 @@ public final class ModelBuilder extends PrismComponent
 				int numSuccessors = modelGenSym.getNumTransitions(choiceNr);
 				numTotalSuccessors += numSuccessors;
 				for (int succNr = 0; succNr < numSuccessors; succNr++) {
-					State stateNew = modelGenSym.computeTransitionTarget(choiceNr, succNr); 
+					State stateNew = modelGenSym.computeTransitionTarget(choiceNr, succNr);
 					if (states.add(stateNew)) {
 						numStates++;
 						explore.add(stateNew);
@@ -336,7 +368,7 @@ public final class ModelBuilder extends PrismComponent
 		mainLog.flush();
 		long timer = System.currentTimeMillis();
 		modelType = modelGenSym.getModelType();
-		ParamModel model = new ParamModel();
+		model = new ParamModel();
 		model.setModelType(modelType);
 		if (modelType != ModelType.DTMC && modelType != ModelType.CTMC && modelType != ModelType.MDP) {
 			throw new PrismNotSupportedException("Unsupported model type: " + modelType);
@@ -353,8 +385,10 @@ public final class ModelBuilder extends PrismComponent
 		model.addInitialState(permut[0]);
 		int stateNr = 0;
 		for (State state : statesList) {
+			int numChoices = 0;
 			modelGenSym.exploreState(state);
-			int numChoices = modelGenSym.getNumChoices();
+			numChoices = modelGenSym.getNumChoices();
+
 			boolean computeSumOut = !isNonDet;
 			boolean checkChoiceSumEqualsOne = doProbChecks && model.getModelType().choicesSumToOne();
 
@@ -379,8 +413,8 @@ public final class ModelBuilder extends PrismComponent
 							throw new PrismLangException("Probabilities sum to " + sumOutForChoice.asBigRational() + " instead of 1 in state "
 									+ state.toString(modelGenSym) + " for some command");
 						} else {
-							throw new PrismLangException("In state " + state.toString(modelGenSym) + " the probabilities sum to "
-									+ sumOutForChoice + " for some command, which can not be determined to be equal to 1 (to ignore, use -noprobchecks option)");
+							throw new PrismLangException("In state " + state.toString(modelGenSym) + " the probabilities sum to " + sumOutForChoice
+									+ " for some command, which can not be determined to be equal to 1 (to ignore, use -noprobchecks option)");
 						}
 					}
 				}
@@ -426,10 +460,24 @@ public final class ModelBuilder extends PrismComponent
 		model.setFunctionFactory(functionFactory);
 
 		mainLog.println();
-		
 		mainLog.print("Reachable states exploration and model construction");
 		mainLog.println(" done in " + ((System.currentTimeMillis() - timer) / 1000.0) + " secs.");
-
 		return model;
+	}
+
+	public List<State> getStates(String recVar, int recVarVal)
+	{
+		int recurVarIndex = varList.getIndex(recVar);
+		List<State> selectedStates = new ArrayList<State>();
+		for (State state : model.getStatesList()) {
+			if (state.varValues[recurVarIndex].equals(recVarVal))
+				selectedStates.add(state);
+		}
+		return selectedStates;
+	}
+
+	public FunctionFactory getFunctionFactory()
+	{
+		return this.functionFactory;
 	}
 }

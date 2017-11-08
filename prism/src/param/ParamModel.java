@@ -28,16 +28,20 @@ package param;
 
 import java.io.File;
 import java.util.BitSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeSet;
 
 import parser.Values;
 import prism.ModelType;
 import prism.PrismException;
 import prism.PrismLog;
+import cern.colt.Arrays;
 import explicit.ModelExplicit;
 import explicit.SuccessorsIterator;
 import explicit.graphviz.Decorator;
@@ -115,9 +119,60 @@ public final class ParamModel extends ModelExplicit
 	}
 
 	@Override
-	public SuccessorsIterator getSuccessors(int s)
+	public SuccessorsIterator getSuccessors(final int s)
 	{
-		throw new UnsupportedOperationException();
+		return SuccessorsIterator.chain(new Iterator<SuccessorsIterator>() {
+			private int choice = 0;
+			private int choices = getNumChoices(s);
+
+			@Override
+			public boolean hasNext()
+			{
+				return choice < choices;
+			}
+
+			@Override
+			public SuccessorsIterator next()
+			{
+				return getSuccessors(s, choice++);
+			}
+		});
+	}
+
+	/**
+	 * Get a SuccessorsIterator for state s and choice i.
+	 * @param s The state
+	 * @param i Choice index
+	 */
+	public SuccessorsIterator getSuccessors(int s, int i)
+	{
+		return new SuccessorsIterator()
+		{
+			final int start = choiceBegin(stateBegin(s) + i);
+			int col = start;
+			final int end = choiceBegin(stateBegin(s) + i + 1);
+
+			@Override
+			public boolean hasNext()
+			{
+				return col < end;
+			}
+
+			@Override
+			public int nextInt()
+			{
+				assert (col < end);
+				int i = col;
+				col++;
+				return cols[i];
+			}
+
+			@Override
+			public boolean successorsAreDistinct()
+			{
+				return false;
+			}
+		};
 	}
 	
 	@Override
@@ -131,6 +186,51 @@ public final class ParamModel extends ModelExplicit
 			}
 		}
 		return false;
+	}
+
+	public void replaceAllForSelfLoop(int src, int choice)
+	{
+		// Information about the before changes
+		//		System.out.println(Arrays.toString(rows));
+		//		System.out.println(Arrays.toString(choices));
+		//		System.out.println(Arrays.toString(cols));
+		//		System.out.println(Arrays.toString(nonZeros));
+		//
+		//		System.out.println("=============================================================");
+
+		int stateIndex = stateBegin(src) + choice;
+		int start = choiceBegin(stateIndex);
+		int end = choiceBegin(stateIndex + 1);
+		int difference = end - start - 1;
+
+		if (difference > 1) {
+			for (int i = stateIndex + 1; i < choices.length; i++)
+				choices[i] = choices[i] - difference;
+
+			int[] newCols = new int[cols.length - difference];
+			Function[] newNonZeroes = new Function[nonZeros.length - difference];
+			for (int i = 0; i < cols.length; i++) {
+				if (i == start) {
+					newCols[i] = stateIndex;
+					newNonZeroes[i] = getFunctionFactory().getOne();
+					i += difference;
+				}
+
+			}
+			cols = newCols;
+			nonZeros = newNonZeroes;
+
+		} else { // difference = 1
+			cols[start] = stateIndex;
+			nonZeros[start] = getFunctionFactory().getOne();
+		}
+		// Information about the changes
+		//		System.out.println(Arrays.toString(rows));
+		//		System.out.println(Arrays.toString(choices));
+		//		System.out.println(Arrays.toString(cols));
+		//		System.out.println(Arrays.toString(nonZeros));
+		//		System.out.println("=============================================================");
+		//		System.out.println("=============================================================");
 	}
 
 	/**
@@ -182,6 +282,12 @@ public final class ParamModel extends ModelExplicit
 					}
 				};
 			}
+
+			@Override
+			public void remove()
+			{
+
+			}
 		};
 	}
 
@@ -226,7 +332,6 @@ public final class ParamModel extends ModelExplicit
 	{
 		throw new UnsupportedOperationException();
 	}
-
 
 	@Override
 	public void exportTransitionsToDotFile(int i, PrismLog out, Iterable<explicit.graphviz.Decorator> decorators)
@@ -313,7 +418,7 @@ public final class ParamModel extends ModelExplicit
 	}
 
 	// Other
-	
+
 	public int getNumChoices(int state)
 	{
 		return stateEnd(state) - stateBegin(state);
@@ -538,7 +643,7 @@ public final class ParamModel extends ModelExplicit
 	 * 
 	 * @return function factory used in this parametric model
 	 */
-	FunctionFactory getFunctionFactory()
+	public FunctionFactory getFunctionFactory()
 	{
 		return functionFactory;
 	}

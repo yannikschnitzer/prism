@@ -177,12 +177,12 @@ class DagFunctionFactory extends FunctionFactory {
 	}
 	
 	@Override
-	Function getZero() {
+	public Function getZero() {
 		return zero;
 	}
 	
 	@Override
-	Function getOne() {
+	public Function getOne() {
 		return one;
 	}
 
@@ -220,7 +220,7 @@ class DagFunctionFactory extends FunctionFactory {
 	}
 	
 	@Override
-	Function fromBigRational(BigRational bigRat) {
+	public Function fromBigRational(BigRational bigRat) {
 		if (bigRat.isSpecial()) {
 			if (bigRat.isNaN()) {
 				return getNaN();

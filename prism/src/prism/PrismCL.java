@@ -148,7 +148,7 @@ public class PrismCL implements PrismModelListener
 	private PrismLog mainLog = null;
 
 	// prism object
-	private Prism prism = null;
+	public static Prism prism = null;
 
 	// storage for parsed model/properties files
 	private ModulesFile modulesFile = null;

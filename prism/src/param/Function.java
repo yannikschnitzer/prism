@@ -142,7 +142,7 @@ public abstract class Function extends StateValue
 	 * 
 	 * @return BigRational representation of this function
 	 */
-	abstract BigRational asBigRational();
+	public abstract BigRational asBigRational();
 
 	/**
 	 * Returns true iff this function represents not-a-number.

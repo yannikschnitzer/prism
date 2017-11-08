@@ -299,6 +299,14 @@ public final class RegionValues implements Iterable<Entry<Region, StateValues>>
 				}
 				result.add(region, resValues);
 			}
+		} else if (op == Region.ALL) {
+			for (Region region : regions) {
+				StateValues resValues = new StateValues(getNumStates(), getInitState());
+				for (int state = 0; state < getNumStates(); state++) {
+					resValues.setStateValue(state, values.get(region).getStateValue(state));
+				}
+				result.add(region, resValues);
+			}
 		} else if (op == Region.PLUS || op == Region.AVG) {
 			for (Region region : regions) {
 				StateValues vals = values.get(region);

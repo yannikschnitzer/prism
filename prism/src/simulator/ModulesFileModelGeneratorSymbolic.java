@@ -27,7 +27,7 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 {
 	// Parent PrismComponent (logs, settings etc.)
 	protected PrismComponent parent;
-	
+
 	// PRISM model info
 	/** The original modules file (might have unresolved constants) */
 	private ModulesFile originalModulesFile;
@@ -38,9 +38,9 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 	private VarList varList;
 	private LabelList labelList;
 	private List<String> labelNames;
-	
+
 	// Model exploration info
-	
+
 	// State currently being explored
 	private State exploreState;
 	// Updater object for model
@@ -50,12 +50,12 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 	protected param.TransitionList transitionList;
 	// Has the transition list been built? 
 	protected boolean transitionListBuilt;
-	
+
 	// Symbolic stuff
 	boolean symbolic = false;
 	protected ModelBuilder modelBuilder;
 	protected FunctionFactory functionFactory;
-	
+
 	/**
 	 * Build a ModulesFileModelGenerator for a particular PRISM model, represented by a ModuleFile instance.
 	 * @param modulesFile The PRISM model
@@ -64,7 +64,7 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 	{
 		this(modulesFile, null);
 	}
-	
+
 	/**
 	 * Build a ModulesFileModelGenerator for a particular PRISM model, represented by a ModuleFile instance.
 	 * @param modulesFile The PRISM model
@@ -72,7 +72,7 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 	public ModulesFileModelGeneratorSymbolic(ModulesFile modulesFile, PrismComponent parent) throws PrismException
 	{
 		this.parent = parent;
-		
+
 		// No support for PTAs yet
 		if (modulesFile.getModelType() == ModelType.PTA) {
 			throw new PrismException("Sorry - the simulator does not currently support PTAs");
@@ -81,12 +81,12 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 		if (modulesFile.getSystemDefn() != null) {
 			throw new PrismException("Sorry - the simulator does not currently handle the system...endsystem construct");
 		}
-		
+
 		// Store basic model info
 		this.modulesFile = modulesFile;
 		this.originalModulesFile = modulesFile;
 		modelType = modulesFile.getModelType();
-		
+
 		// If there are no constants to define, go ahead and initialise;
 		// Otherwise, setSomeUndefinedConstants needs to be called when the values are available  
 		mfConstants = modulesFile.getConstantValues();
@@ -94,7 +94,7 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 			initialise();
 		}
 	}
-	
+
 	/**
 	 * (Re-)Initialise the class ready for model exploration
 	 * (can only be done once any constants needed have been provided)
@@ -109,14 +109,14 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 		varList = modulesFile.createVarList();
 		labelList = modulesFile.getLabelList();
 		labelNames = labelList.getLabelNames();
-		
+
 		// Create data structures for exploring model
 		//updater = new Updater(modulesFile, varList, parent);
 		//transitionList = new TransitionList();
 		engine = new SymbolicEngine(modulesFile, modelBuilder, functionFactory);
 		transitionListBuilt = false;
 	}
-	
+
 	@Override
 	public void setSymbolic(ModelBuilder modelBuilder, FunctionFactory functionFactory)
 	{
@@ -127,15 +127,15 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 		// TODO: created twice
 		engine = new SymbolicEngine(modulesFile, modelBuilder, functionFactory);
 	}
-	
+
 	// Methods for ModelInfo interface
-	
+
 	@Override
 	public ModelType getModelType()
 	{
 		return modelType;
 	}
-	
+
 	@Override
 	public void setSomeUndefinedConstants(Values someValues) throws PrismException
 	{
@@ -150,25 +150,25 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 		mfConstants = modulesFile.getConstantValues();
 		initialise();
 	}
-	
+
 	@Override
 	public Values getConstantValues()
 	{
 		return mfConstants;
 	}
-	
+
 	@Override
 	public boolean containsUnboundedVariables()
 	{
 		return modulesFile.containsUnboundedVariables();
 	}
-	
+
 	@Override
 	public int getNumVars()
 	{
 		return modulesFile.getNumVars();
 	}
-	
+
 	@Override
 	public List<String> getVarNames()
 	{
@@ -184,7 +184,7 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 	@Override
 	public int getNumLabels()
 	{
-		return labelList.size();	
+		return labelList.size();
 	}
 
 	@Override
@@ -192,37 +192,37 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 	{
 		return labelNames;
 	}
-	
+
 	@Override
 	public String getLabelName(int i) throws PrismException
 	{
 		return labelList.getLabelName(i);
 	}
-	
+
 	@Override
 	public int getLabelIndex(String label)
 	{
 		return labelList.getLabelIndex(label);
 	}
-	
+
 	@Override
 	public int getNumRewardStructs()
 	{
 		return modulesFile.getNumRewardStructs();
 	}
-	
+
 	@Override
 	public List<String> getRewardStructNames()
 	{
 		return modulesFile.getRewardStructNames();
 	}
-	
+
 	@Override
 	public int getRewardStructIndex(String name)
 	{
 		return modulesFile.getRewardStructIndex(name);
 	}
-	
+
 	@Override
 	public RewardStruct getRewardStruct(int i)
 	{
@@ -230,13 +230,13 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 	}
 
 	// Methods for ModelGenerator interface
-	
+
 	@Override
 	public boolean hasSingleInitialState() throws PrismException
 	{
 		return modulesFile.getInitialStates() == null;
 	}
-	
+
 	@Override
 	public State getInitialState() throws PrismException
 	{
@@ -247,7 +247,7 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 			return getInitialStates().get(0);
 		}
 	}
-	
+
 	@Override
 	public List<State> getInitialStates() throws PrismException
 	{
@@ -277,13 +277,13 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 		this.exploreState = exploreState;
 		transitionListBuilt = false;
 	}
-	
+
 	@Override
 	public State getExploreState()
 	{
 		return exploreState;
 	}
-	
+
 	@Override
 	public int getNumChoices() throws PrismException
 	{
@@ -359,14 +359,14 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 	{
 		return getTransitionList().computeTransitionTarget(index, exploreState);
 	}
-	
+
 	@Override
 	public boolean isLabelTrue(int i) throws PrismException
 	{
 		Expression expr = labelList.getLabel(i);
 		return expr.evaluateBoolean(exploreState);
 	}
-	
+
 	@Override
 	public double getStateReward(int r, State state) throws PrismException
 	{
@@ -409,21 +409,21 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 		}
 		return d;
 	}
-	
+
 	//@Override
 	public void calculateStateRewards(State state, double[] store) throws PrismLangException
 	{
 		// TODO updater.calculateStateRewards(state, store);
 	}
-	
+
 	@Override
 	public VarList createVarList()
 	{
 		return varList;
 	}
-	
+
 	// Miscellaneous (unused?) methods
-	
+
 	//@Override
 	public void getRandomInitialState(RandomNumberGenerator rng, State initialState) throws PrismException
 	{
@@ -435,7 +435,7 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 	}
 
 	// Local utility methods
-	
+
 	/**
 	 * Returns the current list of available transitions, generating it first if this has not yet been done.
 	 */
@@ -451,7 +451,7 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 	}
 
 	// ModelGeneratorSymbolic
-	
+
 	@Override
 	public Expression getUnknownConstantDefinition(String name) throws PrismException
 	{
@@ -467,5 +467,15 @@ public class ModulesFileModelGeneratorSymbolic extends DefaultModelGenerator imp
 	public boolean rewardStructHasTransitionRewards(int i)
 	{
 		return modulesFile.rewardStructHasTransitionRewards(i);
+	}
+
+	public FunctionFactory getFunctionFactory()
+	{
+		return this.functionFactory;
+	}
+
+	public ModelBuilder getModelBuilder()
+	{
+		return this.modelBuilder;
 	}
 }

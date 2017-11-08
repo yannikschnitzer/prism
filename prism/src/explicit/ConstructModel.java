@@ -27,8 +27,7 @@
 
 package explicit;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,14 +37,12 @@ import parser.Values;
 import parser.VarList;
 import prism.ModelGenerator;
 import prism.ModelType;
-import prism.Prism;
 import prism.PrismComponent;
 import prism.PrismException;
-import prism.PrismLog;
 import prism.PrismNotSupportedException;
-import prism.PrismPrintStreamLog;
 import prism.ProgressDisplay;
-import prism.UndefinedConstants;
+import recurrence.utils.expression.ExpressionChecker;
+
 
 /**
  * Class to perform explicit-state reachability and model construction.
@@ -66,12 +63,19 @@ public class ConstructModel extends PrismComponent
 	/** Should actions be attached to distributions (and used to distinguish them)? */
 	protected boolean distinguishActions = true;
 	/** Should labels be processed and attached to the model? */
-	protected boolean attachLabels = true; 
+	protected boolean attachLabels = true;
 
 	// Details of built model:
 
 	/** Reachable states */
 	protected List<State> statesList;
+
+	// Explore partially with respect to the given constraint
+	protected String constraint;
+	// List of variables
+	private VarList varList;
+	// Add initial states apart from the model description to explore the recurrence block
+	private List<State> recurBlockInitStates;
 
 	public ConstructModel(PrismComponent parent) throws PrismException
 	{
@@ -139,6 +143,13 @@ public class ConstructModel extends PrismComponent
 		return constructModel(modelGen, false);
 	}
 
+	public Model constructModel(ModelGenerator modelGen, String constraint, List<State> recurBlockInitStates, boolean justReach) throws PrismException
+	{
+		this.constraint = constraint;
+		this.recurBlockInitStates = recurBlockInitStates;
+		return constructModel(modelGen, justReach);
+	}
+
 	/**
 	 * Construct an explicit-state model and return it.
 	 * If {@code justReach} is true, no model is built and null is returned;
@@ -162,17 +173,23 @@ public class ConstructModel extends PrismComponent
 		CTMDPSimple ctmdp = null;
 		ModelExplicit model = null;
 		Distribution distr = null;
+		// Expression checker
+		ExpressionChecker ec = null;
 		// Misc
 		int i, j, nc, nt, src, dest;
 		long timer;
 
 		// Get model info
 		modelType = modelGen.getModelType();
-		
+
 		// Display a warning if there are unbounded vars
-		VarList varList = modelGen.createVarList();
+		varList = modelGen.createVarList();
 		if (modelGen.containsUnboundedVariables())
 			mainLog.printWarning("Model contains one or more unbounded variables: model construction may not terminate");
+
+		// Get expression checker
+		if (constraint != null)
+			ec = new ExpressionChecker(constraint, varList);
 
 		// Starting reachability...
 		mainLog.print("\nComputing reachable states...");
@@ -212,8 +229,15 @@ public class ConstructModel extends PrismComponent
 		// Initialise states storage
 		states = new IndexedSet<State>(true);
 		explore = new LinkedList<State>();
+
 		// Add initial state(s) to 'explore', 'states' and to the model
-		for (State initState : modelGen.getInitialStates()) {
+		List<State> initStates;
+		if (recurBlockInitStates != null) {
+			initStates = recurBlockInitStates;
+		} else {
+			initStates = modelGen.getInitialStates();
+		}
+		for (State initState : initStates) {
 			explore.add(initState);
 			states.add(initState);
 			if (!justReach) {
@@ -221,6 +245,7 @@ public class ConstructModel extends PrismComponent
 				modelSimple.addInitialState(modelSimple.getNumStates() - 1);
 			}
 		}
+
 		// Explore...
 		src = -1;
 		while (!explore.isEmpty()) {
@@ -243,8 +268,11 @@ public class ConstructModel extends PrismComponent
 					stateNew = modelGen.computeTransitionTarget(i, j);
 					// Is this a new state?
 					if (states.add(stateNew)) {
-						// If so, add to the explore list
-						explore.add(stateNew);
+						// Is this state satisfies the given constraint?
+						if (constraint == null || !ec.isValid(stateNew)) {
+							// If so, add to the explore list
+							explore.add(stateNew);
+						}
 						// And to model
 						if (!justReach) {
 							modelSimple.addState();
@@ -301,7 +329,8 @@ public class ConstructModel extends PrismComponent
 		// Reachability complete
 		mainLog.print("Reachable states exploration" + (justReach ? "" : " and model construction"));
 		mainLog.println(" done in " + ((System.currentTimeMillis() - timer) / 1000.0) + " secs.");
-		//mainLog.println(states);
+		mainLog.println(states);
+		mainLog.flush();
 
 		// Find/fix deadlocks (if required)
 		if (!justReach && findDeadlocks) {
@@ -361,16 +390,16 @@ public class ConstructModel extends PrismComponent
 		// Discard permutation
 		permut = null;
 
-		if (!justReach && attachLabels)
+		if (model != null && !justReach && attachLabels)
 			attachLabels(modelGen, model);
-		
+
 		return model;
 	}
 
 	private void attachLabels(ModelGenerator modelGen, ModelExplicit model) throws PrismException
 	{
 		// Get state info
-		List <State> statesList = model.getStatesList();
+		List<State> statesList = model.getStatesList();
 		int numStates = statesList.size();
 		// Create storage for labels
 		int numLabels = modelGen.getNumLabels();
@@ -394,30 +423,41 @@ public class ConstructModel extends PrismComponent
 		}
 	}
 
+	public List<State> getStates(String recVar, int recVarVal)
+	{
+		int recurVarIndex = varList.getIndex(recVar);
+		List<State> recurInitStates = new ArrayList<State>();
+		for (State state : statesList) {
+			if (state.varValues[recurVarIndex].equals(recVarVal))
+				recurInitStates.add(state);
+		}
+		return recurInitStates;
+	}
+
 	/**
 	 * Test method.
 	 */
-	public static void main(String[] args)
-	{
-		try {
-			// Simple example: parse a PRISM file from a file, construct the model and export to a .tra file
-			PrismLog mainLog = new PrismPrintStreamLog(System.out);
-			Prism prism = new Prism(mainLog);
-			parser.ast.ModulesFile modulesFile = prism.parseModelFile(new File(args[0]));
-			UndefinedConstants undefinedConstants = new UndefinedConstants(modulesFile, null);
-			if (args.length > 2)
-				undefinedConstants.defineUsingConstSwitch(args[2]);
-			modulesFile.setUndefinedConstants(undefinedConstants.getMFConstantValues());
-			ConstructModel constructModel = new ConstructModel(prism);
-			simulator.ModulesFileModelGenerator modelGen = new simulator.ModulesFileModelGenerator(modulesFile, constructModel);
-			Model model = constructModel.constructModel(modelGen);
-			model.exportToPrismExplicitTra(args[1]);
-		} catch (FileNotFoundException e) {
-			System.out.println("Error: " + e.getMessage());
-			System.exit(1);
-		} catch (PrismException e) {
-			System.out.println("Error: " + e.getMessage());
-			System.exit(1);
-		}
-	}
+//	public static void main(String[] args)
+//	{
+//		try {
+//			// Simple example: parse a PRISM file from a file, construct the model and export to a .tra file
+//			PrismLog mainLog = new PrismPrintStreamLog(System.out);
+//			Prism prism = new Prism(mainLog);
+//			parser.ast.ModulesFile modulesFile = prism.parseModelFile(new File(args[0]));
+//			UndefinedConstants undefinedConstants = new UndefinedConstants(modulesFile, null);
+//			if (args.length > 2)
+//				undefinedConstants.defineUsingConstSwitch(args[2]);
+//			modulesFile.setUndefinedConstants(undefinedConstants.getMFConstantValues());
+//			ConstructModel constructModel = new ConstructModel(prism);
+//			simulator.ModulesFileModelGenerator modelGen = new simulator.ModulesFileModelGenerator(modulesFile, constructModel);
+//			Model model = constructModel.constructModel(modelGen);
+//			model.exportToPrismExplicitTra(args[1]);
+//		} catch (FileNotFoundException e) {
+//			System.out.println("Error: " + e.getMessage());
+//			System.exit(1);
+//		} catch (PrismException e) {
+//			System.out.println("Error: " + e.getMessage());
+//			System.exit(1);
+//		}
+//	}
 }
