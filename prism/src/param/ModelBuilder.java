@@ -59,6 +59,8 @@ import explicit.StateStorage;
  */
 public final class ModelBuilder extends PrismComponent
 {
+	/** mode (parametric / exact) */
+	private final ParamMode mode;
 	/** the ModelGeneratorSymbolic interface providing the model to be transformed to a {@code ParamModel} */
 	private ModelGeneratorSymbolic modelGenSym;
 	/** function factory used in the constructed parametric model */
@@ -89,9 +91,10 @@ public final class ModelBuilder extends PrismComponent
 	/**
 	 * Constructor
 	 */
-	public ModelBuilder(PrismComponent parent) throws PrismException
+	public ModelBuilder(PrismComponent parent, ParamMode mode) throws PrismException
 	{
 		super(parent);
+		this.mode = mode;
 		// If present, initialise settings from PrismSettings
 		if (settings != null) {
 			functionType = settings.getString(PrismSettings.PRISM_PARAM_FUNCTION);
@@ -145,7 +148,7 @@ public final class ModelBuilder extends PrismComponent
 			case ExpressionBinaryOp.DIVIDE:
 				return f1.divide(f2);
 			default:
-				throw new PrismNotSupportedException("parametric analysis with rate/probability of " + expr + " not implemented");
+				throw new PrismNotSupportedException("For " + mode.engine() + ", analysis with rate/probability of " + expr + " not implemented");
 			}
 		} else if (expr instanceof ExpressionUnaryOp) {
 			ExpressionUnaryOp unExpr = ((ExpressionUnaryOp) expr);
@@ -156,7 +159,7 @@ public final class ModelBuilder extends PrismComponent
 			case ExpressionUnaryOp.PARENTH:
 				return f;
 			default:
-				throw new PrismNotSupportedException("parametric analysis with rate/probability of " + expr + " not implemented");
+				throw new PrismNotSupportedException("For " + mode.engine() + ", analysis with rate/probability of " + expr + " not implemented");
 			}
 		} else if (expr instanceof ExpressionITE) {
 			ExpressionITE iteExpr = (ExpressionITE) expr;
@@ -178,7 +181,7 @@ public final class ModelBuilder extends PrismComponent
 					// Do nothing here, exception is thrown below
 				}
 			}
-			throw new PrismNotSupportedException("parametric analysis with rate/probability of " + expr + " not implemented");
+			throw new PrismNotSupportedException("For " + mode.engine() + ", analysis with rate/probability of " + expr + " not implemented");
 		} else if (expr instanceof ExpressionFunc) {
 			// functions (min, max, floor, ...) are supported if
 			// they don't refer to parametric constants in their arguments
@@ -191,10 +194,10 @@ public final class ModelBuilder extends PrismComponent
 				return factory.fromBigRational(value);
 			} catch (PrismException e) {
 				// Most likely, a parametric constant occurred.
-				throw new PrismNotSupportedException("parametric analysis with rate/probability of " + expr + " not implemented");
+				throw new PrismNotSupportedException("For " + mode.engine() + ", analysis with rate/probability of " + expr + " not implemented");
 			}
 		} else {
-			throw new PrismNotSupportedException("parametric analysis with rate/probability of " + expr + " not implemented");
+			throw new PrismNotSupportedException("For " + mode.engine() + ", analysis with rate/probability of " + expr + " not implemented");
 		}
 	}
 
@@ -268,7 +271,7 @@ public final class ModelBuilder extends PrismComponent
 		});*/
 
 		// Build/return model
-		mainLog.print("\nBuilding model...\n");
+		mainLog.print("\nBuilding model (" + mode.engine() + ")...\n");
 		long time = System.currentTimeMillis();
 		ParamModel modelExpl = doModelConstruction(modelGenSym);
 		time = System.currentTimeMillis() - time;
@@ -356,7 +359,7 @@ public final class ModelBuilder extends PrismComponent
 	 */
 	private ParamModel doModelConstruction(ModelGeneratorSymbolic modelGenSym) throws PrismException
 	{
-		ModelType modelType;
+		final ModelType modelType;
 
 		if (!modelGenSym.hasSingleInitialState()) {
 			throw new PrismNotSupportedException("Cannot do explicit-state reachability if there are multiple initial states");
@@ -430,11 +433,35 @@ public final class ModelBuilder extends PrismComponent
 				for (int succNr = 0; succNr < numSuccessors; succNr++) {
 					State stateNew = modelGenSym.computeTransitionTarget(choiceNr, succNr);
 					Function probFn = modelGenSym.getTransitionProbabilityFunction(choiceNr, succNr);
+
+					if (modelType == ModelType.CTMC) {
+						// check rate (non-normal?)
+						if (probFn.isInf() || probFn.isMInf() || probFn.isNaN()) {
+							throw new PrismException("For state " + state.toString(modelGenSym) + ", illegal rate " + probFn.asBigRational());
+						}
+						// check rate, if constant (negative?)
+						if (probFn.isConstant() && probFn.asBigRational().signum() < 0) {
+							throw new PrismException("For state " + state.toString(modelGenSym) + ", negative rate " + probFn.asBigRational());
+						}
+					}
+
 					// divide by sumOut
 					// for DTMC, this normalises over the choices
 					// for CTMC this builds the embedded DTMC
 					// for MDP this does nothing (sumOut is set to 1)
 					probFn = probFn.divide(sumOut);
+
+					if (modelType == ModelType.DTMC || modelType == ModelType.MDP) {
+						// check probability (non-normal?)
+						if (probFn.isInf() || probFn.isMInf() || probFn.isNaN()) {
+							throw new PrismException("For state " + state.toString(modelGenSym) + ", illegal probability " + probFn.asBigRational());
+						}
+						// check probability, if constant (negative?)
+						if (probFn.isConstant() && probFn.asBigRational().signum() < 0) {
+							throw new PrismException("For state " + state.toString(modelGenSym) + ", negative probability " + probFn.asBigRational());
+						}
+					}
+
 					model.addTransition(permut[states.get(stateNew)], probFn, action == null ? "" : action.toString());
 				}
 				if (isNonDet) {

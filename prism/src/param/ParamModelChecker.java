@@ -64,8 +64,12 @@ import parser.Values;
 import parser.ast.Expression;
 import parser.ast.ExpressionBinaryOp;
 import parser.ast.ExpressionConstant;
+import parser.ast.ExpressionExists;
 import parser.ast.ExpressionFilter;
 import parser.ast.ExpressionFilter.FilterOperator;
+import parser.ast.ExpressionForAll;
+import parser.ast.ExpressionFormula;
+import parser.ast.ExpressionFunc;
 import parser.ast.ExpressionLabel;
 import parser.ast.ExpressionLiteral;
 import parser.ast.ExpressionProb;
@@ -115,6 +119,9 @@ final public class ParamModelChecker extends PrismComponent
 
 	// Flags/settings
 
+	/** The mode (parametric or exact)? */
+	private ParamMode mode;
+
 	// Verbosity level
 	private int verbosity = 0;
 
@@ -138,9 +145,10 @@ final public class ParamModelChecker extends PrismComponent
 	/**
 	 * Constructor
 	 */
-	public ParamModelChecker(PrismComponent parent) throws PrismException
+	public ParamModelChecker(PrismComponent parent, ParamMode mode) throws PrismException
 	{
 		super(parent);
+		this.mode = mode;
 
 		// If present, initialise settings from PrismSettings
 		if (settings != null) {
@@ -202,6 +210,11 @@ final public class ParamModelChecker extends PrismComponent
 			constantValues.addValues(propertiesFile.getConstantValues());
 	}
 
+	public ParamMode getMode()
+	{
+		return mode;
+	}
+
 	// Model checking functions
 
 	/**
@@ -216,10 +229,10 @@ final public class ParamModelChecker extends PrismComponent
 		ParamModel paramModel = (ParamModel) model;
 		functionFactory = paramModel.getFunctionFactory();
 		constraintChecker = new ConstraintChecker(numRandomPoints);
-		regionFactory = new BoxRegionFactory(functionFactory, constraintChecker, precision, model.getNumStates(), model.getFirstInitialState(),
-				simplifyRegions, splitMethod);
-		valueComputer = new ValueComputer(paramModel, regionFactory, precision, eliminationOrder, bisimType);
-
+		regionFactory = new BoxRegionFactory(functionFactory, constraintChecker, precision,
+				model.getNumStates(), model.getFirstInitialState(), simplifyRegions, splitMethod);
+		valueComputer = new ValueComputer(this, mode, paramModel, regionFactory, precision, eliminationOrder, bisimType);
+		
 		long timer = 0;
 
 		// Remove labels from property, using combined label list (on a copy of the expression)
@@ -242,11 +255,15 @@ final public class ParamModelChecker extends PrismComponent
 		timer = System.currentTimeMillis() - timer;
 		mainLog.println("\nTime for model checking: " + timer / 1000.0 + " seconds.");
 
+		if (constraintChecker.unsoundCheckWasUsed()) {
+			mainLog.printWarning("Computation of Boolean values / parameter regions used heuristic sampling, results are potentially inaccurate.");
+		}
+
 		// Store result
 		result = new Result();
 		//vals.clearExceptInit();
-		result.setResult(new ParamResult(vals, modelBuilder, functionFactory));
-
+		result.setResult(new ParamResult(mode, vals, modelBuilder, functionFactory));
+		
 		/* // Output plot to tex file
 		if (paramLower.length == 2) {
 			try {
@@ -312,7 +329,8 @@ final public class ParamModelChecker extends PrismComponent
 			regionOp = Region.DIVIDE;
 			break;
 		default:
-			throw new PrismNotSupportedException("operator \"" + ExpressionBinaryOp.opSymbols[parserOp] + "\" not currently supported for parametric analyses");
+			throw new PrismNotSupportedException("operator \"" + ExpressionBinaryOp.opSymbols[parserOp]
+					+ "\" not currently supported for " + mode + " analyses");
 		}
 		return regionOp;
 	}
@@ -331,7 +349,8 @@ final public class ParamModelChecker extends PrismComponent
 			regionOp = Region.PARENTH;
 			break;
 		default:
-			throw new PrismNotSupportedException("operator \"" + ExpressionBinaryOp.opSymbols[parserOp] + "\" not currently supported for parametric analyses");
+			throw new PrismNotSupportedException("operator \"" + ExpressionBinaryOp.opSymbols[parserOp]
+					+ "\" not currently supported for " + mode + " analyses");
 		}
 		return regionOp;
 	}
@@ -352,6 +371,12 @@ final public class ParamModelChecker extends PrismComponent
 			res = checkExpressionBinaryOp(model, (ExpressionBinaryOp) expr, needStates);
 		} else if (expr instanceof ExpressionLabel) {
 			res = checkExpressionLabel(model, (ExpressionLabel) expr, needStates);
+		} else if (expr instanceof ExpressionFormula) {
+			// This should have been defined or expanded by now.
+			if (((ExpressionFormula) expr).getDefinition() != null)
+				res = checkExpression(model, ((ExpressionFormula) expr).getDefinition(), needStates);
+			else
+				throw new PrismException("Unexpanded formula \"" + ((ExpressionFormula) expr).getName() + "\"");
 		} else if (expr instanceof ExpressionProp) {
 			res = checkExpressionProp(model, (ExpressionProp) expr, needStates);
 		} else if (expr instanceof ExpressionFilter) {
@@ -366,6 +391,10 @@ final public class ParamModelChecker extends PrismComponent
 			res = checkExpressionReward(model, (ExpressionReward) expr, needStates);
 		} else if (expr instanceof ExpressionSS) {
 			res = checkExpressionSteadyState(model, (ExpressionSS) expr, needStates);
+		} else if (expr instanceof ExpressionForAll || expr instanceof ExpressionExists) {
+			throw new PrismNotSupportedException("Non-probabilistic CTL model checking is currently not supported in the " + mode.engine());
+		} else if (expr instanceof ExpressionFunc && ((ExpressionFunc)expr).getNameCode() == ExpressionFunc.MULTI) {
+			throw new PrismNotSupportedException("Multi-objective model checking is not supported in the " + mode.engine());
 		} else {
 			res = checkExpressionAtomic(model, expr, needStates);
 		}
@@ -395,13 +424,13 @@ final public class ParamModelChecker extends PrismComponent
 						BigRational exprRat = new BigRational(exprStr);
 						stateValues.setStateValue(state, functionFactory.fromBigRational(exprRat));
 					} else {
-						throw new PrismNotSupportedException("model checking expresssion " + expr + " not supported for parametric models");
+						throw new PrismNotSupportedException("model checking expresssion " + expr + " not supported for " + mode + " models");
 					}
 				} else if (exprVar instanceof ExpressionConstant) {
 					ExpressionConstant exprConst = (ExpressionConstant) exprVar;
 					stateValues.setStateValue(state, functionFactory.getVar(exprConst.getName()));
 				} else {
-					throw new PrismNotSupportedException("cannot handle expression " + expr + " in parametric analysis");
+					throw new PrismNotSupportedException("cannot handle expression " + expr + " in " + mode + " analysis");
 				}
 			} else {
 				if (exprVar.getType() instanceof TypeBool) {
@@ -532,23 +561,29 @@ final public class ParamModelChecker extends PrismComponent
 			resVals = vals.op(Region.ALL, bsFilter);
 			break;
 		case PRINT:
+		case PRINTALL:
 			// Format of print-out depends on type
 			if (expr.getType() instanceof TypeBool) {
 				// NB: 'usual' case for filter(print,...) on Booleans is to use no filter
 				mainLog.print("\nSatisfying states");
 				mainLog.println(filterTrue ? ":" : " that are also in filter " + filter + ":");
-				mainLog.print(vals.filteredString(bsFilter));
 			} else {
 				mainLog.println("\nResults (non-zero only) for filter " + filter + ":");
-				mainLog.print(vals.filteredString(bsFilter));
 			}
+
+			vals.printFiltered(mainLog, mode, expr.getType(), bsFilter,
+				               model.getStatesList(),
+				               op == FilterOperator.PRINT, // printSparse if PRINT
+				               true,  // print state values
+				               true); // print state index
+
 			resVals = vals;
 			break;
 		case MIN:
 		case MAX:
 		case ARGMIN:
 		case ARGMAX:
-			throw new PrismNotSupportedException("operation not implemented for parametric models");
+			throw new PrismNotSupportedException("operation not implemented for " + mode + " models");
 		case COUNT:
 			resVals = vals.op(Region.COUNT, bsFilter);
 			break;
@@ -565,7 +600,7 @@ final public class ParamModelChecker extends PrismComponent
 			resVals = vals.op(Region.FIRST, bsFilter);
 			break;
 		case RANGE:
-			throw new PrismNotSupportedException("operation not implemented for parametric models");
+			throw new PrismNotSupportedException("operation not implemented for " + mode + " models");
 		case FORALL:
 			resVals = vals.op(Region.FORALL, bsFilter);
 			break;
@@ -873,7 +908,7 @@ final public class ParamModelChecker extends PrismComponent
 
 		// Compute probabilities
 		if (!expr.getExpression().isSimplePathFormula()) {
-			throw new PrismNotSupportedException("Parametric engine does not yet handle LTL-style path formulas");
+			throw new PrismNotSupportedException(mode.Engine() + " does not yet handle LTL-style path formulas");
 		}
 		probs = checkProbPathFormulaSimple(model, expr.getExpression(), min, needStates);
 		probs.clearNotNeeded(needStates);
@@ -902,7 +937,8 @@ final public class ParamModelChecker extends PrismComponent
 		// Negation
 		if (expr instanceof ExpressionUnaryOp && ((ExpressionUnaryOp) expr).getOperator() == ExpressionUnaryOp.NOT) {
 			negated = true;
-			expr = ((ExpressionUnaryOp) expr).getOperand();
+			min = !min;
+			expr = ((ExpressionUnaryOp)expr).getOperand();
 		}
 
 		if (expr instanceof ExpressionTemporal) {
@@ -910,7 +946,7 @@ final public class ParamModelChecker extends PrismComponent
 
 			// Next
 			if (exprTemp.getOperator() == ExpressionTemporal.P_X) {
-				throw new PrismNotSupportedException("Next operator not supported by parametric engine");
+				throw new PrismNotSupportedException("Next operator not supported by " + mode + " engine");
 			}
 			// Until
 			else if (exprTemp.getOperator() == ExpressionTemporal.P_U) {
@@ -948,11 +984,11 @@ final public class ParamModelChecker extends PrismComponent
 		//RegionValues probs;
 		switch (modelType) {
 		case CTMC:
-			throw new PrismNotSupportedException("Bounded until operator not supported by parametric engine");
+			throw new PrismNotSupportedException("Bounded until operator not supported by " + mode + " engine");
 		case DTMC:
-			throw new PrismNotSupportedException("Bounded until operator not supported by parametric engine");
+			throw new PrismNotSupportedException("Bounded until operator not supported by " + mode + " engine");
 		case MDP:
-			throw new PrismNotSupportedException("Bounded until operator not supported by parametric engine");
+			throw new PrismNotSupportedException("Bounded until operator not supported by " + mode + " engine");
 		default:
 			throw new PrismNotSupportedException("Cannot model check for a " + modelType);
 		}
@@ -1013,8 +1049,7 @@ final public class ParamModelChecker extends PrismComponent
 				rewards = checkRewardSteady(model, rew, exprTemp, min, needStates);
 				break;
 			default:
-				throw new PrismNotSupportedException("Parametric engine does not yet handle the " + exprTemp.getOperatorSymbol()
-						+ " operator in the R operator");
+				throw new PrismNotSupportedException(mode.Engine() + " does not yet handle the " + exprTemp.getOperatorSymbol() + " operator in the R operator");
 			}
 		} else if (expr.getType() instanceof TypePathBool || expr.getType() instanceof TypeBool) {
 			rewards = checkRewardPathFormula(model, rew, expr, min, needStates);
@@ -1035,7 +1070,7 @@ final public class ParamModelChecker extends PrismComponent
 		if (Expression.isReach(expr)) {
 			return checkRewardReach(model, rew, (ExpressionTemporal) expr, min, needStates);
 		} else if (Expression.isCoSafeLTLSyntactic(expr, true)) {
-			throw new PrismNotSupportedException("Parametric engine does not yet support co-safe reward computation");
+			throw new PrismNotSupportedException(mode.Engine() + " does not yet support co-safe reward computation");
 		} else {
 			throw new PrismException("R operator contains a path formula that is not syntactically co-safe: " + expr);
 		}
@@ -1054,7 +1089,7 @@ final public class ParamModelChecker extends PrismComponent
 			throws PrismException
 	{
 		if (model.getModelType() != ModelType.DTMC && model.getModelType() != ModelType.CTMC) {
-			throw new PrismNotSupportedException("Parametric long-run average rewards are only supported for DTMCs and CTMCs");
+			throw new PrismNotSupportedException(mode.Engine() + " long-run average rewards are only supported for DTMCs and CTMCs");
 		}
 		RegionValues allTrue = regionFactory.completeCover(true);
 		BitSet needStatesInner = new BitSet(needStates.size());
@@ -1066,7 +1101,7 @@ final public class ParamModelChecker extends PrismComponent
 	{
 		int numStates = model.getNumStates();
 		List<State> statesList = model.getStatesList();
-		ParamRewardStruct rewSimple = new ParamRewardStruct(functionFactory, model.getNumTotalChoices());
+		ParamRewardStruct rewSimple = new ParamRewardStruct(functionFactory, model.getNumChoices());
 		int numRewItems = rewStruct.getNumItems();
 		for (int rewItem = 0; rewItem < numRewItems; rewItem++) {
 			Expression expr = rewStruct.getReward(rewItem);
@@ -1156,9 +1191,10 @@ final public class ParamModelChecker extends PrismComponent
 	{
 		BitSet needStatesInner = new BitSet(model.getNumStates());
 		needStatesInner.set(0, model.getNumStates());
-		RegionValues b = checkExpression(model, expr, needStatesInner);
-		if (model.getModelType() != ModelType.DTMC && model.getModelType() != ModelType.CTMC) {
-			throw new PrismNotSupportedException("Parametric engine currently only implements steady state for DTMCs and CTMCs.");
+		RegionValues b = checkExpression(model,expr, needStatesInner);
+		if (model.getModelType() != ModelType.DTMC
+				&& model.getModelType() != ModelType.CTMC) {
+			throw new PrismNotSupportedException(mode.Engine() + " currently only implements steady state for DTMCs and CTMCs.");
 		}
 		return valueComputer.computeSteadyState(b, min, null);
 	}
