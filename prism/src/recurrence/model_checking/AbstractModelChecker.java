@@ -125,7 +125,7 @@ public abstract class AbstractModelChecker
 		paramUpperBounds = new String[] { "1" };
 
 		// Setup the parameter model checker 
-		pmc = new ParamModelChecker(parent);
+		pmc = new ParamModelChecker(parent, param.ParamMode.PARAMETRIC);
 		pmc.setParameters(paramNames, paramLowerBounds, paramUpperBounds);
 		pmc.setModulesFileAndPropertiesFile(modulesFile, propertiesFile);
 	}

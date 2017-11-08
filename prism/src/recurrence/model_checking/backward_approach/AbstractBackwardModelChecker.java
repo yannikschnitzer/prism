@@ -63,7 +63,7 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 	public void constructFirstRegion() throws PrismException
 	{
 		// Setup the first region model builder
-		firstRegMB = new ModelBuilder(parent);
+		firstRegMB = new ModelBuilder(parent, param.ParamMode.PARAMETRIC);
 		// Set the model exploration constraint, the model exploration occurs until the constraint is satisfied
 		modelGenSym.setConstraint(recurVar + "=" + (initVal + 1)); // (init + 1) is chosen for the reason of recurrence verification 
 		// Construction of the first model
@@ -79,7 +79,7 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 	public void constructSecondRegion(List<State> initStates) throws PrismException
 	{
 		// Setup the second region builder
-		secondRegMB = new ModelBuilder(parent);
+		secondRegMB = new ModelBuilder(parent, param.ParamMode.PARAMETRIC);
 		// Set the model exploration constraint, the model exploration occurs until the constraint is satisfied
 		modelGenSym.setConstraint(recurVar + "=" + (endVal + 1));
 		// Construction of the second model
@@ -95,7 +95,7 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 	public void constructThirdRegion(List<State> initStates) throws PrismException
 	{
 		// Setup the third region builder
-		thirdRegMB = new ModelBuilder(parent);
+		thirdRegMB = new ModelBuilder(parent, param.ParamMode.PARAMETRIC);
 		// Set the model exploration constraint, the model exploration occurs until the end
 		modelGenSym.setConstraint(null);
 		// Construction of the second model
