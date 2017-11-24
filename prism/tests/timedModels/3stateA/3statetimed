@@ -1,0 +1,16 @@
+dtmc
+
+const int k;
+
+global timeVar : [0..k];
+
+module threestate
+
+	a : [1..4];
+
+	[] a=1&timeVar<k -> 0.2 : (timeVar'=timeVar+1) + 0.3 : (a'=2) & (timeVar'=timeVar+1) + 0.5 : (a'=3) & (timeVar'=timeVar+1);
+	[] a=2&timeVar<k -> 0.7 : (timeVar'=timeVar+1) + 0.1 : (a'=3) & (timeVar'=timeVar+1) + 0.2 : (a'=4) & (timeVar'=timeVar+1);
+	[] a=3&timeVar<k -> 0.5 : (a'=2) & (timeVar'=timeVar+1) + 0.5 : (a'=4) & (timeVar'=timeVar+1);
+	[] a=4&timeVar<k -> (timeVar'=timeVar+1);
+
+endmodule

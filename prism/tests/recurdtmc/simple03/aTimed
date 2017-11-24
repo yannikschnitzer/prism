@@ -1,0 +1,11 @@
+dtmc
+const int k;
+
+module a
+	t : [0..k];
+	a : [1..4];
+	
+	[] t<k & a<=2 -> 0.5 : (t'=t+1) & (a'=a+1) + 0.5 : (t'=t+1) & (a'=a+2);
+	[] t<k & a=3 -> (t'=t+1) & (a'=a+1);
+	[] t<k & a=4 -> (t'=t+1) & (a'=1);
+endmodule

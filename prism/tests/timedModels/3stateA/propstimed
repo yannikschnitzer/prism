@@ -1,0 +1,6 @@
+//filter(print, P=? [ (true) U<=2 (a=3) ])
+
+P=? [ F (a=4) & (timeVar<=10) ]
+
+//P=? [ F<=k (a=4) ]
+

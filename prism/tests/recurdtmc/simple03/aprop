@@ -1,0 +1,8 @@
+//filter(print, P=? [ (true) U<=2 (a=3) ])
+
+//filter(print, P=? [ F<=k (a=3) ])
+
+P=? [ F<=3 (a=4) ]
+//P=? [ F (a=3) ]
+
+//P=? [ F (a=3)&(t=k) ]

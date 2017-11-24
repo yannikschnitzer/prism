@@ -1,0 +1,8 @@
+dtmc
+
+module a
+	a : [1..2];
+	
+	[] a=1 -> 0.5 : (a'=2) + 0.5 : true;
+	[] a=2 -> 0.5 : (a'=1) + 0.5 : true;
+endmodule

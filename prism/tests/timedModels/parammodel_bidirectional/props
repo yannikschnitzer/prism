@@ -1,0 +1,2 @@
+filter(print, P=? [ F s=k ])
+

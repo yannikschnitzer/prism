@@ -1,0 +1,13 @@
+dtmc
+
+const int rMax;
+
+module a
+
+	a : [0..1];
+	r : [0..rMax] init 0;
+
+	[] a=0 & r < rMax-1 -> 0.5 : (a'=a) & (r'=r+1) + 0.5 : (a'=1) & (r'=r);
+	[] a=1 & r < rMax-2 -> (a'=0) & (r'=r+2);
+
+endmodule

@@ -1,0 +1,10 @@
+dtmc
+
+module twostate
+	a : [1..3];
+	
+
+	[] a=1 -> 0.5 : true + 0.5 : (a'=2);
+	[] a=2 -> 0.4 : true + 0.5 : (a'=1) + 0.1 : (a'=3);
+	[] a=3 -> true; 
+endmodule

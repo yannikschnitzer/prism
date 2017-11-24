@@ -1,0 +1,6 @@
+//filter(print, P=? [ (true) U<=2 (a=3) ])
+
+//filter(print,R{"rope"}=? [ F a>2 & timeVar>=0])
+
+P=? [ F<=10 (r=5) ]
+

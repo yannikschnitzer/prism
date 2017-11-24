@@ -1,0 +1,21 @@
+dtmc
+
+const int t;
+
+global timeVar : [0..t];
+
+module a
+
+	a : [1..4];
+
+	[] a<=2&timeVar<t -> 0.5 : (a'=a+1) & (timeVar'=timeVar+1) + 0.5 : (a'=a+2) & (timeVar'=timeVar+1);
+	[] a=3&timeVar<t -> (a'=a+1) & (timeVar'=timeVar+1);
+	[] a=4&timeVar<t -> (a'=1) & (timeVar'=timeVar+1);
+
+endmodule
+
+
+rewards "rope" 
+	timeVar<=5 : 3;
+	timeVar>5 : 2;
+endrewards

@@ -1,0 +1,17 @@
+dtmc
+
+const int k;
+
+module param_model_b
+
+	s : [0..k];
+	b : [0..2];
+
+	[] s<k & b=0 -> 0.4 : (b'=1) + 0.6 : (s'=s+1);
+	[] s<k & b=1 -> 0.1 : (b'=2) + 0.4 : (b'=0) + 0.5 : (s'=s+1);
+	[] s<k & b=2 -> true;
+	[] s=k -> true;
+	
+ 
+
+endmodule
