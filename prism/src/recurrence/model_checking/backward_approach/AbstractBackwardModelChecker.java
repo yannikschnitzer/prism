@@ -53,12 +53,21 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 		super(parent, modulesFile, propertiesFile, recVar, expr);
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.model_checking.AbstractModelChecker#computeRegion()
+	 */
 	@Override
-	public abstract List<Pair<Integer, Integer>> computeRegion() throws PrismLangException;
+	public abstract List<Pair<Integer, Integer>> computeRegion() throws PrismException;
 
+	/* (non-Javadoc)
+	 * @see recurrence.model_checking.AbstractModelChecker#process()
+	 */
 	@Override
 	public abstract void process() throws PrismException;
 
+	/* (non-Javadoc)
+	 * @see recurrence.model_checking.AbstractModelChecker#constructFirstRegion()
+	 */
 	@Override
 	public void constructFirstRegion() throws PrismException
 	{
@@ -72,9 +81,15 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 		identifyForwardKeyStates();
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.model_checking.AbstractModelChecker#identifyForwardKeyStates()
+	 */
 	@Override
 	public abstract void identifyForwardKeyStates() throws PrismException;
 
+	/* (non-Javadoc)
+	 * @see recurrence.model_checking.AbstractModelChecker#constructSecondRegion(java.util.List)
+	 */
 	@Override
 	public void constructSecondRegion(List<State> initStates) throws PrismException
 	{
@@ -88,9 +103,15 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 		relevantStates = secondModel.getStatesList();
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.model_checking.AbstractModelChecker#isRecurring()
+	 */
 	@Override
 	public abstract boolean isRecurring() throws PrismException;
 
+	/* (non-Javadoc)
+	 * @see recurrence.model_checking.AbstractModelChecker#constructThirdRegion(java.util.List)
+	 */
 	@Override
 	public void constructThirdRegion(List<State> initStates) throws PrismException
 	{
@@ -102,6 +123,9 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 		thirdModel = thirdRegMB.constructModel(initStates, modelGenSym, paramNames, paramLowerBounds, paramUpperBounds);
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.model_checking.AbstractModelChecker#computeRecurBaseProbs(java.util.List)
+	 */
 	@Override
 	public void computeRecurBaseProbs(List<State> finalStates) throws PrismException
 	{
@@ -120,9 +144,11 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 			matchingSrcState.varValues[modulesFile.getVarIndex(recurVar)] = ((Integer) matchingSrcState.varValues[modulesFile.getVarIndex(recurVar)]) - 1;
 			recurBaseProbs.put(relevantStates.indexOf(matchingSrcState), prob);
 		}
-		// System.out.println(recurBaseProbs);
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.model_checking.AbstractModelChecker#computeRecurTransProb(java.util.List, java.util.List)
+	 */
 	@Override
 	public void computeRecurTransProb(List<State> currStates, List<State> prevStates) throws PrismException
 	{
@@ -157,9 +183,15 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 				trans.put(matchingSrcIndex, trans.get(matchingSrcIndex).add(((Function) sa.getStateValue(srcIndex)).asBigRational()));
 			}
 		}
-		// System.out.println(recurTrans);
 	}
 
+	/**
+	 * Computes transition probabilities from the representative states to the target states within the recurrent block.
+	 * In the case representative states are entry the transition probability will be computed to the target states lies within 
+	 * the same recurrent block otherwise the next recurrent block.
+	 * @param states the representative states of the recurrent block
+	 * @throws PrismException
+	 */
 	public void computeRecurTransTarg(List<State> states) throws PrismException
 	{
 		int currentRecurVal = (int) states.get(0).varValues[recurVarIndex];
@@ -181,6 +213,10 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.model_checking.AbstractModelChecker#solve2(int)
+	 */
+	@Override
 	public void solve2(int state_size) throws PrismException
 	{
 		// The total number of variables in the recurrence relations
@@ -217,6 +253,9 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 		requiredRecurEqns = eliminateEquations(recurEqns, updatedVarIndex) ? requiredRecurEqns : recurEqns;
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.model_checking.AbstractModelChecker#solve(int)
+	 */
 	@Override
 	public void solve(int state_size) throws PrismException
 	{
@@ -281,6 +320,13 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 			solutions.put(i, d.decompose(ogffractions[i]));
 	}
 
+	/**
+	 * Eliminates the target variables from each recurrence equations as they reduces into probability 1. 
+	 * Also removes the recurrence relation corresponding the target variable from the set of equations to be solved.
+	 * @param recurEqns recurrence equations
+	 * @param updatedVarIndex each variables corresponding to the recurrence equations
+	 * @return true if any of the recurrence relations are removed
+	 */
 	public boolean eliminateEquations(List<FirstOrderRecurrence> recurEqns, int[] updatedVarIndex)
 	{
 		// Setup the data structure to store the info
@@ -318,6 +364,9 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 		return isEliminated;
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.model_checking.AbstractModelChecker#computeEndProbs(java.util.List)
+	 */
 	@Override
 	public void computeEndProbs(List<State> currentStates) throws PrismException
 	{
@@ -346,6 +395,9 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.model_checking.AbstractModelChecker#computeTotalProbability(java.util.List)
+	 */
 	@Override
 	public void computeTotalProbability(List<State> currentStates)
 	{
@@ -386,7 +438,11 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 		System.out.println(this);
 	}
 
-	public void computeTotalProbability2(List<State> currentStates)
+	/* (non-Javadoc)
+	 * @see recurrence.model_checking.AbstractModelChecker#computeTotalProbability2(java.util.List)
+	 */
+	@Override
+	public void computeTotalProbability2(List<State> states)
 	{
 		result = 0.0;
 		str_result = "";

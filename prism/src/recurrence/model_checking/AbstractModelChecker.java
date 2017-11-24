@@ -24,6 +24,10 @@ import recurrence.data_structure.recursion.ReducedRecursion;
 import recurrence.utils.CustomModelGenerator;
 import simulator.ModulesFileModelGeneratorSymbolic;
 
+/**
+ * @author Nishan
+ *
+ */
 public abstract class AbstractModelChecker
 {
 	protected PrismComponent parent;
@@ -130,36 +134,126 @@ public abstract class AbstractModelChecker
 		pmc.setModulesFileAndPropertiesFile(modulesFile, propertiesFile);
 	}
 
-	public abstract List<Pair<Integer, Integer>> computeRegion() throws PrismLangException;
+	/**
+	 * Computes the recurrent borderline
+	 * @return the recurrent borderline
+	 * @throws PrismLangException
+	 */
+	public abstract List<Pair<Integer, Integer>> computeRegion() throws PrismException;
 
+	/**
+	 * Sets the recurrent borderline
+	 * @param range recurrent borderline
+	 */
 	public void setRange(Pair<Integer, Integer> range)
 	{
 		this.initVal = range.first();
 		this.endVal = range.second();
 	}
 
+	/**
+	 * This method calls all the relevant methods in the order to construct the regions, 
+	 * solve and evaluates the recurrence relations. 
+	 * @throws PrismException
+	 */
 	public abstract void process() throws PrismException;
 
+	/**
+	 * Constructs the first region with respect to the recurrent borderline, i.e. the region 
+	 * exists before the starting point of the recurrent borderline. 
+	 * @throws PrismException
+	 */
 	public abstract void constructFirstRegion() throws PrismException;
 
+	/**
+	 * Identify the key states for example, representative states of the first and last recurrent block, 
+	 * initial states, target states etc.
+	 * @throws PrismException
+	 */
 	public abstract void identifyForwardKeyStates() throws PrismException;
 
-	public abstract void constructSecondRegion(List<State> initStates) throws PrismException;
+	/**
+	 * Constructs the second (recurrence region), i.e. the last and the one before last recurrent block 
+	 * @param states the entry states of the first recurrent block
+	 * @throws PrismException
+	 */
+	public abstract void constructSecondRegion(List<State> states) throws PrismException;
 
+	/**
+	 * Check if two contiguous recurrent blocks are recurrently similar
+	 * @return true if the two contiguous recurrent blocks are recurrently similar
+	 * @throws PrismException
+	 */
 	public abstract boolean isRecurring() throws PrismException;
 
-	public abstract void constructThirdRegion(List<State> initStates) throws PrismException;
+	/**
+	 * Construct the third region, i.e. the region that exists after the last recurrent block.
+	 * @param states the exit states of the last recurrent block
+	 * @throws PrismException
+	 */
+	public abstract void constructThirdRegion(List<State> states) throws PrismException;
 
-	public abstract void computeRecurBaseProbs(List<State> finalStates) throws PrismException;
+	/**
+	 * Computes the probability to reach the target states from the exit states of the last recurrent block
+	 * where these probabilities represents the base condition for the recurrence relation of each 
+	 * representative states.
+	 * @param states the exit states of the last recurrent block
+	 * @throws PrismException
+	 */
+	public abstract void computeRecurBaseProbs(List<State> states) throws PrismException;
 
-	public abstract void computeRecurTransProb(List<State> currStates, List<State> prevStates) throws PrismException;
+	/**
+	 * Compute the transition probabilities between the two contiguous representative states of the recurrent blocks.
+	 * These probabilities will be later used to form the recurrence relations. 
+	 * @param last_states the representative states of the last recurrent block
+	 * @param previous_last_states the representative states of the the recurrent block before the last one
+	 * @throws PrismException
+	 */
+	public abstract void computeRecurTransProb(List<State> last_states, List<State> previous_last_states) throws PrismException;
 
+	/**
+	 * Solves the recurrence relations and forms the closed functions for each of them. 
+	 * @param state_size size of the recurrent block
+	 * @throws PrismException
+	 */
 	public abstract void solve(int state_size) throws PrismException;
+	
+	/**
+	 * Forms the recurrence relations but does not finds the closed functions for them. 
+	 * @param state_size size of the recurrent block
+	 * @throws PrismException
+	 */
+	public abstract void solve2(int state_size) throws PrismException;
 
-	public abstract void computeEndProbs(List<State> currentStates) throws PrismException;
+	/**
+	 * The transition probability to reach the the representative states of the first recurrent block from
+	 * the initial states of the model 
+	 * @param states the representative states of the first recurrent block
+	 * @throws PrismException
+	 */
+	public abstract void computeEndProbs(List<State> states) throws PrismException;
 
-	public abstract void computeTotalProbability(List<State> currentStates);
+	/**
+	 * Forms an end function for the respective inductive model and also produces the result for the current
+	 * value of the recurrence variable
+	 * @param states
+	 */
+	public abstract void computeTotalProbability(List<State> states);
+	
+	/**
+	 * Evaluates the recurrence relations for the current value of the recurrence variable
+	 * @param states
+	 */
+	public abstract void computeTotalProbability2(List<State> states);
 
+	/**
+	 * Generates a property expression to compute the probability to reach the corresponding state from
+	 * other states.
+	 * @param state single target state
+	 * @param op filter operator whether all or first states
+	 * @return the property expression
+	 * @throws PrismLangException
+	 */
 	public Expression generateTargetExpression(State state, FilterOperator op) throws PrismLangException
 	{
 		String core = modulesFile.getVarName(0) + " = " + state.varValues[0];
@@ -171,6 +265,14 @@ public abstract class AbstractModelChecker
 		return expr;
 	}
 
+	/**
+	 * Generates a property expression to compute the probability to reach the corresponding states from
+	 * other states.
+	 * @param states multiple target states
+	 * @param op filter operator whether all or first states
+	 * @return the property expression
+	 * @throws PrismLangException
+	 */
 	public Expression generateTargetExpression(Set<State> states, FilterOperator op) throws PrismLangException
 	{
 		String core = "";
@@ -187,6 +289,10 @@ public abstract class AbstractModelChecker
 		return expr;
 	}
 
+	/**
+	 * Generates given number of dummy variables for the purpose of parametric model checking
+	 * @param num number of dummy variables
+	 */
 	public void createDummyVars(int num)
 	{
 		paramNames = new String[num];

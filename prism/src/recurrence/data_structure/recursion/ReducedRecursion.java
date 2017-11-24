@@ -4,7 +4,14 @@ import recurrence.data_structure.numbers.Decimal;
 import recurrence.data_structure.numbers.INumber;
 import cern.colt.Arrays;
 
-/// WHAT IS THIS CLASS?????
+/**
+* 	This class that represents the decimal numbers
+* 	@class ReducedRecursion	
+*/
+/**
+ * @author Nishan
+ *
+ */
 public class ReducedRecursion
 {
 
@@ -12,6 +19,11 @@ public class ReducedRecursion
 	INumber[] coeffs;
 	String str_eqn;
 
+	/**
+	 * Constructor that stores the closed form a recurrence relation
+	 * @param rs terms of the closed function
+	 * @param coeffs coefficients of the terms
+	 */
 	public ReducedRecursion(INumber[] rs, INumber[] coeffs)
 	{
 		this.rs = rs;
@@ -21,23 +33,31 @@ public class ReducedRecursion
 			i.firstScale();
 		//		for (INumber i : coeffs)
 		//			i.actual();
-		
+
 		str_eqn = "[ " + coeffs[0] + " * (" + rs[0] + ")^n ]";
 		for (int i = 1; i < rs.length; i++) {
 			str_eqn += "+ [ " + coeffs[i] + " * (" + rs[i] + ")^n ]";
 		}
-		
+
 	}
 
-	public INumber getValue(int timeStep)
+	/**
+	 * Evaluates the closed form for given value of n recursions
+	 * @param n recurring times
+	 * @return value after n time recurring.
+	 */
+	public INumber getValue(int n)
 	{
 		INumber solution = new Decimal(0);
 		for (int i = 0; i < rs.length; i++) {
-			solution = solution.plus((coeffs[i].timesby(rs[i]._pow(timeStep))));
+			solution = solution.plus((coeffs[i].timesby(rs[i]._pow(n))));
 		}
 		return solution;
 	}
 
+	/**
+	 * @return the string representation of the closed function
+	 */
 	public String getEqnString()
 	{
 		return str_eqn;

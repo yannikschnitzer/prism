@@ -1,5 +1,8 @@
 package recurrence.log;
 
+/**
+ * This enum represents the levels of log
+ */
 public enum Level {
 	DEBUG(1), INFO(2), FINE(3);
 
@@ -10,6 +13,9 @@ public enum Level {
 		this.level = level;
 	}
 
+	/**
+	 * @return the current log level
+	 */
 	public int val()
 	{
 		return level;

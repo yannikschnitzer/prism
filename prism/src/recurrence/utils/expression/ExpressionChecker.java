@@ -11,6 +11,11 @@ public class ExpressionChecker
 	private IChecker checker;
 	public static VarList varList;
 
+	/**
+	 * Construct that constructs the expression checker based on the parameters
+	 * @param constraint the condition for a state to be valid
+	 * @param varList the list of variables makes a state
+	 */
 	public ExpressionChecker(String constraint, VarList varList)
 	{
 		ExpressionChecker.varList = varList;
@@ -23,11 +28,21 @@ public class ExpressionChecker
 		}
 	}
 
+	
+	/**
+	 * @param state a state that needs to be checked for its validity
+	 * @return true if the state is valid
+	 */
 	public boolean isValid(State state)
 	{
 		return checker.validate(state.varValues);
 	}
 
+	/**
+	 * Generates a java boolean expression to verify the validity of a state
+	 * @param constraint the constraint for a state to be valid
+	 * @return valid java expression that validates the state 
+	 */
 	public String getIndexedConstraint(String constraint)
 	{
 		String tmpConstraint = constraint;

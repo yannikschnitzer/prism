@@ -5,6 +5,18 @@ import java.util.Arrays;
 import recurrence.data_structure.result.DivisionResult;
 import recurrence.utils.Helper;
 
+/**
+ * @author Nishan
+ *
+ */
+/**
+ * @author Nishan
+ *
+ */
+/**
+ * @author Nishan
+ *
+ */
 public class PolynomialFraction
 {
 
@@ -14,7 +26,7 @@ public class PolynomialFraction
 	// Degree of this polynomial (0 for the zero() polynomial)
 	public int deg;
 
-	/** Generates a polynomial of the form  [ a * x^b ]
+	/** Generates a polynomial fraction of the form  [ a * x^b / 1]
 	 *  @param INumber the 
 	 */
 	public PolynomialFraction(INumber a, int b)
@@ -25,24 +37,37 @@ public class PolynomialFraction
 		deg = degree(false);
 	}
 
-	// a * x^0
+	/**
+	 * Generates a polynomial fraction in the form of a * x^0 / 1
+	 * @param a coefficient of x^0
+	 */
 	public PolynomialFraction(INumber a)
 	{
 		this(a, 0);
 	}
 
-	// a * x^0
+	/**
+	 * Generates a polynomial fraction in the form of a * x^0 / 1
+	 * @param a coefficient of x^0
+	 */
 	public PolynomialFraction(int a)
 	{
 		this(new Rational(a));
 	}
 
-	// a * x^0 + b * x^1 + .......
+	/**
+	 * Generates a polynomial fraction in the form of a * x^0 + b * x^1 + ....... / 1
+	 * @param a array of coefficients
+	 */
 	public PolynomialFraction(INumber... a)
 	{
 		this(a, false);
 	}
 
+	/**
+	 * Generates a polynomial fraction in the form of a * x^0 + b * x^1 + ....... and simplifies it
+	 * @param a array of coefficients
+	 */
 	public PolynomialFraction(INumber[] a, boolean isCancel)
 	{
 		numerator = new INumber[a.length];
@@ -52,9 +77,17 @@ public class PolynomialFraction
 		deg = degree(isCancel);
 	}
 
-	// a * x^0 + b * x^1 + ...
-	// -----------------------------
-	// c * x^0 + d * x^1 + ...
+	/**
+	 * Genrates a poly nomial fraction in the form of 
+	 * 
+	 * a * x^0 + b * x^1 + ...
+	 * -----------------------------
+	 * c * x^0 + d * x^1 + ...
+	 * 
+	 * @param a coefficients of the numerator
+	 * @param b coefficients of the denominator
+	 * @param isCancel
+	 */
 	public PolynomialFraction(INumber[] a, INumber[] b, boolean isCancel)
 	{
 		numerator = new INumber[a.length];
@@ -66,7 +99,12 @@ public class PolynomialFraction
 		deg = degree(isCancel);
 	}
 
-	// return the degree of this polynomial (0 for the zero() polynomial)
+	
+	/**
+	 * Returns the degree of this polynomial (0 for the zero() polynomial)
+	 * @param isCancel also simplifies the polynomial
+	 * @return the degree of the current polynomial
+	 */
 	private int degree(boolean isCancel)
 	{
 		if (isCancel)
@@ -90,14 +128,21 @@ public class PolynomialFraction
 		return n - d;
 	}
 
+	
+	/**
+	 * @return the degree of the polynomial
+	 */
 	public int getDegree()
 	{
 		return deg;
 	}
 
-	// ====================
-	// return c = a + b
-	// ====================
+	
+	/**
+	 * Returns the addition of the polynomials
+	 * @param b the polynomial fraction to be added
+	 * @return the sum of the fraction
+	 */
 	public PolynomialFraction plus(PolynomialFraction b)
 	{
 		PolynomialFraction a = this;
@@ -108,9 +153,11 @@ public class PolynomialFraction
 		return c;
 	}
 
-	// ====================
-	// return c = a - b
-	// ====================
+	/**
+	 * Returns the result after subtraction
+	 * @param b the polynomial fraction to be subtracted
+	 * @return the result after subtracting b from the current polynomial fraction
+	 */
 	public PolynomialFraction minus(PolynomialFraction b)
 	{
 		PolynomialFraction a = this;
@@ -121,9 +168,11 @@ public class PolynomialFraction
 		return c;
 	}
 
-	// ====================
-	// return (a * b)
-	// ====================
+	/**
+	 * Returns the multiplication of the polynomial fractions
+	 * @param b the polynomial fraction to be multiplied with current one
+	 * @return the multiplication of the polynomial fractions
+	 */
 	public PolynomialFraction times(PolynomialFraction b)
 	{
 		PolynomialFraction a = this;
@@ -134,9 +183,11 @@ public class PolynomialFraction
 		return c;
 	}
 
-	// ====================
-	// return (a / b)
-	// ====================
+	/**
+	 * Returns the division of the current one by b
+	 * @param b the polynomial fraction that divides the current one
+	 * @return the result after division
+	 */
 	public PolynomialFraction divides(PolynomialFraction b)
 	{
 		PolynomialFraction a = this;
@@ -147,6 +198,9 @@ public class PolynomialFraction
 		return c;
 	}
 
+	/**
+	 * @return the negation of the current polynomial fraction
+	 */
 	public PolynomialFraction negate()
 	{
 		PolynomialFraction a = this;
@@ -158,7 +212,11 @@ public class PolynomialFraction
 		return c;
 	}
 
-	private INumber[] negate(INumber[] a)
+	/**
+	 * @param a coefficients of a polynomial
+	 * @return array of the negation of the coefficients
+	 */
+	private static INumber[] negate(INumber[] a)
 	{
 		INumber[] _a = new INumber[a.length];
 		for (int i = 0; i < a.length; i++)
@@ -166,7 +224,12 @@ public class PolynomialFraction
 		return _a;
 	}
 
-	public INumber[] plus(INumber[] a, INumber[] b)
+	/**
+	 * @param a first polynomial coefficients
+	 * @param b second polynomial coefficients
+	 * @return sum of the a and b
+	 */
+	public static INumber[] plus(INumber[] a, INumber[] b)
 	{
 		INumber[] result = fillZeroes(Math.max(a.length, b.length));
 		for (int i = 0; i < a.length; i++)
@@ -176,7 +239,12 @@ public class PolynomialFraction
 		return Helper.shrink(result);
 	}
 
-	public INumber[] minus(INumber[] a, INumber[] b)
+	/**
+	 * @param a first polynomial coefficients
+	 * @param b second polynomial coefficients
+	 * @return the result after subtracting b from a
+	 */
+	public static INumber[] minus(INumber[] a, INumber[] b)
 	{
 		INumber[] result = fillZeroes(Math.max(a.length, b.length));
 		for (int i = 0; i < a.length; i++)
@@ -186,7 +254,12 @@ public class PolynomialFraction
 		return Helper.shrink(result);
 	}
 
-	public INumber[] times(INumber[] a, INumber[] b)
+	/**
+	 * @param a first polynomial coefficients
+	 * @param b second polynomial coefficients
+	 * @return multiplication of the a and b
+	 */
+	public static INumber[] times(INumber[] a, INumber[] b)
 	{
 		INumber[] result = fillZeroes(a.length + b.length - 1);
 		for (int i = 0; i < a.length; i++)
@@ -195,7 +268,12 @@ public class PolynomialFraction
 		return Helper.shrink(result);
 	}
 
-	public INumber[] singleTimes(INumber[] a, INumber factor)
+	/**
+	 * @param a first polynomial coefficients
+	 * @param b factor
+	 * @return multiplication of the polynomial a and factor b
+	 */
+	public static INumber[] singleTimes(INumber[] a, INumber factor)
 	{
 		INumber[] result = new INumber[a.length];
 		for (int i = 0; i < a.length; i++) {
@@ -204,6 +282,11 @@ public class PolynomialFraction
 		return Helper.shrink(result);
 	}
 
+	/**
+	 * @param a first polynomial coefficients
+	 * @param b factor
+	 * @return the result after dividing the polynomial a by factor b
+	 */
 	public INumber[] singleDivides(INumber[] a, INumber factor)
 	{
 		INumber[] result = new INumber[a.length];
@@ -213,24 +296,37 @@ public class PolynomialFraction
 		return Helper.shrink(result);
 	}
 
+	
+	/**
+	 * @return true if the current polynomial is equivalent to zero
+	 */
 	public boolean isZero()
 	{
 		return isZero(numerator);
 	}
 
-	private boolean isZero(INumber[] polyCoeff)
+	/**
+	 * @return true if the given coefficients representing the polynomial equivalent to zero
+	 */
+	private static boolean isZero(INumber[] polyCoeff)
 	{
 		if (polyCoeff.length == 1 && polyCoeff[0].isZero())
 			return true;
 		return false;
 	}
 
-	private boolean isOne(INumber[] polyCoeff)
+	/**
+	 * @return true if the given coefficients representing the polynomial equivalent to one
+	 */
+	private static boolean isOne(INumber[] polyCoeff)
 	{
 		polyCoeff = Helper.shrink(polyCoeff);
 		return polyCoeff.length == 1 && (polyCoeff[0].isOne());
 	}
 
+	/**
+	 * @return true if the current polynomial is equivalent to one
+	 */
 	public boolean isOne()
 	{
 		if (numerator.length != denominator.length)
@@ -249,6 +345,12 @@ public class PolynomialFraction
 		return Arrays.equals(a.numerator, this.numerator) && Arrays.equals(a.numerator, this.numerator);
 	}
 
+	
+	/**
+	 * @param numerator a polynomial
+	 * @param denominator a polynomial
+	 * @return simplified form of the polynomial fraction
+	 */
 	public DivisionResult euclidianDivision(INumber[] numerator, INumber[] denominator)
 	{
 		// Copy of the numerator
@@ -286,7 +388,11 @@ public class PolynomialFraction
 
 	}
 
-	public String getString(INumber[] polynomial)
+	/**
+	 * @param polynomial array of coefficients of a polynomial
+	 * @return the string representation of the polynomial
+	 */
+	public static String getString(INumber[] polynomial)
 	{
 		int deg = polynomial.length - 1;
 		if (deg == 0)
@@ -307,6 +413,9 @@ public class PolynomialFraction
 		return s;
 	}
 
+	/**
+	 * rounds the polynomial fraction to the first_scale	
+	 */
 	public void round()
 	{
 		for (INumber _a : numerator)
@@ -315,6 +424,9 @@ public class PolynomialFraction
 			_b.firstScale();
 	}
 
+	/**
+	 * Simplifies the polynomial fraction
+	 */
 	public void simplify()
 	{
 		round();
@@ -359,6 +471,9 @@ public class PolynomialFraction
 		}
 	}
 
+	/**
+	 * rounds the polynomial fraction to the first_scale	
+	 */
 	public void actualScale()
 	{
 		for (INumber val : numerator)
@@ -367,6 +482,9 @@ public class PolynomialFraction
 			val.firstScale();
 	}
 
+	/**
+	 * rounds the polynomial fraction to the second_scale	
+	 */
 	public void tmpScale()
 	{
 		for (INumber val : numerator)
@@ -375,11 +493,18 @@ public class PolynomialFraction
 			val.secondScale();
 	}
 
+	
+	/**
+	 * @return polynomial fraction that represents one
+	 */
 	public static PolynomialFraction one()
 	{
 		return new PolynomialFraction(new INumber[] { Rational.ONE }, new INumber[] { Rational.ONE }, false);
 	}
 
+	/**
+	 * @return polynomial fraction that represents zero
+	 */
 	public static PolynomialFraction zero()
 	{
 		return new PolynomialFraction(new INumber[] { Rational.ZERO }, new INumber[] { Rational.ONE }, false);
@@ -407,6 +532,9 @@ public class PolynomialFraction
 		return true;
 	}
 
+	/**
+	 * @return the numerator of the polynomial fraction
+	 */
 	public PolynomialFraction getNumerator()
 	{
 		INumber[] _numerator = new INumber[numerator.length];
@@ -414,6 +542,9 @@ public class PolynomialFraction
 		return new PolynomialFraction(_numerator);
 	}
 
+	/**
+	 * @return the denominator of the polynomial fraction
+	 */
 	public PolynomialFraction getDenominator()
 	{
 		INumber[] _denominator = new INumber[denominator.length];
@@ -421,6 +552,9 @@ public class PolynomialFraction
 		return new PolynomialFraction(_denominator);
 	}
 
+	/**
+	 * @return the power of the polynomial fraction
+	 */
 	public PolynomialFraction power(int power)
 	{
 		PolynomialFraction pf = this;
@@ -430,6 +564,10 @@ public class PolynomialFraction
 		return pf;
 	}
 
+	/**
+	 * @param size length of the polynomial
+	 * @return array of coefficients of the polynomial filled with zeroes
+	 */
 	public static INumber[] fillZeroes(int size)
 	{
 		INumber[] coef = new INumber[size];

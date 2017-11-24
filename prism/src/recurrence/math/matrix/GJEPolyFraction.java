@@ -9,6 +9,11 @@ public class GJEPolyFraction
 	private final int N; // N-by-N system
 	private PolynomialFraction[][] a; // N-by-N+1 augmented matrix
 
+	/**
+	 * Solves the simultaneous equations of polynomial fractions
+	 * @param A nxn matrix
+	 * @param B nx1 matrix
+	 */
 	public GJEPolyFraction(PolynomialFraction[][] A, PolynomialFraction[] B)
 	{
 		// Assign the size of the square matrix
@@ -28,6 +33,9 @@ public class GJEPolyFraction
 		solve();
 	}
 
+	/**
+	 * Applies the gaussion-jordan elimination
+	 */
 	private void solve()
 	{
 		// Choose a pivot and make the value that lies in the diagonal as 1
@@ -67,7 +75,11 @@ public class GJEPolyFraction
 		}
 	}
 
-	// Make everything zero below diagonal
+
+	/**
+	 * Make everything zero below diagonal
+	 * @param diag index of the diagonal of the matrix
+	 */
 	private void eliminateL(int diag)
 	{
 		for (int i = diag + 1; i < N; i++) {
@@ -81,6 +93,11 @@ public class GJEPolyFraction
 		}
 	}
 
+	/**
+	 * Swaps the given rows in the matrix
+	 * @param row1 a row of the matrix
+	 * @param row2 a row of the matrix
+	 */
 	public void swap(int row1, int row2)
 	{
 		PolynomialFraction[] temp = a[row1];
@@ -88,6 +105,9 @@ public class GJEPolyFraction
 		a[row2] = temp;
 	}
 
+	/**
+	 * @return result after applying gaussian-jordan elimination on polynomial fraction simultaneous equation
+	 */
 	public PolynomialFraction[] result()
 	{
 		PolynomialFraction[] result = new PolynomialFraction[N];
@@ -99,6 +119,9 @@ public class GJEPolyFraction
 		return result;
 	}
 
+	/**
+	 * Prints the results
+	 */
 	private void show()
 	{
 		String str = ("=======================================\n");

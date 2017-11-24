@@ -10,6 +10,11 @@ public class GJENumber
 	private final int N; // N-by-N system
 	private INumber[][] a; // N-by-N+1 augmented matrix
 
+	/**
+	 * Solves the simultaneous equations 
+	 * @param A nxn matrix
+	 * @param B nx1 matrix
+	 */
 	public GJENumber(INumber[][] A, INumber[] B)
 	{
 		// Assign the size of the square matrix
@@ -34,6 +39,9 @@ public class GJENumber
 		}
 	}
 
+	/**
+	 * Applies the gaussion-jordan elimination
+	 */
 	private void solve()
 	{
 		// Choose a pivot and make the value that lies in the diagonal as 1
@@ -71,7 +79,10 @@ public class GJENumber
 		}
 	}
 
-	// Make everything zero below diagonal
+	/**
+	 * Make everything zero below diagonal
+	 * @param diag index of the diagonal of the matrix
+	 */
 	private void eliminateL(int diag)
 	{
 		for (int i = diag + 1; i < N; i++) {
@@ -85,6 +96,11 @@ public class GJENumber
 		}
 	}
 
+	/**
+	 * Swaps the given rows in the matrix
+	 * @param row1 a row of the matrix
+	 * @param row2 a row of the matrix
+	 */
 	public void swap(int row1, int row2)
 	{
 		INumber[] temp = a[row1];
@@ -92,6 +108,9 @@ public class GJENumber
 		a[row2] = temp;
 	}
 
+	/**
+	 * @return result after applying gaussian-jordan elimination on simultaneous equations
+	 */
 	public INumber[] result()
 	{
 		INumber[] result = new INumber[N];

@@ -21,6 +21,14 @@ public class Target
 	ParamModel firstModel, secondModel;
 	List<Integer> firstTarget, secondTarget;
 
+	/**
+	 * Constructs a storage that can be used to retrieve states of a model elegantly
+	 * @param firstModel First model
+	 * @param secondModel Second(recurrence) model
+	 * @param thirdModel Third model
+	 * @param props property to be verified
+	 * @param recurVarIndex index of the recurrence variable
+	 */
 	public Target(ParamModel firstModel, ParamModel secondModel, ParamModel thirdModel, PropertiesFile props, int recurVarIndex)
 	{
 		// Storing all three models
@@ -41,6 +49,10 @@ public class Target
 		System.out.println("Done");
 	}
 
+	/**
+	 * Computes the targets lies in the first and second models
+	 * @throws PrismLangException
+	 */
 	public void computeTargets() throws PrismLangException
 	{
 		// First Model
@@ -55,6 +67,12 @@ public class Target
 				secondTarget.add(index);
 	}
 
+	/**
+	 * Returns the set of states based on the value of the recurrence variabel and the model
+	 * @param recurVal the nth recurrent block
+	 * @param modelNumber first or second or third model
+	 * @return set of state corresponding to the recurrent variables value and the model
+	 */
 	public Set<State> getStates(int recurVal, int modelNumber)
 	{
 		Set<State> states = new HashSet<State>();
@@ -74,6 +92,12 @@ public class Target
 		return states;
 	}
 
+	
+	/**
+	 * Returns a list of states based on the model
+	 * @param modelNumber first or second or third model
+	 * @return list of states lies in the corresponding model
+	 */
 	public List<Integer> getStates(int modelNumber)
 	{
 		if (modelNumber == 1) {

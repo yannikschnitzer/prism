@@ -3,11 +3,20 @@ package recurrence.data_structure.numbers;
 import recurrence.data_structure.result.ComplexDecimalResult;
 import recurrence.data_structure.result.ComplexDoubleResult;
 
+/**
+ * 	This class that represents the complex numbers
+ * 	@class Decimal	
+ */
 public class Complex implements INumber
-{
-	public Decimal re;
-	public Decimal img;
+{	
+	public Decimal re; // Real number
+	public Decimal img; // Imaginary number
 
+	/**
+	 *  Constructor that constructs the complex numbers 
+	 *  @param re  the real number
+	 *  @param img the imaginary number 
+	 */
 	public Complex(INumber re, INumber img)
 	{
 		if (re.getType() == INumber.DECIMAL && img.getType() == INumber.DECIMAL) {
@@ -18,18 +27,27 @@ public class Complex implements INumber
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.data_structure.numbers.INumber#isZero()
+	 */
 	@Override
 	public boolean isZero()
 	{
 		return re.isZero() && img.isZero();
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.data_structure.numbers.INumber#isOne()
+	 */
 	@Override
 	public boolean isOne()
 	{
 		return re.isOne() && img.isZero();
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.data_structure.numbers.INumber#plus(recurrence.data_structure.numbers.INumber)
+	 */
 	@Override
 	public INumber plus(INumber a)
 	{
@@ -41,6 +59,9 @@ public class Complex implements INumber
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.data_structure.numbers.INumber#minus(recurrence.data_structure.numbers.INumber)
+	 */
 	@Override
 	public INumber minus(INumber a)
 	{
@@ -52,6 +73,9 @@ public class Complex implements INumber
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.data_structure.numbers.INumber#timesby(recurrence.data_structure.numbers.INumber)
+	 */
 	@Override
 	public INumber timesby(INumber a)
 	{
@@ -68,6 +92,9 @@ public class Complex implements INumber
 		return getNumber(real, imag);
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.data_structure.numbers.INumber#dividedby(recurrence.data_structure.numbers.INumber)
+	 */
 	@Override
 	public INumber dividedby(INumber a)
 	{
@@ -79,12 +106,18 @@ public class Complex implements INumber
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.data_structure.numbers.INumber#negate()
+	 */
 	@Override
 	public INumber negate()
 	{
 		return getNumber(re.negate(), img.negate());
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.data_structure.numbers.INumber#reciprocal()
+	 */
 	@Override
 	public INumber reciprocal()
 	{
@@ -95,24 +128,36 @@ public class Complex implements INumber
 			return scale;
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.data_structure.numbers.INumber#doubleValue()
+	 */
 	@Override
 	public ComplexDoubleResult doubleValue()
 	{
 		return new ComplexDoubleResult(re.doubleValue().getReal(), img.doubleValue().getReal());
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.data_structure.numbers.INumber#doubleValue(int)
+	 */
 	@Override
 	public ComplexDoubleResult doubleValue(int precision)
 	{
 		return new ComplexDoubleResult(re.doubleValue(precision).getReal(), img.doubleValue(precision).getReal());
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.data_structure.numbers.INumber#getType()
+	 */
 	@Override
 	public int getType()
 	{
 		return 2;
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.data_structure.numbers.INumber#value()
+	 */
 	@Override
 	public ComplexDecimalResult value()
 	{
@@ -134,6 +179,9 @@ public class Complex implements INumber
 		return Decimal.one();
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.data_structure.numbers.INumber#simplify()
+	 */
 	@Override
 	public void simplify()
 	{
@@ -141,12 +189,18 @@ public class Complex implements INumber
 		img.simplify();
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.data_structure.numbers.INumber#_simplify()
+	 */
 	@Override
 	public INumber _simplify()
 	{
 		return new Complex(re._simplify(), img._simplify());
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.data_structure.numbers.INumber#firstScale()
+	 */
 	@Override
 	public void firstScale()
 	{
@@ -154,12 +208,18 @@ public class Complex implements INumber
 		img.firstScale();
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.data_structure.numbers.INumber#_firstScale()
+	 */
 	@Override
 	public INumber _firstScale()
 	{
 		return new Complex(re._firstScale(), img._firstScale());
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.data_structure.numbers.INumber#secondScale()
+	 */
 	@Override
 	public void secondScale()
 	{
@@ -167,12 +227,18 @@ public class Complex implements INumber
 		img.secondScale();
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.data_structure.numbers.INumber#_secondScale()
+	 */
 	@Override
 	public INumber _secondScale()
 	{
 		return new Complex(re._secondScale(), img._secondScale());
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.data_structure.numbers.INumber#_pow(int)
+	 */
 	@Override
 	public Complex _pow(int n)
 	{
@@ -195,6 +261,12 @@ public class Complex implements INumber
 		return result;
 	}
 
+	/**
+	 * Find the actan of the give two sides with length x and y
+	 * @param x the first side
+	 * @param y the second side
+	 * @return arctan of x and y
+	 */
 	public double arctan(double x, double y)
 	{
 		double result = Math.atan((y / x));
@@ -221,6 +293,12 @@ public class Complex implements INumber
 		}
 	}
 
+	/**
+	 * Generates an INumber based on the inputs
+	 * @param real the real part
+	 * @param imag the imaginary part
+	 * @return returns an INumber
+	 */
 	public INumber getNumber(INumber real, INumber imag)
 	{
 		if (!imag.isZero())
@@ -229,6 +307,9 @@ public class Complex implements INumber
 			return real;
 	}
 
+	/**
+	 * Compares if two complex numbers are equals 
+	 */
 	public boolean equals(Object a)
 	{
 		if (!(a instanceof Complex))

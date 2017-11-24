@@ -13,19 +13,31 @@ import recurrence.data_structure.recursion.ReducedRecursion;
 import recurrence.math.RootFinder;
 import recurrence.math.matrix.GJENumber;
 
+/**
+ * 	This class is created to perform partial fraction decomposition
+ * 	@class Decomposition	
+ */
 public class Decomposition
 {
-	RootFinder rootFinder;
+	RootFinder rootFinder; // The object that finds the roots of polynomials and stores them
 	int numVars;
 
 	INumber[][] A;
 	INumber[] B;
 
+	/**
+	 *  Constructor that initializes the the root finder.
+	 */
 	public Decomposition()
 	{
 		this.rootFinder = new RootFinder();
 	}
 
+	/**
+	 * @param solution polynomial fraction to be decomposed into partial fractions
+	 * @return returns the decomposed partial fractions as reduced recursions
+	 * @throws PrismException
+	 */
 	public ReducedRecursion decompose(PolynomialFraction solution) throws PrismException
 	{
 		INumber[] rs;
@@ -45,6 +57,11 @@ public class Decomposition
 		return rr;
 	}
 
+	/**
+	 * Performs partial fraction decomposition based on the roots
+	 * @param polyB numerator of the original polynomial fraction
+	 * @param rs roots
+	 */
 	public void computeAB(PolynomialFraction polyB, INumber[] rs)
 	{
 		Map<PolynomialFraction, Integer> mm = getPolynomialMultiplicity(rs);
@@ -111,6 +128,11 @@ public class Decomposition
 			B[row] = Decimal.zero();
 	}
 
+	/**
+	 * Computes the multiplicity of each roots and forms polynomial denominator using the roots.
+	 * @param rs array of roots
+	 * @return multiplicity of each polynomial denominator
+	 */
 	public Map<PolynomialFraction, Integer> getPolynomialMultiplicity(INumber[] rs)
 	{
 		Map<INumber, Integer> in = new LinkedHashMap<INumber, Integer>();

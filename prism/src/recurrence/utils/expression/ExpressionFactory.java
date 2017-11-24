@@ -15,6 +15,12 @@ public class ExpressionFactory
 
 	private static final String PACKAGE_NAME = ExpressionFactory.class.getPackage().getName();
 
+	
+	/**
+	 * Generates a Checker class on the fly that validates a state based on the indexed constraint expresison
+	 * @param indexedConstraint condition for a state to be valid
+	 * @throws Exception
+	 */
 	public ExpressionFactory(String indexedConstraint) throws Exception
 	{
 		className = "Checker" + System.currentTimeMillis();
@@ -34,6 +40,11 @@ public class ExpressionFactory
 		tc = (IChecker) clazz.newInstance();
 	}
 
+	
+	/**
+	 * @return the instance of the IChecker
+	 * @throws Exception
+	 */
 	public IChecker getChecker() throws Exception
 	{
 		return tc;

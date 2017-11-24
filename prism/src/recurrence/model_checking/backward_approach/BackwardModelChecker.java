@@ -16,6 +16,7 @@ import parser.ast.Declaration;
 import parser.ast.DeclarationInt;
 import parser.ast.Expression;
 import parser.ast.ExpressionBinaryOp;
+import parser.ast.ExpressionLiteral;
 import parser.ast.ExpressionProb;
 import parser.ast.ExpressionTemporal;
 import parser.ast.ExpressionUnaryOp;
@@ -46,8 +47,11 @@ public class BackwardModelChecker extends AbstractBackwardModelChecker
 		super(parent, modulesFile, propertiesFile, recVar, expr);
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.model_checking.backward_approach.AbstractBackwardModelChecker#computeRegion()
+	 */
 	@Override
-	public List<Pair<Integer, Integer>> computeRegion() throws PrismLangException
+	public List<Pair<Integer, Integer>> computeRegion() throws PrismException
 	{
 		// Declare the range variables
 		Integer low, high;
@@ -69,6 +73,41 @@ public class BackwardModelChecker extends AbstractBackwardModelChecker
 		Module module = modulesFile.getModule(0);
 
 		for (Command c : module.getCommands()) {
+
+			Updates updates = c.getUpdates();
+			int num_updates = updates.getNumUpdates();
+
+			for (int i = 0; i < num_updates; i++) {
+				Expression p = updates.getProbability(i);
+				if (p != null && p.getAllVars().contains(recurVar)) {
+					throw new PrismException("The algorithm does not support this model as the probability expression" + " contains the recurrence variable");
+				}
+				
+				Update u = updates.getUpdate(i);
+				for (int j = 0; j < u.getNumElements(); j++) {
+					// Currently assumes interval is 1. It is not implemented as I have to 
+					Expression update = u.getExpression(j);
+					if (update.getAllVars().contains(recurVar)) {
+						if (u.getVarIndex(j) != recurVarIndex) {
+							throw new PrismException("The algorithm does not support this model as another variable depends on the recurrence variable");
+						} else {
+							ExpressionBinaryOp expr = (ExpressionBinaryOp) update;
+							if (expr.getOperator() != 11) {
+								throw new PrismException("The algorithm does not support this model as it only supports plus operator in the update");
+							} else {
+								Expression x = expr.getOperand1();
+								Expression y = expr.getOperand2();
+								if ((x instanceof ExpressionLiteral && ((ExpressionLiteral) x).evaluateInt() != 1)
+										|| (y instanceof ExpressionLiteral && ((ExpressionLiteral) y).evaluateInt() != 1)) {
+									throw new PrismException("The algorithm does not support this model as it only supports interval of 1");
+								}
+								System.out.println(y);
+							}
+						}
+					}
+				}
+			}
+
 			Expression g = c.getGuard();
 
 			Pair<Integer, Integer> r = new Pair<Integer, Integer>(Integer.MIN_VALUE, 0);
@@ -101,28 +140,18 @@ public class BackwardModelChecker extends AbstractBackwardModelChecker
 						high = val;
 				}
 			}
-
-			Updates updates = c.getUpdates();
-			int num_updates = updates.getNumUpdates();
-
-			for (int i = 0; i < num_updates; i++) {
-				// TODO : currently does not check probability. This needs to be sorted out.
-				// Reason : It cannot be checked for existence of recurVar as it is already replaced.
-				Expression p = updates.getProbability(i);
-
-				Update u = updates.getUpdate(i);
-				for (int j = 0; j < u.getNumElements(); j++) {
-					// TODO : currently assumes interval is 1. It is not implemented as I have to 
-					// figure out how to to check the existence of the variable in the expression.
-					// System.out.println(u.getExpression(j));
-				}
-			}
 		}
 		// Add the range to the list
 		range.add(new Pair<Integer, Integer>(low, high));
 		return range;
 	}
 
+	/**
+	 * Extract the bounds from the guard expressions.
+	 * @param expression guard expression
+	 * @param result the number of ranges
+	 * @throws PrismLangException
+	 */
 	private void extractBounds(Expression expression, Pair<Integer, Integer> result) throws PrismLangException
 	{
 		/**
@@ -157,6 +186,9 @@ public class BackwardModelChecker extends AbstractBackwardModelChecker
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.model_checking.backward_approach.AbstractBackwardModelChecker#identifyForwardKeyStates()
+	 */
 	public void identifyForwardKeyStates() throws PrismException
 	{
 		// Retrieving the index of the recurrent variable
@@ -277,6 +309,9 @@ public class BackwardModelChecker extends AbstractBackwardModelChecker
 		Collections.sort(finalRepStates);
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.model_checking.backward_approach.AbstractBackwardModelChecker#process()
+	 */
 	@Override
 	public void process() throws PrismException
 	{
@@ -323,6 +358,9 @@ public class BackwardModelChecker extends AbstractBackwardModelChecker
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see recurrence.model_checking.backward_approach.AbstractBackwardModelChecker#isRecurring()
+	 */
 	@Override
 	public boolean isRecurring() throws PrismException
 	{
@@ -340,6 +378,10 @@ public class BackwardModelChecker extends AbstractBackwardModelChecker
 		return true;
 	}
 
+	/**
+	 * Replaces all the transition of the target states with a self loop
+	 * @throws PrismException
+	 */
 	public void fixTargetStates() throws PrismException
 	{
 		ParamModel pm1 = (ParamModel) firstModel;

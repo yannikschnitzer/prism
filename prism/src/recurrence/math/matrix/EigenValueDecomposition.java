@@ -4,6 +4,32 @@ import recurrence.data_structure.numbers.Complex;
 import recurrence.data_structure.numbers.Decimal;
 import recurrence.data_structure.numbers.INumber;
 
+/**
+ *    @package JAMA
+ *
+ *    Class to obtain eigenvalues and eigenvectors of a real matrix.
+ *
+ *    If A is symmetric, then A = V*D*V' where the eigenvalue matrix D
+ *    is diagonal and the eigenvector matrix V is orthogonal (i.e.
+ *    A = V.times(D.times(V.transpose())) and V.times(V.transpose())
+ *    equals the identity matrix).
+ *
+ *    If A is not symmetric, then the eigenvalue matrix D is block diagonal
+ *    with the real eigenvalues in 1-by-1 blocks and any complex eigenvalues,
+ *    lambda + i*mu, in 2-by-2 blocks, [lambda, mu; -mu, lambda].  The
+ *    columns of V represent the eigenvectors in the sense that A*V = V*D,
+ *    i.e. A.times(V) equals V.times(D).  The matrix V may be badly
+ *    conditioned, or even singular, so the validity of the equation
+ *    A = V*D*inverse(V) depends upon V.cond().
+ *
+ *    @author  Paul Meagher
+ *    @license PHP v3.0
+ *    @version 1.1
+ *    
+ *    @author nishanthan kamaleson 
+ *    : Adapted to work with the polynomial fraction implementation
+ */
+
 public class EigenValueDecomposition
 {
 
@@ -998,11 +1024,17 @@ public class EigenValueDecomposition
 		return c;
 	}
 
+	/**
+	 * @return the roots of the polynomial
+	 */
 	public INumber[] getRoots()
 	{
 		return roots;
 	}
 
+	/**
+	 * @return the reciprocal of each roots of the polynomial 
+	 */
 	public INumber[] getReciprocalRoots()
 	{
 		return reciprocalRoots;

@@ -5,7 +5,6 @@ import java.io.PrintStream;
 public class Log
 {
 	public static final PrintStream LOGGER = System.out;
-
 	private static Level defaultLevel = Level.DEBUG;
 	private static boolean isSelectedLevelOnly = false;
 
