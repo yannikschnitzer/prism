@@ -195,17 +195,17 @@ public class PrismCL implements PrismModelListener
 
 	// strategy export info
 	private Prism.StrategyExportType exportStratType = StrategyExportType.ACTIONS;
-	
+
 	// parametric analysis info
 	private String[] paramLowerBounds = null;
 	private String[] paramUpperBounds = null;
 	private String[] paramNames = null;
 
-
 	/**
 	 * Entry point: call run method, catch CuddOutOfMemoryException
 	 */
-	public void go(String[] args) {
+	public void go(String[] args)
+	{
 		try {
 			run(args);
 		} catch (jdd.JDD.CuddOutOfMemoryException e) {
@@ -271,6 +271,23 @@ public class PrismCL implements PrismModelListener
 					undefinedConstants[i].removeConstants(paramNames);
 				}
 			}
+			// may need to remove some constants if they are used for parametric recurrence methods
+			if (prism.getSettings().getBoolean(PrismSettings.PRISM_RECUR_ENABLED)) {
+				String recurSwitch = prism.getSettings().getString(PrismSettings.PRISM_RECUR_VAR);
+				// Hack for now : You have to define a value for the recurrence variable
+				if (constSwitch.length() > 1)
+					constSwitch += "," + recurSwitch.trim();
+				else
+					constSwitch += recurSwitch.trim();
+
+				// TODO : Dave
+				// String recurVar = recurSwitch.substring(0, recurSwitch.indexOf("="));
+				// undefinedMFConstants.removeConstants(new String[] { recurVar });
+				// for (i = 0; i < numPropertiesToCheck; i++) {
+				// 	undefinedConstants[i].removeConstants(new String[] { recurVar });
+				// }
+			}
+
 			// then set up value using const switch definitions
 			undefinedMFConstants.defineUsingConstSwitch(constSwitch);
 			for (i = 0; i < numPropertiesToCheck; i++) {
@@ -423,7 +440,8 @@ public class PrismCL implements PrismModelListener
 						// if a strategy was generated, and we need to export it, do so
 						if (exportstrat && res.getStrategy() != null) {
 							try {
-								prism.exportStrategy(res.getStrategy(), exportStratType, exportStratFilename.equals("stdout") ? null : new File(exportStratFilename));
+								prism.exportStrategy(res.getStrategy(), exportStratType, exportStratFilename.equals("stdout") ? null : new File(
+										exportStratFilename));
 							}
 							// in case of error, report it and proceed
 							catch (FileNotFoundException e) {
@@ -488,7 +506,7 @@ public class PrismCL implements PrismModelListener
 						exporter.setProperty(propertiesToCheck.get(i));
 					} else {
 						if (exportResultsFormat.equalsIgnoreCase("csv")) {
-							tmpLog.print( "\"" + propertiesToCheck.get(i).toString().replaceAll("\"", "\"\"") + "\"\n");
+							tmpLog.print("\"" + propertiesToCheck.get(i).toString().replaceAll("\"", "\"\"") + "\"\n");
 						} else {
 							tmpLog.print(propertiesToCheck.get(i) + ":\n");
 						}
@@ -793,8 +811,8 @@ public class PrismCL implements PrismModelListener
 				File dotFile = File.createTempFile("prism-dot-", ".dot", null);
 				File dotPdfFile = File.createTempFile("prism-dot-", ".dot.pdf", null);
 				prism.exportTransToFile(exportordered, Prism.EXPORT_DOT_STATES, dotFile);
-				(new ProcessBuilder(new String[]{ "dot", "-Tpdf", "-o", dotPdfFile.getPath(), dotFile.getPath()})).start().waitFor();
-				(new ProcessBuilder(new String[]{ "open",dotPdfFile.getPath()})).start();
+				(new ProcessBuilder(new String[] { "dot", "-Tpdf", "-o", dotPdfFile.getPath(), dotFile.getPath() })).start().waitFor();
+				(new ProcessBuilder(new String[] { "open", dotPdfFile.getPath() })).start();
 			}
 			// in case of error, report it and proceed
 			catch (IOException | InterruptedException e) {
@@ -988,7 +1006,8 @@ public class PrismCL implements PrismModelListener
 	/** Set a timeout, exit program if timeout is reached */
 	private void setTimeout(final int timeout)
 	{
-		common.Timeout.setTimeout(timeout, new Runnable() {
+		common.Timeout.setTimeout(timeout, new Runnable()
+		{
 			@Override
 			public void run()
 			{
@@ -1181,20 +1200,15 @@ public class PrismCL implements PrismModelListener
 				// DD Debugging options
 				else if (sw.equals("dddebug")) {
 					jdd.DebugJDD.enable();
-				}
-				else if (sw.equals("ddtraceall")) {
+				} else if (sw.equals("ddtraceall")) {
 					jdd.DebugJDD.traceAll = true;
-				}
-				else if (sw.equals("ddtracefollowcopies")) {
+				} else if (sw.equals("ddtracefollowcopies")) {
 					jdd.DebugJDD.traceFollowCopies = true;
-				}
-				else if (sw.equals("dddebugwarnfatal")) {
+				} else if (sw.equals("dddebugwarnfatal")) {
 					jdd.DebugJDD.warningsAreFatal = true;
-				}
-				else if (sw.equals("dddebugwarnoff")) {
+				} else if (sw.equals("dddebugwarnoff")) {
 					jdd.DebugJDD.warningsOff = true;
-				}
-				else if (sw.equals("ddtrace")) {
+				} else if (sw.equals("ddtrace")) {
 					if (i < args.length - 1) {
 						String idString = args[++i];
 						try {
@@ -1991,8 +2005,7 @@ public class PrismCL implements PrismModelListener
 		for (String opt : options) {
 			// Ignore ""
 			if (opt.equals("")) {
-			}
-			else if (opt.startsWith("type")) {
+			} else if (opt.startsWith("type")) {
 				if (!opt.startsWith("type="))
 					throw new PrismException("No value provided for \"type\" option of -exportstrat");
 				String optVal = opt.substring(5);
@@ -2006,8 +2019,7 @@ public class PrismCL implements PrismModelListener
 					exportStratType = StrategyExportType.DOT_FILE;
 				else
 					throw new PrismException("Unknown value \"" + optVal + "\" provided for \"type\" option of -exportstrat");
-			}
-			else if (opt.startsWith("reach")) {
+			} else if (opt.startsWith("reach")) {
 				if (!opt.startsWith("reach="))
 					throw new PrismException("No value provided for \"reach\" option of -exportstrat");
 				String optVal = opt.substring(6);
