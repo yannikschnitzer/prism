@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -47,59 +46,53 @@ public class BackwardModelChecker extends AbstractBackwardModelChecker
 		super(parent, modulesFile, propertiesFile, recVar, expr);
 	}
 
-	/* (non-Javadoc)
-	 * @see recurrence.model_checking.backward_approach.AbstractBackwardModelChecker#computeRegion()
-	 */
 	@Override
-	public List<Pair<Integer, Integer>> computeRegion() throws PrismException
+	public void computeRegion() throws PrismException
 	{
 		// Declare the range variables
 		Integer low, high;
-		// Initialize the list of the ranges
-		List<Pair<Integer, Integer>> range = new LinkedList<Pair<Integer, Integer>>();
 		// Retrieve the declaration of the recurrence variable from the modules file
-		Declaration dec = modulesFile.getVarDeclaration(modulesFile.getVarIndex(recurVar));
+		Declaration dec = modules_file.getVarDeclaration(modules_file.getVarIndex(recur_var));
 		// Retrieve the type of the declaration
 		DeclarationInt decInt = null;
 		if (dec.getDeclType() instanceof DeclarationInt)
 			decInt = (DeclarationInt) dec.getDeclType();
 		else
-			throw new PrismLangException("The recurrence variable " + recurVar + " is not a type of Integer");
+			throw new PrismLangException("The recurrence variable " + recur_var + " is not a type of Integer");
 
 		low = decInt.getLow().evaluateInt() + 1;
 		high = decInt.getHigh().evaluateInt() - 1;
 
 		// Assumes there is only one module in the model description
-		Module module = modulesFile.getModule(0);
+		Module module = modules_file.getModule(0);
 
 		for (Command c : module.getCommands()) {
-
 			Updates updates = c.getUpdates();
 			int num_updates = updates.getNumUpdates();
 
 			for (int i = 0; i < num_updates; i++) {
 				Expression p = updates.getProbability(i);
-				if (p != null && p.getAllVars().contains(recurVar)) {
-					throw new PrismException("The algorithm does not support this model as the probability expression" + " contains the recurrence variable");
+				if (p != null && p.getAllVars().contains(recur_var)) {
+					throw new PrismException("This algorithm does not support this model as the probability expression" + " contains the recurrence variable");
 				}
-				
+
 				Update u = updates.getUpdate(i);
 				for (int j = 0; j < u.getNumElements(); j++) {
 					// Currently assumes interval is 1. It is not implemented as I have to 
 					Expression update = u.getExpression(j);
-					if (update.getAllVars().contains(recurVar)) {
-						if (u.getVarIndex(j) != recurVarIndex) {
-							throw new PrismException("The algorithm does not support this model as another variable depends on the recurrence variable");
+					if (update.getAllVars().contains(recur_var)) {
+						if (u.getVarIndex(j) != recur_var_index) {
+							throw new PrismException("This algorithm does not support this model as another variable depends on the recurrence variable");
 						} else {
 							ExpressionBinaryOp expr = (ExpressionBinaryOp) update;
 							if (expr.getOperator() != 11) {
-								throw new PrismException("The algorithm does not support this model as it only supports plus operator in the update");
+								throw new PrismException("This algorithm does not support this model as it only supports plus operator in the update");
 							} else {
 								Expression x = expr.getOperand1();
 								Expression y = expr.getOperand2();
 								if ((x instanceof ExpressionLiteral && ((ExpressionLiteral) x).evaluateInt() != 1)
 										|| (y instanceof ExpressionLiteral && ((ExpressionLiteral) y).evaluateInt() != 1)) {
-									throw new PrismException("The algorithm does not support this model as it only supports interval of 1");
+									throw new PrismException("This algorithm does not support this model as it only supports interval of 1");
 								}
 								System.out.println(y);
 							}
@@ -112,6 +105,7 @@ public class BackwardModelChecker extends AbstractBackwardModelChecker
 
 			Pair<Integer, Integer> r = new Pair<Integer, Integer>(Integer.MIN_VALUE, 0);
 			extractBounds(g, r);
+
 			int op = r.first();
 			// Update the bounds
 			if (r.first() == Integer.MIN_VALUE)
@@ -141,9 +135,7 @@ public class BackwardModelChecker extends AbstractBackwardModelChecker
 				}
 			}
 		}
-		// Add the range to the list
-		range.add(new Pair<Integer, Integer>(low, high));
-		return range;
+		setRecurrenceInterval(new Pair<Integer, Integer>(low, high));
 	}
 
 	/**
@@ -179,22 +171,19 @@ public class BackwardModelChecker extends AbstractBackwardModelChecker
 			if (op < 5 || op > 10) {
 				extractBounds(bin_expr.getOperand1(), result);
 				extractBounds(bin_expr.getOperand2(), result);
-			} else if (bin_expr.getOperand1().toString().equals(recurVar)) {
+			} else if (bin_expr.getOperand1().toString().equals(recur_var)) {
 				result.setFirst(op);
 				result.setSecond(bin_expr.getOperand2().evaluateInt());
 			}
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see recurrence.model_checking.backward_approach.AbstractBackwardModelChecker#identifyForwardKeyStates()
-	 */
 	public void identifyForwardKeyStates() throws PrismException
 	{
 		// Retrieving the index of the recurrent variable
-		recurVarIndex = modulesFile.getVarIndex(recurVar);
+		recur_var_index = modules_file.getVarIndex(recur_var);
 		// Retrieving the list of states from the first model
-		relevantStates = firstModel.getStatesList();
+		relevant_states = first_model.getStatesList();
 
 		firstEntryStates = new ArrayList<State>();
 		firstExitStates = new ArrayList<State>();
@@ -209,23 +198,23 @@ public class BackwardModelChecker extends AbstractBackwardModelChecker
 		recurBlockSize = 0;
 
 		// Store the known initial states
-		for (State state : relevantStates) {
-			int currentIndex = relevantStates.indexOf(state);
-			Iterator<Integer> it = firstModel.getSuccessorsIterator(currentIndex);
+		for (State state : relevant_states) {
+			int currentIndex = relevant_states.indexOf(state);
+			Iterator<Integer> it = first_model.getSuccessorsIterator(currentIndex);
 
-			if (state.varValues[recurVarIndex].equals(initVal - 1)) {
+			if (state.varValues[recur_var_index].equals(init_val - 1)) {
 				while (it.hasNext()) {
 					Integer successorIndex = it.next();
-					State successor = relevantStates.get(successorIndex);
-					if (successor.varValues[recurVarIndex].equals(initVal) && !firstEntryStates.contains(successor))
+					State successor = relevant_states.get(successorIndex);
+					if (successor.varValues[recur_var_index].equals(init_val) && !firstEntryStates.contains(successor))
 						firstEntryStates.add(successor);
 				}
-			} else if (state.varValues[recurVarIndex].equals(initVal)) {
+			} else if (state.varValues[recur_var_index].equals(init_val)) {
 				recurBlockSize++;
 				while (it.hasNext()) {
 					Integer successorIndex = it.next();
-					State successor = relevantStates.get(successorIndex);
-					if (successor.varValues[recurVarIndex].equals(initVal + 1) && !firstExitStates.contains(state))
+					State successor = relevant_states.get(successorIndex);
+					if (successor.varValues[recur_var_index].equals(init_val + 1) && !firstExitStates.contains(state))
 						firstExitStates.add(state);
 				}
 			}
@@ -247,18 +236,18 @@ public class BackwardModelChecker extends AbstractBackwardModelChecker
 			// Generate the second representative states based on the first
 			for (State state : firstRepStates) {
 				State secondEntryState = new State(state);
-				secondEntryState.varValues[recurVarIndex] = initVal + 1;
+				secondEntryState.varValues[recur_var_index] = init_val + 1;
 				secondRepStates.add(secondEntryState);
 			}
 		} else {
 			secondRepStates.clear();
 			for (State state : firstExitStates) {
-				int currentIndex = relevantStates.indexOf(state);
-				Iterator<Integer> it = firstModel.getSuccessorsIterator(currentIndex);
+				int currentIndex = relevant_states.indexOf(state);
+				Iterator<Integer> it = first_model.getSuccessorsIterator(currentIndex);
 				while (it.hasNext()) {
 					Integer successorIndex = it.next();
-					State successor = relevantStates.get(successorIndex);
-					if (successor.varValues[recurVarIndex].equals(initVal + 1) && !secondRepStates.contains(successor))
+					State successor = relevant_states.get(successorIndex);
+					if (successor.varValues[recur_var_index].equals(init_val + 1) && !secondRepStates.contains(successor))
 						secondRepStates.add(successor);
 				}
 			}
@@ -269,7 +258,7 @@ public class BackwardModelChecker extends AbstractBackwardModelChecker
 
 			for (int i = 0; i < tmp.size(); i++) {
 				State tmpState = new State(tmp.get(i));
-				tmpState.setValue(recurVarIndex, initVal);
+				tmpState.setValue(recur_var_index, init_val);
 				if (!firstRepStates.contains(tmpState)) {
 					firstRepStates.add(tmpState);
 					modelGenSym.exploreState(tmpState);
@@ -291,14 +280,14 @@ public class BackwardModelChecker extends AbstractBackwardModelChecker
 			if (isOneRowBlock) {
 				recurBlockSize++;
 				State secondEntryState = new State(state);
-				secondEntryState.varValues[recurVarIndex] = initVal + 1;
+				secondEntryState.varValues[recur_var_index] = init_val + 1;
 				secondRepStates.add(secondEntryState);
 			}
 			State prevFinalEntryState = new State(state);
-			prevFinalEntryState.varValues[recurVarIndex] = endVal - 1;
+			prevFinalEntryState.varValues[recur_var_index] = end_val - 1;
 			prevFinalRepStates.add(prevFinalEntryState);
 			State finalEntryState = new State(state);
-			finalEntryState.varValues[recurVarIndex] = endVal;
+			finalEntryState.varValues[recur_var_index] = end_val;
 			finalRepStates.add(finalEntryState);
 		}
 
@@ -309,73 +298,51 @@ public class BackwardModelChecker extends AbstractBackwardModelChecker
 		Collections.sort(finalRepStates);
 	}
 
-	/* (non-Javadoc)
-	 * @see recurrence.model_checking.backward_approach.AbstractBackwardModelChecker#process()
-	 */
 	@Override
 	public void process() throws PrismException
 	{
 		double time_it = System.currentTimeMillis();
+
 		// Construct the first region
 		Log.p(Level.INFO, "Construction of FIRST Region", this.getClass());
 		constructFirstRegion();
+
 		// Construct the second region
 		Log.p(Level.INFO, "Construction of SECOND Region", this.getClass());
 		constructSecondRegion(prevFinalRepStates);
+
 		// Construct the third region
 		Log.p(Level.INFO, "Construction of THIRD Region", this.getClass());
 		constructThirdRegion(finalRepStates);
 		System.out.println("Construction Time: " + (System.currentTimeMillis() - time_it));
 
 		time_it = System.currentTimeMillis();
-		if (isRecurring()) {
-			// Identify the targets lies in all three models
-			targ = new Target(firstModel, secondModel, thirdModel, propertiesFile, recurVarIndex);
-			// For all the target states lies in the recurrent block change the transition probability to itself with 1
-			fixTargetStates();
-			// compute the primary and second region base probs
-			computeRecurBaseProbs(finalRepStates);
-			// derive base and transition probabilities for recurrence solving	
-			computeRecurTransProb(finalRepStates, prevFinalRepStates);
-			// compute the probs
-			Log.p(Level.INFO, "Computing End Probabilities", this.getClass());
-			computeEndProbs(firstRepStates);
-			// System.out.println(finalProbs);
 
-			System.out.println("Forming RRs Time: " + (System.currentTimeMillis() - time_it));
-			// derive reduced recurrence equations
-			time_it = System.currentTimeMillis();
-			solve2(finalRepStates.size());
-			System.out.println("Solving RRs Time: " + (System.currentTimeMillis() - time_it));
+		// Identify the targets lies in all three models
+		targ = new Target(first_model, second_model, third_model, properties_file, recur_var_index);
+		// Change all the target states lie in the recurrent blocks into absorbing states
+		fixTargetStates();
+		// Compute the base probabilities of the recurrence relations
+		computeRecurBaseProbs(finalRepStates);
+		// Derive required recurrence relations	
+		computeRecurTransProb(finalRepStates, prevFinalRepStates);
+		// Compute the end probabilities
+		Log.p(Level.INFO, "Computing End Probabilities", this.getClass());
+		computeEndProbs(firstRepStates);
 
-			// compute altogether
-			time_it = System.currentTimeMillis();
-			computeTotalProbability2(prevFinalRepStates);
-			Log.p(Level.INFO, "Computing Total Probability", this.getClass());
-			System.out.println(result);
-			System.out.println("Evaluating RRs Time: " + (System.currentTimeMillis() - time_it));
-			//Log.p(Level.INFO, this, this.getClass());
-		}
-	}
+		System.out.println("Forming RRs Time: " + (System.currentTimeMillis() - time_it));
+		// derive reduced recurrence equations
+		time_it = System.currentTimeMillis();
+		solveX(finalRepStates.size());
+		System.out.println("Solving RRs Time: " + (System.currentTimeMillis() - time_it));
 
-	/* (non-Javadoc)
-	 * @see recurrence.model_checking.backward_approach.AbstractBackwardModelChecker#isRecurring()
-	 */
-	@Override
-	public boolean isRecurring() throws PrismException
-	{
-		Expression targetProp = ((ExpressionTemporal) ((ExpressionProb) propertiesFile.getProperty(0)).getExpression()).getOperand2();
-
-		/**
-		 * This is trivial recurring block hence recurrence is not checked, however, we confirm whether 
-		 * 	1) the target state lies in the recurrent block 
-		 * 	2) and if so then is it repeating
-		 */
-		for (int i = 0; i < firstRepStates.size(); i++) {
-			if (targetProp.evaluateBoolean(firstRepStates.get(i)) && !targetProp.evaluateBoolean(secondRepStates.get(i)))
-				throw new PrismException("Target states lies in the recurrent block and does not recur");
-		}
-		return true;
+		// compute altogether
+		time_it = System.currentTimeMillis();
+		computeTotalProbabilityX(prevFinalRepStates);
+		Log.p(Level.INFO, "Computing Total Probability", this.getClass());
+		System.out.println(result);
+		System.out.println("Evaluating RRs Time: " + (System.currentTimeMillis() - time_it));
+		//Log.p(Level.INFO, this, this.getClass());
 	}
 
 	/**
@@ -384,22 +351,22 @@ public class BackwardModelChecker extends AbstractBackwardModelChecker
 	 */
 	public void fixTargetStates() throws PrismException
 	{
-		ParamModel pm1 = (ParamModel) firstModel;
+		ParamModel pm1 = (ParamModel) first_model;
 		for (Integer index : targ.getStates(1))
 			pm1.replaceAllForSelfLoop(index, 0);
-		firstModel = pm1;
+		first_model = pm1;
 
-		ParamModel pm2 = (ParamModel) secondModel;
+		ParamModel pm2 = (ParamModel) second_model;
 		for (Integer index : targ.getStates(2))
 			pm2.replaceAllForSelfLoop(index, 0);
-		secondModel = pm2;
+		second_model = pm2;
 	}
 
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder("");
-		sb.append("Variable : " + recurVar + "\n");
-		sb.append("Range : [ Low : " + initVal + ", High : " + endVal + " ] \n");
+		sb.append("Variable : " + recur_var + "\n");
+		sb.append("Range : [ Low : " + init_val + ", High : " + end_val + " ] \n");
 		//		String tmp = "(0)=" + relevantStates.get(0);
 		//		for (int i = 1; i < relevantStates.size(); i++) {
 		//			tmp += ", (" + i + ")=" + relevantStates.get(i);
@@ -417,15 +384,15 @@ public class BackwardModelChecker extends AbstractBackwardModelChecker
 		sb.append("Recur Sates Size : " + recurBlockSize + "\n\n");
 		sb.append("Entry states Size :" + firstEntryStates.size() + "\n");
 		sb.append("Exit states Size :" + firstExitStates.size() + "\n");
-		sb.append("First Model Size :" + firstModel.getNumStates() + "\n");
-		sb.append("Second Model Size :" + secondModel.getNumStates() + "\n");
-		sb.append("Third Model Size :" + thirdModel.getNumStates() + "\n");
+		sb.append("First Model Size :" + first_model.getNumStates() + "\n");
+		sb.append("Second Model Size :" + second_model.getNumStates() + "\n");
+		sb.append("Third Model Size :" + third_model.getNumStates() + "\n");
 
-		if (recurEqns != null) {
+		if (all_recur_eqns != null) {
 			sb.append("[ Ordinary Generating Functions ]\n");
 			sb.append("================================= \n");
-			for (int i = 0; i < recurEqns.size(); i++)
-				sb.append("[" + (i + 1) + "] " + recurEqns.get(i) + "\n");
+			for (int i = 0; i < all_recur_eqns.size(); i++)
+				sb.append("[" + (i + 1) + "] " + all_recur_eqns.get(i) + "\n");
 		}
 		if (ogffractions != null) {
 			sb.append("\nSolutions for OGFs\n");
@@ -445,7 +412,7 @@ public class BackwardModelChecker extends AbstractBackwardModelChecker
 				sb.append("\n}\n");
 			}
 
-			sb.append("End region Probability : " + finalProbs + "\n");
+			sb.append("End region Probability : " + final_probs + "\n");
 			sb.append("Total Probability : " + result);
 		}
 		return sb.toString();

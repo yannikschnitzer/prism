@@ -12,18 +12,6 @@ import recurrence.data_structure.numbers.Rational;
  * 	This class that represents the first order recurrence relationship
  * 	@class FirstOrderRecurrence	
  */
-/**
- * @author Nishan
- *
- */
-/**
- * @author Nishan
- *
- */
-/**
- * @author Nishan
- *
- */
 public class FirstOrderRecurrence
 {
 
@@ -58,7 +46,6 @@ public class FirstOrderRecurrence
 		convertToGF();
 	}
 
-	
 	/**
 	 * @return true if the recurrence relationship only relies on its previous terms and not other variables
 	 */
@@ -138,7 +125,6 @@ public class FirstOrderRecurrence
 		addCoeff(coeffs.size() - 1, val);
 	}
 
-	
 	/**
 	 * @return the value of the last coefficient
 	 */
@@ -147,7 +133,6 @@ public class FirstOrderRecurrence
 		return coeffs.get(coeffs.size() - 1);
 	}
 
-	
 	/**
 	 * @return the ordinary generating function for the current recurrence relation
 	 */
@@ -157,9 +142,16 @@ public class FirstOrderRecurrence
 		return new OrdinaryGeneratingFunction(lhs, rhs);
 	}
 
-	
 	/**
-	 * Evaluates the recurrence relation based on the value of the variable given
+	 * @return the array of coefficients of the recurrence equation
+	 */
+	public double[] getCoeffs()
+	{
+		return this._coeffs;
+	}
+
+	/**
+	 * Evaluates the recurrence relation based on the valuations of the variables
 	 * @param values array of variable value
 	 * @return the value after evaluation
 	 */
@@ -216,5 +208,13 @@ public class FirstOrderRecurrence
 		sb.append(coeffs.get(coeffs.size() - 1) + "\n\n");
 
 		return sb.toString();
+	}
+
+	/**
+	 * @return the baseVal
+	 */
+	public BigRational getBaseVal()
+	{
+		return baseVal;
 	}
 }

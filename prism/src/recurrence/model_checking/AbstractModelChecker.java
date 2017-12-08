@@ -31,8 +31,8 @@ import simulator.ModulesFileModelGeneratorSymbolic;
 public abstract class AbstractModelChecker
 {
 	protected PrismComponent parent;
-	protected ModulesFile modulesFile;
-	protected PropertiesFile propertiesFile;
+	protected ModulesFile modules_file;
+	protected PropertiesFile properties_file;
 
 	// Custom built model generator to facilitate the construction of the recurrence relations 
 	protected CustomModelGenerator modelGenSym;
@@ -43,9 +43,9 @@ public abstract class AbstractModelChecker
 	 */
 
 	// The variable which causes the recurrence
-	protected String recurVar;
+	protected String recur_var;
 	// The range of the recurrence variable
-	protected int initVal, endVal;
+	protected int init_val, end_val;
 
 	// The Parameter model checker
 	protected ParamModelChecker pmc;
@@ -65,10 +65,10 @@ public abstract class AbstractModelChecker
 	protected param.ModelBuilder firstRegMB, secondRegMB, thirdRegMB;
 
 	// The models that stores the each aforementioned regions
-	protected ParamModel firstModel, secondModel, thirdModel;
+	protected ParamModel first_model, second_model, third_model;
 
 	// The states relevant to the constructions of the recurrence relations
-	protected List<State> relevantStates;
+	protected List<State> relevant_states;
 
 	/* ======================================================================================
 	 * 	The data structures to store the relevant information about the recurrence relations
@@ -76,32 +76,32 @@ public abstract class AbstractModelChecker
 	 */
 
 	// The base probabilities of the recurrence relations
-	protected Map<Integer, BigRational> recurBaseProbs;
+	protected Map<Integer, BigRational> recur_base_probs;
 	// The recurrence relations itself
-	protected Map<Integer, Map<Integer, BigRational>> recurTrans;
+	protected Map<Integer, Map<Integer, BigRational>> recur_trans;
 	protected Map<Integer, BigRational> recurTransTarget;
 	// The initial region's probability that needs to be attached
-	protected Map<Integer, BigRational> finalProbs;
-	protected BigRational initTargProb = BigRational.ZERO;
+	protected Map<Integer, BigRational> final_probs;
+	protected BigRational init_targ_prob = BigRational.ZERO;
 
 	// The size of the recurrent block
 	protected int recurBlockSize;
 
 	// The recurrence equations
-	protected List<FirstOrderRecurrence> recurEqns;
+	protected List<FirstOrderRecurrence> all_recur_eqns;
 	// The simplified ordinary generating functions
 	protected PolynomialFraction[] ogffractions;
 	// The reduced form of the each corresponding recurrence equations
 	protected Map<Integer, ReducedRecursion> solutions;
 	// The necessary equations to be solved
-	protected List<FirstOrderRecurrence> requiredRecurEqns;
+	protected List<FirstOrderRecurrence> required_recur_eqns;
 	// The updated list of variable indexes, after elimination  
-	protected int[] updatedVarIndex;
+	protected int[] updated_var_index;
 
 	// The property expression
 	protected Expression expr;
 	// The index of recurrence variable
-	protected int recurVarIndex;
+	protected int recur_var_index;
 	// The final result
 	public double result;
 	protected String str_result;
@@ -111,14 +111,14 @@ public abstract class AbstractModelChecker
 	{
 		// Setup the required variables
 		this.parent = parent;
-		this.modulesFile = modulesFile;
-		this.propertiesFile = propertiesFile;
-		this.recurVar = recVar;
+		this.modules_file = modulesFile;
+		this.properties_file = propertiesFile;
+		this.recur_var = recVar;
 		this.expr = expr;
 
 		// Replace the known constant values from both modules and properties files.
-		this.modulesFile.replaceConstants(modulesFile.getConstantValues());
-		this.propertiesFile.replaceConstants(modulesFile.getConstantValues());
+		this.modules_file.replaceConstants(modulesFile.getConstantValues());
+		this.properties_file.replaceConstants(modulesFile.getConstantValues());
 
 		// Setup the custom model wrapper
 		modelGenSym = new CustomModelGenerator(new ModulesFileModelGeneratorSymbolic(modulesFile, parent));
@@ -139,16 +139,16 @@ public abstract class AbstractModelChecker
 	 * @return the recurrent borderline
 	 * @throws PrismLangException
 	 */
-	public abstract List<Pair<Integer, Integer>> computeRegion() throws PrismException;
+	public abstract void computeRegion() throws PrismException;
 
 	/**
 	 * Sets the recurrent borderline
 	 * @param range recurrent borderline
 	 */
-	public void setRange(Pair<Integer, Integer> range)
+	public void setRecurrenceInterval(Pair<Integer, Integer> range)
 	{
-		this.initVal = range.first();
-		this.endVal = range.second();
+		this.init_val = range.first();
+		this.end_val = range.second();
 	}
 
 	/**
@@ -178,13 +178,6 @@ public abstract class AbstractModelChecker
 	 * @throws PrismException
 	 */
 	public abstract void constructSecondRegion(List<State> states) throws PrismException;
-
-	/**
-	 * Check if two contiguous recurrent blocks are recurrently similar
-	 * @return true if the two contiguous recurrent blocks are recurrently similar
-	 * @throws PrismException
-	 */
-	public abstract boolean isRecurring() throws PrismException;
 
 	/**
 	 * Construct the third region, i.e. the region that exists after the last recurrent block.
@@ -223,7 +216,7 @@ public abstract class AbstractModelChecker
 	 * @param state_size size of the recurrent block
 	 * @throws PrismException
 	 */
-	public abstract void solve2(int state_size) throws PrismException;
+	public abstract void solveX(int state_size) throws PrismException;
 
 	/**
 	 * The transition probability to reach the the representative states of the first recurrent block from
@@ -244,7 +237,7 @@ public abstract class AbstractModelChecker
 	 * Evaluates the recurrence relations for the current value of the recurrence variable
 	 * @param states
 	 */
-	public abstract void computeTotalProbability2(List<State> states);
+	public abstract void computeTotalProbabilityX(List<State> states);
 
 	/**
 	 * Generates a property expression to compute the probability to reach the corresponding state from
@@ -256,10 +249,10 @@ public abstract class AbstractModelChecker
 	 */
 	public Expression generateTargetExpression(State state, FilterOperator op) throws PrismLangException
 	{
-		String core = modulesFile.getVarName(0) + " = " + state.varValues[0];
+		String core = modules_file.getVarName(0) + " = " + state.varValues[0];
 		for (int i = 1; i < state.varValues.length; i++)
-			core += " & " + modulesFile.getVarName(i) + " = " + state.varValues[i];
-		Expression expr = PrismCL.prism.parsePropertiesString(modulesFile, "P=? [F (" + core + ")]").getPropertyObject(0).getExpression();
+			core += " & " + modules_file.getVarName(i) + " = " + state.varValues[i];
+		Expression expr = PrismCL.prism.parsePropertiesString(modules_file, "P=? [F (" + core + ")]").getPropertyObject(0).getExpression();
 		String operator = (op == FilterOperator.ALL ? "all" : "first");
 		expr = new ExpressionFilter(operator, expr);
 		return expr;
@@ -277,13 +270,13 @@ public abstract class AbstractModelChecker
 	{
 		String core = "";
 		for (State s : states) {
-			core += " (" + modulesFile.getVarName(0) + " = " + s.varValues[0];
+			core += " (" + modules_file.getVarName(0) + " = " + s.varValues[0];
 			for (int i = 1; i < s.varValues.length; i++)
-				core += " & " + modulesFile.getVarName(i) + " = " + s.varValues[i];
+				core += " & " + modules_file.getVarName(i) + " = " + s.varValues[i];
 			core += ") |";
 		}
 		core = core.substring(0, core.length() - 1);
-		Expression expr = PrismCL.prism.parsePropertiesString(modulesFile, "P=? [F (" + core + ")]").getPropertyObject(0).getExpression();
+		Expression expr = PrismCL.prism.parsePropertiesString(modules_file, "P=? [F (" + core + ")]").getPropertyObject(0).getExpression();
 		String operator = (op == FilterOperator.ALL ? "all" : "first");
 		expr = new ExpressionFilter(operator, expr);
 		return expr;

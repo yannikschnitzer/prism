@@ -138,63 +138,56 @@ public class RecurrenceModelChecker extends PrismComponent
 	 */
 	private Result checkExpression(Expression expr) throws PrismException
 	{
-		Result res;
+		Result result;
 
-		String recInput = settings.getString(PrismSettings.PRISM_RECUR_VAR);
+		String recur_input = settings.getString(PrismSettings.PRISM_RECUR_VAR);
+		String recur_const = recur_input.substring(0, recur_input.indexOf("="));
+		Integer recur_val = new Integer(recur_input.substring(recur_input.indexOf("=") + 1, recur_input.length()));
+		System.out.println("Constant: " + recur_const);
+		System.out.println("Constant Value: " + recur_val);
 
-		String recConst = recInput.substring(0, recInput.indexOf("="));
-		Integer recVal = new Integer(recInput.substring(recInput.indexOf("=") + 1, recInput.length()));
-		System.out.println("Constant: " + recConst);
-		System.out.println("Constant Value: " + recVal);
-
-		// Identify all the variables that depends on the recurrence parameter 
-		int numVars = modulesFile.getNumVars();
-		List<String> candidateVars = new ArrayList<String>();
-		for (int i = 0; i < numVars; i++) {
+		 
+		int num_vars = modulesFile.getNumVars();
+		List<String> candidate_vars = new ArrayList<String>();
+		
+		// Identify all other variables depends on the recurrence parameter
+		for (int i = 0; i < num_vars; i++) {
 			Declaration decl = modulesFile.getVarDeclaration(i);
 			Vector<String> consts = decl.getAllUndefinedConstantsRecursively(modulesFile.getConstantList(), null, null);
-			if (consts.contains(recConst)) {
-				candidateVars.add(decl.getName());
+			if (consts.contains(recur_const)) {
+				candidate_vars.add(decl.getName());
 			}
 		}
-
-		String recVar;
-		switch (candidateVars.size()) {
-		// There are no variable depends on the recurrence parameter
+		
+		String recur_var;
+		switch (candidate_vars.size()) {
+		// No other variable depends on the recurrence parameter
 		case 0:
-			preprocessDTMC(recConst, recVal);
-			recVar = timeVarName;
+			preprocessDTMC(recur_const, recur_val);
+			recur_var = timeVarName;
 			break;
-		// There is only one variable depends on the recurrence parameter
+		// Only one variable depends on the recurrence parameter
 		case 1:
-			recVar = candidateVars.get(0);
+			recur_var = candidate_vars.get(0);
 			break;
-		// There are more than one variable depends on the recurrence parameter
+		// More than one variable depends on the recurrence parameter
 		default:
-			throw new PrismException("agh!");
+			throw new PrismException("RMC does not handle the case where more than one variable depends on the recurrence parameter!!");
 		}
 
-		System.out.println("Variable: " + recVar);
-		Log.p(Level.INFO, modulesFile, this.getClass());
-		Log.p(Level.INFO, propertiesFile, this.getClass());
+		System.out.println("Variable: " + recur_var);
+		// Log.p(Level.INFO, modulesFile, this.getClass());
+		// Log.p(Level.INFO, propertiesFile, this.getClass());
+		
+		// boolean isTimedDTMC = rec_var.equals(timeVarName);
 
-		// boolean isTimedDTMC = recVar.equals(timeVarName);
+		// Create the backward model checker
+		AbstractModelChecker amc = new BackwardModelChecker(parent, modulesFile, propertiesFile, recur_var, expr);
 
-		// Create the helper class to access methods related recurrence
-		AbstractModelChecker amc = new BackwardModelChecker(parent, modulesFile, propertiesFile, recVar, expr);
-		//new InductiveModel(parent,	modulesFile, propertiesFile, recVar, expr);
-
-		// Analysing the guard and find the regions to be checked for recurrence
-		// TODO: Update the region check : probability expr, update expr
-		List<Pair<Integer, Integer>> lsRanges = amc.computeRegion();
-
-		// Go through the region and check the recurrence behaviour
-		for (Pair<Integer, Integer> range : lsRanges) {
-			// Let the helper know the range of the region
-			amc.setRange(range);
-			amc.process();
-			//System.out.println(amc);
-		}
+		// Analyze the modules_file and find the recurrent interval 
+		amc.computeRegion();
+		// Proceed with the model checking and return the result
+		amc.process();
 		return new Result(amc.result);
 	}
 
