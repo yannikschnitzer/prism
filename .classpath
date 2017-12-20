@@ -12,5 +12,6 @@
 	<classpathentry kind="lib" path="prism/lib/jas.jar"/>
 	<classpathentry kind="lib" path="prism/lib/log4j.jar"/>
 	<classpathentry kind="lib" path="prism/lib/nailgun-server.jar"/>
+	<classpathentry kind="lib" path="prism/lib/junit-4.11.jar"/>
 	<classpathentry kind="output" path="prism/classes"/>
 </classpath>
