@@ -155,7 +155,7 @@ public class PathToText extends PathDisplayer
 		log.print(getColSep() + "0");
 		if (contTime && showTimeCumul)
 			log.print(getColSep() + "0.0");
-		lastState = new State(initialState.varValues.length);
+		lastState = new State(initialState.var_values.length);
 		displayState(initialState);
 		if (getShowRewards()) {
 			lastStateRewards = explicit.Utils.cloneDoubleArray(initialStateRewards);
@@ -236,12 +236,12 @@ public class PathToText extends PathDisplayer
 		if (varsToShow == null) {
 			for (j = 0; j < numVars; j++) {
 				log.print(getColSep());
-				log.print(state.varValues[j]);
+				log.print(state.var_values[j]);
 			}
 		} else {
 			for (int v : varsToShow) {
 				log.print(getColSep());
-				log.print(state.varValues[v]);
+				log.print(state.var_values[v]);
 			}
 		}
 		lastState.copy(state);
@@ -261,13 +261,13 @@ public class PathToText extends PathDisplayer
 	{
 		if (varsToShow == null) {
 			for (int j = 0; j < numVars; j++) {
-				if (!newState.varValues[j].equals(lastState.varValues[j])) {
+				if (!newState.var_values[j].equals(lastState.var_values[j])) {
 					return true;
 				}
 			}
 		} else {
 			for (int v : varsToShow) {
-				if (!newState.varValues[v].equals(lastState.varValues[v])) {
+				if (!newState.var_values[v].equals(lastState.var_values[v])) {
 					return true;
 				}
 			}

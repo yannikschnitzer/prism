@@ -8,6 +8,7 @@ import param.BigRational;
 import param.ParamModel;
 import param.ParamModelChecker;
 import parser.State;
+import parser.ast.Declaration;
 import parser.ast.Expression;
 import parser.ast.ExpressionFilter;
 import parser.ast.ExpressionFilter.FilterOperator;
@@ -15,6 +16,7 @@ import parser.ast.ModulesFile;
 import parser.ast.PropertiesFile;
 import prism.PrismCL;
 import prism.PrismComponent;
+import prism.PrismDevNullLog;
 import prism.PrismException;
 import prism.PrismLangException;
 import recurrence.data_structure.Pair;
@@ -85,7 +87,7 @@ public abstract class AbstractModelChecker
 	protected BigRational init_targ_prob = BigRational.ZERO;
 
 	// The size of the recurrent block
-	protected int recurBlockSize;
+	protected int recurrent_block_size;
 
 	// The recurrence equations
 	protected List<FirstOrderRecurrence> all_recur_eqns;
@@ -104,10 +106,17 @@ public abstract class AbstractModelChecker
 	protected int recur_var_index;
 	// The final result
 	public double result;
-	protected String str_result;
+	protected String str_func;
 
-	public AbstractModelChecker(PrismComponent parent, ModulesFile modulesFile, PropertiesFile propertiesFile, String recVar, Expression expr)
-			throws PrismException
+	// Recurrence parameter and the value range
+	protected String recur_param;
+	protected String recur_param_value;
+	
+	// Declaration of recurrence variable 
+	protected Declaration decl_recur_var;
+
+	public AbstractModelChecker(PrismComponent parent, ModulesFile modulesFile, PropertiesFile propertiesFile, String recVar, Expression expr,
+			String recur_param, String recur_param_value) throws PrismException
 	{
 		// Setup the required variables
 		this.parent = parent;
@@ -115,6 +124,8 @@ public abstract class AbstractModelChecker
 		this.properties_file = propertiesFile;
 		this.recur_var = recVar;
 		this.expr = expr;
+		this.recur_param = recur_param;
+		this.recur_param_value = recur_param_value;
 
 		// Replace the known constant values from both modules and properties files.
 		this.modules_file.replaceConstants(modulesFile.getConstantValues());
@@ -130,8 +141,12 @@ public abstract class AbstractModelChecker
 
 		// Setup the parameter model checker 
 		pmc = new ParamModelChecker(parent, param.ParamMode.PARAMETRIC);
+		pmc.setLog(new PrismDevNullLog());
 		pmc.setParameters(paramNames, paramLowerBounds, paramUpperBounds);
 		pmc.setModulesFileAndPropertiesFile(modulesFile, propertiesFile);
+
+		// Retrieve the declaration of the recurrence variable from the modules file
+		decl_recur_var = modules_file.getVarDeclaration(modules_file.getVarIndex(recur_var));
 	}
 
 	/**
@@ -210,7 +225,7 @@ public abstract class AbstractModelChecker
 	 * @throws PrismException
 	 */
 	public abstract void solve(int state_size) throws PrismException;
-	
+
 	/**
 	 * Forms the recurrence relations but does not finds the closed functions for them. 
 	 * @param state_size size of the recurrent block
@@ -231,13 +246,13 @@ public abstract class AbstractModelChecker
 	 * value of the recurrence variable
 	 * @param states
 	 */
-	public abstract void computeTotalProbability(List<State> states);
-	
+	public abstract void computeFuncAndTotalProbability(List<State> states) throws PrismLangException;
+
 	/**
 	 * Evaluates the recurrence relations for the current value of the recurrence variable
 	 * @param states
 	 */
-	public abstract void computeTotalProbabilityX(List<State> states);
+	public abstract void computeTotalProbabilityX(List<State> states) throws PrismLangException;
 
 	/**
 	 * Generates a property expression to compute the probability to reach the corresponding state from
@@ -249,9 +264,9 @@ public abstract class AbstractModelChecker
 	 */
 	public Expression generateTargetExpression(State state, FilterOperator op) throws PrismLangException
 	{
-		String core = modules_file.getVarName(0) + " = " + state.varValues[0];
-		for (int i = 1; i < state.varValues.length; i++)
-			core += " & " + modules_file.getVarName(i) + " = " + state.varValues[i];
+		String core = modules_file.getVarName(0) + " = " + state.var_values[0];
+		for (int i = 1; i < state.var_values.length; i++)
+			core += " & " + modules_file.getVarName(i) + " = " + state.var_values[i];
 		Expression expr = PrismCL.prism.parsePropertiesString(modules_file, "P=? [F (" + core + ")]").getPropertyObject(0).getExpression();
 		String operator = (op == FilterOperator.ALL ? "all" : "first");
 		expr = new ExpressionFilter(operator, expr);
@@ -270,9 +285,9 @@ public abstract class AbstractModelChecker
 	{
 		String core = "";
 		for (State s : states) {
-			core += " (" + modules_file.getVarName(0) + " = " + s.varValues[0];
-			for (int i = 1; i < s.varValues.length; i++)
-				core += " & " + modules_file.getVarName(i) + " = " + s.varValues[i];
+			core += " (" + modules_file.getVarName(0) + " = " + s.var_values[0];
+			for (int i = 1; i < s.var_values.length; i++)
+				core += " & " + modules_file.getVarName(i) + " = " + s.var_values[i];
 			core += ") |";
 		}
 		core = core.substring(0, core.length() - 1);

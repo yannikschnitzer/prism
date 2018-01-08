@@ -95,7 +95,7 @@ public class TestModelGenerator extends DefaultModelGenerator
 	public State getInitialState() throws PrismException
 	{
 		State s = new State(1);
-		s.varValues[0] = n/2;
+		s.var_values[0] = n/2;
 		return s;
 	}
 
@@ -103,7 +103,7 @@ public class TestModelGenerator extends DefaultModelGenerator
 	public void exploreState(State exploreState) throws PrismException
 	{
 		this.exploreState = exploreState;
-		x = ((Integer) exploreState.varValues[0]).intValue();
+		x = ((Integer) exploreState.var_values[0]).intValue();
 	}
 
 	@Override
@@ -147,9 +147,9 @@ public class TestModelGenerator extends DefaultModelGenerator
 	{
 		State s = new State(1);
 		if (x == 0 || x == n) {
-			s.varValues[i] = x;
+			s.var_values[i] = x;
 		} else {
-			s.varValues[i] = (offset == 0) ? x -1 : x + 1;
+			s.var_values[i] = (offset == 0) ? x -1 : x + 1;
 		}
 		return s;
 	}

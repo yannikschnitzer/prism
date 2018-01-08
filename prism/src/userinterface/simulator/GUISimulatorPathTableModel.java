@@ -526,10 +526,10 @@ public class GUISimulatorPathTableModel extends AbstractTableModel implements GU
 			// A variable column
 			else if (varStart <= columnIndex && columnIndex < rewardStart) {
 				Variable var = view.getVisibleVariables().get(columnIndex - varStart);
-				Object result = path.getState(rowIndex).varValues[var.getIndex()];
+				Object result = path.getState(rowIndex).var_values[var.getIndex()];
 				variableValue.setVariable(var);
 				variableValue.setValue(result);
-				variableValue.setChanged(rowIndex == 0 || !path.getState(rowIndex - 1).varValues[var.getIndex()].equals(result));
+				variableValue.setChanged(rowIndex == 0 || !path.getState(rowIndex - 1).var_values[var.getIndex()].equals(result));
 				return variableValue;
 			}
 			// A reward column

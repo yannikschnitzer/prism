@@ -428,7 +428,7 @@ public class ConstructModel extends PrismComponent
 		int recurVarIndex = varList.getIndex(recVar);
 		List<State> recurInitStates = new ArrayList<State>();
 		for (State state : statesList) {
-			if (state.varValues[recurVarIndex].equals(recVarVal))
+			if (state.var_values[recurVarIndex].equals(recVarVal))
 				recurInitStates.add(state);
 		}
 		return recurInitStates;

@@ -1194,7 +1194,7 @@ public class SimulatorEngine extends PrismComponent
 	 */
 	public Object getVariableValueOfPathStep(int step, int varIndex)
 	{
-		return ((PathFull) path).getState(step).varValues[varIndex];
+		return ((PathFull) path).getState(step).var_values[varIndex];
 	}
 
 	/**

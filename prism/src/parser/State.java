@@ -38,7 +38,7 @@ import prism.PrismLangException;
  */
 public class State implements Comparable<State>
 {
-	public Object varValues[];
+	public Object var_values[];
 
 	/**
 	 * Construct empty (uninitialised) state.
@@ -46,7 +46,7 @@ public class State implements Comparable<State>
 	 */
 	public State(int n)
 	{
-		varValues = new Object[n];
+		var_values = new Object[n];
 	}
 
 	/**
@@ -55,7 +55,7 @@ public class State implements Comparable<State>
 	 */
 	public State(State s)
 	{
-		this(s.varValues.length);
+		this(s.var_values.length);
 		copy(s);
 	}
 
@@ -64,14 +64,14 @@ public class State implements Comparable<State>
 	 */
 	public State(State s1, State s2)
 	{
-		Object[] arr1 = (Object[]) s1.varValues;
-		Object[] arr2 = (Object[]) s2.varValues;
-		varValues = new Object[arr1.length + arr2.length];
+		Object[] arr1 = (Object[]) s1.var_values;
+		Object[] arr2 = (Object[]) s2.var_values;
+		var_values = new Object[arr1.length + arr2.length];
 		int i;
 		for (i = 0; i < arr1.length; i++)
-			varValues[i] = arr1[i];
+			var_values[i] = arr1[i];
 		for (i = 0; i < arr2.length; i++)
-			varValues[arr1.length + i] = arr2[i];
+			var_values[arr1.length + i] = arr2[i];
 	}
 
 	/**
@@ -88,19 +88,19 @@ public class State implements Comparable<State>
 		if (n != modelInfo.getNumVars()) {
 			throw new PrismLangException("Wrong number of variables in state");
 		}
-		varValues = new Object[n];
+		var_values = new Object[n];
 		for (i = 0; i < n; i++) {
-			varValues[i] = null;
+			var_values[i] = null;
 		}
 		for (i = 0; i < n; i++) {
 			j = modelInfo.getVarIndex(v.getName(i));
 			if (j == -1) {
 				throw new PrismLangException("Unknown variable " + v.getName(i) + " in state");
 			}
-			if (varValues[i] != null) {
+			if (var_values[i] != null) {
 				throw new PrismLangException("Duplicated variable " + v.getName(i) + " in state");
 			}
-			varValues[i] = v.getValue(i);
+			var_values[i] = v.getValue(i);
 		}
 	}
 
@@ -110,9 +110,9 @@ public class State implements Comparable<State>
 	public void clear()
 	{
 		int i, n;
-		n = varValues.length;
+		n = var_values.length;
 		for (i = 0; i < n; i++)
-			varValues[i] = null;
+			var_values[i] = null;
 	}
 
 	/**
@@ -120,7 +120,7 @@ public class State implements Comparable<State>
 	 */
 	public State setValue(int i, Object val)
 	{
-		varValues[i] = val;
+		var_values[i] = val;
 		return this;
 	}
 
@@ -131,15 +131,15 @@ public class State implements Comparable<State>
 	public void copy(State s)
 	{
 		int i, n;
-		n = varValues.length;
+		n = var_values.length;
 		for (i = 0; i < n; i++)
-			varValues[i] = s.varValues[i];
+			var_values[i] = s.var_values[i];
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Arrays.hashCode(varValues);
+		return Arrays.hashCode(var_values);
 	}
 
 	@Override
@@ -152,11 +152,11 @@ public class State implements Comparable<State>
 
 		int i, n;
 		State s = (State) o;
-		n = varValues.length;
-		if (n != s.varValues.length)
+		n = var_values.length;
+		if (n != s.var_values.length)
 			return false;
 		for (i = 0; i < n; i++) {
-			if (!(varValues[i]).equals(s.varValues[i]))
+			if (!(var_values[i]).equals(s.var_values[i]))
 				return false;
 		}
 		return true;
@@ -183,8 +183,8 @@ public class State implements Comparable<State>
 			throw new NullPointerException();
 		
 		// States of different size are incomparable 
-		svv = s.varValues;
-		n = varValues.length;
+		svv = s.var_values;
+		n = var_values.length;
 		if (n != svv.length)
 			throw new ClassCastException("States are different sizes");
 		
@@ -193,7 +193,7 @@ public class State implements Comparable<State>
 		
 		// Go through variables j...n-1
 		for (i = j; i < n; i++) {
-			o1 = varValues[i];
+			o1 = var_values[i];
 			o2 = svv[i];
 			if (o1 instanceof Integer && o2 instanceof Integer) {
 				c = ((Integer) o1).compareTo((Integer) o2);
@@ -214,7 +214,7 @@ public class State implements Comparable<State>
 		
 		// Go through variables 0...j
 		for (i = 0; i < j; i++) {
-			o1 = varValues[i];
+			o1 = var_values[i];
 			o2 = svv[i];
 			if (o1 instanceof Integer && o2 instanceof Integer) {
 				c = ((Integer) o1).compareTo((Integer) o2);
@@ -244,11 +244,11 @@ public class State implements Comparable<State>
 	{
 		int i, n;
 		String s = "(";
-		n = varValues.length;
+		n = var_values.length;
 		for (i = 0; i < n; i++) {
 			if (i > 0)
 				s += ",";
-			s += varValues[i];
+			s += var_values[i];
 		}
 		s += ")";
 		return s;
@@ -261,11 +261,11 @@ public class State implements Comparable<State>
 	{
 		int i, n;
 		String s = "";
-		n = varValues.length;
+		n = var_values.length;
 		for (i = 0; i < n; i++) {
 			if (i > 0)
 				s += ",";
-			s += varValues[i];
+			s += var_values[i];
 		}
 		return s;
 	}
@@ -278,11 +278,11 @@ public class State implements Comparable<State>
 	{
 		int i, n;
 		String s = "(";
-		n = varValues.length;
+		n = var_values.length;
 		for (i = 0; i < n; i++) {
 			if (i > 0)
 				s += ",";
-			s += varNames.get(i) + "=" + varValues[i];
+			s += varNames.get(i) + "=" + var_values[i];
 		}
 		s += ")";
 		return s;
@@ -296,11 +296,11 @@ public class State implements Comparable<State>
 	{
 		int i, n;
 		String s = "(";
-		n = varValues.length;
+		n = var_values.length;
 		for (i = 0; i < n; i++) {
 			if (i > 0)
 				s += ",";
-			s += modelInfo.getVarName(i) + "=" + varValues[i];
+			s += modelInfo.getVarName(i) + "=" + var_values[i];
 		}
 		s += ")";
 		return s;

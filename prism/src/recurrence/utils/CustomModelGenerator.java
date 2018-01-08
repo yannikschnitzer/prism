@@ -238,10 +238,10 @@ public class CustomModelGenerator extends DefaultModelGenerator implements Model
 	public void createDummyTransition() throws PrismException
 	{
 		State dummyTargetA = new State(getExploreState());
-		dummyTargetA.varValues[recurIndex] = dummyVal;
+		dummyTargetA.var_values[recurIndex] = dummyVal;
 
 		State dummyTargetB = new State(getExploreState());
-		dummyTargetB.varValues[recurIndex] = dummyVal + 1;
+		dummyTargetB.var_values[recurIndex] = dummyVal + 1;
 
 		dummyState = new ArrayList<State>();
 		dummyProb = new ArrayList<Map<State, Function>>();

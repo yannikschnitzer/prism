@@ -529,7 +529,7 @@ public class ModelGenerator2MTBDD
 		res = JDD.Constant(1);
 		for (i = 0; i < numVars; i++) {
 			try {
-				j = varList.encodeToInt(i, state.varValues[i]);
+				j = varList.encodeToInt(i, state.var_values[i]);
 			} catch (PrismLangException e) {
 				// Won't happen
 			}

@@ -39,13 +39,13 @@ public class EvaluateContextState implements EvaluateContext
 	public EvaluateContextState(State state)
 	{
 		this.constantValues = null;
-		this.varValues = state.varValues;
+		this.varValues = state.var_values;
 	}
 
 	public EvaluateContextState(Values constantValues, State state)
 	{
 		this.constantValues = constantValues;
-		this.varValues = state.varValues;
+		this.varValues = state.var_values;
 	}
 
 	public Object getConstantValue(String name)

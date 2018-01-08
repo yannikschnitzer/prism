@@ -89,9 +89,9 @@ public class Values //implements Comparable
 	{
 		this();
 		int i, n;
-		n = s.varValues.length;
+		n = s.var_values.length;
 		for (i = 0; i < n; i++) {
-			addValue(modelInfo.getVarName(i), s.varValues[i]);
+			addValue(modelInfo.getVarName(i), s.var_values[i]);
 		}
 	}
 	

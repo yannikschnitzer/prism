@@ -386,7 +386,7 @@ public class StateListMTBDD implements StateList
 		for (int i = 0; i < n; i++) {
 			int valInt = -1;
 			try {
-				valInt = varList.encodeToInt(i, state.varValues[i]); 
+				valInt = varList.encodeToInt(i, state.var_values[i]); 
 			} catch (PrismLangException e) {
 				// Problem looking up variable - bail out 
 				return -1;

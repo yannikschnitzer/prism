@@ -35,7 +35,7 @@ public class ExpressionChecker
 	 */
 	public boolean isValid(State state)
 	{
-		return checker.validate(state.varValues);
+		return checker.validate(state.var_values);
 	}
 
 	/**

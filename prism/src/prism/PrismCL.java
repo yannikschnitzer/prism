@@ -273,19 +273,36 @@ public class PrismCL implements PrismModelListener
 			}
 			// may need to remove some constants if they are used for parametric recurrence methods
 			if (prism.getSettings().getBoolean(PrismSettings.PRISM_RECUR_ENABLED)) {
-				String recurSwitch = prism.getSettings().getString(PrismSettings.PRISM_RECUR_VAR);
-				// Hack for now : You have to define a value for the recurrence variable
-				if (constSwitch.length() > 1)
-					constSwitch += "," + recurSwitch.trim();
-				else
-					constSwitch += recurSwitch.trim();
+				String recur_expr = prism.getSettings().getString(PrismSettings.PRISM_RECUR_VAR);
 
-				// TODO : Dave
-				// String recurVar = recurSwitch.substring(0, recurSwitch.indexOf("="));
-				// undefinedMFConstants.removeConstants(new String[] { recurVar });
-				// for (i = 0; i < numPropertiesToCheck; i++) {
-				// 	undefinedConstants[i].removeConstants(new String[] { recurVar });
-				// }
+				// If comma exists then the property of interest is quantile properties
+				int index_of_comma = recur_expr.indexOf(",");
+
+				// Select only the recur parameter definition
+				if (index_of_comma != -1)
+					recur_expr = recur_expr.substring(0, index_of_comma);
+
+				// If equal exists there is a definite value of interest exists for the recur parameter
+				int index_of_equal = recur_expr.indexOf("=");
+				String substitute_switch = "";
+				if (index_of_equal != -1) {
+					substitute_switch = recur_expr.substring(0, index_of_equal);
+					// If colon exists then there is a range of interest values for the recur parameter
+					int index_of_sep = recur_expr.indexOf(":");
+					if (index_of_sep != -1)
+						substitute_switch += "=" + recur_expr.substring(index_of_equal + 1, index_of_sep);
+					else
+						substitute_switch += "=" + recur_expr.substring(index_of_equal + 1);
+				} else {
+					// Create a dummy assignment for the recurrence parameter
+					substitute_switch = recur_expr + "=10000";
+				}
+
+				// Attach the dummy assignment to the constants switch
+				if (constSwitch.length() > 1 && substitute_switch.length() > 0)
+					constSwitch += "," + substitute_switch;
+				else
+					constSwitch += substitute_switch;
 			}
 
 			// then set up value using const switch definitions
@@ -440,8 +457,8 @@ public class PrismCL implements PrismModelListener
 						// if a strategy was generated, and we need to export it, do so
 						if (exportstrat && res.getStrategy() != null) {
 							try {
-								prism.exportStrategy(res.getStrategy(), exportStratType, exportStratFilename.equals("stdout") ? null : new File(
-										exportStratFilename));
+								prism.exportStrategy(res.getStrategy(), exportStratType,
+										exportStratFilename.equals("stdout") ? null : new File(exportStratFilename));
 							}
 							// in case of error, report it and proceed
 							catch (FileNotFoundException e) {

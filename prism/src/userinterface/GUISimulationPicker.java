@@ -996,7 +996,7 @@ public class GUISimulationPicker extends javax.swing.JDialog implements KeyListe
 				if (defaultInitialState == null)
 					throw new PrismException("");
 				for (int i = 0; i < modulesFile.getNumVars(); i++) {
-					initValuesModel.getValue(i).value = defaultInitialState.varValues[i];
+					initValuesModel.getValue(i).value = defaultInitialState.var_values[i];
 				}
 			} catch (PrismException e) {
 				// In case of error, clear values

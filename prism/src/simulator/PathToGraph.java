@@ -108,7 +108,7 @@ public class PathToGraph extends PathDisplayer
 		}
 
 		// Display initial state
-		lastState = new State(initialState.varValues.length);
+		lastState = new State(initialState.var_values.length);
 		if (showRewards)
 			lastStateRewards = explicit.Utils.cloneDoubleArray(initialStateRewards);
 		displayState(0.0, initialState, initialStateRewards, true);
@@ -130,22 +130,22 @@ public class PathToGraph extends PathDisplayer
 	{
 		if (varsToShow == null) {
 			for (int j = 0; j < numVars; j++) {
-				Object val = state.varValues[j];
-				boolean plot = force || !val.equals(lastState.varValues[j]);
+				Object val = state.var_values[j];
+				boolean plot = force || !val.equals(lastState.var_values[j]);
 				if (plot) {
 					if (skippedVars.get(j))
-						addPoint(varSeriesKeys.get(j), lastTime, lastState.varValues[j]);
+						addPoint(varSeriesKeys.get(j), lastTime, lastState.var_values[j]);
 					addPoint(varSeriesKeys.get(j), time, val);
 				}
 				skippedVars.set(j, !plot);
 			}
 		} else {
 			for (int j : varsToShow) {
-				Object val = state.varValues[j];
-				boolean plot = force || !val.equals(lastState.varValues[j]);
+				Object val = state.var_values[j];
+				boolean plot = force || !val.equals(lastState.var_values[j]);
 				if (plot) {
 					if (skippedVars.get(j))
-						addPoint(varSeriesKeys.get(j), lastTime, lastState.varValues[j]);
+						addPoint(varSeriesKeys.get(j), lastTime, lastState.var_values[j]);
 					addPoint(varSeriesKeys.get(j), time, val);
 				}
 				skippedVars.set(j, !plot);

@@ -558,7 +558,7 @@ public class ExplicitModel2MTBDD
 			res = JDD.Constant(1);
 			for (i = 0; i < numVars; i++) {
 				try {
-					j = varList.encodeToInt(i, statesList.get(s).varValues[i]);
+					j = varList.encodeToInt(i, statesList.get(s).var_values[i]);
 				} catch (PrismLangException e) {
 					// Won't happen
 				}
@@ -590,8 +590,8 @@ public class ExplicitModel2MTBDD
 			res = JDD.Constant(1);
 			for (i = 0; i < numVars; i++) {
 				try {
-					j = varList.encodeToInt(i, statesList.get(r).varValues[i]);
-					k = varList.encodeToInt(i, statesList.get(c).varValues[i]);
+					j = varList.encodeToInt(i, statesList.get(r).var_values[i]);
+					k = varList.encodeToInt(i, statesList.get(c).var_values[i]);
 				} catch (PrismLangException e) {
 					// Won't happen
 				}

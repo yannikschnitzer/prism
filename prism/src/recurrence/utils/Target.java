@@ -46,7 +46,6 @@ public class Target
 		} catch (PrismLangException ple) {
 			ple.printStackTrace();
 		}
-		System.out.println("Done");
 	}
 
 	/**
@@ -79,13 +78,13 @@ public class Target
 		if (modelNumber == 1) {
 			for (int t : firstTarget) {
 				State current = firstModel.getStatesList().get(t);
-				if (current.varValues[recurVarIndex].equals(recurVal))
+				if (current.var_values[recurVarIndex].equals(recurVal))
 					states.add(current);
 			}
 		} else {
 			for (int t : secondTarget) {
 				State current = secondModel.getStatesList().get(t);
-				if (current.varValues[recurVarIndex].equals(recurVal))
+				if (current.var_values[recurVarIndex].equals(recurVal))
 					states.add(current);
 			}
 		}

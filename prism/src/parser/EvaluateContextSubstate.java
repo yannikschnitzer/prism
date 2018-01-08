@@ -41,14 +41,14 @@ public class EvaluateContextSubstate implements EvaluateContext
 	public EvaluateContextSubstate(State substate, int[] varMap)
 	{
 		this.constantValues = null;
-		this.varValues = substate.varValues;
+		this.varValues = substate.var_values;
 		this.varMap = varMap;
 	}
 
 	public EvaluateContextSubstate(Values constantValues, State substate, int[] varMap)
 	{
 		this.constantValues = constantValues;
-		this.varValues = substate.varValues;
+		this.varValues = substate.var_values;
 		this.varMap = varMap;
 	}
 

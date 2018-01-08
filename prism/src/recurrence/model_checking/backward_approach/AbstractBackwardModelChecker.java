@@ -15,15 +15,18 @@ import param.ModelBuilder;
 import param.ParamResult;
 import param.StateValues;
 import parser.State;
+import parser.ast.DeclarationInt;
 import parser.ast.Expression;
 import parser.ast.ExpressionFilter;
 import parser.ast.ExpressionFilter.FilterOperator;
 import parser.ast.ModulesFile;
 import parser.ast.PropertiesFile;
 import prism.PrismComponent;
+import prism.PrismDevNullLog;
 import prism.PrismException;
+import prism.PrismLangException;
 import prism.Result;
-import recurrence.data_structure.Pair;
+import recurrence.RecurrenceModelChecker;
 import recurrence.data_structure.numbers.PolynomialFraction;
 import recurrence.data_structure.recursion.FirstOrderRecurrence;
 import recurrence.data_structure.recursion.OrdinaryGeneratingFunction;
@@ -39,7 +42,7 @@ import recurrence.utils.Target;
 public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 {
 	// Required list of states for solving recurrence relations 
-	List<State> firstRepStates, firstEntryStates, firstExitStates, secondRepStates, prevFinalRepStates, finalRepStates;
+	List<State> first_rep, first_entry, first_exit, second_rep, second_last_rep, last_rep;
 	// List of target states lies in the recurrent block
 	Target targ;
 	// Recurrence Variable List
@@ -47,10 +50,10 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 	// Chosen Representative Indicator .. Default : Entry states
 	boolean isEntryRep = true;
 
-	public AbstractBackwardModelChecker(PrismComponent parent, ModulesFile modulesFile, PropertiesFile propertiesFile, String recVar, Expression expr)
-			throws PrismException
+	public AbstractBackwardModelChecker(PrismComponent parent, ModulesFile modulesFile, PropertiesFile propertiesFile, String recVar, Expression expr,
+			String recur_param, String recur_param_value) throws PrismException
 	{
-		super(parent, modulesFile, propertiesFile, recVar, expr);
+		super(parent, modulesFile, propertiesFile, recVar, expr, recur_param, recur_param_value);
 	}
 
 	@Override
@@ -103,6 +106,7 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 	public void computeRecurBaseProbs(List<State> finalStates) throws PrismException
 	{
 		Log.p(Level.INFO, "Computing Recurrence Base Probabilities", this.getClass());
+		parent.getLog().close();
 		Result result = pmc.check(third_model, new ExpressionFilter("all", expr));
 		ParamResult paramResult = (ParamResult) result.getResult();
 		StateValues sa = paramResult.getRegionValues().getStateValues();
@@ -114,7 +118,7 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 			int index = states.indexOf(finalStates.get(i));
 			BigRational prob = ((Function) sa.getStateValue(index)).asBigRational();
 			State matchingSrcState = new State(finalStates.get(i));
-			matchingSrcState.varValues[modules_file.getVarIndex(recur_var)] = ((Integer) matchingSrcState.varValues[modules_file.getVarIndex(recur_var)]) - 1;
+			matchingSrcState.var_values[modules_file.getVarIndex(recur_var)] = ((Integer) matchingSrcState.var_values[modules_file.getVarIndex(recur_var)]) - 1;
 			recur_base_probs.put(relevant_states.indexOf(matchingSrcState), prob);
 		}
 	}
@@ -139,7 +143,7 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 		// Computing the coefficients of the recurrence relations
 		for (State target : currStates) {
 			State matchingSrcState = new State(target);
-			matchingSrcState.varValues[modules_file.getVarIndex(recur_var)] = ((Integer) matchingSrcState.varValues[modules_file.getVarIndex(recur_var)]) - 1;
+			matchingSrcState.var_values[modules_file.getVarIndex(recur_var)] = ((Integer) matchingSrcState.var_values[modules_file.getVarIndex(recur_var)]) - 1;
 			int matchingSrcIndex = relevant_states.indexOf(matchingSrcState);
 
 			Expression expr = generateTargetExpression(target, FilterOperator.ALL);
@@ -164,7 +168,7 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 	 */
 	public void computeRecurTransTarg(List<State> states) throws PrismException
 	{
-		int currentRecurVal = (int) states.get(0).varValues[recur_var_index];
+		int currentRecurVal = (int) states.get(0).var_values[recur_var_index];
 		int targRecurVal = isEntryRep ? currentRecurVal : currentRecurVal + 1;
 
 		Set<State> target = targ.getStates(targRecurVal, 2);
@@ -172,7 +176,9 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 
 		if (target.size() > 0) {
 			Expression expr = generateTargetExpression(target, FilterOperator.ALL);
+			pmc.setLog(new PrismDevNullLog());
 			Result result = pmc.check(second_model, expr);
+			pmc.setLog(parent.getLog());
 			ParamResult paramResult = (ParamResult) result.getResult();
 			StateValues sa = paramResult.getRegionValues().getStateValues();
 
@@ -357,90 +363,107 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 	}
 
 	@Override
-	public void computeTotalProbability(List<State> currentStates)
+	public void computeFuncAndTotalProbability(List<State> currentStates) throws PrismLangException
 	{
-		result = 0.0;
-		str_result = "";
 		int n = end_val - init_val;
+		int K = ((DeclarationInt) decl_recur_var.getDeclType()).getHigh().evaluateInt();
+		double result = computeTotalProbabilityUsingFunc(currentStates, n);
+
+		if (RecurrenceModelChecker.PRINT_RESULT)
+			System.out.println("\nResult (iter=" + (init_val + n + (K - end_val)) + ") :" + result);
+
+		if (recur_param_value.contains(":")) {
+			String[] vals = recur_param_value.split(":");
+			int low = Integer.parseInt(vals[0]);
+			int high = Integer.parseInt(vals[1]);
+
+			for (int i = low + 1; i < high + 1; i++) {
+				result = computeTotalProbabilityUsingFunc(currentStates, ++n);
+				System.out.println("Result (iter=" + (init_val + n + (K - end_val)) + ") :" + result);
+			}
+		}
+
+		Log.p(Level.INFO, "Formation of the Equation", this.getClass());
+		System.out.println("\nFunction String:");
+		System.out.println(str_func + "\n");
+	}
+
+	public void computeQuantileProbUsingFunc(List<State> currentStates) throws PrismLangException
+	{
+		int n = 1;
+		int K = ((DeclarationInt) decl_recur_var.getDeclType()).getHigh().evaluateInt();
+		double lower_result = 0;
+		double upper_result = computeTotalProbabilityUsingFunc(currentStates, n);
+		while (RecurrenceModelChecker.QUANT_PROB > upper_result) {
+			lower_result = upper_result;
+			upper_result = computeTotalProbabilityUsingFunc(currentStates, ++n);
+			if ((init_val + n + (K - end_val)) == 10000) {
+				System.out.println(
+						"\nCould not reach the quantile probability " + RecurrenceModelChecker.QUANT_PROB + " within the recurrence variable value of 10000.");
+				System.out.println("Quantile Prob: " + RecurrenceModelChecker.QUANT_PROB);
+				System.out.println("Lower (iter=" + (init_val + (n - 1) + (K - end_val)) + ") :" + lower_result);
+				System.out.println("Upper (iter=" + (init_val + n + (K - end_val)) + ") :" + upper_result);
+				return;
+			}
+		}
+		System.out.println("\nQuantile Prob: " + RecurrenceModelChecker.QUANT_PROB);
+		System.out.println("Lower (iter=" + (init_val + (n - 1) + (K - end_val)) + ") :" + lower_result);
+		System.out.println("Upper (iter=" + (init_val + n + (K - end_val)) + ") :" + upper_result);
+	}
+
+	public double computeTotalProbabilityUsingFunc(List<State> currentStates, int n) throws PrismLangException
+	{
+		double result = 0.0;
+
+		// Compute function string only for the first time 
+		boolean is_required_func_str = (str_func == null);
+
+		if (is_required_func_str)
+			str_func = "";
 
 		for (int i = 0; i < updated_var_index.length; i++) {
 			State matchingInitEntryState = new State(relevant_states.get(recur_var_list.get(i)));
-			matchingInitEntryState.varValues[modules_file.getVarIndex(recur_var)] = init_val;
+			matchingInitEntryState.var_values[modules_file.getVarIndex(recur_var)] = init_val;
 			if (updated_var_index[i] == -1) {
-				double val = final_probs.get(firstRepStates.indexOf(matchingInitEntryState)).doubleValue();
+				double val = final_probs.get(first_rep.indexOf(matchingInitEntryState)).doubleValue();
 				result += val;
-				str_result += " " + val + " ";
-
-				if (i != (updated_var_index.length - 1))
-					str_result += " +";
+				if (is_required_func_str) {
+					str_func += " " + val + " ";
+					if (i != (updated_var_index.length - 1))
+						str_func += " +";
+				}
 			} else if (updated_var_index[i] >= 0) {
 				double tmpProb = solutions.get(updated_var_index[i]).getValue(n).doubleValue().getReal();
-				str_result += " (" + solutions.get(updated_var_index[i]).getEqnString() + ") * ";
-				double val = final_probs.get(firstRepStates.indexOf(matchingInitEntryState)).doubleValue();
+				double val = final_probs.get(first_rep.indexOf(matchingInitEntryState)).doubleValue();
 				tmpProb *= val;
-				str_result += val;
 				result += tmpProb;
 
-				if (i != (updated_var_index.length - 1))
-					str_result += " +";
+				if (is_required_func_str) {
+					str_func += " (" + solutions.get(updated_var_index[i]).getEqnString() + ") * ";
+					str_func += val;
+					if (i != (updated_var_index.length - 1))
+						str_func += " +";
+				}
 			}
+
 		}
 
 		if (!init_targ_prob.isZero()) {
 			result += init_targ_prob.doubleValue();
-			str_result = "(" + str_result + " ) + " + init_targ_prob;
+			if (is_required_func_str)
+				str_func = "(" + str_func + " ) + " + init_targ_prob;
 		}
 
-		Log.p(Level.INFO, "Formation of the Equation", this.getClass());
-		System.out.println(str_result);
-		System.out.println(this);
-	}
-	
-	
-	public void computeTotalProbabilityXX(List<State> states)
-	{
-		result = 0.0;
-		str_result = "";
-		int n = end_val - init_val;
-
-		double[] probs = new double[recur_base_probs.size()];
-		for (int i = 0; i < probs.length; i++) {
-			if (updated_var_index[i] == -1) // corresponding state is a target state
-				probs[i] = 1;
-			else
-				probs[i] = recur_base_probs.get(i).doubleValue();
-		}
-
-		for (int i = 0; i < n; i++) {
-			double[] _probs = new double[probs.length];
-			System.arraycopy(probs, 0, _probs, 0, probs.length);
-			for (FirstOrderRecurrence f : required_recur_eqns) {
-				_probs[f.getVarIndex()] = f.evaluate(probs);
-			}
-			probs = _probs;
-		}
-
-		result = 0;
-
-		for (int i = 0; i < probs.length; i++) {
-			result += (probs[i] * final_probs.get(i).doubleValue());
-		}
-
-		if (!init_targ_prob.isZero()) {
-			result += init_targ_prob.doubleValue();
-		}
-
-		Log.p(Level.INFO, "Formation of the Equation", this.getClass());
-		System.out.println("Result :" + result);
-		System.out.println(this);
+		return result;
 	}
 
 	@Override
-	public void computeTotalProbabilityX(List<State> states)
+	public void computeTotalProbabilityX(List<State> states) throws PrismLangException
 	{
 		result = 0.0;
-		str_result = "";
+		str_func = "";
 		int n = end_val - init_val;
+		int K = ((DeclarationInt) decl_recur_var.getDeclType()).getHigh().evaluateInt();
 		int size = required_recur_eqns.size();
 
 		double[][] a = new double[size + 1][size + 1];
@@ -452,24 +475,45 @@ public abstract class AbstractBackwardModelChecker extends AbstractModelChecker
 			b[i] = f.getBaseVal().doubleValue();
 		}
 
-		// Special case
+		// Special case for constants
 		a[size][size] = 1.0;
 		b[size] = 1.0;
 
-		double[] probs = MatrixHelper.solve(a, b, n);
+		// Logging
+		Log.p(Level.INFO, "Formation of the Equation", this.getClass());
 
 		result = 0;
-
+		double[] probs = MatrixHelper.solve(a, b, n);
 		for (int i = 0; i < probs.length - 1; i++) {
 			result += (probs[i] * final_probs.get(i).doubleValue());
 		}
-
 		if (!init_targ_prob.isZero()) {
 			result += init_targ_prob.doubleValue();
 		}
 
-		Log.p(Level.INFO, "Formation of the Equation", this.getClass());
-		System.out.println("Result :" + result);
-		System.out.println(this);
+		System.out.println("\nResult (iter=" + (init_val + n + (K - end_val)) + ") :" + result);
+
+		// Parse recurrence parameter range
+		if (recur_param_value.contains(":")) {
+			String[] vals = recur_param_value.split(":");
+			int low = Integer.parseInt(vals[0]);
+			int high = Integer.parseInt(vals[1]);
+			for (int x = low + 1; x < high + 1; x++) {
+				probs = MatrixHelper.solve(a, probs, 1);
+
+				result = 0;
+
+				for (int i = 0; i < probs.length - 1; i++) {
+					result += (probs[i] * final_probs.get(i).doubleValue());
+				}
+
+				if (!init_targ_prob.isZero()) {
+					result += init_targ_prob.doubleValue();
+				}
+				System.out.println("Result (iter=" + (init_val + (++n) + (K - end_val)) + ") :" + result);
+			}
+		}
+		System.out.println("");
+		//System.out.println(this);
 	}
 }

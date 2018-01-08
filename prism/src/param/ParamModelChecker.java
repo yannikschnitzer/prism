@@ -408,7 +408,7 @@ final public class ParamModelChecker extends PrismComponent
 		int numStates = model.getNumStates();
 		List<State> statesList = model.getStatesList();
 		StateValues stateValues = new StateValues(numStates, model.getFirstInitialState());
-		int[] varMap = new int[statesList.get(0).varValues.length];
+		int[] varMap = new int[statesList.get(0).var_values.length];
 		for (int var = 0; var < varMap.length; var++) {
 			varMap[var] = var;
 		}
@@ -1111,7 +1111,7 @@ final public class ParamModelChecker extends PrismComponent
 			boolean isTransitionReward = rewStruct.getRewardStructItem(rewItem).isTransitionReward();
 			for (int state = 0; state < numStates; state++) {
 				if (guard.evaluateBoolean(constantValues, statesList.get(state))) {
-					int[] varMap = new int[statesList.get(0).varValues.length];
+					int[] varMap = new int[statesList.get(0).var_values.length];
 					for (int i = 0; i < varMap.length; i++) {
 						varMap[i] = i;
 					}

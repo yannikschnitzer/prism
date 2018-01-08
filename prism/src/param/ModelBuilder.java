@@ -497,7 +497,7 @@ public final class ModelBuilder extends PrismComponent
 		int recurVarIndex = varList.getIndex(recVar);
 		List<State> selectedStates = new ArrayList<State>();
 		for (State state : model.getStatesList()) {
-			if (state.varValues[recurVarIndex].equals(recVarVal))
+			if (state.var_values[recurVarIndex].equals(recVarVal))
 				selectedStates.add(state);
 		}
 		return selectedStates;

@@ -288,7 +288,7 @@ public class SymbolicEngine
 		for (i = 0; i < n; i++) {
 			// Compute probability/rate
 			p = getProbabilityInState(ups, i, state);
-			int[] varMap = new int[state.varValues.length];
+			int[] varMap = new int[state.var_values.length];
 			for (int var = 0; var < varMap.length; var++) {
 				varMap[var] = var;
 			}

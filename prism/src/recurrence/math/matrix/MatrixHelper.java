@@ -22,6 +22,10 @@ public class MatrixHelper
 	 */
 	static double[][] matrixPower(double[][] base, long pow)
 	{
+		// if power is equal to one skip this method
+		if (pow == 1)
+			return base;
+
 		int n = base.length;
 
 		// Generate identity matrix
