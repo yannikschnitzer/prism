@@ -291,7 +291,7 @@ endif
 # For CUDD, we default either to ./cudd or, if that does not exist, ../cudd
 # To override, comment out the first line and use the second (or specify from the command-line)
 #CUDD_DIR =		$(shell if [ -d cudd ]; then echo cudd; else echo ../cudd; fi )
-CUDD_DIR =		../cudd-3.0.0
+CUDD_DIR =		../cudd-chain
 
 SRC_DIR =		src
 CLASSES_DIR =	classes
