@@ -1,0 +1,36 @@
+
+---
+Download/connect/compile
+---
+
+git clone https://github.com/davexparker/prism.git prism
+cd prism
+git checkout cudd-chain
+
+git clone https://github.com/davexparker/Chain-CUDD-3.0.0.git cudd-chain
+cd cudd-chain
+git checkout prism
+
+cd ../prism
+make
+make tests
+
+
+
+
+---
+Fork of Bryant's extension of CUDD,
+with PRISM-cudd-3.0.0 changes patched in
+was created like this
+---
+
+git clone https://github.com/davexparker/Chain-CUDD-3.0.0.git cudd-chain
+cd cudd-chain
+git remote add rebryant https://github.com/rebryant/Chain-CUDD-3.0.0.git
+git remote add prismmodelchecker https://github.com/prismmodelchecker/cudd.git
+git fetch --all
+
+git checkout -b prism origin/master
+git cherry-pick 7ae9eb1d289ec9cadc7c45a75102eafa05baa111..a3fcc1cbdaaa44de98430f99b1eebc6d438abffd
+git push -u origin prism
+
