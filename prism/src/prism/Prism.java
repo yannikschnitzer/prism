@@ -41,6 +41,7 @@ import explicit.CTMCModelChecker;
 import explicit.ConstructModel;
 import explicit.DTMC;
 import explicit.DTMCModelChecker;
+import explicit.Distribution;
 import explicit.ExplicitFiles2Model;
 import explicit.FastAdaptiveUniformisation;
 import explicit.FastAdaptiveUniformisationModelChecker;
@@ -4083,6 +4084,34 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 			probsExpl.clear();
 		if (fileOut != null)
 			tmpLog.close();
+	}
+
+	public Distribution computeInstantaneousExpressionDistribution(int k, Expression expr) throws PrismException
+	{
+		long l = 0; // timer
+		Distribution dist;
+		// Do some checks
+		if (!(getModelType() == ModelType.DTMC))
+			throw new PrismException("Only computed for DTMCs");
+		if (k < 0)
+			throw new PrismException("Cannot compute transient probabilities for negative time value");
+
+		l = System.currentTimeMillis();
+		if (!getExplicit()) {
+			throw new PrismException("Explicit engine only, currently");
+		}
+		else {
+			buildModelIfRequired();
+			DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
+			mcDTMC.setModelCheckingInfo(getModelInfo(), null, getRewardGenerator());
+			dist = mcDTMC.computeInstantaneousExpressionDistribution((DTMC<Double>) getBuiltModelExplicit(), k, expr);
+		}
+		l = System.currentTimeMillis() - l;
+
+		// print out computation time
+		mainLog.println("\nTime for transient probability computation: " + l / 1000.0 + " seconds.");
+		
+		return dist;
 	}
 
 	public void explicitBuildTest() throws PrismException
