@@ -32,7 +32,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Vector;
 
-import param.BigRational;
 import parser.State;
 import parser.Values;
 import parser.VarList;
@@ -81,6 +80,13 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 	private Values undefinedConstantValues;
 	// Actual values of (some or all) constants
 	private Values constantValues;
+	
+	// Are we in "exact" mode? (using exact arithmetic to evaluate constants/expressions)
+	private boolean exact;
+	
+	// Detailed info about variables and theirs storage
+	// Only created after (each time) constants are set 
+	private VarList varList;
 
 	// Constructor
 
@@ -103,6 +109,7 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 		varTypes = new Vector<Type>();
 		undefinedConstantValues = null;
 		constantValues = null;
+		exact = false;
 	}
 
 	// Set methods
@@ -1059,9 +1066,12 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 	 */
 	public void setUndefinedConstants(Values someValues, boolean exact) throws PrismLangException
 	{
+		this.exact = exact;
 		undefinedConstantValues = someValues == null ? null : new Values(someValues);
 		constantValues = constantList.evaluateConstants(someValues, null, exact);
+		createTheVarList();
 		doSemanticChecksAfterConstants();
+		varList.addVarIndexing(this);
 	}
 
 	@Override
@@ -1073,9 +1083,12 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 	@Override
 	public void setSomeUndefinedConstants(Values someValues, boolean exact) throws PrismLangException
 	{
+		this.exact = exact;
 		undefinedConstantValues = someValues == null ? null : new Values(someValues);
 		constantValues = constantList.evaluateSomeConstants(someValues, null, exact);
+		createTheVarList();
 		doSemanticChecksAfterConstants();
+		varList.addVarIndexing(this);
 	}
 
 	/**
@@ -1107,6 +1120,16 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 	}
 
 	/**
+	 * Create and store a VarList object storing information about all variables in this model.
+	 * Assumes that values for constants have been provided for the model.
+	 * Also performs various syntactic checks on the variables.   
+	 */
+	private void createTheVarList() throws PrismLangException
+	{
+		varList = new VarList(this, exact);
+	}
+
+	/**
 	 * Create a State object representing the default initial state of this model.
 	 * If there are potentially multiple initial states (because the model has an 
 	 * init...endinit specification), this method returns null;
@@ -1133,50 +1156,13 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 	 */
 	public State getDefaultInitialState(boolean exact) throws PrismLangException
 	{
-		int i, j, count, n, n2;
-		Module module;
-		Declaration decl;
-		State initialState;
-		Object initialValue;
-
-		if (initStates != null) {
-			return null;
+		// Recreate VarList if, for some reason, the stored value of 'exact' does not match
+		// what was passed in when setting the constants initially
+		if (this.exact != exact) {
+			createTheVarList();
 		}
-
-		// Create State object
-		initialState = new State(getNumVars());
-		// Then add values for all globals and all locals, in that order
-		count = 0;
-		n = getNumGlobals();
-		for (i = 0; i < n; i++) {
-			decl = getGlobal(i);
-			if (exact) {
-				BigRational r = decl.getStartOrDefault().evaluateExact(constantValues);
-				initialValue = getGlobal(i).getType().castFromBigRational(r);
-			} else {
-				initialValue = decl.getStartOrDefault().evaluate(constantValues);
-				initialValue = getGlobal(i).getType().castValueTo(initialValue);
-			}
-			initialState.setValue(count++, initialValue);
-		}
-		n = getNumModules();
-		for (i = 0; i < n; i++) {
-			module = getModule(i);
-			n2 = module.getNumDeclarations();
-			for (j = 0; j < n2; j++) {
-				decl = module.getDeclaration(j);
-				if (exact) {
-					BigRational r = decl.getStartOrDefault().evaluateExact(constantValues);
-					initialValue = module.getDeclaration(j).getType().castFromBigRational(r);
-				} else {
-					initialValue = decl.getStartOrDefault().evaluate(constantValues);
-					initialValue = module.getDeclaration(j).getType().castValueTo(initialValue);
-				}
-				initialState.setValue(count++, initialValue);
-			}
-		}
-
-		return initialState;
+		
+		return varList.getDefaultInitialState();
 	}
 
 	/**
@@ -1192,9 +1178,9 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 	}
 
 	/**
-	 * Recompute all information about variables.
-	 * More precisely... TODO
-	 * Note: This does not re-compute the list of all identifiers used. 
+	 * Recompute basic information about variables.
+	 * Note: This does not re-compute the list of all identifiers used,
+	 * nor does it (re)create a VarList object. 
 	 */
 	public void recomputeVariableinformation() throws PrismLangException
 	{
@@ -1219,8 +1205,7 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 				varTypes.add(decl.getType());
 			}
 		}
-		// Find all instances of variables, replace identifiers with variables.
-		// Also check variables valid, store indices, etc.
+		// Find/check all instances of variables, replace identifiers with variables.
 		findAllVars(varNames, varTypes);
 	}
 
@@ -1231,7 +1216,11 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 	 */
 	public VarList createVarList() throws PrismLangException
 	{
-		return new VarList(this);
+		if (varList == null) {
+			createTheVarList();
+		}
+		// TODO: rename in Modelgen?
+		return varList;
 	}
 
 	// Methods required for ASTElement:
@@ -1348,6 +1337,13 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 		ret.varNames = (varNames == null) ? null : (Vector<String>)varNames.clone();
 		ret.varTypes = (varTypes == null) ? null : (Vector<Type>)varTypes.clone();
 		ret.constantValues = (constantValues == null) ? null : new Values(constantValues);
+		ret.exact = exact;
+		// Recreate the VarList, ignoring exceptions
+		try {
+			ret.createTheVarList();
+		} catch (PrismLangException e) {
+			// Ignore since it has already been created successfully with the same ModulesFile
+		}
 		
 		return ret;
 	}

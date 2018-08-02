@@ -226,7 +226,7 @@ public class ModulesFileModelGenerator implements ModelGenerator, RewardGenerato
 		List<State> initStates = new ArrayList<State>();
 		// Easy (normal) case: just one initial state
 		if (modulesFile.getInitialStates() == null) {
-			State state = modulesFile.getDefaultInitialState();
+			State state = varList.getDefaultInitialState();
 			initStates.add(state);
 		}
 		// Otherwise, there may be multiple initial states
