@@ -643,7 +643,7 @@ public class NondetModel extends ProbModel
 				JDDVars.copyArray(this.getModuleDDRowVars()),
 				JDDVars.copyArray(this.getModuleDDColVars()),
 				// New var info
-				newVarList.getNumVars(), newVarList, newVarDDRowVars, newVarDDColVars,
+				newVarList.getNumPrimitiveVars(), newVarList, newVarDDRowVars, newVarDDColVars,
 				// Constants (no change)
 				this.getConstantValues());
 

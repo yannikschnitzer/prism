@@ -26,6 +26,8 @@
 
 package parser.type;
 
+import java.util.function.Predicate;
+
 import parser.EvaluateContext.EvalMode;
 import parser.ast.DeclarationType;
 import prism.PrismLangException;
@@ -102,6 +104,39 @@ public abstract class Type
 	{
 		// Play safe: assume error unless explicitly overridden.
 		throw new PrismLangException("Cannot cast a value to type " + getTypeString());
+	}
+	
+	/**
+	 * Check that a variable/constant of this type can be assigned a value of type {@code rhs}.
+	 * Returns silently if the assignment is OK; throws an exception if not.
+	 * This goes slightly beyond {@link Type#canCastTypeTo(Type)} in that it also
+	 * deals with block assignments to arrays, as allowed in the PRISM language,
+	 * e.g. (a'=x) as shorthand for (a[0]'=x) & ... & (a[n-1]'=x).
+	 * It also enforces assignment of clocks to integer values.
+	 */
+	public void checkAssignAllowed(Type rhs) throws PrismLangException
+	{
+		// Default implementation for primitives: just check it can be cast
+		if (isPrimitive()) {
+			// Check assignment types match
+			if (!canCastTypeTo(rhs)) {
+				throw new PrismLangException("Cannot assign " + rhs + " to " + this);
+			}
+		} else {
+			throw new RuntimeException("Not implemented");
+		}
+	}
+	
+	/**
+	 * Returns true if this type or one of its subtypes matches the specified predicate.
+	 */
+	public boolean contains(Predicate<Type> pred)
+	{
+		if (isPrimitive()) {
+			return pred.test(this);
+		} else {
+			throw new RuntimeException("Not implemented");
+		}
 	}
 	
 	/**

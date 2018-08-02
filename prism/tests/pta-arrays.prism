@@ -1,0 +1,27 @@
+// Arrays of clocks
+
+pta
+
+const int k = 1;
+
+module M
+
+	s : [0..3];
+	c : array[2] of clock;
+	
+	[] s=0 & c[0]>=0 -> 0.6 : (s'=1) + 0.4 : (s'=2)&(c[0]'=0);
+	[] s=1 & c[k-1]=0 -> (s'=3);
+	[] s=1 & c[k]>=6 -> (s'=1)&(c[1]'=0);
+	[] s=2 & c[0]=0 & c[1]=2 -> (s'=3)&(c[1]'=0);
+	[] s=2 & c[0]>=6 -> (s'=1)&(c[s-1]'=0);
+	[] s=3 -> (s'=3);
+
+endmodule
+
+label "target" = s=3;
+label "end" = s=3 | s=1;
+
+rewards "time"
+	true : 1;
+endrewards
+

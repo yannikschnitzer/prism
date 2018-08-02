@@ -39,6 +39,7 @@ import dv.DoubleVector;
 import jdd.*;
 import odd.*;
 import parser.*;
+import parser.VarList.VarArray;
 import parser.ast.*;
 import parser.ast.ExpressionFilter.FilterOperator;
 import parser.type.*;
@@ -269,6 +270,10 @@ public class StateModelChecker extends PrismComponent implements ModelChecker
 		// Unary ops
 		else if (expr instanceof ExpressionUnaryOp) {
 			res = checkExpressionUnaryOp((ExpressionUnaryOp) expr, statesOfInterest);
+		}
+		// Arrays
+		else if (expr instanceof ExpressionArrayAccess) {
+			res = checkExpressionArrayAccess((ExpressionArrayAccess) expr, statesOfInterest);
 		}
 		// Functions
 		else if (expr instanceof ExpressionFunc) {
@@ -529,7 +534,6 @@ public class StateModelChecker extends PrismComponent implements ModelChecker
 	{
 		StateValues res1 = null, res2 = null;
 		JDDNode dd, dd1, dd2;
-		String s;
 
 		// Check for some easy (and common) special cases before resorting to
 		// the general case
@@ -544,14 +548,13 @@ public class StateModelChecker extends PrismComponent implements ModelChecker
 			e1 = (ExpressionVar) expr1;
 			e2 = expr2;
 			// get var's index
-			s = e1.getName();
-			v = varList.getIndex(s);
+			v = varList.getIndexOfFirstPrimitive(e1.getVarIndex());
 			if (v == -1) {
 				throw new PrismLangException("Unknown variable \"" + e1.getName() + "\" (no index information)", e1);
 			}
 			// get some info on the variable
-			l = varList.getLow(v);
-			h = varList.getHigh(v);
+			l = varList.getPrimitiveLow(v);
+			h = varList.getPrimitiveHigh(v);
 			// create dd
 			dd = JDD.Constant(0);
 			i = e2.evaluateInt(constantValues);
@@ -596,14 +599,13 @@ public class StateModelChecker extends PrismComponent implements ModelChecker
 			e1 = expr1;
 			e2 = (ExpressionVar) expr2;
 			// get var's index
-			s = e2.getName();
-			v = varList.getIndex(s);
+			v = varList.getIndexOfFirstPrimitive(e2.getVarIndex());
 			if (v == -1) {
 				throw new PrismLangException("Unknown variable \"" + e2.getName() + "\" (no index information)", e2);
 			}
 			// get some info on the variable
-			l = varList.getLow(v);
-			h = varList.getHigh(v);
+			l = varList.getPrimitiveLow(v);
+			h = varList.getPrimitiveHigh(v);
 			// create dd
 			dd = JDD.Constant(0);
 			i = e1.evaluateInt(constantValues);
@@ -735,6 +737,40 @@ public class StateModelChecker extends PrismComponent implements ModelChecker
 		}
 	}
 
+	/**
+	 * Check an array access.
+	 * The result will have valid results at least for the states of interest (use model.getReach().copy() for all reachable states)
+	 * <br>[ REFS: <i>result</i>, DEREFS: statesOfInterest ]
+	 */
+	protected StateValues checkExpressionArrayAccess(ExpressionArrayAccess expr, JDDNode statesOfInterest) throws PrismException
+	{
+		// Compute an MTBDD of the variable indices for all states
+		JDDNode ddVarIndex = computeVarIndices(expr, statesOfInterest.copy());
+		// Compute the range of possible variable indices
+		int varIndexMin = (int) JDD.FindMinOver(ddVarIndex, statesOfInterest.copy());
+		int varIndexMax = (int) JDD.FindMaxOver(ddVarIndex, statesOfInterest.copy());
+		// Iterate though them and build up the MTBDDs for each one
+		// They don't overlap, so we can just add them up to get the final result
+		// NB: Might get weird results for unreachable states if 0 is in the index range,
+		// but this'll get filtered out in the parent call
+		JDDNode res = JDD.Constant(0);
+		for (int varIndex = varIndexMin; varIndex <= varIndexMax; varIndex++) {
+			int l = varList.getPrimitiveLow(varIndex);
+			int h = varList.getPrimitiveHigh(varIndex);
+			JDDNode dd = JDD.Constant(0);
+			for (int i = l; i <= h; i++) {
+				dd = JDD.SetVectorElement(dd, varDDRowVars[varIndex], i - l, i);
+			}
+			dd = JDD.ITE(JDD.Equals(ddVarIndex.copy(), varIndex), dd, JDD.Constant(0));
+			res = JDD.Apply(JDD.PLUS, res, dd);
+		}
+		// Derefs
+		JDD.Deref(ddVarIndex);
+		JDD.Deref(statesOfInterest);
+
+		return new StateValuesMTBDD(res, model);
+	}
+	
 	/**
 	 * Check a 'function'.
 	 * The result will have valid results at least for the states of interest (use model.getReach().copy() for all reachable states)
@@ -1024,27 +1060,24 @@ public class StateModelChecker extends PrismComponent implements ModelChecker
 	 */
 	protected StateValues checkExpressionVar(ExpressionVar expr, JDDNode statesOfInterest) throws PrismException
 	{
-		String s;
-		int v, l, h, i;
 		JDDNode dd;
 
 		// it's generally more efficient not to restrict to statesOfInterest here
 		// so we ignore statesOfInterest
 		JDD.Deref(statesOfInterest);
 
-		s = expr.getName();
 		// get the variable's index
-		v = varList.getIndex(s);
-		if (v == -1) {
+		int varIndex = varList.getIndexOfFirstPrimitive(expr.getVarIndex());
+		if (varIndex == -1) {
 			throw new PrismLangException("Unknown variable \"" + expr.getName() + "\"", expr);
 		}
 		// get some info on the variable
-		l = varList.getLow(v);
-		h = varList.getHigh(v);
+		int l = varList.getPrimitiveLow(varIndex);
+		int h = varList.getPrimitiveHigh(varIndex);
 		// create dd
 		dd = JDD.Constant(0);
-		for (i = l; i <= h; i++) {
-			dd = JDD.SetVectorElement(dd, varDDRowVars[v], i - l, i);
+		for (int i = l; i <= h; i++) {
+			dd = JDD.SetVectorElement(dd, varDDRowVars[varIndex], i - l, i);
 		}
 
 		return new StateValuesMTBDD(dd, model);
@@ -1511,6 +1544,86 @@ public class StateModelChecker extends PrismComponent implements ModelChecker
 	}
 	
 	/**
+	 * Given a variable reference {@code varRef} to a primitive variable, compute
+	 * an MTBDD (over row variables) giving the index to this primitive variable
+	 * for every state in {@code statesOfInterest}. The variable index will differ
+	 * across states since, e.g., for an array access a[i] the value of variable i
+	 * differs in each state and so the index of primitive variable a[i] does too.
+	 * 
+	 * Array out-of-bounds accesses are detected and cause an exception to be thrown
+	 * (but only if they occur in states in {@code statesOfInterest}).
+	 * <br>[ REFS: <i>result</i>, DEREFS: statesOfInterest ]
+	 */
+	public JDDNode computeVarIndices(Expression varRef, JDDNode statesOfInterest) throws PrismException
+	{
+		// TODO: could do with backlinks in Vars?
+		List<VarList.Var> varPath = varList.getSomeVarPathForVarRef(varRef);
+		
+		// Build an MTBDD containing the variable index to look up the appropriate array element.
+		// This is done by adding up the offset for each array access or variable ref (for all states)
+		JDDNode ddVarIndex = JDD.Constant(0);
+//		JDD.PrintTerminalsAndNumbers(ddVarIndex, allDDRowVars.n());
+		// Recurse over the AST elements in the variable reference
+		
+			
+		Expression ptr = varRef;
+		int depth = varPath.size() - 1;
+		for (int i = depth - 1; i >= 0 ; i--) {
+			if (ptr instanceof ExpressionVar) {
+				ExpressionVar exprVar = (ExpressionVar) ptr;
+				// Add the var index offset for this variable
+				int varPrimitiveIndex = varList.getIndexOfFirstPrimitive(exprVar.getVarIndex());
+				ddVarIndex = JDD.Apply(JDD.PLUS, ddVarIndex, JDD.Apply(JDD.TIMES, JDD.Constant(varPrimitiveIndex), statesOfInterest.copy()));
+//				JDD.PrintTerminalsAndNumbers(ddVarIndex, allDDRowVars.n());
+				break;
+			} else if (ptr instanceof ExpressionArrayAccess) {
+				ExpressionArrayAccess exprArray = (ExpressionArrayAccess) ptr;
+				// Check index recursively
+				JDDNode index = checkExpressionDD(exprArray.getIndex(), statesOfInterest.copy());
+				// Check for out-of-bounds accesses
+				int arrayLength = ((VarArray) varPath.get(i)).elements.size();
+				JDDNode indexUnder = JDD.LessThan(index.copy(), 0);
+				if (JDD.AreIntersecting(indexUnder, statesOfInterest)) {
+					JDD.Deref(index);
+					JDD.Deref(ddVarIndex);
+					JDD.Deref(statesOfInterest);
+					JDD.Deref(indexUnder);
+					int evalIndex = (int) JDD.FindMin(index);
+					throw new PrismLangException("Array index out of bounds (index=" + evalIndex + ", length=" + arrayLength + ")", varRef);
+				}
+				JDD.Deref(indexUnder);
+				JDDNode indexOver = JDD.GreaterThan(index.copy(), arrayLength - 1);
+				if (JDD.AreIntersecting(indexOver, statesOfInterest)) {
+					JDD.Deref(index);
+					JDD.Deref(ddVarIndex);
+					JDD.Deref(statesOfInterest);
+					JDD.Deref(indexOver);
+					int evalIndex = (int) JDD.FindMax(index);
+					throw new PrismLangException("Array index out of bounds (index=" + evalIndex + ", length=" + arrayLength + ")", varRef);
+				}
+				JDD.Deref(indexOver);
+				int elementSize = ((VarArray) varPath.get(i)).elementSize;
+				// Add the index multipliers by the array element size 
+				ddVarIndex = JDD.Apply(JDD.PLUS, ddVarIndex, JDD.Apply(JDD.TIMES, JDD.Constant(elementSize), index));
+//				JDD.PrintTerminalsAndNumbers(ddVarIndex, allDDRowVars.n());
+				// Recurse
+				ptr = exprArray.getArray();
+			} else {
+				throw new PrismLangException("Unexpected expression type when translating array access", varRef);
+			}
+		}
+		
+		ExpressionVar exprVar = (ExpressionVar) ptr;
+		// Add the var index offset for this variable
+		int varPrimitiveIndex = varList.getIndexOfFirstPrimitive(exprVar.getVarIndex());
+		ddVarIndex = JDD.Apply(JDD.PLUS, ddVarIndex, JDD.Apply(JDD.TIMES, JDD.Constant(varPrimitiveIndex), statesOfInterest.copy()));
+		
+		
+		JDD.Deref(statesOfInterest);
+		return ddVarIndex;
+	}
+	
+	/**
 	 * Method for handling the recursive part of PCTL* checking, i.e.,
 	 * recursively checking maximal state subformulas and replacing them
 	 * with labels and the corresponding satisfaction sets.
@@ -1551,8 +1664,6 @@ public class StateModelChecker extends PrismComponent implements ModelChecker
 		return (Expression) exprNew.accept(new ReplaceLabels(labelReplacements));
 	}
 
-	// Utility functions for symbolic model checkers 
-	
 	/**
 	 * Get the state rewards (from a model) corresponding to the index of this R operator.
 	 * Throws an exception (with explanatory message) if it cannot be found.

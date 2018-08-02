@@ -27,8 +27,11 @@
 package parser.ast;
 
 import parser.EvaluateContext;
+import parser.EvaluateContext.EvalMode;
+import parser.EvaluateContextState;
 import parser.State;
 import parser.VarList;
+import parser.VarUtils;
 import parser.type.Type;
 import parser.visitor.ASTVisitor;
 import parser.visitor.DeepCopy;
@@ -39,104 +42,91 @@ import prism.PrismLangException;
  */
 public class UpdateElement extends ASTElement
 {
-	/** The variable that is assigned to */
-	private String var;
-	/** The expression for the assignment value */
+	/** Reference to the variable to be updated
+	 * (ExpressionVar for variable, ExpressionArray for array, etc.) */
+	private Expression varRef;
+	/** Name of the variable */
+	private String varName;
+	/** The expression for the assignment value, used to up */
 	private Expression expr;
-	/** The type of the assignment (initially empty / unknown) */
-	private Type type;
-	/** The identifier expression for the variable (for position information, etc) */
-	private ExpressionIdent ident;
-	/** The variable index (initially unknown, i.e., -1) */
-	private int index;
 
 	/** Constructor */
-	public UpdateElement(ExpressionIdent v, Expression e)
+	public UpdateElement(Expression varRef, Expression expr)
 	{
-		var = v.getName();
-		expr = e;
-		type = null; // Type currently unknown
-		ident = v;
-		index = -1; // Index currently unknown
+		this.varRef = varRef;
+		this.expr = expr;
 	}
 
 	/** Shallow copy constructor */
 	public UpdateElement(UpdateElement other)
 	{
-		var = other.var;
+		varRef = other.varRef;
+		varName = other.varName;
 		expr = other.expr;
-		type = other.type;
-		ident = other.ident;
-		index = other.index;
-	}
-
-	// Getters
-
-	/** Get the name of the variable that is the assignment target */
-	public String getVar()
-	{
-		return var;
-	}
-
-	/** Get the update expression */
-	public Expression getExpression()
-	{
-		return expr;
-	}
-
-	/** Get the type of the update */
-	public Type getType()
-	{
-		return type;
-	}
-
-	/** Get the ExpressionIdent corresponding to the variable name (for position information) */
-	public ExpressionIdent getVarIdent()
-	{
-		return ident;
-	}
-
-	/** Set the name of the variable that is the assignment target */
-	public void setVar(String var)
-	{
-		this.var = var;
-	}
-
-	/** Get the variable index for the variable that is the assignment target */
-	public int getVarIndex()
-	{
-		return index;
 	}
 
 	// Setters
 	
-	/** Set the update expression */
+	/**
+	 * Set the reference to the variable to be updated
+	 * (ExpressionVar for variable, ExpressionArray for array, etc.)
+	 * */
+	public void setVarRef(Expression varRef)
+	{
+		this.varRef = varRef;
+	}
+
+	/**
+	 * Set the expression that will be assigned to the variable.
+	 */
 	public void setExpression(Expression expr)
 	{
 		this.expr = expr;
 	}
 
-	/** Set the type of the update */
-	public void setType(Type type)
-	{
-		this.type = type;
-	}
+	// Getters
 
-	/** Set the ExpressionIdent corresponding to the variable name (for position information) */
-	public void setVarIdent(ExpressionIdent ident)
+	/**
+	 * Get the reference to the variable to be updated
+	 * (ExpressionVar for variable, ExpressionArray for array, etc.)
+	 */
+	public Expression getVarRef()
 	{
-		this.ident = ident;
-		this.var = ident.getName();
-	}
-
-	/** Set the variable index for the variable that is the assignment target */
-	public void setVarIndex(int index)
-	{
-		this.index = index;
+		return varRef;
 	}
 
 	/**
-	 * Execute this update element, applying variable changes to a State object.
+	 * Get the expression that will be assigned to the variable.
+	 */
+	public Expression getExpression()
+	{
+		return expr;
+	}
+
+	/**
+	 * Get the name of the variable that is the assignment target.
+	 * This is the "parent" variable, e.g. "a" for a[i][j].
+	 */
+	public String getVarName()
+	{
+		// Do this on demand, because need some info about variables
+		// that is not available when this is first constructed by the parser 
+		if (varName == null) {
+			varName = VarUtils.getVarNameFromVarRef(varRef);
+		}
+		return varName;
+	}
+
+	/**
+	 * Get the type of the update element (i.e. the type of the variable being updated). 
+	 */
+	public Type getType()
+	{
+		return varRef.getType();
+	}
+
+	/**
+	 * Execute this update element, applying variable changes to a State object.  
 	 * Current variable/constant values are specified as an EvaluateContext object.
 	 * The evaluation mode and values for any undefined constants are also taken from this object.
 	 * @param ec Context for evaluation of variables values etc.
@@ -145,8 +135,13 @@ public class UpdateElement extends ASTElement
 	 */
 	public void update(EvaluateContext ec, State newState, VarList varList) throws PrismLangException
 	{
-		Object newValue = getType().castValueTo(expr.evaluate(ec));
-		newState.setValue(index, newValue);
+		try {
+			Object newValue = expr.evaluate(ec);
+			VarUtils.assignVarValueInState(varRef, ec, newState, newValue, expr.getType(), varList);
+		} catch (PrismLangException e) {
+			e.setASTElement(expr);
+			throw e;
+		}
 	}
 	
 	/**
@@ -156,13 +151,27 @@ public class UpdateElement extends ASTElement
 	 */
 	public void checkUpdate(State oldState, VarList varList) throws PrismLangException
 	{
-		int valNew;
-		valNew = varList.encodeToInt(index, expr.evaluate(oldState));
-		if (valNew < varList.getLow(index) || valNew > varList.getHigh(index))
-			throw new PrismLangException("Value of variable " + var + " overflows", expr);
+		// TODO: primitive vs top-level
+		/*int newValueInt = varList.encodeVarValueToInt(index, newValue);
+		if (newValueInt < varList.getPrimitiveLow(index) || newValueInt > varList.getPrimitiveHigh(index)) {
+			String errMsg = "Overflow when assigning value " + newValue + " to variable " + VarUtils.evaluateVarRef(getVarRef(i), oldState, false);
+			throw new PrismLangException(errMsg, getElement(i));
+		}*/
 	}
 
-
+	/**
+	 * Convert this update element to a string in the context of a state.
+	 * i.e. with assignment values and array indices/etc. evaluated.
+	 * e.g. (a[i+1][0]'=i), in state i=1, returns "a[2][0]'=1".
+	 * Note that this is *not* parenthesised, as in the PRISM language, or as from toString(). 
+	 */
+	public String toString(State state, boolean exact) throws PrismLangException
+	{
+		EvaluateContext ec = new EvaluateContextState(state);
+		ec.setEvaluationMode(exact ? EvalMode.EXACT : EvalMode.FP);
+		return VarUtils.varRefToString(getVarRef(), ec) + "'=" + getExpression().evaluate(ec);
+	}
+	
 	// Methods required for ASTElement:
 
 	@Override
@@ -174,7 +183,7 @@ public class UpdateElement extends ASTElement
 	@Override
 	public UpdateElement deepCopy(DeepCopy copier) throws PrismLangException
 	{
-		ident = copier.copy(ident);
+		varRef = copier.copy(varRef);
 		expr = copier.copy(expr);
 
 		return this;
@@ -191,6 +200,6 @@ public class UpdateElement extends ASTElement
 	@Override
 	public String toString()
 	{
-		return "(" + getVar() + "'=" + getExpression() + ")";		
+		return "(" + getVarRef() + "'=" + getExpression() + ")";
 	}
 }

@@ -37,13 +37,16 @@ import java.util.Set;
 import parser.ParserUtils;
 import parser.Values;
 import parser.VarList;
+import parser.VarUtils;
 import parser.ast.ASTElement;
 import parser.ast.Command;
 import parser.ast.Declaration;
 import parser.ast.DeclarationClock;
 import parser.ast.DeclarationInt;
+import parser.ast.DeclarationIntUnbounded;
 import parser.ast.DeclarationType;
 import parser.ast.Expression;
+import parser.ast.ExpressionArrayAccess;
 import parser.ast.ExpressionBinaryOp;
 import parser.ast.ExpressionConstant;
 import parser.ast.ExpressionFunc;
@@ -62,9 +65,12 @@ import parser.ast.Property;
 import parser.ast.RewardStruct;
 import parser.ast.RewardStructItem;
 import parser.ast.Update;
+import parser.ast.UpdateElement;
 import parser.ast.Updates;
+import parser.type.Type;
 import parser.type.TypeClock;
 import parser.type.TypeInt;
+import parser.type.TypeTraverseModify;
 import parser.visitor.ASTTraverse;
 import parser.visitor.ASTTraverseModify;
 import prism.ModelType;
@@ -88,6 +94,8 @@ public class DigitalClocks extends PrismComponent
 	// Flags + settings
 	private boolean doScaling = true;
 
+	// Clock references per module
+	private Map<String, List<Expression>> clockRefLists;
 	// Object for computing max clock constraints
 	private ComputeClockInformation cci;
 	// String to be used for time action 
@@ -164,27 +172,25 @@ public class DigitalClocks extends PrismComponent
 		}
 		// Check for any references to clocks in rewards structures - not allowed.
 		for (RewardStruct rs : modulesFile.getRewardStructs()) {
-			rs.accept(new ASTTraverseModify()
-			{
-				public Object visit(ExpressionVar e) throws PrismLangException
-				{
-					if (e.getType() instanceof TypeClock) {
-						throw new PrismLangException("Reward structures cannot contain references to clocks", e);
-					} else {
-						return e;
-					}
-				}
-			});
+			List<Expression> clockRefs = rs.getAllVarRefs(t -> (t instanceof TypeClock));
+			if (!clockRefs.isEmpty()) {
+				throw new PrismLangException("Reward structures cannot contain references to clocks", clockRefs.get(0));
+			}
 		}
 		// Check for any global clocks
 		for (int v = 0; v < modulesFile.getNumGlobals(); v++) {
 			modulesFile.getGlobal(v).accept(new ASTTraverse()
 			{
-				public void visitPost(Declaration e) throws PrismLangException
+				private Declaration decl;
+				
+				public void visitPre(Declaration e) throws PrismLangException
 				{
-					if (e.getDeclType() instanceof DeclarationClock) {
-						throw new PrismLangException("Global clock variables are not allowed when using the digital clocks method", e);
-					}
+					decl = e;
+				}
+				
+				public void visitPost(DeclarationClock e) throws PrismLangException
+				{
+					throw new PrismLangException("Global clock variables are not allowed when using the digital clocks method", decl);
 				}
 			});
 		}
@@ -200,6 +206,10 @@ public class DigitalClocks extends PrismComponent
 		}
 
 		// Extract information about clocks from the model
+		clockRefLists = new HashMap<String, List<Expression>>();
+		for (int module = 0; module < modulesFile.getNumModules(); module++) {
+			clockRefLists.put(modulesFile.getModuleName(module), varList.getAllClockVarRefs(module));
+		}
 		cci = new ComputeClockInformation(modulesFile, propertiesFile, propertyToCheck);
 		mainLog.println("Computed clock maximums: " + cci.getClockMaxs());
 		if (doScaling) {
@@ -217,19 +227,24 @@ public class DigitalClocks extends PrismComponent
 		// Change all clock variable declarations to bounded integers
 		mf = (ModulesFile) mf.accept(new ASTTraverseModify()
 		{
-			public Object visit(Declaration e) throws PrismLangException
+			private Declaration inDecl;
+			
+			public void visitPre(Declaration e) throws PrismLangException
 			{
-				if (e.getDeclType() instanceof DeclarationClock) {
-					int cMax = cci.getScaledClockMax(e.getName());
-					if (cMax < 0) {
-						throw new PrismLangException("Clock " + e.getName() + " is unbounded since there are no references to it in the model");
+				inDecl = e;
+			}
+			
+			public Object visit(DeclarationClock e) throws PrismLangException
+			{
+				int cMax = cci.getScaledClockMax(inDecl.getName());
+				if (cMax < 0) {
+					if (inDecl.getType() instanceof TypeClock) {
+						throw new PrismLangException("Clock " + inDecl.getName() + " is unbounded since there are no references to it in the model");
+					} else {
+						throw new PrismLangException("Unbounded clock(s) in variable " + inDecl.getName() + " since there are no references in the model");
 					}
-					DeclarationType declType = new DeclarationInt(Expression.Int(0), Expression.Int(cMax + 1));
-					Declaration decl = new Declaration(e.getName(), declType);
-					return decl;
-				} else {
-					return e;
 				}
+				return new DeclarationInt(Expression.Int(0), Expression.Int(cMax + 1));
 			}
 		});
 
@@ -247,10 +262,18 @@ public class DigitalClocks extends PrismComponent
 				if (!Expression.isTrue(invar)) {
 					allInVariants = (allInVariants == null) ? invar.deepCopy() : Expression.And(allInVariants, invar.deepCopy());
 				}
-				// Replace all clocks x with x+1 in invariant
+				// Replace all variable references to clock x with x+1 in invariant
 				invar = (Expression) invar.accept(new ASTTraverseModify()
 				{
 					public Object visit(ExpressionVar e) throws PrismLangException
+					{
+						if (e.getType() instanceof TypeClock) {
+							return Expression.Plus(e, Expression.Int(1));
+						} else {
+							return e;
+						}
+					}
+					public Object visit(ExpressionArrayAccess e) throws PrismLangException
 					{
 						if (e.getType() instanceof TypeClock) {
 							return Expression.Plus(e, Expression.Int(1));
@@ -266,15 +289,30 @@ public class DigitalClocks extends PrismComponent
 				timeCommand.setGuard(invar);
 				// Update is constructed from clocks
 				Update up = new Update();
-				for (String x : cci.getClocksForModule(e.getName())) {
+				// For each clock (sub)variable in this module...
+				for (Expression x : getClockRefsForModule(e.getName())) {
 					// Get clock max value
-					int cMax = cci.getScaledClockMax(x);
+					String clockVarName = VarUtils.getVarNameFromVarRef(x);
+					int cMax = cci.getScaledClockMax(clockVarName);
+					// Create a new variable reference, with clock type converted to int
+					// Just need to deep copy, change the (top-level) variable type
+					// and then re-type-check for the type to propagate down
+					Expression xInt = x.deepCopy();
+					Expression xIntVar = VarUtils.getVarFromVarRef(xInt);
+					xIntVar.setType((Type) xIntVar.getType().accept(new TypeTraverseModify()
+					{
+						public Object visit(TypeClock t) throws PrismLangException
+						{
+							return TypeInt.getInstance();
+						}
+					}));
+					xInt.typeCheck();
 					// Build expression min(x+1,cMax)
 					ExpressionFunc expr = new ExpressionFunc("min");
-					expr.addOperand(Expression.Plus(new ExpressionVar(x, TypeInt.getInstance()), Expression.Int(1)));
+					expr.addOperand(Expression.Plus(xInt, Expression.Int(1)));
 					expr.addOperand(Expression.Int(cMax + 1));
 					// Add to update
-					up.addElement(new ExpressionIdent(x), expr);
+					up.addElement(xInt.deepCopy(), expr);
 				}
 				Updates ups = new Updates();
 				ups.addUpdate(Expression.Double(1.0), up);
@@ -294,38 +332,96 @@ public class DigitalClocks extends PrismComponent
 		// (in both model and properties list)
 		ASTTraverseModify asttm = new ASTTraverseModify()
 		{
-			// Resets
-			public Object visit(Update e) throws PrismLangException
+			private Declaration inDeclVarRef = null;
+			private UpdateElement inUpdateVarRef = null;
+			
+			// Declarations
+			public Object visit(Declaration e) throws PrismLangException
 			{
-				int i, n;
-				ExpressionFunc exprFunc;
-				n = e.getNumElements();
-				for (i = 0; i < n; i++) {
-					if (e.getType(i) instanceof TypeClock) {
-						// Don't actually need to set the type here since
-						// will be done in subsequent call to tidyUp() but do it anyway.
-						e.setType(i, TypeInt.getInstance());
-						// Scaling is done with division here, rather than multiplying clock like elsewhere
-						if (cci.getScaleFactor() > 1) {
-							exprFunc = new ExpressionFunc("floor");
-							exprFunc.addOperand(Expression.Divide(e.getExpression(i), Expression.Int(cci.getScaleFactor())));
-							e.setExpression(i, (Expression) exprFunc.simplify());
-						}
+				visitPre(e);
+				inDeclVarRef = e;
+				if (e.getVarRef() != null) e.setVarRef((Expression)e.getVarRef().accept(this));
+				inDeclVarRef = null;
+				if (e.getDeclType() != null) e.setDeclType((DeclarationType)e.getDeclType().accept(this));
+				if (e.getStart() != null) e.setStart((Expression)e.getStart().accept(this));
+				visitPost(e);
+				return e;
+			}
+			
+			// Resets
+			public Object visit(UpdateElement e) throws PrismLangException
+			{
+				// Recurse to change any clock -> int in the variable reference
+				inUpdateVarRef = e;
+				Expression varRef = e.getVarRef();
+				e.setVarRef((Expression)(varRef.accept(this)));
+				inUpdateVarRef = null;
+				// Also change any clocks in RHS (shouldn't be any?)
+				e.setExpression((Expression)(e.getExpression().accept(this)));
+				// For updates to clocks, the RHS may need to be scaled
+				// (done with division here, rather than multiplying clock like elsewhere)
+				if (doScaling && cci.getScaleFactor() > 1) {
+					// Only support simple (but most common) cases:
+					// updates to primitive clock variables or block assign to array of clocks
+					if (varRef.getType().contains(t -> (t instanceof TypeClock)) && e.getExpression().getType() instanceof TypeInt) {
+						ExpressionFunc exprFunc = new ExpressionFunc("floor");
+						exprFunc.addOperand(Expression.Divide(e.getExpression(), Expression.Int(cci.getScaleFactor())));
+						e.setExpression((Expression) exprFunc.simplify());
 					}
 				}
 				return e;
 			}
 
-			// Variable accesses
-			public Object visit(ExpressionVar e) throws PrismLangException
+			// Variable ref: array
+			public Object visit(ExpressionArrayAccess e) throws PrismLangException
 			{
-				if (e.getType() instanceof TypeClock) {
-					e.setType(TypeInt.getInstance());
-					if (!doScaling || cci.getScaleFactor() == 1)
-						return e;
-					return Expression.Times(e, Expression.Int(cci.getScaleFactor()));
+				// Remember if this is a clock value
+				boolean isClockVal = e.getType() instanceof TypeClock; 
+				// First recurse to change any nested clock ExpressionVars to ints
+				e.setArray((Expression)(e.getArray().accept(this)));
+				// If this is a clock value, may need to scale it
+				if (isClockVal) {
+					// Scale if necessary
+					if (inDeclVarRef == null && inUpdateVarRef == null) {
+						return scaleUp(e);
+					}
 				}
 				return e;
+			}
+			
+			// Variable ref: var
+			public Object visit(ExpressionVar e) throws PrismLangException
+			{
+				// Remember if this is a clock value
+				boolean isClockVal = e.getType() instanceof TypeClock; 
+				// Change any clocks appearing in this variable's type to ints
+				e.setType((Type) e.getType().accept(new TypeTraverseModify()
+				{
+					public Object visit(TypeClock t) throws PrismLangException
+					{
+						return TypeInt.getInstance();
+					}
+				}));
+				// If this is a clock value, may need to scale it
+				if (isClockVal) {
+					// Scale if necessary
+					if (inDeclVarRef == null && inUpdateVarRef == null) {
+						return scaleUp(e);
+					}
+				}
+				return e;
+			}
+			
+			/**
+			 * If scaling is enabled, scale up a reference to a clock (multiply by factor)
+			 */
+			private Expression scaleUp(Expression e)
+			{
+				if (doScaling && cci.getScaleFactor() > 1) {
+					return Expression.Times(e, Expression.Int(cci.getScaleFactor()));
+				} else {
+					return e;
+				}
 			}
 		};
 		mf = (ModulesFile) mf.accept(asttm);
@@ -375,7 +471,7 @@ public class DigitalClocks extends PrismComponent
 			while (mf.isIdentUsed(timeboundName) || (pf != null && pf.isIdentUsed(timeboundName))) {
 				timeboundName = "_" + timeboundName;
 			}
-			mf.getConstantList().addConstant(new ExpressionIdent(timeboundName), Expression.Int(scaledTimeBound), TypeInt.getInstance());
+			mf.getConstantList().addConstant(new ExpressionIdent(timeboundName), Expression.Int(scaledTimeBound), new DeclarationIntUnbounded());
 			// Create module/variable
 			Module timerModule = new Module(timerModuleName);
 			DeclarationType timerDeclType = new DeclarationInt(Expression.Int(0),
@@ -424,12 +520,16 @@ public class DigitalClocks extends PrismComponent
 		}
 							
 		// Re-do type checking, indexing, etc. on the model/properties
+		// Property prop may have changed (e.g., conversion of time-bounded formula);
+		// the easiest way to make sure this gets processed properly is just to add
+		// another copy of it to the properties file
+		mainLog.println(mf);
 		mf.tidyUp();
 		if (pf != null) {
+			pf.addProperty(prop, null);
 			pf.setModelInfo(mf);
 			pf.tidyUp();
 		}
-		prop.findAllVars(mf.getVarNames(), mf.getVarTypes());
 		// Copy across undefined constants since these get lost in the call to tidyUp()
 		mf.setSomeUndefinedConstants(modulesFile.getUndefinedEvaluateContext());
 		pf.setSomeUndefinedConstants(propertiesFile.getUndefinedEvaluateContext());
@@ -578,6 +678,12 @@ public class DigitalClocks extends PrismComponent
 		return null;
 	}
 
+	private List<Expression> getClockRefsForModule(String module)
+	{
+		List<Expression> list = clockRefLists.get(module);
+		return (list == null) ? new ArrayList<Expression>() : list;
+	}
+
 	/**
 	 * Class to extract information about clocks:
 	 * - list of clocks for each module;
@@ -590,8 +696,6 @@ public class DigitalClocks extends PrismComponent
 		PropertiesFile propertiesFile = null;
 		LabelList labelList = null;
 		// Clock info
-		private Map<String, List<String>> clockLists;
-		private List<String> currentClockList;
 		private Map<String, Integer> clockMaxs;
 		private Set<Integer> allClockVals;
 		private int scaleFactor;
@@ -602,7 +706,6 @@ public class DigitalClocks extends PrismComponent
 			this.propertiesFile = propertiesFile;
 			labelList = (propertiesFile == null) ? null : propertiesFile.getLabelList();
 			// Set up storage
-			clockLists = new HashMap<String, List<String>>();
 			clockMaxs = new HashMap<String, Integer>();
 			allClockVals = new HashSet<Integer>();
 			// Traverse ModulesFile first (further storage created)
@@ -613,19 +716,19 @@ public class DigitalClocks extends PrismComponent
 			scaleFactor = computeGCD(allClockVals);
 		}
 
-		private void updateMax(String clock, int val)
+		private void updateMax(String clockVarName, int val)
 		{
-			Integer i = clockMaxs.get(clock);
+			Integer i = clockMaxs.get(clockVarName);
 			if (i == null || val > i)
-				clockMaxs.put(clock, val);
+				clockMaxs.put(clockVarName, val);
 		}
 
-		public List<String> getClocksForModule(String module)
-		{
-			List<String> list = clockLists.get(module);
-			return (list == null) ? new ArrayList<String>() : list;
-		}
-
+		/**
+		 * Get the maximum value of a clock.
+		 * Note that this is looked up by top-level variable name,
+		 * e.g. for and array of clocks x, there is single max,
+		 * not a separate one for each array element  
+		 */
 		public int getClockMax(String clock)
 		{
 			Integer i = clockMaxs.get(clock);
@@ -638,9 +741,10 @@ public class DigitalClocks extends PrismComponent
 		}
 
 		/**
-		 * Get the maximum value of a clock, scaled wrt. GCD (if required)
-		 * @param clock
-		 * @return
+		 * Get the maximum value of a clock, scaled wrt. GCD (if required).
+		 * Note that this is looked up by top-level variable name,
+		 * e.g. for and array of clocks x, there is single max,
+		 * not a separate one for each array element  
 		 */
 		public int getScaledClockMax(String clock)
 		{
@@ -679,36 +783,16 @@ public class DigitalClocks extends PrismComponent
 
 		// AST traversal
 		
-		public void visitPre(parser.ast.Module e) throws PrismLangException
-		{
-			// Create new array to store clocks for this module
-			currentClockList = new ArrayList<String>();
-			clockLists.put(e.getName(), currentClockList);
-		}
-
-		public void visitPost(Declaration e) throws PrismLangException
-		{
-			// Detect clock variable and store info
-			if (e.getDeclType() instanceof DeclarationClock) {
-				currentClockList.add(e.getName());
-			}
-		}
-
 		// Resets
-		public Object visit(Update e) throws PrismLangException
+		public void visitPost(UpdateElement e) throws PrismLangException
 		{
-			Collection<Integer> allVals;
-			int n = e.getNumElements();
-			for (int i = 0; i < n; i++) {
-				if (e.getType(i) instanceof TypeClock) {
-					String clock = e.getVar(i);
-					int maxVal = ParserUtils.findMaxForIntExpression(e.getExpression(i), varList, constantValues);
-					updateMax(clock, maxVal);
-					allVals = ParserUtils.findAllValsForIntExpression(e.getExpression(i), varList, constantValues);
-					allClockVals.addAll(allVals);
-				}
+			if (e.getVarRef().getType() instanceof TypeClock) {
+				int maxVal = ParserUtils.findMaxForIntExpression(e.getExpression(), varList, constantValues);
+				String clockVarName = VarUtils.getVarNameFromVarRef(e.getVarRef());
+				updateMax(clockVarName, maxVal);
+				Collection<Integer> allVals = ParserUtils.findAllValsForIntExpression(e.getExpression(), varList, constantValues);
+				allClockVals.addAll(allVals);
 			}
-			return e;
 		}
 
 		// Clock constraints
@@ -716,20 +800,19 @@ public class DigitalClocks extends PrismComponent
 		{
 			// If this is a clock constraint, get and store max value
 			// (only look at x ~ c or c ~ x)
-			String clock;
 			int maxVal;
 			Collection<Integer> allVals;
 			if (e.getOperand1().getType() instanceof TypeClock) {
 				if (!(e.getOperand2().getType() instanceof TypeClock)) {
-					clock = ((ExpressionVar) e.getOperand1()).getName();
 					maxVal = ParserUtils.findMaxForIntExpression(e.getOperand2(), varList, constantValues);
+					String clock = VarUtils.getVarNameFromVarRef(e.getOperand1());
 					updateMax(clock, maxVal);
 					allVals = ParserUtils.findAllValsForIntExpression(e.getOperand2(), varList, constantValues);
 					allClockVals.addAll(allVals);
 				}
 			} else if (e.getOperand2().getType() instanceof TypeClock) {
-				clock = ((ExpressionVar) e.getOperand2()).getName();
 				maxVal = ParserUtils.findMaxForIntExpression(e.getOperand1(), varList, constantValues);
+				String clock = VarUtils.getVarNameFromVarRef(e.getOperand2());
 				updateMax(clock, maxVal);
 				allVals = ParserUtils.findAllValsForIntExpression(e.getOperand1(), varList, constantValues);
 				allClockVals.addAll(allVals);

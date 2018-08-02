@@ -45,8 +45,6 @@ public interface Model
 	
 	int getNumVars();
 	VarList getVarList();
-	String getVarName(int i);
-	int getVarIndex(String n);
 	int getVarModule(int i);
 	int getVarLow(int i);
 	int getVarHigh(int i);

@@ -1,0 +1,20 @@
+// Simple test of array constants
+
+dtmc
+
+const int N = 3;
+
+const array[N] of int c = 0;
+const array[N] of bool d = [false,true,2<1];
+
+module M
+
+	i : [-1..N] init -1;
+	x : array[N] of [0..N-1] init c;
+	b : array[N] of bool init (c[0]>0);
+	
+	[] i=-1 -> (b'=d) & (i'=i+1);
+	[] i>=0 & i<N -> (x[i]'=i) & (b[i]'=true) & (i'=i+1);
+	[] i=N -> true;
+	
+endmodule

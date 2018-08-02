@@ -34,99 +34,81 @@ import prism.PrismLangException;
 
 public class DeclarationArray extends DeclarationType
 {
-	// Min array index
-	protected Expression low;
-	// Max array index
-	protected Expression high;
+	// Array length
+	protected Expression length;
 	// Type of object contained in this array
 	protected DeclarationType subtype;
 
-	public DeclarationArray(Expression low, Expression high, DeclarationType subtype)
+	public DeclarationArray(Expression length, DeclarationType subtype)
 	{
-		this.low = low;
-		this.high = high;
+		setLength(length);
+		setSubtype(subtype);
+	}
+
+	/**
+	 * Set the length of the array.
+	 */
+	public void setLength(Expression length)
+	{
+		this.length = length;
+	}
+
+	/**
+	 * Set the subtype of the array.
+	 */
+	public void setSubtype(DeclarationType subtype)
+	{
 		this.subtype = subtype;
 		// The type stored for a Declaration/DeclarationType object
 		// is static - it is not computed during type checking.
 		// (But we re-use the existing "type" field for this purpose)
 		// And we copy the info from DeclarationType across to Declaration for convenience.
-		setType(new TypeArray(subtype.getType()));
+		setType(TypeArray.getInstance(subtype.getType()));
 	}
 
-	public void setLow(Expression l)
+	/**
+	 * Get the length of the array.
+	 */
+	public Expression getLength()
 	{
-		low = l;
+		return length;
 	}
 
-	public void setHigh(Expression h)
-	{
-		high = h;
-	}
-
-	public void setSubtype(DeclarationType subtype)
-	{
-		this.subtype = subtype;
-	}
-
-	public Expression getLow()
-	{
-		return low;
-	}
-
-	public Expression getHigh()
-	{
-		return high;
-	}
-
+	/**
+	 * Get the subtype of the array.
+	 */
 	public DeclarationType getSubtype()
 	{
 		return subtype;
 	}
 
-	/**
-	 * Return the default start value for a variable of this type.
-	 */
+	@Override
 	public Expression getDefaultStart()
 	{
-		// TODO: what should be the default?
-		return null;
+		// TODO
+		// Currently array elements are all initialised to the same value
+		// so we can just use the default value for the (primitive) subtype 
+		return subtype.getDefaultStart();
 	}
 	
-	/* TODO
-	@Override
-	public Expression getStart(ModulesFile parent)
-	{
-		if (parent != null && parent.getInitialStates() != null)
-			return null;
-
-		// TODO: what should be the default?
-		return start != null ? start : null;
-	}*/
-
 	// Methods required for ASTElement:
 	
-	/**
-	 * Visitor method.
-	 */
+	@Override
 	public Object accept(ASTVisitor v) throws PrismLangException
 	{
 		return v.visit(this);
 	}
 
-	/**
-	 * Convert to string.
-	 */
 	@Override
 	public String toString()
 	{
-		return "array [" + low + ".." + high + "] of " + subtype;
+		return "array[" + length + "] of " + subtype;
 	}
 
 	@Override
 	public DeclarationArray deepCopy(DeepCopy copier) throws PrismLangException
 	{
-		low = copier.copy(low);
-		high = copier.copy(high);
+		length = copier.copy(length);
 		subtype = copier.copy(subtype);
 
 		return this;

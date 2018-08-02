@@ -240,12 +240,12 @@ public class PathToText extends PathDisplayer
 		if (varsToShow == null) {
 			for (j = 0; j < numVars; j++) {
 				log.print(getColSep());
-				log.print(state.varValues[j]);
+				log.print(State.valueToString(state.varValues[j]));
 			}
 		} else {
 			for (int v : varsToShow) {
 				log.print(getColSep());
-				log.print(state.varValues[v]);
+				log.print(State.valueToString(state.varValues[v]));
 			}
 		}
 		lastState.copy(state);

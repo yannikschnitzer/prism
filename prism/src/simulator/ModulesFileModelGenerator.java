@@ -12,6 +12,7 @@ import parser.EvaluateContextState;
 import parser.State;
 import parser.Values;
 import parser.VarList;
+import parser.VarUtils;
 import parser.ast.ConstantList;
 import parser.ast.DeclarationType;
 import parser.ast.Expression;
@@ -21,7 +22,6 @@ import parser.ast.LabelList;
 import parser.ast.ModulesFile;
 import parser.ast.RewardStruct;
 import parser.type.Type;
-import parser.type.TypeClock;
 import parser.visitor.ASTTraverseModify;
 import prism.Evaluator;
 import prism.ModelGenerator;
@@ -55,7 +55,8 @@ public class ModulesFileModelGenerator<Value> implements ModelGenerator<Value>, 
 	protected VarList varList;
 	protected LabelList labelList;
 	protected List<String> labelNames;
-	
+	protected List<Expression> clockVarRefs;
+
 	// Model exploration info
 	
 	// State currently being explored
@@ -251,6 +252,9 @@ public class ModulesFileModelGenerator<Value> implements ModelGenerator<Value>, 
 		varList = modulesFile.createVarList();
 		labelList = modulesFile.getLabelList();
 		labelNames = labelList.getLabelNames();
+		
+		// For real-time models, remember which variables are clocks
+		clockVarRefs = varList.getAllClockVarRefs();
 		
 		// Create data structures for exploring model
 		if (!modelType.uncertain()) {
@@ -626,12 +630,10 @@ public class ModulesFileModelGenerator<Value> implements ModelGenerator<Value>, 
 			return null;
 		}
 		// Replace non-clock variables with their values and simplify
-		int numVars = varList.getNumVars();
 		State stateNoClocks = new State(exploreState);
-		for (int v = 0; v < numVars; v++) {
-			if (varList.getType(v) instanceof TypeClock) {
-				stateNoClocks.varValues[v] = null;
-			}
+		for (Expression clockVarRef : clockVarRefs) {
+			// NB: don't really need ec here since clock var refs are constant/literal
+			VarUtils.assignVarValueInState(clockVarRef, ec, stateNoClocks, null, null, varList);
 		}
 		return (Expression) invariant.deepCopy().evaluatePartially(ec.setState(stateNoClocks)).simplify();
 	}

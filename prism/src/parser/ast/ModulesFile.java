@@ -36,7 +36,10 @@ import parser.IdentUsage;
 import parser.State;
 import parser.Values;
 import parser.VarList;
+import parser.VarUtils;
 import parser.type.Type;
+import parser.type.TypeArray;
+import parser.type.TypeDouble;
 import parser.type.TypeInterval;
 import parser.visitor.ASTTraverse;
 import parser.visitor.ASTVisitor;
@@ -98,6 +101,10 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 	private Values constantValues;
 	// Evaluation context (all constant values + evaluation mode)
 	private EvaluateContext ec;
+	
+	// Detailed info about variables and theirs storage
+	// Only created after (each time) constants are set
+	private VarList varList;
 
 	// Constructor
 
@@ -1305,7 +1312,10 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 		this.ecUndefined = ecUndefined == null ? EvaluateContext.create() : EvaluateContext.create(ecUndefined);
 		constantValues = constantList.evaluateSomeConstants(ecUndefined);
 		ec = EvaluateContext.create(constantValues, ecUndefined.getEvaluationMode());
+		createTheVarList();
 		doSemanticChecksAfterConstants();
+		// Add variable indexing now constants known (e.g. for array indices)
+		varList.addVarIndexing(this);
 	}
 
 	/**
@@ -1350,6 +1360,28 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 		return ec;
 	}
 
+	@Override
+	public VarList createVarList() throws PrismLangException
+	{
+		if (varList == null) {
+			createTheVarList();
+		}
+		return varList;
+	}
+
+	/**
+	 * Create a VarList object, as required for {@link #createVarList()}.
+	 * This also performs various syntactic checks on the variables.
+	 */
+	private void createTheVarList() throws PrismLangException
+	{
+		try {
+			varList = new VarList(this);
+		} catch (PrismException e) {
+			throw new PrismLangException(e.getMessage());
+		}
+	}
+
 	/**
 	 * Create a State object representing the default initial state of this model.
 	 * If there are potentially multiple initial states (because the model has an
@@ -1362,27 +1394,24 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 			return null;
 		}
 
-		// Create State object
-		State initialState = new State(getNumVars());
-		// Then add values for all globals and all locals, in that order
-		int count = 0;
-		int n = getNumGlobals();
-		for (int i = 0; i < n; i++) {
-			Declaration decl = getGlobal(i);
-			Object initialValue = decl.getType().castValueTo(decl.getStartOrDefault().evaluate(ec));
-			initialState.setValue(count++, initialValue);
-		}
-		n = getNumModules();
-		for (int i = 0; i < n; i++) {
-			Module module = getModule(i);
-			int n2 = module.getNumDeclarations();
-			for (int j = 0; j < n2; j++) {
-				Declaration decl = module.getDeclaration(j);
-				Object initialValue = decl.getType().castValueTo(decl.getStartOrDefault().evaluate(ec));
-				initialState.setValue(count++, initialValue);
+		// Construct a State object using initial value for each variable
+		int numVars = getNumVars();
+		State initialState = new State(numVars);
+		for (int i = 0; i < numVars; i++) {
+			try {
+			Expression expr = getVarDeclaration(i).getStartOrDefault();
+//			Object val = expr.evaluate(constantValues);
+//			val = getVarDeclaration(i).getType().castValueTo(val, exact ? EvalMode.EXACT : EvalMode.FP);
+//			initialState.setValue(i, val);
+			
+			Object value = expr.evaluate(ec);
+//			varList.assignTopLevelVar(i, ec, initialState, value, expr.getType());
+			VarUtils.assignVarValueInState(getVarDeclaration(i).getVarRef(), ec, initialState, value, expr.getType(), varList);
+			} catch (PrismLangException e) {
+				e.setASTElement(getVarDeclaration(i).getStartOrDefault());
+				throw e;
 			}
 		}
-
 		return initialState;
 	}
 
@@ -1399,9 +1428,9 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 	}
 
 	/**
-	 * Recompute all information about variables.
-	 * More precisely... TODO
-	 * Note: This does not re-compute the list of all identifiers used. 
+	 * Recompute basic information about variables.
+	 * Note: This does not re-compute the list of all identifiers used,
+	 * nor does it (re)create a VarList object.
 	 */
 	public void recomputeVariableinformation() throws PrismLangException
 	{
@@ -1429,19 +1458,8 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 				varModules.add(i);
 			}
 		}
-		// Find all instances of variables, replace identifiers with variables.
-		// Also check variables valid, store indices, etc.
+		// Find/check all instances of variables, replace identifiers with variables.
 		findAllVars(varNames, varTypes);
-	}
-
-	/**
-	 * Create a VarList object storing information about all variables in this model.
-	 * Assumes that values for constants have been provided for the model.
-	 * Also performs various syntactic checks on the variables.   
-	 */
-	public VarList createVarList() throws PrismException
-	{
-		return new VarList(this);
 	}
 
 	/**
@@ -1508,8 +1526,14 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 				{
 					int n = e.getNumUpdates();
 					for (int i = 0; i < n; i++) {
-						if (e.getProbability(i) != null && e.getProbability(i).getType() instanceof TypeInterval) {
-							throw new PrismLangException("Found one", e);
+						Expression prob = e.getProbability(i);
+						if (prob != null) {
+							if (prob.getType() instanceof TypeInterval) {
+								throw new PrismLangException("Found one", e);
+							}
+							if (prob.getType() instanceof TypeArray && TypeDouble.getInstance().canCastTypeTo(((TypeArray) prob.getType()).getSubType())) {
+								throw new PrismLangException("Found one", e);
+							}
 						}
 					}
 				}
@@ -1651,6 +1675,13 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 			Module mod = Objects.requireNonNull(getModule(i));
 			setModule(i, copier.copy(mod));
 		}
+		
+		try {
+			createTheVarList();
+		} catch (PrismLangException e) {
+			// Ignore since it has already been created successfully with the same ModulesFile
+		}
+		
 		return this;
 	}
 

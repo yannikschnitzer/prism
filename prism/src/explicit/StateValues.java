@@ -967,9 +967,9 @@ public class StateValues implements StateVector, Iterable<Object>
 		if (!printSparse || isValueNonZero(getValue(n))) {
 			if (printMatlab) {
 				if (printSparse) {
-					log.println("v(" + (n + 1) + ")=" + getValue(n) + ";");
+					log.println("v(" + (n + 1) + ")=" + State.valueToString(getValue(n)) + ";");
 				} else {
-					log.println(getValue(n));
+					log.println(State.valueToString(getValue(n)));
 				}
 			} else {
 				if (printIndices) {
@@ -987,7 +987,7 @@ public class StateValues implements StateVector, Iterable<Object>
 					if (printIndices || printStates) {
 						log.print("=");
 					}
-					log.println(getValue(n));
+					log.println(State.valueToString(getValue(n)));
 				}
 			}
 			return true;

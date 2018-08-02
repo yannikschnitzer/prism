@@ -1,0 +1,28 @@
+// Testing more updates to array variables
+
+dtmc
+
+const int N;
+const int K = 10;
+
+module M
+
+	x : [0..10];
+	
+	b : array[N] of [0..K] init 2;
+	c : array[N] of array[N] of [0..K] init 3;
+	
+	// update an entire array to a constant value
+	[] x=0 -> (x'=x+1) & (c'=4);
+	// update a sub-array to a constant value
+	[] x=1 -> (x'=x+1) & (c[0]'=5);
+	// update an array element to a constant value
+	[] x=2 -> (x'=x+1) & (c[0][1]'=6);
+	// update a sub-array to another sub-array
+	[] x=3 -> (x'=x+1) & (c[0]'=b) & (b[0]'=7);
+	// update an entire array to copies of another sub-array
+	[] x=4 -> (x'=x+1) & (c'=b);
+	
+	[] x>4 -> true;
+	
+endmodule

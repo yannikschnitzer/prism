@@ -27,6 +27,7 @@
 package parser.type;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import common.Interval;
@@ -103,6 +104,16 @@ public class TypeInterval extends Type
 			Object lower = getSubType().castValueTo(((Interval<?>) value).getLower());
 			Object upper = getSubType().castValueTo(((Interval<?>) value).getUpper());
 			return new Interval<>(lower, upper);
+		}
+		// For array, cast to interval and cast low/high
+		else if (value instanceof List<?>) {
+			List<?> valueList = (List<?>) value;
+			if (valueList.size() != 2) {
+				throw new PrismLangException("Can't convert " + value.toString() + " to an interval");
+			}
+			Object lower = getSubType().castValueTo(valueList.get(0));
+			Object upper = getSubType().castValueTo(valueList.get(1));
+			return new Interval<Object>(lower, upper);
 		}
 		else {
 			throw new PrismLangException("Can't convert " + value.getClass() + " to type " + getTypeString());

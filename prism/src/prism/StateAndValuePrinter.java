@@ -27,7 +27,6 @@
 package prism;
 
 import parser.VarList;
-import parser.type.TypeInt;
 
 /**
  * StateValueConsumer that formats the state/value pairs
@@ -100,14 +99,7 @@ class StateAndValuePrinter implements StateAndValueConsumer
 			if (printIndices) {
 				outputLog.print(":");
 			}
-			outputLog.print("(");
-			int n = varList.getNumVars();
-			for (int i = 0; i < n; i++) {
-				if (i > 0)
-					outputLog.print(",");
-				outputLog.print(varList.decodeFromInt(i, varValues[i]).toString());
-			}
-			outputLog.print(")");
+			outputLog.print(varList.decodeStateFromInts(varValues));
 		}
 		if (printIndices || printStates) {
 			outputLog.print("=");

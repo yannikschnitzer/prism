@@ -32,9 +32,9 @@ import java.util.function.Consumer;
 
 import parser.ParserUtils;
 import parser.Values;
+import parser.VarUtils;
 import parser.ast.Expression;
 import parser.ast.ExpressionBinaryOp;
-import parser.ast.ExpressionVar;
 import parser.type.TypeClock;
 import parser.type.TypeInt;
 import prism.PrismLangException;
@@ -68,7 +68,7 @@ public class PTAUtils
 			throw new PrismLangException("Can't use negation in clock constraint \"" + expr + "\"", expr);
 		// LHS
 		if (expr1.getType() instanceof TypeClock) {
-			if (!(expr1 instanceof ExpressionVar)) {
+			if (!VarUtils.isVarRef(expr1)) {
 				throw new PrismLangException("Invalid clock expression \"" + expr1 + "\"", expr1);
 			}
 			clocks++;
@@ -81,7 +81,7 @@ public class PTAUtils
 		}
 		// RHS
 		if (expr2.getType() instanceof TypeClock) {
-			if (!(expr2 instanceof ExpressionVar)) {
+			if (!VarUtils.isVarRef(expr2)) {
 				throw new PrismLangException("Invalid clock expression \"" + expr2 + "\"", expr2);
 			}
 			clocks++;
@@ -122,12 +122,12 @@ public class PTAUtils
 		if (expr1.getType() instanceof TypeClock) {
 			// Comparison of two clocks (x ~ y)
 			if (expr2.getType() instanceof TypeClock) {
-				x = pta.getClockIndex(((ExpressionVar) expr1).getName());
+				x = pta.getClockIndex(expr1.toString());
 				if (x < 0)
-					throw new PrismLangException("Unknown clock \"" + ((ExpressionVar) expr1).getName() + "\"", expr);
-				y = pta.getClockIndex(((ExpressionVar) expr2).getName());
+					throw new PrismLangException("Unknown clock \"" + expr1.toString() + "\"", expr);
+				y = pta.getClockIndex(expr2.toString());
 				if (y < 0)
-					throw new PrismLangException("Unknown clock \"" + ((ExpressionVar) expr2).getName() + "\"", expr);
+					throw new PrismLangException("Unknown clock \"" + expr2.toString() + "\"", expr);
 				switch (exprRelOp.getOperator()) {
 				case ExpressionBinaryOp.EQ:
 					res.add(Constraint.buildXGeqY(x, y));
@@ -152,9 +152,9 @@ public class PTAUtils
 			}
 			// Comparison of clock and integer (x ~ v)
 			else {
-				x = pta.getClockIndex(((ExpressionVar) expr1).getName());
+				x = pta.getClockIndex(expr1.toString());
 				if (x < 0)
-					throw new PrismLangException("Unknown clock \"" + ((ExpressionVar) expr1).getName() + "\"", expr);
+					throw new PrismLangException("Unknown clock \"" + expr1.toString() + "\"", expr);
 				v = expr2.evaluateInt(constantValues);
 				switch (exprRelOp.getOperator()) {
 				case ExpressionBinaryOp.EQ:
@@ -181,9 +181,9 @@ public class PTAUtils
 		}
 		// Comparison of integer and clock (v ~ x)
 		else if (expr2.getType() instanceof TypeClock) {
-			x = pta.getClockIndex(((ExpressionVar) expr2).getName());
+			x = pta.getClockIndex(expr2.toString());
 			if (x < 0)
-				throw new PrismLangException("Unknown clock \"" + ((ExpressionVar) expr2).getName() + "\"", expr);
+				throw new PrismLangException("Unknown clock \"" + expr2.toString() + "\"", expr);
 			v = expr1.evaluateInt(constantValues);
 			switch (exprRelOp.getOperator()) {
 			case ExpressionBinaryOp.EQ:

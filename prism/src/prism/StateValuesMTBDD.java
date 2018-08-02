@@ -653,14 +653,14 @@ public class StateValuesMTBDD implements StateValues
 		{
 			this.consumer = consumer;
 
-			varValues = new int[varList.getNumVars()];
-			for (int i = 0; i < varList.getNumVars(); i++) {
-				varValues[i] =  varList.getLow(i);
+			varValues = new int[varList.getNumPrimitiveVars()];
+			for (int i = 0; i < varList.getNumPrimitiveVars(); i++) {
+				varValues[i] =  varList.getPrimitiveLow(i);
 			}
 
-			varSizes = new int[varList.getNumVars()];
-			for (int i = 0; i < varList.getNumVars(); i++) {
-				varSizes[i] = varList.getRangeLogTwo(i);
+			varSizes = new int[varList.getNumPrimitiveVars()];
+			for (int i = 0; i < varList.getNumPrimitiveVars(); i++) {
+				varSizes[i] = varList.getPrimitiveRangeLogTwo(i);
 			}
 
 			currentVar = 0;

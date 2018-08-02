@@ -28,6 +28,7 @@ package parser.ast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import parser.EvaluateContext;
 import parser.EvaluateContextConstants;
@@ -56,9 +57,11 @@ import parser.visitor.FindAllVars;
 import parser.visitor.GetAllConstants;
 import parser.visitor.GetAllFormulas;
 import parser.visitor.GetAllLabels;
+import parser.visitor.GetAllMaximalVarRefs;
 import parser.visitor.GetAllPropRefs;
 import parser.visitor.GetAllPropRefsRecursively;
 import parser.visitor.GetAllUndefinedConstantsRecursively;
+import parser.visitor.GetAllVarRefs;
 import parser.visitor.GetAllVars;
 import parser.visitor.Rename;
 import parser.visitor.SemanticCheck;
@@ -423,8 +426,8 @@ public abstract class ASTElement implements Cloneable
 	}
 
 	/**
-	 * Find all references to variables, replace any identifier objects with variable objects,
-	 * check variables exist and store their index (as defined by the containing ModuleFile).
+	 * Find all references to variables, replace any identifier objects with variable objects
+	 * (i.e. convert ExpressionIdent -> ExpressionVar).
 	 */
 	public ASTElement findAllVars(List<String> varIdents, List<Type> varTypes) throws PrismLangException
 	{
@@ -441,6 +444,42 @@ public abstract class ASTElement implements Cloneable
 		GetAllVars visitor = new GetAllVars(v);
 		accept(visitor);
 		return v;
+	}
+
+	/**
+	 * Get all variable references (i.e., Expression objects referring to a variable
+	 * or subvariable) whose type satisfies a predicate, and return them in a list.
+	 * This descends recursively, so if a[i][j] appears, then a, a[i] and a[i][j]
+	 * will all be tested against the predicate and potentially returned.
+	 */
+	public List<Expression> getAllVarRefs(Predicate<Type> pred) throws PrismLangException
+	{
+		List<Expression> list = new ArrayList<>();
+		GetAllVarRefs visitor = new GetAllVarRefs(pred, list);
+		accept(visitor);
+		return list;
+	}
+
+	/**
+	 * Get all primitive variable references (i.e., Expression objects referring
+	 * to a primitive variable), and return them in a list.
+	 */
+	public List<Expression> getAllPrimitiveVarRefs() throws PrismLangException
+	{
+		return getAllVarRefs(t -> t.isPrimitive());
+	}
+
+	/**
+	 * Get all maximal variable references (i.e., Expression objects referring
+	 * to variables, but not their sub-references), and return them in a list.
+	 * So, if a[i][j] appears, then only a[i][j] will be included, not a or a[i].
+	 */
+	public List<Expression> getAllMaximalVarRefs() throws PrismLangException
+	{
+		List<Expression> list = new ArrayList<>();
+		GetAllMaximalVarRefs visitor = new GetAllMaximalVarRefs(list);
+		accept(visitor);
+		return list;
 	}
 
 	/**

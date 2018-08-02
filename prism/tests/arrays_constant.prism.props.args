@@ -1,0 +1,2 @@
+-exportmodel arrays_constant.prism.sta,tra -ex
+# -exportmodel arrays_constant.prism.sta,tra -h

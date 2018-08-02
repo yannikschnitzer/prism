@@ -34,10 +34,15 @@ import prism.PrismLangException;
 
 public class ExpressionVar extends Expression
 {
-	// Variable name
+	/** Variable name */
 	private String name;
-	// The index of the variable in the model to which it belongs
+	
+	/** The index of the variable in the model to which it belongs */
 	private int index;
+	
+	/** Index of the variable, in terms of the full list of primitive variables.
+	 *  cached for computation of variables indices to look up their values */
+//	private int indexPrimitive;
 	
 	// Constructors
 	
@@ -46,6 +51,7 @@ public class ExpressionVar extends Expression
 		setType(t);
 		name = n;
 		index = -1;
+//		indexPrimitive = -1;
 	}
 			
 	// Set method
@@ -55,10 +61,15 @@ public class ExpressionVar extends Expression
 		name = n;
 	}
 	
-	public void setIndex(int i) 
+	public void setVarIndex(int i) 
 	{
 		index = i;
 	}
+	
+//	public void setPrimitiveVarIndex(int i) 
+//	{
+//		indexPrimitive = i;
+//	}
 	
 	// Get method
 	
@@ -67,10 +78,15 @@ public class ExpressionVar extends Expression
 		return name;
 	}
 	
-	public int getIndex()
+	public int getVarIndex()
 	{
 		return index;
 	}
+	
+//	public int getPrimitiveVarIndex()
+//	{
+//		return indexPrimitive;
+//	}
 	
 	// Methods required for Expression:
 	
@@ -89,10 +105,10 @@ public class ExpressionVar extends Expression
 	@Override
 	public Object evaluate(EvaluateContext ec) throws PrismLangException
 	{
-		// Extract variable value from the evaluation context
+		// Look up variable value
 		Object res = ec.getVarValue(name, index);
 		if (res == null) {
-			throw new PrismLangException("Could not evaluate variable", this);
+			throw new PrismLangException("Could not look up variable", this);
 		}
 		// And cast it to the right type/mode if needed
 		return getType().castValueTo(res, ec.getEvaluationMode());
@@ -138,6 +154,7 @@ public class ExpressionVar extends Expression
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + index;
+//		result = prime * result + indexPrimitive;
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
 	}
@@ -154,6 +171,8 @@ public class ExpressionVar extends Expression
 		ExpressionVar other = (ExpressionVar) obj;
 		if (index != other.index)
 			return false;
+//		if (indexPrimitive != other.indexPrimitive)
+//			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;

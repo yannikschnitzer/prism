@@ -79,7 +79,7 @@ public class TypeTraverseModify
 	public Object visit(TypeArray t) throws PrismLangException
 	{
 		visitPre(t);
-		if (t.getSubType() != null) t.setSubType((Type)(t.getSubType().accept(this)));
+		if (t.getSubType() != null) t = TypeArray.getInstance((Type)(t.getSubType().accept(this)));
 		visitPost(t);
 		return t;
 	}
@@ -89,7 +89,7 @@ public class TypeTraverseModify
 	public Object visit(TypeInterval t) throws PrismLangException
 	{
 		visitPre(t);
-		if (t.getSubType() != null) t.setSubType((Type)(t.getSubType().accept(this)));
+		if (t.getSubType() != null) t = TypeInterval.getInstance((Type)(t.getSubType().accept(this)));
 		visitPost(t);
 		return t;
 	}

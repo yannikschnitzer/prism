@@ -1,0 +1,62 @@
+// PTAs with clocks of arrays, and used in the invariant
+
+pta
+
+const double read_failure = 0.1;
+
+module power_model
+
+    p : [0..1] init 0;
+    
+    invariant
+        (p=0 => true) &
+        (p=1 => true)
+    endinvariant
+
+    [open] p=0 -> (p'=0);
+    [close] p=0 -> (p'=0);
+
+    [read_start] p=0 -> (p'=1);
+    [read_stop] p=1 -> (p'=0);
+
+endmodule
+
+module trace
+
+    t : [0..4] init 0;
+    c : array[1] of clock;
+    
+    invariant
+
+    (t=0 => c[0] <=0) &
+        (t=1 => c[0] >= 0 & c[0]<=5) &
+        (t=2 => c[0]>=5 & c[0]<=15) &
+    (t=3 => c[0]<=15) &
+    (t=4 => c[0]<=15)
+
+    endinvariant
+
+    [open] t=0 -> (t'=1);
+   
+    [read_start] t=1 & c[0]=5 -> read_failure:(t'=1) + (1-read_failure):(t'=2);
+    [read_stop] t=2 & c[0]=15 -> (t'=3);
+    [read_stop] t=1 -> (t'=1);
+
+    //[read_start] t=1 -> read_failure:(t'=1) + (1-read_failure):(t'=2);
+    //[read_stop] t=2 -> (t'=3);
+    //[read_stop] t=1 -> (t'=1);
+
+    [close] t=3 -> (t'=4);
+    [] t=4 -> (t'=4);
+
+endmodule
+
+label "target" = (p = 0 & t=4);
+
+rewards 
+
+    p=0 & t=1 : 105;
+    p=1 & t=2 : 105;
+
+endrewards
+

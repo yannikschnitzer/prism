@@ -138,7 +138,7 @@ public class ExplicitModel2MTBDD
 
 		// Get variable info from ModulesFile
 		varList = modulesFile.createVarList();
-		numVars = varList.getNumVars();
+		numVars = varList.getNumPrimitiveVars();
 
 		// For an mdp, compute the max number of choices in a state
 		if (modelType == ModelType.MDP)
@@ -292,13 +292,13 @@ public class ExplicitModel2MTBDD
 		for (i = 0; i < numVars; i++) {
 			// get number of dd variables needed
 			// (ceiling of log2 of range of variable)
-			n = varList.getRangeLogTwo(i);
+			n = varList.getPrimitiveRangeLogTwo(i);
 			// add pairs of variables (row/col)
 			for (j = 0; j < n; j++) {
 				// new dd row variable
-				varDDRowVars[i].addVar(modelVariables.allocateVariable(varList.getName(i) + "." + j));
+				varDDRowVars[i].addVar(modelVariables.allocateVariable(varList.getPrimitiveName(i) + "." + j));
 				// new dd col variable
-				varDDColVars[i].addVar(modelVariables.allocateVariable(varList.getName(i) + "'." + j));
+				varDDColVars[i].addVar(modelVariables.allocateVariable(varList.getPrimitiveName(i) + "'." + j));
 			}
 		}
 	}
@@ -558,7 +558,7 @@ public class ExplicitModel2MTBDD
 			res = JDD.Constant(1);
 			for (i = 0; i < numVars; i++) {
 				try {
-					j = varList.encodeToInt(i, statesList.get(s).varValues[i]);
+					j = varList.encodeVarValueToInt(i, statesList.get(s).varValues[i]);
 				} catch (PrismLangException e) {
 					// Won't happen
 				}
@@ -590,8 +590,8 @@ public class ExplicitModel2MTBDD
 			res = JDD.Constant(1);
 			for (i = 0; i < numVars; i++) {
 				try {
-					j = varList.encodeToInt(i, statesList.get(r).varValues[i]);
-					k = varList.encodeToInt(i, statesList.get(c).varValues[i]);
+					j = varList.encodeVarValueToInt(i, statesList.get(r).varValues[i]);
+					k = varList.encodeVarValueToInt(i, statesList.get(c).varValues[i]);
 				} catch (PrismLangException e) {
 					// Won't happen
 				}

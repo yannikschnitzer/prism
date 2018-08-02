@@ -34,6 +34,7 @@ import parser.VarList;
 import parser.ast.Command;
 import parser.ast.Expression;
 import parser.ast.Update;
+import parser.ast.UpdateElement;
 import prism.Evaluator;
 import prism.ModelType;
 import prism.PrismException;
@@ -218,17 +219,15 @@ public class ChoiceListFlexi<Value> implements Choice<Value>
 	@Override
 	public String getUpdateString(int i, State currentState) throws PrismLangException
 	{
-		int j, n;
 		String s = "";
 		boolean first = true;
 		for (Update up : updates.get(i)) {
-			n = up.getNumElements();
-			for (j = 0; j < n; j++) {
+			for (UpdateElement ue : up) {
 				if (first)
 					first = false;
 				else
 					s += ", ";
-				s += up.getVar(j) + "'=" + up.getExpression(j).evaluate(currentState);
+				s += ue.toString(currentState, false);
 			}
 		}
 		return s;
@@ -246,7 +245,7 @@ public class ChoiceListFlexi<Value> implements Choice<Value>
 				first = false;
 			else
 				s += " & ";
-			s += up;
+			s += up.toString();
 		}
 		return s;
 	}

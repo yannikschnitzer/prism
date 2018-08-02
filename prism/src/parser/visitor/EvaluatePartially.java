@@ -45,7 +45,7 @@ public class EvaluatePartially extends ASTTraverseModify
 	public Object visit(ExpressionConstant e) throws PrismLangException
 	{
 		Object val = ec.getConstantValue(e.getName());
-		if (val == null) {
+		if (VarUtils.valueContainsNull(val)) {
 			return e;
 		} else {
 			return new ExpressionLiteral(e.getType(), val);
@@ -54,8 +54,8 @@ public class EvaluatePartially extends ASTTraverseModify
 	
 	public Object visit(ExpressionVar e) throws PrismLangException
 	{
-		Object val = ec.getVarValue(e.getName(), e.getIndex());
-		if (val == null) {
+		Object val = ec.getVarValue(e.getName(), e.getVarIndex());
+		if (VarUtils.valueContainsNull(val)) {
 			return e;
 		} else {
 			return new ExpressionLiteral(e.getType(), val);

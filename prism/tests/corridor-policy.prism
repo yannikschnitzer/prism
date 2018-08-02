@@ -1,0 +1,59 @@
+dtmc
+
+const int N=4;
+//const int rows = 4;
+const double p=0.1; // with probability p, a move to a neighboring state state occurs due to seeing and control noise
+const double flat_p=0.22;
+
+module robot
+	//define robot position
+	r:[1..N] init 1; //grid row
+	c:[1..N] init 2; //grid column
+	flat: bool init false;
+
+	// go to the terminal state when hitting an obstacle
+	[obstacle] (r=2 & c=2) | (r=3 & c=2)  -> (r'=N) & (c'=2);
+
+	// transitions
+	[east] !(r=N & c=2) & ( c< N | c=N) & !((r=2 & c=2) | (r=3 & c=2)  )-> p:(r'=r) + (1-p): (c'=min(c+1, N));
+	[south] !(r=N & c=2) & (c=1) & (r<N | r=N) & !((r=2 & c=2) | (r=3 & c=2))-> (1-(p+flat_p)):(r'=min(r+1, N)) + p: (c'=c) + flat_p: (c'=c) & (flat'=!flat);
+	[south] !(r=N & c=2) & (c=3| c=4) & (r<N | r=N) & !((r=2 & c=2) | (r=3 & c=2) )-> (1-p):(r'=min(r+1, N)) + p: (c'=c);
+	[west]  !(r=N & c=2) & (c>1 | c=1) & !((r=2 & c=2) | (r=3 & c=2) )-> p:(r'=r) + (1-p): (c'=max(c-1, 1));
+	[north] !(r=N & c=2) & (c=1) & (r=1 | r>1) & !((r=2 & c=2) | (r=3 & c=2))-> (1-(p+flat_p)):(r'=max(r-1, 1)) + p: (c'=c) + flat_p: (c'=c) & (flat'=!flat);
+	[north] (c=3| c=4) & (r=1 | r>1) & !((r=2 & c=2) | (r=3 & c=2))-> (1-p):(r'=max(r-1, 1)) + p: (c'=c);
+
+	// terminal state self-loop to avoid deadlock
+	[] r=N & c=2-> true;
+endmodule
+
+const int REW_MAX=200;
+module rew
+
+	rew:[1..REW_MAX] init 0;
+	
+	// non-target
+	[east] true -> (rew'=min(REW_MAX,rew+1));
+	[south] c=1 & !flat -> (rew'=min(REW_MAX,rew+1));
+	[south]  c=1 & flat -> (rew'=min(REW_MAX,rew+5));
+	[south]  c=3 | c=4 -> (rew'=min(REW_MAX,rew+3));
+	[west] true -> (rew'=min(REW_MAX,rew+1));
+	[north] c=1 & !flat-> (rew'=min(REW_MAX,rew+1));
+	[north] c=1 & flat-> (rew'=min(REW_MAX,rew+5));
+	[north] c=3 | c=4-> (rew'=min(REW_MAX,rew+3));
+	[obstacle] true -> (rew'=min(REW_MAX,rew+30));
+
+endmodule
+
+label "goal" = r=N & c=2;
+
+rewards
+	[east] true : 1;
+	[south]  c=1 & !flat : 1;
+	[south]  c=1 & flat : 5;
+	[south]  c=3 | c=4 : 3;
+	[west] true : 1;
+	[north] c=1 & !flat: 1;
+	[north] c=1 & flat: 5;
+	[north] c=3 | c=4: 3;
+	[obstacle] true : 30;
+endrewards

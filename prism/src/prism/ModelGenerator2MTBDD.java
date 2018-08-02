@@ -119,7 +119,7 @@ public class ModelGenerator2MTBDD
 		modelType = modelGen.getModelType();
 		varList = modelGen.createVarList();
 		numLabels = modelGen.getNumLabels();
-		numVars = varList.getNumVars();
+		numVars = varList.getNumPrimitiveVars();
 		modelVariables = new ModelVariablesDD();
 		numRewardStructs = rewardGen.getNumRewardStructs();
 		rewardStructNames = rewardGen.getRewardStructNames().toArray(new String[0]);
@@ -273,19 +273,19 @@ public class ModelGenerator2MTBDD
 		// go through all vars in order (incl. global variables)
 		// so overall ordering can be specified by ordering in the input file
 		for (i = 0; i < numVars; i++) {
-			DeclarationType declType = varList.getDeclarationType(i);
+			DeclarationType declType = varList.getPrimitiveDeclarationType(i);
 			if (declType instanceof DeclarationClock || declType instanceof DeclarationIntUnbounded) {
 				throw new PrismNotSupportedException("Cannot build a model that contains a variable with unbounded range (try the explicit engine instead)");
 			}
 			// get number of dd variables needed
 			// (ceiling of log2 of range of variable)
-			n = varList.getRangeLogTwo(i);
+			n = varList.getPrimitiveRangeLogTwo(i);
 			// add pairs of variables (row/col)
 			for (j = 0; j < n; j++) {
 				// new dd row variable
-				vr = modelVariables.allocateVariable(varList.getName(i) + "." + j);
+				vr = modelVariables.allocateVariable(varList.getPrimitiveName(i) + "." + j);
 				// new dd col variable
-				vc = modelVariables.allocateVariable(varList.getName(i) + "'." + j);
+				vc = modelVariables.allocateVariable(varList.getPrimitiveName(i) + "'." + j);
 				varDDRowVars[i].addVar(vr);
 				varDDColVars[i].addVar(vc);
 			}
@@ -348,7 +348,7 @@ public class ModelGenerator2MTBDD
 		for (i = 0; i < numVars; i++) {
 			// set each element of the identity matrix
 			id = JDD.Constant(0);
-			for (j = 0; j < varList.getRange(i); j++) {
+			for (j = 0; j < varList.getPrimitiveRange(i); j++) {
 				id = JDD.SetMatrixElement(id, varDDRowVars[i], varDDColVars[i], j, j, 1);
 			}
 			varIdentities[i] = id;
@@ -358,7 +358,7 @@ public class ModelGenerator2MTBDD
 		// product of identities for vars in module
 		id = JDD.Constant(1);
 		for (j = 0; j < numVars; j++) {
-			if (varList.getModule(j) == 0) {
+			if (varList.getPrimitiveModule(j) == 0) {
 				id = JDD.Apply(JDD.TIMES, id, varIdentities[j].copy());
 			}
 		}
@@ -538,7 +538,7 @@ public class ModelGenerator2MTBDD
 		res = JDD.Constant(1);
 		for (i = 0; i < numVars; i++) {
 			try {
-				j = varList.encodeToInt(i, state.varValues[i]);
+				j = varList.encodeVarValueToInt(i, state.varValues[i]);
 			} catch (PrismLangException e) {
 				throw new PrismException("Error during JDD encodeState for state value at index " + i);
 			}

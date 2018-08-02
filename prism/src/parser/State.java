@@ -26,6 +26,7 @@
 
 package parser;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -146,8 +147,29 @@ public class State implements Comparable<State>
 	{
 		int i, n;
 		n = varValues.length;
-		for (i = 0; i < n; i++)
-			varValues[i] = s.varValues[i];
+		for (i = 0; i < n; i++) {
+			varValues[i] = copyValue(s.varValues[i]);
+		}
+	}
+
+	/**
+	 * Copy (deep) a value, represented as an Object.
+	 */
+	public static Object copyValue(Object value)
+	{
+		if (value == null) {
+			return null;
+		} else if (value instanceof List) {
+			// Deep copy lists
+			List<Object> list = new ArrayList<>(((List<?>) value).size());
+			for (Object element : ((List<?>) value)) {
+				list.add(copyValue(element));
+			}
+			return list;
+		} else {
+			// Just shallow copy primitives
+			return value;
+		}
 	}
 
 	@Override

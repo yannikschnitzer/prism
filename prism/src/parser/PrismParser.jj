@@ -426,7 +426,7 @@ TOKEN :
 {
 	// Keywords
 	< A:				"A" >
-//|	< ARRAY:			"array" >
+|	< ARRAY:			"array" >
 |	< BOOL:				"bool" >
 |	< CLOCK:			"clock" >
 |	< CONST:			"const" >
@@ -465,7 +465,7 @@ TOKEN :
 |	< NONDETERMINISTIC:	"nondeterministic" >
 |	< OBSERVABLE:		"observable" >
 |	< OBSERVABLES:		"observables" >
-//|	< OF:				"of" >
+|	< OF:				"of" >
 |	< PMAXMAX:			"Pmaxmax" >
 |	< PMAXMIN:			"Pmaxmin" >
 |	< PMAX:				"Pmax" >
@@ -511,7 +511,7 @@ TOKEN :
 |	< LBRACKET: 	"[" >
 |	< RBRACKET:		"]" >
 |	< DLBRACKET: 	"[[" >
-|	< DRBRACKET:	"]]" >
+//|	< DRBRACKET:	"]]" > // Don't use to avoid clash with nested array access
 |	< LBRACE:		"{" >
 |	< RBRACE:		"}" >
 |	< EQ:			"=" >
@@ -533,7 +533,6 @@ TOKEN :
 	// Regular expressions
 |	< REG_INT:			(["1"-"9"](["0"-"9"])*)|("0") >
 |	< REG_DOUBLE:		(["0"-"9"])*(".")?(["0"-"9"])+(["e","E"](["-","+"])?(["0"-"9"])+)? >
-|	< REG_IDENTPRIME:	["_","a"-"z","A"-"Z"](["_","a"-"z","A"-"Z","0"-"9"])*"'" >
 |	< REG_IDENT:		["_","a"-"z","A"-"Z"](["_","a"-"z","A"-"Z","0"-"9"])* >
 |	< PREPROC:			"#"(~["#"])*"#" >
 	// Special catch-all token for lexical errors
@@ -740,18 +739,46 @@ void LabelDef(LabelList labelList) throws PrismLangException :
 
 void ConstantDef(ConstantList constantList) :
 {
-	Type type = TypeInt.getInstance();
+	DeclarationType declType = new DeclarationIntUnbounded();;
 	ExpressionIdent name = null;
 	Expression expr = null;
 }
 {
-	// Constant (allow omission of "int" and use of "rate"/"prob" for backwards compatability)
-	(( <CONST> ( <INT> { type=TypeInt.getInstance(); } | <DOUBLE> { type=TypeDouble.getInstance(); } | <BOOL> { type=TypeBool.getInstance(); } )? )
-	| (<RATE> | <PROB> ) { type=TypeDouble.getInstance(); } )
+	(
+	// "const" + type declaration
+	// (for backwards compatibility, allow omission of "int")
+	( <CONST> ( declType = ConstantType() )? )
+	|
+	// (for backwards compatibility, allow "rate"/"prob" for "const double")
+	( <RATE> | <PROB> ) { declType = new DeclarationDoubleUnbounded(); }
+	)
 	// Name and (optional) initial value
 	name = IdentifierExpression()
 	( <EQ> expr = Expression(false, false) )? <SEMICOLON>
-	{ constantList.addConstant(name, expr, type); }
+	{ constantList.addConstant(name, expr, declType); }
+}
+
+// Type part of a constant definition
+// (not quite the same as for variable declarations: no integer bounds, no clocks, doubles)
+
+DeclarationType ConstantType() :
+{
+	Expression low = null, high = null, length = null;
+	DeclarationType declType, subtype;
+	Token begin = null;
+}
+{
+	( { begin = getToken(1); } (
+	// Integer (unbounded) declaration
+	( <INT> { declType = new DeclarationIntUnbounded(); } )
+	// Boolean declaration
+	| ( <BOOL> { declType = new DeclarationBool(); } )
+	// Double declaration
+	| ( <DOUBLE> { declType = new DeclarationDoubleUnbounded(); } )
+	// Array declaration
+	| ( <ARRAY> <LBRACKET> length = Expression(false, false) <RBRACKET> <OF> subtype = ConstantType() { declType = new DeclarationArray(length, subtype); } )
+	))
+	{ declType.setPosition(begin, getToken(0)); return declType; }
 }
 
 // Global variable declaration
@@ -770,14 +797,14 @@ Declaration GlobalDecl() :
 Declaration Declaration() :
 {
 	Declaration decl;
-	String name = null;
+	ExpressionIdent name = null;
 	DeclarationType declType;
 	Expression init = null;
 	Token begin = null;
 }
 {
 	// Name, colon, type
-	( { begin = getToken(1); } name = Identifier() <COLON> declType = DeclarationVarType()
+	( { begin = getToken(1); } name = IdentifierExpression() <COLON> declType = DeclarationVarType()
 		{ decl = new Declaration(name, declType); }
 	// Optional inital value
 	( <INIT> init = Expression(false, false)
@@ -787,11 +814,11 @@ Declaration Declaration() :
 	{ decl.setPosition(begin, getToken(0)); return decl; }
 }
 
-// Type part of a declaration
+// Type part of a variable declaration
 
 DeclarationType DeclarationVarType() :
 {
-	Expression low = null, high = null;
+	Expression low = null, high = null, length = null;
 	DeclarationType declType, subtype;
 	Token begin = null;
 }
@@ -804,12 +831,10 @@ DeclarationType DeclarationVarType() :
 	| ( <INT> { declType = new DeclarationIntUnbounded(); } )
 	// Boolean variable declaration
 	| ( <BOOL> { declType = new DeclarationBool(); } )
-	// Array variable declaration
-	/* | ( <ARRAY> <LBRACKET> low = Expression(false, false) <DOTS> high = Expression(false, false) <RBRACKET> 
-		<OF> subtype = DeclarationVarType()
-		{ declType = new DeclarationArray(low, high, subtype); } )
-		// TODO: sort initial values */
+	// Clock (for timed automata)
 	| ( <CLOCK> { declType = new DeclarationClock(); } )
+	// Array variable declaration
+	| ( <ARRAY> <LBRACKET> length = Expression(false, false) <RBRACKET> <OF> subtype = DeclarationVarType() { declType = new DeclarationArray(length, subtype); } )
 	))
 	{ declType.setPosition(begin, getToken(0)); return declType; }
 }
@@ -870,19 +895,10 @@ Updates Updates() :
 		{ updates.addUpdate(null, update); }
 	|
 		// Several probabilistic updates
-		( prob = ProbOrRateOrInterval() <COLON> update = Update() { updates.addUpdate(prob, update); }
-		( <PLUS> prob = ProbOrRateOrInterval() <COLON> update = Update() { updates.addUpdate(prob, update); } )* )
+		( prob = Expression(false, false) <COLON> update = Update() { updates.addUpdate(prob, update); }
+		( <PLUS> prob = Expression(false, false) <COLON> update = Update() { updates.addUpdate(prob, update); } )* )
 	)
 	{ updates.setPosition(begin, getToken(0)); return updates; }
-}
-
-Expression ProbOrRateOrInterval() :
-{
-	Expression prob;
-}
-{
-	( prob = Expression(false, false) | prob = ExpressionInterval(false, false) )
-	{ return prob; }
 }
 
 Update Update() :
@@ -901,13 +917,30 @@ Update Update() :
 
 void UpdateElement(Update update) :
 {
-	ExpressionIdent var = null;
-	Expression expr = null;
+	Expression var = null, expr = null;
 	Token begin = null;
 }
 {
-	begin = <LPARENTH> var = IdentifierPrime() <EQ> expr = Expression(false, false) <RPARENTH>
+	begin = <LPARENTH> var = UpdateVariableRef() <PRIME> <EQ> expr = Expression(false, false) <RPARENTH> 
 	{ UpdateElement ue = new UpdateElement(var, expr); ue.setPosition(begin, getToken(0)); update.addElement(ue); }
+}
+
+// Reference to a variable to be modified by an update
+// Currently, direct access to a single variable, maybe with array access
+
+Expression UpdateVariableRef() :
+{
+	String s = null;
+	Expression ret = null, index = null;
+	Token begin = null;
+}
+{
+	{ begin = getToken(1); } s = Identifier() { ret = new ExpressionIdent(s); }
+	(
+		( <LBRACKET> index = Expression(false, false) <RBRACKET> )
+		{ ret = new ExpressionArrayAccess(ret, index); ret.setPosition(begin, getToken(0)); }
+	)*
+	{ return ret; }
 }
 
 // Module renaming
@@ -955,7 +988,8 @@ RewardStruct RewardStruct() :
 	// (which would not be allowed to appear here anyway)
 	( LOOKAHEAD(<DQUOTE>) <DQUOTE> name = Identifier() <DQUOTE> { rs.setName(name); } )?
 	// Reward structure items
-	( { begin2 = getToken(1); s = null; } ( <LBRACKET> { s = ""; } ( s=Identifier() )? <RBRACKET> )?
+	// (lookahead used to stop transition rewards being read as array-valued state rewards)
+	( { begin2 = getToken(1); s = null; } ( LOOKAHEAD(<LBRACKET>) <LBRACKET> { s = ""; } ( s=Identifier() )? <RBRACKET> )?
 	guard = Expression(false, false) <COLON> value = Expression(false, false) <SEMICOLON>
 	{ rsi = new RewardStructItem(s, guard, value); rsi.setPosition(begin2, getToken(0)); rs.addItem(rsi); } )*
 	<ENDREWARDS>
@@ -1192,9 +1226,11 @@ Expression Expression(boolean prop, boolean pathprop) :
 // This means that more complex time-bounds, especially those that
 // start/end with an identifier should be parenthesised, e.g. "F<=(t1+t2)".
 
-// In fact, JavaCC also warns about lookahead for this function.
-// This is because (like unary minus), R can appear on the left of a unary
+// In fact, JavaCC also warns (twice) about lookahead for this function.
+// Firstly, this is because (like unary minus), R can appear on the left of a unary
 // operator (reward R operator) or in the middle of a binary operator (release).
+// Secondly, time bounds [l,u] are confusable with arrays
+// (here, the default of greedily choosing the bounds is likely correct)
 
 Expression ExpressionTemporalBinary(boolean prop, boolean pathprop) :
 {
@@ -1211,12 +1247,17 @@ Expression ExpressionTemporalBinary(boolean prop, boolean pathprop) :
 		( <U> { exprTemp.setOperator(ExpressionTemporal.P_U); }
 		| <W> { exprTemp.setOperator(ExpressionTemporal.P_W); }
 		| <R> { exprTemp.setOperator(ExpressionTemporal.P_R); } )
+		// (lookahead used to stop [l,u] bounds being read as array)
 		( TimeBound(exprTemp) )?
 		expr = ExpressionTemporalUnary(prop, pathprop)
 		{ exprTemp.setOperand2(expr); exprTemp.setPosition(begin, getToken(0)); ret = exprTemp; }
 	]
 	{ return ret; }
 }
+
+// As above, JavaCC warns about lookahead for this function,
+// since time bounds [l,u] are confusable with arrays
+// (here, the default of greedily choosing the bounds is likely correct)
 
 Expression ExpressionTemporalUnary(boolean prop, boolean pathprop) :
 {
@@ -1232,6 +1273,7 @@ Expression ExpressionTemporalUnary(boolean prop, boolean pathprop) :
 		( <X> { exprTemp.setOperator(ExpressionTemporal.P_X); }
 		| <F> { exprTemp.setOperator(ExpressionTemporal.P_F); }
 		| <G> { exprTemp.setOperator(ExpressionTemporal.P_G); } )
+		// (lookahead used to stop [l,u] bounds being read as array)
 		( TimeBound(exprTemp) )?
 		expr = ExpressionTemporalUnary(prop, pathprop)
 		{ exprTemp.setOperand2(expr); exprTemp.setPosition(begin, getToken(0)); ret = exprTemp; }
@@ -1423,8 +1465,32 @@ Expression ExpressionUnaryMinus(boolean prop, boolean pathprop) :
 		begin = <MINUS> expr = ExpressionUnaryMinus(prop, pathprop)
 		{ ret = new ExpressionUnaryOp(ExpressionUnaryOp.MINUS, expr); ret.setPosition(begin, getToken(0)); }
 	|
-		ret = ExpressionBasic(prop, pathprop)
+		ret = ExpressionArrayAccess(prop, pathprop)
 	)
+	{ return ret; }
+}
+
+// Expression: array access
+
+// JavaCC warns about lookahead for this function. This is because in a few places
+// (bounded temporal operators and semicolon-less properties files)
+// (see the relevant productions for details)
+// we allow two or more successive expressions resulting in potential ambiguities
+// e.g. "a[b]" = "a" "[b]"
+// Ignoring the warning results in the largest match being taken.
+
+Expression ExpressionArrayAccess(boolean prop, boolean pathprop) :
+{
+	String s = null;
+	Expression ret = null, index = null;
+	Token begin = null;
+}
+{
+	{ begin = getToken(1); } ret = ExpressionBasic(prop, pathprop)
+	(
+		( <LBRACKET> index = Expression(prop, pathprop) <RBRACKET> )
+		{ ret = new ExpressionArrayAccess(ret, index); ret.setPosition(begin, getToken(0)); }
+	)*
 	{ return ret; }
 }
 
@@ -1443,6 +1509,8 @@ Expression ExpressionBasic(boolean prop, boolean pathprop) :
 		ret = ExpressionFuncMinMax(prop, pathprop)
 	|
 		ret = ExpressionFuncOldStyle(prop, pathprop)
+	|
+		ret = ExpressionArray(prop, pathprop)
 	|
 		ret = ExpressionParenth(prop, pathprop)
 	|
@@ -1566,6 +1634,22 @@ Expression ExpressionLiteral(boolean prop, boolean pathprop) :
 	{ ret.setPosition(getToken(0)); return ret; }
 }
 
+// Expression: array (non-empty for now)
+
+Expression ExpressionArray(boolean prop, boolean pathprop) : 
+{
+	ExpressionArray array = new ExpressionArray();
+	Expression expr;
+	Token begin = null;
+}
+{
+	begin = <LBRACKET>
+	expr = Expression(prop, pathprop) { array.addElement(expr); }
+	( <COMMA> expr = Expression(prop, pathprop) { array.addElement(expr); })*
+	<RBRACKET>
+	{ array.setPosition(begin, getToken(0)); return array; }
+}
+
 // Expression: parentheses
 
 Expression ExpressionParenth(boolean prop, boolean pathprop) : 
@@ -1618,7 +1702,7 @@ Expression ExpressionProb(boolean prop, boolean pathprop) :
 	{ if (!prop) throw generateParseException(); }
 	// Various options for "P" keyword and attached symbols
 	(( begin = <P> ( <LPARENTH> modifier = IdentifierExpression() <RPARENTH> )? (
-			( r = LtGt() prob = Expression(false, false) { relOp = ExpressionBinaryOp.opSymbols[r]; isBool = true; } )
+			( r = LtGt() prob = QuantOpBound() { relOp = ExpressionBinaryOp.opSymbols[r]; isBool = true; } )
 	       |( <EQ> <QMARK> { relOp = "="; isBool = false; } )
 	       |( <MIN> (( <EQ> <QMARK> { relOp = "min="; isBool = false; } )
 	                |( <MIN> <EQ> <QMARK> { relOp = "minmin="; isBool = false; } )
@@ -1661,6 +1745,33 @@ Expression ExpressionProb(boolean prop, boolean pathprop) :
 	}
 }
 
+// Probability/reward bound for a P/S/R operator
+
+// Note that we don't allow arbitrary expressions for the bound.
+// This is to prevent ambiguity as to whether a [ is part of the P/S/R operator,
+// or indicates an array access in the expression. This can't be resolved properly
+// without type information, which is not available at parse time.
+// As a result, "non-basic" expressions for bounds need to be parenthesised, e.g. P>=(1/p)[...]
+// However, we do allow p+q and p-q for now as common cases we want to disambiguate.
+// This issue can be handled more cleanly at a later date by keeping track of
+// "are we currently in a bound?" as part of the parser context.
+
+Expression QuantOpBound() :
+{
+	Expression ret = null, op2;
+	Token begin = null;
+}
+{
+	{ begin = getToken(1); } 
+	( ret = ExpressionBasic(false, false) )
+	( ( <MINUS> op2 = ExpressionBasic(false, false) ) { ret = new ExpressionBinaryOp(ExpressionBinaryOp.MINUS, ret, op2); }
+	| ( <PLUS> op2 = ExpressionBasic(false, false) ) { ret = new ExpressionBinaryOp(ExpressionBinaryOp.PLUS, ret, op2); }
+	| ( <TIMES> op2 = ExpressionBasic(false, false) ) { ret = new ExpressionBinaryOp(ExpressionBinaryOp.TIMES, ret, op2); }
+	| ( <DIVIDE> op2 = ExpressionBasic(false, false) ) { ret = new ExpressionBinaryOp(ExpressionBinaryOp.DIVIDE, ret, op2); }
+	)?
+	{ ret.setPosition(begin, getToken(0)); return ret; }
+}
+
 // Filter for a P/S/R operator
 
 Filter Filter() :
@@ -1698,7 +1809,7 @@ Expression ExpressionSS(boolean prop, boolean pathprop) :
 	// Various options for "S" keyword and attached symbols
 	begin = <S> (
 		( <LPARENTH> modifier = IdentifierExpression() <RPARENTH> )?
-		( r = LtGt() prob = Expression(false, false) { relOp = ExpressionBinaryOp.opSymbols[r]; isBool = true; } ) |
+		( r = LtGt() prob = QuantOpBound() { relOp = ExpressionBinaryOp.opSymbols[r]; isBool = true; } ) |
 		( <EQ> <QMARK> { relOp = "="; isBool = false; } )
 	)
 	// Expression, optional filter
@@ -1743,7 +1854,7 @@ Expression ExpressionReward(boolean prop, boolean pathprop) :
 	(( begin = <R>
 		( <LPARENTH> modifier = IdentifierExpression() <RPARENTH> )?
 		(RewardIndex(ret))?
-		(( r = LtGt() rew = Expression(false, false) { relOp = ExpressionBinaryOp.opSymbols[r]; isBool = true; } )
+		(( r = LtGt() rew = QuantOpBound() { relOp = ExpressionBinaryOp.opSymbols[r]; isBool = true; } )
 	       |( <EQ> <QMARK> { relOp = "="; isBool = false; } )
 	       |( <MIN> (( <EQ> <QMARK> { relOp = "min="; isBool = false; } )
 	                |( <MIN> <EQ> <QMARK> { relOp = "minmin="; isBool = false; } )
@@ -1886,10 +1997,11 @@ Expression ExpressionStrategy(boolean prop, boolean pathprop) :
 {
 	// This production is only allowed in expressions if the "prop" parameter is true
 	{ if (!prop) throw generateParseException(); }
+	{ begin = getToken(1); }
 	(
 	// <<...>> or [[...]]
-	(( begin = <DLT> { ret = new ExpressionStrategy(true); } ExpressionStrategyCoalition(ret) <DGT> )
-	| (begin = <DLBRACKET> { ret = new ExpressionStrategy(false); } ExpressionStrategyCoalition(ret) <DRBRACKET> ))
+	(( <DLT> { ret = new ExpressionStrategy(true); } ExpressionStrategyCoalition(ret) <DGT> )
+	| (<DLBRACKET> { ret = new ExpressionStrategy(false); } ExpressionStrategyCoalition(ret) <RBRACKET> <RBRACKET> ))
 	// Child expression
 	(
 	( expr = ExpressionProb(prop, pathprop) | expr = ExpressionReward(prop, pathprop) )
@@ -2009,24 +2121,6 @@ ExpressionIdent IdentifierExpressionMinMax() :
 {
 	( ident = Identifier() | <MIN> { ident="min"; } | <MAX> { ident="max"; } )
 	{ ret = new ExpressionIdent(ident); ret.setPosition(getToken(0)); return ret; }
-}
-
-// Primed identifier
-
-ExpressionIdent IdentifierPrime() :
-{
-}
-{
-	<REG_IDENTPRIME>
-	{
-		// Remove prime, create new ident and return
-		String s = getToken(0).image;
-		s = s.substring(0, s.length()-1);
-		ExpressionIdent expr = new ExpressionIdent(s);
-		expr.setPosition(token);
-		expr.setEndColumn(expr.getEndColumn() - 1);
-		return expr;
-	}
 }
 
 // Equality operators: =, !=

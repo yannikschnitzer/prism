@@ -39,6 +39,26 @@ import prism.PrismLangException;
 public class TypeUtils
 {
 	/**
+	 * Return a type to which both types can be cast.
+	 * If one type is null, the other is returned.
+	 * Throws an exception if no such common type exists.
+	 */
+	public static Type findCommonType(Type type1, Type type2) throws PrismLangException
+	{
+		if (type1 == null) {
+			return type2;
+		} else if (type2 == null) {
+			return type1;
+		} else if (type1.canCastTypeTo(type2)) {
+			return type1;
+		} else if (type2.canCastTypeTo(type1)) {
+			return type2;
+		} else {
+			throw new PrismLangException("Types do not match: " + type1 + " and " + type2);
+		}
+	}
+	
+	/**
 	 * Guess the type for a value stored as an Object,
 	 * i.e., return a type which returns value of the same type of Object when evaluated. 
 	 * Throws an exception if no type can be guessed. 
@@ -53,6 +73,16 @@ public class TypeUtils
 		}
 		if (value instanceof Double || value instanceof BigRational) {
 			return TypeDouble.getInstance();
+		}
+		if (value instanceof List<?>) {
+			@SuppressWarnings("unchecked")
+			List<Object> list = (List<Object>) value;
+			int size = list.size();
+			Type subType = null;
+			for (int i = 0; i < size; i++) {
+				subType = findCommonType(subType, guessTypeForValue(list.get(i)));
+			}
+			return TypeArray.getInstance(subType);
 		}
 		throw new PrismLangException("Cannot guess type for value " + value);
 	}

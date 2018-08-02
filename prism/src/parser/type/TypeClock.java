@@ -90,6 +90,15 @@ public class TypeClock extends Type
 	}
 
 	@Override
+	public void checkAssignAllowed(Type rhs) throws PrismLangException
+	{
+		// Stricter check than other primitives
+		if (!(rhs instanceof TypeInt)) {
+			throw new PrismLangException("Clocks can only be assigned integer values");
+		}
+	}
+	
+	@Override
 	public Object accept(TypeTraverseModify v) throws PrismLangException
 	{
 		return v.visit(this);

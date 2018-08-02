@@ -36,13 +36,13 @@ import java.util.Map;
 import parser.EvaluateContextState;
 import parser.State;
 import parser.VarList;
+import parser.VarUtils;
 import parser.ast.Command;
 import parser.ast.Expression;
 import parser.ast.Module;
 import parser.ast.ModulesFile;
 import parser.ast.Update;
 import parser.ast.Updates;
-import parser.type.TypeClock;
 import prism.Evaluator;
 import prism.ModelType;
 import prism.PrismComponent;
@@ -73,8 +73,8 @@ public class Updater<Value> extends PrismComponent
 	protected int synchModuleCounts[];
 	// Model info/stats
 	protected int numRewardStructs;
-	// For real-time models, info about which vars are clocks (bitset over variable indices)
-	protected BitSet clockVars;
+	// For real-time models, which vars are clocks, as constant/literal variable references
+	protected List<Expression> clockVarRefs;
 	
 	// Temporary storage:
 
@@ -118,13 +118,7 @@ public class Updater<Value> extends PrismComponent
 		
 		// For real-time models, store info about which vars are clocks
 		if (modelType.realTime()) {
-			int numVars = varList.getNumVars();
-			clockVars = new BitSet();
-			for (int v = 0; v < numVars; v++) {
-				if (varList.getType(v) instanceof TypeClock) {
-					clockVars.set(v);
-				}
-			}
+			clockVarRefs = varList.getAllClockVarRefs();
 		}
 
 		// Compute count of number of modules using each synch action
@@ -184,7 +178,7 @@ public class Updater<Value> extends PrismComponent
 		clockGuards.clear();
 
 		// Calculate the available updates for each module/action
-		// (update information in updateLists, clockGuards, enabledSynchs and enabledModules)
+		// (update information in updateLists, enabledSynchs, enabledModules and clockGuards)
 		for (i = 0; i < numModules; i++) {
 			calculateUpdatesForModule(i, state);
 		}
@@ -280,7 +274,7 @@ public class Updater<Value> extends PrismComponent
 	
 	/**
 	 * Determine the enabled updates for the 'm'th module from (global) state 'state'.
-	 * Update information in updateLists, enabledSynchs and enabledModules.
+	 * Update information in updateLists, enabledSynchs, enabledModules and clockGuards.
 	 * @param m The module index
 	 * @param state State from which to explore
 	 */
@@ -296,8 +290,9 @@ public class Updater<Value> extends PrismComponent
 			// For real-time models, we only evaluate in terms of non-clock vars, and store any clock guard
 			if (modelType.realTime()) {
 				State stateNoClocks = new State(state);
-				for (int v = clockVars.nextSetBit(0); v >= 0; v = clockVars.nextSetBit(v + 1)) {
-					stateNoClocks.varValues[v] = null;
+				for (Expression clockVarRef : clockVarRefs) {
+					// NB: don't really need ec here since clock var refs are constant/literal 
+					VarUtils.assignVarValueInState(clockVarRef, ec, stateNoClocks, null, null, varList);
 				}
 				clockGuard = command.getGuard().deepCopy();
 				clockGuard = (Expression) clockGuard.evaluatePartially(ec.setState(stateNoClocks)).simplify();
@@ -396,6 +391,7 @@ public class Updater<Value> extends PrismComponent
 				throw new PrismLangException(e.getMessage() + " in state " + state.toString(modulesFile), ups);
 			}
 		}
+		// Attach clock guard info
 		if (modelType.realTime() && clockGuards.containsKey(ups)) {
 			ch.setClockGuard(clockGuards.get(ups));
 		}

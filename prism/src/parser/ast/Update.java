@@ -67,7 +67,7 @@ public class Update extends ASTElement implements Iterable<UpdateElement>
 	 * @param v The AST element corresponding to the variable being updated
 	 * @param e The expression which will be assigned to the variable
 	 */
-	public void addElement(ExpressionIdent v, Expression e)
+	public void addElement(Expression v, Expression e)
 	{
 		elements.add(new UpdateElement(v, e));
 	}
@@ -93,9 +93,9 @@ public class Update extends ASTElement implements Iterable<UpdateElement>
 	 * @param i The index of the variable assignment within the update
 	 * @param v The AST element corresponding to the variable being updated
 	 */
-	public void setVar(int i, ExpressionIdent v)
+	public void setVarRef(int i, Expression v)
 	{
-		elements.get(i).setVarIdent(v);
+		elements.get(i).setVarRef(v);
 	}
 
 	/**
@@ -106,26 +106,6 @@ public class Update extends ASTElement implements Iterable<UpdateElement>
 	public void setExpression(int i, Expression e)
 	{
 		elements.get(i).setExpression(e);
-	}
-
-	/**
-	 * Set the type of the {@code i}th variable assigned to by this update.
-	 * @param i The index of the variable assignment within the update
-	 * @param t The variable's type
-	 */
-	public void setType(int i, Type t)
-	{
-		elements.get(i).setType(t);
-	}
-
-	/**
-	 * Set the index (wrt the model) of the {@code i}th variable assigned to by this update.
-	 * @param i The index of the variable assignment within the update
-	 * @param t The index of the variable within the model to which it belongs
-	 */
-	public void setVarIndex(int i, int index)
-	{
-		elements.get(i).setVarIndex(index);
 	}
 
 	/**
@@ -153,11 +133,12 @@ public class Update extends ASTElement implements Iterable<UpdateElement>
 	}
 	
 	/**
-	 * Get the name of the {@code i}th variable in this update.
+	 * Get the {@code i}th variable reference in this update.
+	 * (ExpressionVar for variable, ExpressionArray for array, etc.)
 	 */
-	public String getVar(int i)
+	public Expression getVarRef(int i)
 	{
-		return elements.get(i).getVar();
+		return elements.get(i).getVarRef();
 	}
 
 	/**
@@ -174,22 +155,6 @@ public class Update extends ASTElement implements Iterable<UpdateElement>
 	public Type getType(int i)
 	{
 		return elements.get(i).getType();
-	}
-
-	/**
-	 * Get the ASTElement corresponding to the {@code i}th variable in this update.
-	 */
-	public ExpressionIdent getVarIdent(int i)
-	{
-		return elements.get(i).getVarIdent();
-	}
-
-	/**
-	 * Get the index (wrt the model) of the {@code i}th variable in this update.
-	 */
-	public int getVarIndex(int i)
-	{
-		return elements.get(i).getVarIndex();
 	}
 
 	/**
@@ -232,14 +197,21 @@ public class Update extends ASTElement implements Iterable<UpdateElement>
 	 * @param newState State object to apply changes to
 	 * @param varMap A mapping from indices (over all variables) to the subset (-1 if not in subset). 
 	 */
+	@Deprecated
 	public void updatePartially(State oldState, State newState, int[] varMap) throws PrismLangException
 	{
-		int i, j, n;
-		n = elements.size();
-		for (i = 0; i < n; i++) {
-			j = varMap[getVarIndex(i)];
-			if (j != -1) {
-				newState.setValue(j, getExpression(i).evaluate(new EvaluateContextSubstate(oldState, varMap)));
+		// Deprecated because doesn't work for arbitrary variable references,
+		// and is not used now anyway, since PTA construction was refactored
+		// (and also no support for exact evaluation)
+		int n = getNumElements();
+		for (int i = 0; i < n; i++) {
+			if (getVarRef(i) instanceof ExpressionVar) {
+				int j = varMap[((ExpressionVar) getVarRef(i)).getVarIndex()];
+				if (j != -1) {
+					newState.setValue(j, getExpression(i).evaluate(new EvaluateContextSubstate(oldState, varMap)));
+				}
+			} else {
+				throw new PrismLangException("Can only update partially for a top-level variable");
 			}
 		}
 	}
@@ -251,8 +223,7 @@ public class Update extends ASTElement implements Iterable<UpdateElement>
 	 */
 	public State checkUpdate(State oldState, VarList varList) throws PrismLangException
 	{
-		State res;
-		res = new State(oldState);
+		State res = new State(oldState);
 		for (UpdateElement e : this) {
 			e.checkUpdate(oldState, varList);
 		}
@@ -304,6 +275,33 @@ public class Update extends ASTElement implements Iterable<UpdateElement>
 		// Special (empty) case
 		else {
 			return "true";
+		}
+	}
+	
+	/**
+	 * String representation of the update, with assignment values and array indices/etc. evaluated.
+	 * @param state The state in which to evaluate
+	 * @param sep String used to separate elements, e.g. " & " or ", "
+	 * @param emptyIsTrue If true, format an empty list as "true"; otherwise use ""
+	 */
+	public String toString(State state, String sep, boolean emptyIsTrue) throws PrismLangException
+	{
+		// Normal case
+		if (elements.size() > 0) {
+			boolean first = true;
+			String s = "";
+			for (UpdateElement ue : elements) {
+				if (first)
+					first = false;
+				else
+					s += sep;
+				s += ue.toString(state, false);
+			}
+			return s;
+		}
+		// Special (empty) case
+		else {
+			return emptyIsTrue ? "true" : "";
 		}
 	}
 }

@@ -32,6 +32,7 @@ import java.util.List;
 import parser.EvaluateContext;
 import parser.IdentUsage;
 import parser.Values;
+import parser.VarList;
 import parser.visitor.ASTVisitor;
 import parser.visitor.DeepCopy;
 import parser.visitor.PropertiesSemanticCheck;
@@ -158,7 +159,7 @@ public class PropertiesFile extends ASTElement
 		cl = pf.constantList;
 		n = cl.size();
 		for (i = 0; i < n; i++) {
-			constantList.addConstant(cl.getConstantNameIdent(i), cl.getConstant(i), cl.getConstantType(i));
+			constantList.addConstant(cl.getConstantNameIdent(i), cl.getConstant(i), cl.getConstantDeclarationType(i));
 		}
 		n = pf.properties.size();
 		for (i = 0; i < n; i++) {
@@ -350,11 +351,15 @@ public class PropertiesFile extends ASTElement
 		// Type checking
 		typeCheck(this);
 
-		// Set up some values for constants
-		// (without assuming any info about undefined constants)
-		// NB: we use non-exact constant evaluation by default,
-		// for exact mode constants will be reevaluated later on
-		setSomeUndefinedConstants(EvaluateContext.create());
+		// If there are no undefined constants, set up values for constants
+		// (to avoid need for a later call to setUndefinedConstants).
+		// NB: Can't call setUndefinedConstants if there are undefined constants
+		// because semanticCheckAfterConstants may fail. 
+		if (getUndefinedConstants().isEmpty() && modulesFile.getUndefinedConstants().isEmpty()) {
+			// NB: we use non-exact constant evaluation by default,
+			// for exact mode constants will be reevaluated later on
+			setSomeUndefinedConstants(EvaluateContext.create());
+		}
 	}
 
 	// check formula identifiers
@@ -536,6 +541,10 @@ public class PropertiesFile extends ASTElement
 		// Might need values for ModulesFile constants too
 		EvaluateContext ecUndefinedPlusMF = EvaluateContext.create(this.ecUndefined).addConstantValues(modulesFile.getConstantValues());
 		constantValues = constantList.evaluateSomeConstants(ecUndefinedPlusMF);
+		// Add variable indexing now constants known (e.g. for array indices)
+		VarList varList = modulesFile.createVarList();
+		varList.addVarIndexing(this);
+		varList.addVarIndexing(combinedLabelList);
 		// Note: unlike ModulesFile, we don't trigger any semantic checks at this point
 		// This will usually be done on a per-property basis later
 	}

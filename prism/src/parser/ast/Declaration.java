@@ -38,14 +38,37 @@ public class Declaration extends ASTElement
 {
 	// Name
 	protected String name;
+	// Reference to the variable
+	// (will end up being an ExpressionVar, with cached index)
+	protected Expression varRef;
 	// Type of declaration
 	protected DeclarationType declType;
 	// Initial value - null if none specified
 	protected Expression start;
-		
+	
+	/**
+	 * Create a new declaration
+	 * @param varRef AST reference to the variable name
+	 * @param declType Declaration type
+	 */
+	public Declaration(Expression varRef, DeclarationType declType)
+	{
+		// varRef is either an ExpressionIdent or an ExpressionVar, so toString() gives name
+		setName(varRef.toString());
+		setVarRef(varRef);
+		setDeclType(declType);
+		setStart(null);
+	}
+	
+	/**
+	 * Create a new declaration
+	 * @param name Variable name
+	 * @param declType Declaration type
+	 */
 	public Declaration(String name, DeclarationType declType)
 	{
 		setName(name);
+		setVarRef(new ExpressionIdent(name));
 		setDeclType(declType);
 		setStart(null);
 	}
@@ -56,6 +79,11 @@ public class Declaration extends ASTElement
 	{
 		this.name = name;
 	}	
+
+	public void setVarRef(Expression varRef)
+	{
+		this.varRef = varRef;
+	}
 
 	public void setDeclType(DeclarationType declType)
 	{
@@ -93,6 +121,14 @@ public class Declaration extends ASTElement
 		return start;
 	}
 	
+	/**
+	 * Get the expression representing the variable name.
+	 */
+	public Expression getVarRef()
+	{
+		return varRef;
+	}
+
 	/**
 	 * Get the specified initial value of this variable,
 	 * using the default value for its type if not specified.
@@ -142,6 +178,7 @@ public class Declaration extends ASTElement
 	@Override
 	public Declaration deepCopy(DeepCopy copier) throws PrismLangException
 	{
+		varRef = copier.copy(varRef);
 		declType = copier.copy(declType);
 		start = copier.copy(start);
 		return this;

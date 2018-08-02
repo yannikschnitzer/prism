@@ -165,16 +165,19 @@ public class Modules2MTBDD
 	 */
 	private static class UpdateDDs
 	{
-		/** MTBDD for the updates */
+		/** MTBDD for the update */
 		public JDDNode up;
+		/** BDD encoding the (primitive) variables actually updated **/
+		public JDDNode varsUsed;
 
-		public UpdateDDs(JDDNode up)
+		public UpdateDDs(JDDNode up, JDDNode varsUsed)
 		{
 			this.up = up;
+			this.varsUsed = varsUsed;
 		}
 
 		public void clear() {
-			JDD.DerefNonNull(up);
+			JDD.DerefNonNull(up, varsUsed);
 		}
 	}
 
@@ -223,6 +226,15 @@ public class Modules2MTBDD
 		}
 	}
 	
+	// data structure used to store mtbdds for a variable update
+
+	private class VarDDs
+	{
+		public JDDNode value;
+		public JDDNode varsUsed;
+		public JDDNode range;
+	}
+	
 	// constructor
 	
 	public Modules2MTBDD(Prism p, ModulesFile mf)
@@ -249,7 +261,7 @@ public class Modules2MTBDD
 		varList = modulesFile.createVarList();
 		if (modulesFile.containsUnboundedVariables())
 			throw new PrismNotSupportedException("Cannot build a model that contains a variable with unbounded range (try the explicit engine instead)");
-		numVars = varList.getNumVars();
+		numVars = varList.getNumPrimitiveVars();
 		constantValues = modulesFile.getConstantValues();
 		
 		// get basic system info
@@ -540,13 +552,13 @@ public class Modules2MTBDD
 			for (i = 0; i < numVars; i++) {
 				// get number of dd variables needed
 				// (ceiling of log2 of range of variable)
-				n = varList.getRangeLogTwo(i);
+				n = varList.getPrimitiveRangeLogTwo(i);
 				// add pairs of variables (row/col)
 				for (j = 0; j < n; j++) {
 					// new dd row variable
-					varDDRowVars[i].addVar(modelVariables.allocateVariable(varList.getName(i) + "." + j));
+					varDDRowVars[i].addVar(modelVariables.allocateVariable(varList.getPrimitiveName(i) + "." + j));
 					// new dd col variable
-					varDDColVars[i].addVar(modelVariables.allocateVariable(varList.getName(i) + "'." + j));
+					varDDColVars[i].addVar(modelVariables.allocateVariable(varList.getPrimitiveName(i) + "'." + j));
 				}
 			}
 
@@ -610,22 +622,22 @@ public class Modules2MTBDD
 			for (i = 0; i < numVars; i++) {
 				// if at the start of a module's variables
 				// and model is an mdp...
-				if ((modelType == ModelType.MDP) && (last != varList.getModule(i))) {
+				if ((modelType == ModelType.MDP) && (last != varList.getPrimitiveModule(i))) {
 					// add scheduling dd var(s) (may do multiple ones here if modules have no vars)
-					for (j = last+1; j <= varList.getModule(i); j++) {
+					for (j = last+1; j <= varList.getPrimitiveModule(i); j++) {
 						ddSchedVars[j] = modelVariables.allocateVariable(moduleNames[j] + ".s");
 					}
 					// change 'last'
-					last = varList.getModule(i);
+					last = varList.getPrimitiveModule(i);
 				}
 				// now add row/col dd vars for the variable
 				// get number of dd variables needed
 				// (ceiling of log2 of range of variable)
-				n = varList.getRangeLogTwo(i);
+				n = varList.getPrimitiveRangeLogTwo(i);
 				// add pairs of variables (row/col)
 				for (j = 0; j < n; j++) {
-					varDDRowVars[i].addVar(modelVariables.allocateVariable(varList.getName(i) + "." + j));
-					varDDColVars[i].addVar(modelVariables.allocateVariable(varList.getName(i) + "'." + j));
+					varDDRowVars[i].addVar(modelVariables.allocateVariable(varList.getPrimitiveName(i) + "." + j));
+					varDDColVars[i].addVar(modelVariables.allocateVariable(varList.getPrimitiveName(i) + "'." + j));
 				}
 			}
 			// add any remaining scheduling dd var(s) (happens if some modules have no vars)
@@ -667,7 +679,7 @@ public class Modules2MTBDD
 		// go thru all variables
 		for (i = 0; i < numVars; i++) {
 			// check which module it belongs to
-			m = varList.getModule(i);
+			m = varList.getPrimitiveModule(i);
 			// if global...
 			if (m == -1) {
 				globalDDRowVars.copyVarsFrom(varDDRowVars[i]);
@@ -730,7 +742,7 @@ public class Modules2MTBDD
 		for (i = 0; i < numVars; i++) {
 			// set each element of the identity matrix
 			id = JDD.Constant(0);
-			for (j = 0; j < varList.getRange(i); j++) {
+			for (j = 0; j < varList.getPrimitiveRange(i); j++) {
 				id = JDD.SetMatrixElement(id, varDDRowVars[i], varDDColVars[i], j, j, 1);
 			}
 			varIdentities[i] = id;
@@ -741,7 +753,7 @@ public class Modules2MTBDD
 			// product of identities for vars in module
 			id = JDD.Constant(1);
 			for (j = 0; j < numVars; j++) {
-				if (varList.getModule(j) == i) {
+				if (varList.getPrimitiveModule(j) == i) {
 					id = JDD.Apply(JDD.TIMES, id, varIdentities[j].copy());
 				}
 			}
@@ -1941,96 +1953,144 @@ public class Modules2MTBDD
 			dd = JDD.Plus(dd, udd);
 		}
 		
-		return new UpdateDDs(dd);
+		return new UpdateDDs(dd, null);
 	}
 
 	/**
-	 * Translate an update.
-	 * <br>[ REFS: <i>result</i>, DEREFS: <i>none</i> ]
-	 * @param m the module index
-	 * @param c the update AST element
-	 * @param synch true if this command is synchronising (named action)
-	 * @param guard the guard
+	 * Translate a single update, i.e. an assignment (x_1'=e_1)&...&(x_n'=e_n) of expressions e_1...e_n
+	 * to variable references x_1...x_n (variable references might be variables, array accesses, etc.).
+	 * The result is a BDD, over allDDRowVars and the column DD variables for all variables that either
+	 * belong to this module or are global, representing the new value of those variables in any state.
+	 * All variables (in the same module or global) not explicitly updated are assumed not to change value.
+	 * <br>[ REFS: <i>result</i>, DEREFS: none ]
+	 * 
+	 * @param m The index of the module containing the update.
+	 * @param c The update
+	 * @param synch Is this part of a synchronous command?
+	 * @param guard BDD representing the states satisfying the guard for the update's command.
 	 */
 	private UpdateDDs translateUpdate(int m, Update c, boolean synch, JDDNode guard) throws PrismException
 	{
-		int n;
-		
-		// clear varsUsed flag array to indicate no vars used yet
-		for (int i = 0; i < numVars; i++) {
-			varsUsed[i] = false;
-		}
-		// take product of clauses
+		// BDD for the transition relation: initially empty (true)
 		JDDNode dd = JDD.Constant(1);
-		n = c.getNumElements();
+		// BDD encoding vars used in each update in each state: initially none (true)
+		// (need to keep track so we can add identity for non-modified variables)
+		JDDNode ddVarsUsed = JDD.Constant(1);
+		// Iterate through each update element (x_i'=e_i)
+		int n = c.getNumElements();
 		for (int i = 0; i < n; i++) {
-			try {
-				UpdateDDs udd = translateUpdateElement(m, c, i, synch, guard);
-				dd = JDD.Times(dd, udd.up);
-			} catch (Exception|StackOverflowError e) {
-				JDD.Deref(dd);
-				throw e;
-			}
-		}
-		// if a variable from this module or a global variable
-		// does not appear in this update assume it does not change value
-		// so multiply by its identity matrix
-		for (int i = 0; i < numVars; i++) {
-			if ((varList.getModule(i) == m || varList.getModule(i) == -1) && !varsUsed[i]) {
-				dd = JDD.Times(dd, varIdentities[i].copy());
-			}
+			UpdateDDs udd = translateUpdateElement(m, c, i, synch, guard);
+			// Update the 'vars used' BDD
+			ddVarsUsed = JDD.Apply(JDD.TIMES, ddVarsUsed, udd.varsUsed);
+			// Combine the BDD for this element with the others for this update
+			dd = JDD.Apply(JDD.TIMES, dd, udd.up);
 		}
 		
-		return new UpdateDDs(dd);
+		// Add in in the identity (i.e. no change in value)
+		// for all variables that are in the same module or global.
+		// Note that we don't check above whether the variables updated are allowed to be
+		// (e.g. because they belong to another module, or break global/sync restrictions);
+		// that is done earlier, in ModulesFileSemanticCheck.
+		for (int varIndex = 0; varIndex < numVars; varIndex++) {
+			if (varList.getPrimitiveModule(varIndex) == m || varList.getPrimitiveModule(varIndex) == -1) {
+				// Build BDD for states where this variable is _not_ updated
+				JDDNode notUpdated = JDD.And(ddVarsUsed.copy(), JDD.Not(varDDColVars[varIndex].getVar(0).copy()));
+				notUpdated = JDD.ThereExists(notUpdated, allDDColVars);
+				// Add in identity for the variable to those states
+				JDDNode tmp = JDD.ITE(notUpdated, JDD.Apply(JDD.TIMES, notUpdated.copy(), varIdentities[varIndex].copy()), JDD.Constant(1));
+				dd = JDD.Apply(JDD.TIMES, dd, tmp);
+			}
+		}
+		JDD.Deref(ddVarsUsed);
+
+		return new UpdateDDs(dd, null);
 	}
 
 	/**
-	 * Translate a single update element, i.e., (x'=...) in an update.
-	 * <br>[ REFS: <i>result</i>, DEREFS: <i>none</i> ]
-	 * @param m the module index
-	 * @param c the Update AST element
+	 * Translate a single update element, i.e. an assignment (x'=e) of expression e
+	 * to variable reference x (variable references might be variables, array accesses, etc.).
+	 * The result is a BDD, over allDDRowVars and the column DD variables for all variables that either
+	 * belong to this module or are global, representing the new value of those variables in any state.
+	 * All variables (in the same module or global) not explicitly updated are assumed not to change value.
+	 * <br>[ REFS: <i>result</i>, DEREFS: none ]
+	 * 
+	 * @param m The index of the module containing the update.
+	 * @param c The update
 	 * @param i the element index for the update element in c
-	 * @param synch true if this command is synchronising (named action)
-	 * @param guard the guard for this command
+	 * @param synch Is this part of a synchronous command?
+	 * @param guard BDD representing the states satisfying the guard for the update's command.
 	 */
 	private UpdateDDs translateUpdateElement(int m, Update c, int i, boolean synch, JDDNode guard) throws PrismException
 	{
-		// get variable
-		String s = c.getVar(i);
-		int v = varList.getIndex(s);
-		if (v == -1) {
-			throw new PrismLangException("Unknown variable \"" + s + "\" in update", c.getVarIdent(i));
-		}
-		varsUsed[v] = true;
-		// check if the variable to be modified is valid
-		// (i.e. belongs to this module or is global)
-		if (varList.getModule(v) != -1 && varList.getModule(v) != m) {
-			throw new PrismLangException("Cannot modify variable \"" + s + "\" from module \"" + moduleNames[m] + "\"", c.getVarIdent(i));
-		}
-		// print out a warning if this update is in a command with a synchronising
-		// action AND it modifies a global variable
-		if (varList.getModule(v) == -1 && synch) {
-			throw new PrismLangException("Synchronous command cannot modify global variable", c.getVarIdent(i));
-		}
-		// get some info on the variable
-		int l = varList.getLow(v);
-		int h = varList.getHigh(v);
-		// create dd
-		JDDNode tmp1 = JDD.Constant(0);
-		for (int j = l; j <= h; j++) {
-			tmp1 = JDD.SetVectorElement(tmp1, varDDColVars[v], j - l, j);
-		}
-		JDDNode tmp2 = translateExpression(c.getExpression(i));
-		tmp2 = JDD.Times(tmp2, guard.copy());
-		JDDNode cl = JDD.Apply(JDD.EQUALS, tmp1, tmp2);
-		cl = JDD.Times(cl, guard.copy());
-		// filter out bits not in range
-		cl = JDD.Times(cl, varColRangeDDs[v].copy());
-		cl = JDD.Times(cl, range.copy());
-
-		return new UpdateDDs(cl);
+		// Build BDDs for the LHS (variable reference part) of this element of the update
+		VarDDs varDDs = translateVarRef(c.getVarRef(i), guard);
+		JDDNode lhs = varDDs.value;
+		// Build MTBDD for RHS of update (only in states satisfying guard)
+		JDDNode rhs = translateExpression(c.getExpression(i), guard);
+		rhs = JDD.Apply(JDD.TIMES, rhs, guard.copy());
+		// Combine to build BDD for this element of the update
+		JDDNode ddElem = JDD.Apply(JDD.EQUALS, lhs, rhs);
+		ddElem = JDD.Apply(JDD.TIMES, ddElem, guard.copy());
+		// Restrict to relevant ranges, first over column variables (to remove
+		// any variable overflows), then over row variables.
+		ddElem = JDD.Apply(JDD.TIMES, ddElem, varDDs.range);
+		ddElem = JDD.Apply(JDD.TIMES, ddElem, range.copy());
+		
+		return new UpdateDDs(ddElem, varDDs.varsUsed);
 	}
-
+	
+	/**
+	 * Translate a single variable reference (for an update x'=...),
+	 * returning several (MT)BDDs) in a VarDDs structure:
+	 * (1) varDDs.value encodes the value of the variable (over column variables)
+	 * (2) varDDs.varsUsed encodes the (primitive) variables actually updated
+	 * (3) varDDs.range encodes the range of the variable (over column variables)
+	 * For the non-trivial cases (where there are array accesses involved),
+	 * these all vary across states (i.e. over allDDRowVars).
+	 * It is only done for states satisfying guard.
+	 * <br>[ REFS: <i>result</i>, DEREFS: none ]
+	 */
+	protected VarDDs translateVarRef(Expression varRef, JDDNode guard) throws PrismException
+	{
+		// Compute an MTBDD of the variable indices for all states
+		JDDNode ddVarIndex = expr2mtbdd.computeVarIndices(varRef, guard.copy());
+		// Compute the range of possible variable indices
+		int varIndexMin = (int) JDD.FindMinOver(ddVarIndex, guard.copy());
+		int varIndexMax = (int) JDD.FindMaxOver(ddVarIndex, guard.copy());
+		// Iterate though them and build up the (MT)BDDs for each one
+		// They don't overlap, so we can just add them up to get the final result
+		JDDNode ddValue = JDD.Constant(0);
+		JDDNode ddVarsUsed = JDD.Constant(0);
+		JDDNode ddRange = JDD.Constant(0);
+		for (int i = varIndexMin; i <= varIndexMax; i++) {
+			// Get BDD for states where the variable index is equal to i
+			JDDNode where = JDD.Equals(ddVarIndex.copy(), i);
+			// Compute the variable value for this part
+			JDDNode ddValuePart = JDD.Constant(0);
+			int l = varList.getPrimitiveLow(i);
+			int h = varList.getPrimitiveHigh(i);
+			for (int j = l; j <= h; j++) {
+				ddValuePart = JDD.SetVectorElement(ddValuePart, varDDColVars[i], j - l, j);
+			}
+			ddValuePart = JDD.ITE(where.copy(), ddValuePart, JDD.Constant(0));
+			ddValue = JDD.Apply(JDD.PLUS, ddValue, ddValuePart);
+			// Compute the 'variables used' BDD for this part
+			JDDNode ddVarsUsedPart = JDD.ITE(where.copy(), varDDColVars[i].getVar(0).copy(), JDD.Constant(0));
+			ddVarsUsed = JDD.Apply(JDD.PLUS, ddVarsUsed, ddVarsUsedPart);
+			// Compute the 'range of column variables used' BDD for this part
+			JDDNode ddRangePart = JDD.ITE(where.copy(), varColRangeDDs[i].copy(), JDD.Constant(0));
+			ddRange = JDD.Apply(JDD.PLUS, ddRange, ddRangePart);
+			// Derefs
+			JDD.Deref(where);
+		}
+		JDD.Deref(ddVarIndex);
+		VarDDs varDDs = new VarDDs();
+		varDDs.value = ddValue;
+		varDDs.varsUsed = ddVarsUsed;
+		varDDs.range = ddRange;
+		return varDDs;
+	}
+	
 	/**
 	 * Translate an arbitrary expression.
 	 * <br>[ REFS: <i>result</i>, DEREFS: <i>none</i> ]
@@ -2041,6 +2101,16 @@ public class Modules2MTBDD
 		// pass this work onto the Expression2MTBDD object
 		// states of interest = JDD.ONE = true = all possible states
 		return expr2mtbdd.checkExpressionDD(e, JDD.ONE.copy());
+	}
+
+	/**
+	 * Translate an arbitrary expression, only over states in guard.
+	 * <br>[ REFS: <i>result</i>, DEREFS: none ]
+	 */
+	private JDDNode translateExpression(Expression e, JDDNode guard) throws PrismException
+	{
+		// pass this work onto the Expression2MTBDD object
+		return expr2mtbdd.checkExpressionDD(e, guard.copy());
 	}
 
 	// build state and transition rewards
@@ -2163,9 +2233,6 @@ public class Modules2MTBDD
 	
 	private void buildInitialStates() throws PrismException
 	{
-		int i;
-		JDDNode tmp;
-		
 		// first, handle case where multiple initial states specified with init...endinit
 		if (modulesFile.getInitialStates() != null) {
 			start = translateExpression(modulesFile.getInitialStates());
@@ -2176,12 +2243,19 @@ public class Modules2MTBDD
 		// second, handle case where initial state determined by init values for variables
 		else {
 			start = JDD.Constant(1);
-			for (i = 0; i < numVars; i++) {
+			// go through each top-level var and get its initial value
+			int numTopLevelVars = modulesFile.getNumVars();
+			for (int i = 0; i < numTopLevelVars; i++) {
 				Object startObj = modulesFile.getVarDeclaration(i).getStartOrDefault().evaluate(constantValues);
 				try {
-					int startInt = varList.encodeToInt(i, startObj);
-					tmp = JDD.SetVectorElement(JDD.Constant(0), varDDRowVars[i], startInt, 1);
-					start = JDD.And(start, tmp);
+					// encode the contained primitive variable and combine
+					int startIndex = varList.getIndexOfFirstPrimitive(i);
+					int enc[] = varList.encodeVarValueToInts(i, startObj);
+					for (int j = 0; j < enc.length; j++) {
+//						System.out.println(varDDRowVars[startIndex + j] +" -> "+ enc[j]);
+						JDDNode tmp = JDD.SetVectorElement(JDD.Constant(0), varDDRowVars[startIndex + j], enc[j], 1);
+						start = JDD.And(start, tmp);
+					}
 				} catch (PrismLangException e) {
 					// attach initial value spec for better error reporting
 					e.setASTElement(modulesFile.getVarDeclaration(i).getStart());

@@ -29,6 +29,7 @@ package parser.visitor;
 import java.util.Vector;
 
 import parser.ast.*;
+import parser.type.TypeClock;
 import prism.PrismLangException;
 
 /**
@@ -50,8 +51,22 @@ public class ModulesFileSemanticCheckAfterConstants extends ASTTraverse
 		this.modulesFile = modulesFile;
 	}
 
+	public void visitPost(UpdateElement e) throws PrismLangException
+	{
+		// Note: this check does not require constants to be defined,
+		// but it does require type checking to have been done
+		if (e.getVarRef().getType().contains(t -> t instanceof TypeClock)) {
+			if (!(e.getExpression().isConstant())) {
+				throw new PrismLangException("Clocks can only be reset to constant values", e);
+			}
+		}
+	}
+	
 	public void visitPost(Update e) throws PrismLangException
 	{
+		// TODO: This will fail to detect e.g. a simultaneous update to a[0] and all of a
+		// Move check somewhere else
+		
 		int i, n;
 		String var;
 		Vector<String> varsUsed = new Vector<String>();
@@ -61,9 +76,9 @@ public class ModulesFileSemanticCheckAfterConstants extends ASTTraverse
 		// but one day we might need to worry about e.g. array indices...
 		n = e.getNumElements();
 		for (i = 0; i < n; i++) {
-			var = e.getVar(i);
+			var = e.getVarRef(i).toString();
 			if (varsUsed.contains(var)) {
-				throw new PrismLangException("Variable \"" + var + "\" is set twice in the same update", e.getVarIdent(i));
+				throw new PrismLangException("Variable \"" + var + "\" is set twice in the same update", e.getVarRef(i));
 			}
 			varsUsed.add(var);
 		}

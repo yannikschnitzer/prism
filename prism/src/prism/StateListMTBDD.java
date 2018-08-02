@@ -94,11 +94,11 @@ public class StateListMTBDD implements StateList
 		size = JDD.GetNumMinterms(states, model.getNumDDRowVars());
 		
 		// initialise arrays
-		varSizes = new int[varList.getNumVars()];
-		for (i = 0; i < varList.getNumVars(); i++) {
-			varSizes[i] = varList.getRangeLogTwo(i);
+		varSizes = new int[varList.getNumPrimitiveVars()];
+		for (i = 0; i < varList.getNumPrimitiveVars(); i++) {
+			varSizes[i] = varList.getPrimitiveRangeLogTwo(i);
 		}
-		varValues = new int[varList.getNumVars()];
+		varValues = new int[varList.getNumPrimitiveVars()];
 	}
 
 	/**
@@ -125,11 +125,11 @@ public class StateListMTBDD implements StateList
 		size = JDD.GetNumMinterms(states, numVars);
 
 		// initialise arrays
-		varSizes = new int[varList.getNumVars()];
-		for (i = 0; i < varList.getNumVars(); i++) {
-			varSizes[i] = varList.getRangeLogTwo(i);
+		varSizes = new int[varList.getNumPrimitiveVars()];
+		for (i = 0; i < varList.getNumPrimitiveVars(); i++) {
+			varSizes[i] = varList.getPrimitiveRangeLogTwo(i);
 		}
-		varValues = new int[varList.getNumVars()];
+		varValues = new int[varList.getNumPrimitiveVars()];
 	}
 
 	@Override
@@ -217,7 +217,7 @@ public class StateListMTBDD implements StateList
 		int i;
 		
 		count = 0;
-		for (i = 0; i < varList.getNumVars(); i++) {
+		for (i = 0; i < varList.getNumPrimitiveVars(); i++) {
 			varValues[i] = 0;
 		}
 		currentVar = 0;
@@ -234,7 +234,6 @@ public class StateListMTBDD implements StateList
 	 */
 	private void printRec(JDDNode dd, int level, ODDNode o, long n)
 	{
-		int i, j;
 		JDDNode e, t;
 		String varsString;
 		
@@ -263,14 +262,7 @@ public class StateListMTBDD implements StateList
 				break;
 			case STRINGS: break;
 			}
-			j = varList.getNumVars();
-			varsString = "";
-			for (i = 0; i < j; i++) {
-				varsString += varList.decodeFromInt(i, varValues[i]).toString();
-				if (i < j-1) {
-					varsString += ",";
-				}
-			}
+			varsString = varList.decodeStateFromInts(varValues).toStringNoParentheses();
 			switch (outputFormat) {
 			case NORMAL: outputLog.println(varsString + ")"); break;
 			case MATLAB: outputLog.println(varsString); break;
@@ -353,8 +345,8 @@ public class StateListMTBDD implements StateList
 		
 		// traverse bdd, top to bottom, getting val (v) for each var
 		tmp = states;
-		values = new Values();
-		n = varList.getNumVars();
+		n = varList.getNumPrimitiveVars();
+		int varValues[] = new int[n];
 		level = 0;
 		for (i = 0; i < n; i++) {
 			v = 0;
@@ -370,8 +362,12 @@ public class StateListMTBDD implements StateList
 				}
 				level++;
 			}
-			o = varList.decodeFromInt(i, v);
-			values.addValue(varList.getName(i), o);
+			varValues[i] = v;
+		}
+		State state = varList.decodeStateFromInts(varValues);
+		values = new Values();
+		for (i = 0; i < state.varValues.length; i++) {
+			values.addValue(varList.getName(i), state.varValues[i]);
 		}
 		
 		// derefs
@@ -392,11 +388,11 @@ public class StateListMTBDD implements StateList
 		int level = 0;
 		int index = 0;
 		// Iterate through variables
-		int n = varList.getNumVars();
+		int n = varList.getNumPrimitiveVars();
 		for (int i = 0; i < n; i++) {
 			int valInt = -1;
 			try {
-				valInt = varList.encodeToInt(i, state.varValues[i]); 
+				valInt = varList.encodeVarValueToInt(i, state.varValues[i]); 
 			} catch (PrismLangException e) {
 				// Problem looking up variable - bail out 
 				return -1;

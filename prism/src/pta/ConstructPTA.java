@@ -28,15 +28,18 @@ package pta;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Vector;
 
 import explicit.IndexedSet;
 import explicit.StateStorage;
+import parser.EvaluateContext;
+import parser.EvaluateContextConstants;
 import parser.State;
 import parser.Values;
 import parser.VarList;
+import parser.VarUtils;
 import parser.ast.Expression;
-import parser.type.TypeClock;
 import prism.ModelGenerator;
 import prism.ModelType;
 import prism.PrismComponent;
@@ -75,8 +78,16 @@ public class ConstructPTA extends PrismComponent
 		}
 		
 		// Extract some info from the model generator
-		Values constantValues  = modelGen.getConstantValues();
 		VarList varList = modelGen.createVarList();
+		Values constantValues = modelGen.getConstantValues();
+		int numVars = varList.getNumVars();
+		ArrayList<String> varNames = new ArrayList<String>();
+		for (int i = 0; i < numVars; i++) {
+			varNames.add(varList.getName(i));
+		}
+		// Create an evaluation context too (mostly not needed since ModelGen
+		// current expands/replaces all the constants anyway).
+		EvaluateContext ec = new EvaluateContextConstants(constantValues);
 		
 		// Starting reachability...
 		mainLog.print("\nComputing reachable locations of " + modelGen.getModelType() + "...");
@@ -85,22 +96,15 @@ public class ConstructPTA extends PrismComponent
 		progress.start();
 		long timer = System.currentTimeMillis();
 
-		// Get list of clock (and all) variables
-		int numVars = varList.getNumVars();
-		ArrayList<String> clocks = new ArrayList<String>();
-		ArrayList<String> varNames = new ArrayList<String>();
-		for (int i = 0; i < numVars; i++) {
-			if (varList.getType(i) instanceof TypeClock) {
-				clocks.add(varList.getName(i));
-			}
-			varNames.add(varList.getName(i));
-		}
+		// Get list of clock references
+		List<Expression> clockVarRefs = varList.getAllClockVarRefs();
+		int numClocks = clockVarRefs.size();
 		
 		// Create new PTA and add a clock for each clock variable
 		// (note we construct a single global PTA, so no need for action alphabet)
 		PTA pta = new PTA(new ArrayList<String>(new Vector<>()));
-		for (String clockName : clocks) {
-			pta.addClock(clockName);
+		for (Expression clockVarRef : clockVarRefs) {
+			pta.addClock(clockVarRef.toString());
 		}
 		
 		// Initialise states storage
@@ -110,8 +114,8 @@ public class ConstructPTA extends PrismComponent
 		for (State initState : modelGen.getInitialStates()) {
 			// We set clock variable values to null
 			// (so we can tell if they are reset in transitions)
-			for (String clock : clocks) {
-				initState.varValues[varList.getIndex(clock)] = null;
+			for (Expression clockVarRef : clockVarRefs) {
+				VarUtils.assignVarValueInState(clockVarRef, ec, initState, null, null, varList);
 			}
 			explore.add(initState);
 			states.add(initState);
@@ -147,16 +151,16 @@ public class ConstructPTA extends PrismComponent
 					Edge edge = tr.addEdge(modelGen.getTransitionProbability(i, j), -1);
 					State stateNew = modelGen.computeTransitionTarget(i, j);
 					// See which clocks are reset on this edge, and store
-					for (String clock : clocks) {
-						int index = varList.getIndex(clock);
-						Object newClockVal = stateNew.varValues[index];
+					for (int c = 0; c < numClocks; c++) {
+						Expression clockVarRef = clockVarRefs.get(c);
+						Object newClockVal = VarUtils.readVarValueFromState(clockVarRef, ec, stateNew);
 						if (newClockVal != null) {
 							// (was reset to int, but stored as double) 
 							int newClockValInt = (int) Math.round((Double) newClockVal);
-							edge.addReset(pta.getClockIndex(clock), newClockValInt);
+							edge.addReset(c + 1, newClockValInt);
 							// Now set clock variable values to null
 							// (so we can tell if they are reset in future transitions)
-							stateNew.varValues[index] = null;
+							VarUtils.assignVarValueInState(clockVarRef, ec, stateNew, null, null, varList);
 						}
 					}
 					// Is this a new state?

@@ -28,6 +28,7 @@
 
 package prism;
 
+import parser.State;
 import strat.Strategy;
 
 /**
@@ -176,7 +177,7 @@ public class Result
 	 */
 	public String getResultString()
 	{
-		String s = result.toString();
+		String s = State.valueToString(result);
 		if (explanation != null)
 			s += " (" + explanation +")";
 		return s;
@@ -190,11 +191,11 @@ public class Result
 		if (accuracy != null) {
 			String accuracyString = accuracy.toString(result);
 			if (accuracyString != null && !"".equals(accuracyString)) {
-				return result.toString() + " (" + accuracy.toString(result) + ")";
+				return State.valueToString(result) + " (" + accuracy.toString(result) + ")";
 			}
 		}
 		// If accuracy is missing or blank, omit it
-		return result.toString();
+		return State.valueToString(result);
 	}
 	
 	/**
@@ -202,6 +203,6 @@ public class Result
 	 */
 	public String toString()
 	{
-		return result == null ? "null" : result.toString();
+		return result == null ? "null" : State.valueToString(result);
 	}
 }

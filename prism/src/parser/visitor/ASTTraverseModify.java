@@ -151,6 +151,7 @@ public class ASTTraverseModify implements ASTVisitor
 		int i, n;
 		n = e.size();
 		for (i = 0; i < n; i++) {
+			if (e.getConstantDeclarationType(i) != null) e.setConstantDeclarationType(i, (DeclarationType)(e.getConstantDeclarationType(i).accept(this)));
 			if (e.getConstant(i) != null) e.setConstant(i, (Expression)(e.getConstant(i).accept(this)));
 		}
 		visitPost(e);
@@ -162,6 +163,7 @@ public class ASTTraverseModify implements ASTVisitor
 	public Object visit(Declaration e) throws PrismLangException
 	{
 		visitPre(e);
+		if (e.getVarRef() != null) e.setVarRef((Expression)e.getVarRef().accept(this));
 		if (e.getDeclType() != null) e.setDeclType((DeclarationType)e.getDeclType().accept(this));
 		if (e.getStart() != null) e.setStart((Expression)e.getStart().accept(this));
 		visitPost(e);
@@ -193,8 +195,7 @@ public class ASTTraverseModify implements ASTVisitor
 	public Object visit(DeclarationArray e) throws PrismLangException
 	{
 		visitPre(e);
-		if (e.getLow() != null) e.setLow((Expression)e.getLow().accept(this));
-		if (e.getHigh() != null) e.setHigh((Expression)e.getHigh().accept(this));
+		if (e.getLength() != null) e.setLength((Expression)e.getLength().accept(this));
 		if (e.getSubtype() != null) e.setSubtype((DeclarationType)e.getSubtype().accept(this));
 		visitPost(e);
 		return e;
@@ -292,6 +293,7 @@ public class ASTTraverseModify implements ASTVisitor
 	public Object visit(UpdateElement e) throws PrismLangException
 	{
 		visitPre(e);
+		if (e.getVarRef() != null) e.setVarRef((Expression)(e.getVarRef().accept(this)));
 		if (e.getExpression() != null) e.setExpression((Expression)(e.getExpression().accept(this)));
 		visitPost(e);
 		return e;
@@ -486,6 +488,17 @@ public class ASTTraverseModify implements ASTVisitor
 	}
 	public void visitPost(ExpressionUnaryOp e) throws PrismLangException { defaultVisitPost(e); }
 	// -----------------------------------------------------------------------------------
+	public void visitPre(ExpressionArrayAccess e) throws PrismLangException { defaultVisitPre(e); }
+	public Object visit(ExpressionArrayAccess e) throws PrismLangException
+	{
+		visitPre(e);
+		e.setArray((Expression)(e.getArray().accept(this)));
+		e.setIndex((Expression)(e.getIndex().accept(this)));
+		visitPost(e);
+		return e;
+	}
+	public void visitPost(ExpressionArrayAccess e) throws PrismLangException { defaultVisitPost(e); }
+	// -----------------------------------------------------------------------------------
 	public void visitPre(ExpressionFunc e) throws PrismLangException { defaultVisitPre(e); }
 	public Object visit(ExpressionFunc e) throws PrismLangException
 	{
@@ -544,6 +557,19 @@ public class ASTTraverseModify implements ASTVisitor
 		return e;
 	}
 	public void visitPost(ExpressionVar e) throws PrismLangException { defaultVisitPost(e); }
+	// -----------------------------------------------------------------------------------
+	public void visitPre(ExpressionArray e) throws PrismLangException { defaultVisitPre(e); }
+	public Object visit(ExpressionArray e) throws PrismLangException
+	{
+		visitPre(e);
+		int i, n = e.getNumElements();
+		for (i = 0; i < n; i++) {
+			if (e.getElement(i) != null) e.setElement(i, (Expression)(e.getElement(i).accept(this)));
+		}
+		visitPost(e);
+		return e;
+	}
+	public void visitPost(ExpressionArray e) throws PrismLangException { defaultVisitPost(e); }
 	// -----------------------------------------------------------------------------------
 	public void visitPre(ExpressionInterval e) throws PrismLangException { defaultVisitPre(e); }
 	public Object visit(ExpressionInterval e) throws PrismLangException

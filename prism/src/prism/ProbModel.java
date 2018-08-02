@@ -134,34 +134,24 @@ public class ProbModel implements Model
 		return varList;
 	}
 
-	public String getVarName(int i)
-	{
-		return varList.getName(i);
-	}
-
-	public int getVarIndex(String n)
-	{
-		return varList.getIndex(n);
-	}
-
 	public int getVarModule(int i)
 	{
-		return varList.getModule(i);
+		return varList.getPrimitiveModule(i);
 	}
 
 	public int getVarLow(int i)
 	{
-		return varList.getLow(i);
+		return varList.getPrimitiveLow(i);
 	}
 
 	public int getVarHigh(int i)
 	{
-		return varList.getHigh(i);
+		return varList.getPrimitiveHigh(i);
 	}
 
 	public int getVarRange(int i)
 	{
-		return varList.getRange(i);
+		return varList.getPrimitiveRange(i);
 	}
 
 	public Values getConstantValues()
@@ -895,9 +885,9 @@ public class ProbModel implements Model
 		if (exportType == Prism.EXPORT_MATLAB)
 			log.print("% ");
 		log.print("(");
-		int numVars = getNumVars();
+		int numVars = varList.getNumVars();
 		for (int i = 0; i < numVars; i++) {
-			log.print(getVarName(i));
+			log.print(varList.getName(i));
 			if (i < numVars - 1)
 				log.print(",");
 		}
@@ -925,10 +915,10 @@ public class ProbModel implements Model
 
 		s += "(";
 		for (i = 0; i < numVars - 1; i++) {
-			s += ((x / gtol[i + 1]) + varList.getLow(i)) + ",";
+			s += ((x / gtol[i + 1]) + varList.getPrimitiveLow(i)) + ",";
 			x = x % gtol[i + 1];
 		}
-		s += (x + varList.getLow(numVars - 1)) + ")";
+		s += (x + varList.getPrimitiveLow(numVars - 1)) + ")";
 
 		return s;
 	}
@@ -941,13 +931,13 @@ public class ProbModel implements Model
 
 		for (i = 0; i < numVars - 1; i++) {
 			if (i == l) {
-				return (int) ((x / gtol[i + 1]) + varList.getLow(i));
+				return (int) ((x / gtol[i + 1]) + varList.getPrimitiveLow(i));
 			} else {
 				x = x % gtol[i + 1];
 			}
 		}
 
-		return (int) (x + varList.getLow(numVars - 1));
+		return (int) (x + varList.getPrimitiveLow(numVars - 1));
 	}
 
 	/**
@@ -1089,7 +1079,7 @@ public class ProbModel implements Model
 				JDDVars.copyArray(this.getModuleDDRowVars()),
 				JDDVars.copyArray(this.getModuleDDColVars()),
 				// New var info
-				newVarList.getNumVars(), newVarList, newVarDDRowVars, newVarDDColVars,
+				newVarList.getNumPrimitiveVars(), newVarList, newVarDDRowVars, newVarDDColVars,
 				// Constants (no change)
 				this.getConstantValues());
 
@@ -1165,7 +1155,7 @@ public class ProbModel implements Model
 			}
 		}
 		// Then convert to State object
-		return varList.convertBitSetToState(bits);
+		return varList.decodeStateFromBitSet(bits);
 	}
 
 	/**

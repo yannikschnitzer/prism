@@ -47,6 +47,8 @@ import parser.VarList;
 import parser.ast.Declaration;
 import parser.ast.DeclarationIntUnbounded;
 import parser.ast.Expression;
+import parser.ast.ExpressionArray;
+import parser.ast.ExpressionArrayAccess;
 import parser.ast.ExpressionBinaryOp;
 import parser.ast.ExpressionConstant;
 import parser.ast.ExpressionFilter;
@@ -67,14 +69,12 @@ import parser.ast.PropertiesFile;
 import parser.ast.Property;
 import parser.type.TypeBool;
 import parser.type.TypeDouble;
-import parser.type.TypeInt;
 import parser.visitor.ASTTraverseModify;
 import parser.visitor.ReplaceLabels;
 import prism.Accuracy;
 import prism.Filter;
 import prism.ModelInfo;
 import prism.ModelType;
-import prism.OpRelOpBound;
 import prism.Prism;
 import prism.PrismComponent;
 import prism.PrismException;
@@ -84,7 +84,6 @@ import prism.PrismLog;
 import prism.PrismNotSupportedException;
 import prism.PrismSettings;
 import prism.Result;
-import prism.ResultTesting;
 import prism.RewardGenerator;
 
 /**
@@ -624,6 +623,10 @@ public class StateModelChecker extends PrismComponent
 		else if (expr instanceof ExpressionUnaryOp) {
 			res = checkExpressionUnaryOp(model, (ExpressionUnaryOp) expr, statesOfInterest);
 		}
+		// Arrays
+		else if (expr instanceof ExpressionArrayAccess) {
+			res = checkExpressionArrayAccess(model, (ExpressionArrayAccess) expr, statesOfInterest);
+		}
 		// Functions
 		else if (expr instanceof ExpressionFunc) {
 			res = checkExpressionFunc(model, (ExpressionFunc) expr, statesOfInterest);
@@ -652,6 +655,10 @@ public class StateModelChecker extends PrismComponent
 		// Variables
 		else if (expr instanceof ExpressionVar) {
 			res = checkExpressionVar(model, (ExpressionVar) expr, statesOfInterest);
+		}
+		// Arrays
+		else if (expr instanceof ExpressionArray) {
+			res = checkExpressionArray(model, (ExpressionArray) expr, statesOfInterest);
 		}
 		// Observables
 		else if (expr instanceof ExpressionObs) {
@@ -779,6 +786,20 @@ public class StateModelChecker extends PrismComponent
 		// Apply operation
 		res1.applyFunction(expr.getType(), v -> expr.apply(v, EvalMode.FP), statesOfInterest);
 
+		return res1;
+	}
+
+	/**
+	 * Model check an array access.
+	 * @param statesOfInterest the states of interest, see checkExpression()
+	 */
+	protected StateValues checkExpressionArrayAccess(Model<?> model, ExpressionArrayAccess expr, BitSet statesOfInterest) throws PrismException
+	{
+		// Check array/index recursively
+		StateValues res1 = checkExpression(model, expr.getArray(), statesOfInterest);
+		StateValues res2 = checkExpression(model, expr.getIndex(), statesOfInterest);
+		// Access array
+		res1.applyFunction(expr.getType(), (v1, v2) -> ExpressionArrayAccess.applyAccess(v1, v2), res2, statesOfInterest);
 		return res1;
 	}
 
@@ -915,6 +936,23 @@ public class StateModelChecker extends PrismComponent
 		// TODO (JK): optimize evaluation using statesOfInterest
 		List<State> statesList = model.getStatesList();
 		return StateValues.create(expr.getType(), i -> expr.evaluate(statesList.get(i)), model);
+	}
+
+	/**
+	 * Model check an array.
+	 * @param statesOfInterest the states of interest, see checkExpression()
+	 */
+	protected StateValues checkExpressionArray(Model<?> model, ExpressionArray expr, BitSet statesOfInterest) throws PrismException
+	{
+		// Create vector of empty lists (need to be distinct so can't use createFromSingleValue)
+		StateValues res = StateValues.create(expr.getType(), i -> new ArrayList<Object>(), model);
+		// Check each array element recursively and add to the vector
+		int numElements = expr.getNumElements();
+		for (int i = 0; i < numElements; i++) {
+			StateValues resElem = checkExpression(model, expr.getElement(i), statesOfInterest);
+			res.applyFunction(expr.getType(), (v1, v2) -> expr.applyAdd(v1, v2), resElem, statesOfInterest);
+		}
+		return res;
 	}
 
 	/**

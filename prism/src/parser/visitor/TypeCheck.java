@@ -82,16 +82,28 @@ public class TypeCheck extends ASTTraverse
 		int i, n;
 		n = e.size();
 		for (i = 0; i < n; i++) {
-			if (e.getConstant(i) != null && !e.getConstantType(i).canCastTypeTo(e.getConstant(i).getType())) {
-				throw new PrismLangException("Type mismatch in definition of constant \"" + e.getConstantName(i) + "\"", e.getConstant(i));
+			if (e.getConstantType(i).contains(t -> t instanceof TypeClock)) {
+				throw new PrismLangException("Constants of type clock are not allowed", e.getConstant(i));
+			}
+			if (e.getConstant(i) != null) {
+				try {
+					e.getConstantType(i).checkAssignAllowed(e.getConstant(i).getType());
+				} catch (PrismLangException ex) {
+					throw new PrismLangException("Type error in value for constant " + e.getConstantName(i) + ": " + ex.getMessage(), e.getConstant(i));
+				}
 			}
 		}
 	}
 
 	public void visitPost(Declaration e) throws PrismLangException
 	{
-		if (e.getStart() != null && !e.getType().canCastTypeTo(e.getStart().getType())) {
-			throw new PrismLangException("Type error: Initial value of variable \"" + e.getName() + "\" does not match", e.getStart());
+		// Check initial value if present
+		if (e.getStart() != null) {
+			try {
+				e.getType().checkAssignAllowed(e.getStart().getType());
+			} catch (PrismLangException ex) {
+				throw new PrismLangException("Type error in initial value of " + e.getName() + ": " + ex.getMessage(), e.getStart());
+			}
 		}
 	}
 
@@ -107,11 +119,8 @@ public class TypeCheck extends ASTTraverse
 
 	public void visitPost(DeclarationArray e) throws PrismLangException
 	{
-		if (e.getLow() != null && !TypeInt.getInstance().canCastTypeTo(e.getLow().getType())) {
-			throw new PrismLangException("Type error: Array lower bound \"" + e.getLow() + "\" is not an integer", e.getLow());
-		}
-		if (e.getHigh() != null && !TypeInt.getInstance().canCastTypeTo(e.getHigh().getType())) {
-			throw new PrismLangException("Type error: Array upper bound \"" + e.getHigh() + "\" is not an integer", e.getHigh());
+		if (e.getLength() != null && !TypeInt.getInstance().canCastTypeTo(e.getLength().getType())) {
+			throw new PrismLangException("Type error: Array length \"" + e.getLength() + "\" is not an integer", e.getLength());
 		}
 	}
 
@@ -130,7 +139,7 @@ public class TypeCheck extends ASTTraverse
 			if (e.getProbability(i) != null) {
 				Type typeProb = e.getProbability(i).getType();
 				boolean typeOK = TypeDouble.getInstance().canCastTypeTo(typeProb);
-				typeOK |= typeProb instanceof TypeInterval && TypeDouble.getInstance().canCastTypeTo(((TypeInterval) typeProb).getSubType());
+				typeOK |= typeProb instanceof TypeArray && TypeDouble.getInstance().canCastTypeTo(((TypeArray) typeProb).getSubType());
 				if (!typeOK) {
 					throw new PrismLangException("Type error: Update probability/rate cannot have type " + typeProb, e.getProbability(i));
 				}
@@ -138,24 +147,13 @@ public class TypeCheck extends ASTTraverse
 		}
 	}
 
-	public void visitPost(Update e) throws PrismLangException
+	public void visitPost(UpdateElement e) throws PrismLangException
 	{
-		int i, n;
-		n = e.getNumElements();
-		for (i = 0; i < n; i++) {
-			// Updates to non-clocks
-			if (!(e.getType(i) instanceof TypeClock)) {
-				if (!e.getType(i).canCastTypeTo(e.getExpression(i).getType())) {
-					throw new PrismLangException("Type error in update to variable \"" + e.getVar(i) + "\"", e.getExpression(i));
-				}
-			}
-			// Updates to clocks
-			else {
-				if (!(e.getExpression(i).getType().equals(TypeInt.getInstance())))
-					throw new PrismLangException("Clocks can only be reset to constant integer values", e);
-				if (!(e.getExpression(i).isConstant()))
-					throw new PrismLangException("Clocks can only be reset to constant integer values", e);
-			}
+		// Check assignment is allowed
+		try {
+			e.getVarRef().getType().checkAssignAllowed(e.getExpression().getType());
+		} catch (PrismLangException ex) {
+			throw new PrismLangException("Type error in update to " + e.getVarRef() + ": " + ex.getMessage(), e.getExpression());
 		}
 	}
 
@@ -218,12 +216,11 @@ public class TypeCheck extends ASTTraverse
 			throw new PrismLangException("Type error: types for then/else operands of ? operator must match", e);
 		}
 
-		if (t2 instanceof TypeBool)
-			e.setType(TypeBool.getInstance());
-		else if (t2 instanceof TypeInt && t3 instanceof TypeInt)
-			e.setType(TypeInt.getInstance());
-		else
-			e.setType(TypeDouble.getInstance());
+		if (t2.canCastTypeTo(t3)) {
+			e.setType(t2);
+		} else {
+			e.setType(t3);
+		}
 	}
 
 	public void visitPost(ExpressionBinaryOp e) throws PrismLangException
@@ -249,25 +246,19 @@ public class TypeCheck extends ASTTraverse
 			break;
 		case ExpressionBinaryOp.EQ:
 		case ExpressionBinaryOp.NE:
-			ok = false;
-			// equality of booleans
-			if (t1 instanceof TypeBool && t2 instanceof TypeBool) {
-				ok = true;
-			}
-			// equality of ints/doubles
-			else if ((t1 instanceof TypeInt || t1 instanceof TypeDouble) && (t2 instanceof TypeInt || t2 instanceof TypeDouble)) {
-				ok = true;
-			}
-			// equality of clocks against clocks/integers
-			// (and int/int - but this is already covered above)
-			else if ((t1 instanceof TypeInt || t1 instanceof TypeClock) && (t2 instanceof TypeInt || t2 instanceof TypeClock)) {
-				ok = true;
-			}
-			if (!ok) {
-				if (t1.equals(t2))
+			if (!(t1.canCastTypeTo(t2) || t2.canCastTypeTo(t1))) {
+				if (t1.equals(t2)) {
 					throw new PrismLangException("Type error: " + e.getOperatorSymbol() + " cannot compare " + t1 + "s", e);
-				else
+				} else {
 					throw new PrismLangException("Type error: " + e.getOperatorSymbol() + " cannot compare " + t1 + " and " + t2, e);
+				}
+			}
+			// Additional checks for clocks
+			if (t1 instanceof TypeClock && !(t2 instanceof TypeClock || TypeInt.getInstance().canCastTypeTo(t2))) {
+				throw new PrismLangException("Clocks can only be compared to integers or other clocks", e);
+			}
+			if (t2 instanceof TypeClock && !(t1 instanceof TypeClock || TypeInt.getInstance().canCastTypeTo(t1))) {
+				throw new PrismLangException("Clocks can only be compared to integers or other clocks", e);
 			}
 			e.setType(TypeBool.getInstance());
 			break;
@@ -337,6 +328,19 @@ public class TypeCheck extends ASTTraverse
 			e.setType(t);
 			break;
 		}
+	}
+
+	public void visitPost(ExpressionArrayAccess e) throws PrismLangException
+	{
+		Type tArray = e.getArray().getType();
+		Type tIndex = e.getIndex().getType();
+		if (!(tArray instanceof TypeArray)) {
+			throw new PrismLangException("Type error: " + e.getArray() + " is not an array", e);
+		}
+		if (!(tIndex instanceof TypeInt)) {
+			throw new PrismLangException("Type error: array index " + e.getIndex() + " is not an integer", e.getIndex());
+		}
+		e.setType(((TypeArray) tArray).getSubType());
 	}
 
 	public void visitPost(ExpressionFunc e) throws PrismLangException
@@ -481,6 +485,27 @@ public class TypeCheck extends ASTTraverse
 		// Interval of int only if both ints
 		Type subType = t1 instanceof TypeDouble || t2 instanceof TypeDouble ? TypeDouble.getInstance() : TypeInt.getInstance();
 		e.setType(TypeInterval.getInstance(subType));
+	}
+
+	public void visitPost(ExpressionArray e) throws PrismLangException
+	{
+		// Find a type that all array element can be cast to
+		// (e.g. [2,2.0] would be array of double)
+		Type subType = null;
+		int numElements = e.getNumElements();
+		for (int i = 0; i < numElements; i++) {
+			Type elemType = e.getElement(i).getType();
+			if (subType == null) {
+				subType = elemType;
+			} else if (subType.canCastTypeTo(elemType)) {
+				// No change
+			} else if (elemType.canCastTypeTo(subType)) {
+				subType = elemType;
+			} else {
+				throw new PrismLangException("Type error: array elements must have matching types", e.getElement(i));
+			}
+		}
+		e.setType(TypeArray.getInstance(subType));
 	}
 
 	public void visitPost(ExpressionProb e) throws PrismLangException

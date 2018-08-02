@@ -89,26 +89,18 @@ public class ParserUtils
 	 */
 	public static int findMinForIntExpression(Expression expr, VarList varList, Values constantValues) throws PrismLangException
 	{
-		List<String> vars;
-		List<Values> allValues;
-		int i, min;
-		
 		// For constant expressions, this is easy
-		if (expr.isConstant())
+		if (expr.isConstant()) {
 			return expr.evaluateInt(constantValues);
-		
-		// Get all variables appearing in the expression and all values of them
-		vars = expr.getAllVars();
-		allValues = varList.getAllValues(vars);
-		
-		// Compute min over all values
-		min = Integer.MAX_VALUE;
-		for (Values varValues : allValues) {
-			i = expr.evaluateInt(constantValues, varValues);
-			if (i < min)
-				min = i;
 		}
-		
+		// Otherwise find all possible values and compute min
+		List<Integer> allValues = varList.getAllValuesForIntExpression(expr, constantValues);
+		int min = Integer.MAX_VALUE;
+		for (int i : allValues) {
+			if (i < min) {
+				min = i;
+			}
+		}
 		return min;
 	}
 	
@@ -118,26 +110,18 @@ public class ParserUtils
 	 */
 	public static int findMaxForIntExpression(Expression expr, VarList varList, Values constantValues) throws PrismLangException
 	{
-		List<String> vars;
-		List<Values> allValues;
-		int i, max;
-		
 		// For constant expressions, this is easy
-		if (expr.isConstant())
+		if (expr.isConstant()) {
 			return expr.evaluateInt(constantValues);
-		
-		// Get all variables appearing in the expression and all values of them
-		vars = expr.getAllVars();
-		allValues = varList.getAllValues(vars);
-		
-		// Compute max over all values
-		max = Integer.MIN_VALUE;
-		for (Values varValues : allValues) {
-			i = expr.evaluateInt(constantValues, varValues);
-			if (i > max)
-				max = i;
 		}
-		
+		// Otherwise find all possible values and compute max
+		List<Integer> allValues = varList.getAllValuesForIntExpression(expr, constantValues);
+		int max = Integer.MIN_VALUE;
+		for (int i : allValues) {
+			if (i > max) {
+				max = i;
+			}
+		}
 		return max;
 	}
 	
@@ -147,27 +131,13 @@ public class ParserUtils
 	 */
 	public static Collection<Integer> findAllValsForIntExpression(Expression expr, VarList varList, Values constantValues) throws PrismLangException
 	{
-		List<String> vars;
-		List<Values> allValues;
-		HashSet<Integer> res;
-		
 		// For constant expressions, this is easy
 		if (expr.isConstant()) {
-			res = new HashSet<Integer>();
+			List<Integer> res = new ArrayList<Integer>();
 			res.add(expr.evaluateInt(constantValues));
 			return res;
 		}
-		
-		// Get all variables appearing in the expression and all values of them
-		vars = expr.getAllVars();
-		allValues = varList.getAllValues(vars);
-		
-		// Compute set of all values
-		res = new HashSet<Integer>();
-		for (Values varValues : allValues) {
-			res.add(expr.evaluateInt(constantValues, varValues));
-		}
-		
-		return res;
+		// Otherwise find all possible values
+		return varList.getAllValuesForIntExpression(expr, constantValues);
 	}
 }

@@ -132,7 +132,7 @@ public class ExplicitFiles2MTBDD
 		this.modelInfo = modelInfo;
 		modelType = modelInfo.getModelType();
 		varList = modelInfo.createVarList();
-		numVars = varList.getNumVars();
+		numVars = varList.getNumPrimitiveVars();
 		this.numStates = numStates;
 		modelVariables = new ModelVariablesDD();
 
@@ -179,7 +179,7 @@ public class ExplicitFiles2MTBDD
 						throw new PrismException("(duplicated state) ");
 					statesArray[i] = new int[numVars];
 					for (j = 0; j < numVars; j++) {
-						statesArray[i][j] = varList.encodeToIntFromString(j, ss[j]);
+						statesArray[i][j] = varList.encodeValueToIntFromString(j, ss[j]);
 					}
 				}
 				// read next line
@@ -415,13 +415,13 @@ public class ExplicitFiles2MTBDD
 		for (i = 0; i < numVars; i++) {
 			// get number of dd variables needed
 			// (ceiling of log2 of range of variable)
-			n = varList.getRangeLogTwo(i);
+			n = varList.getPrimitiveRangeLogTwo(i);
 			// add pairs of variables (row/col)
 			for (j = 0; j < n; j++) {
 				// new dd row variable
-				varDDRowVars[i].addVar(modelVariables.allocateVariable(varList.getName(i) + "." + j));
+				varDDRowVars[i].addVar(modelVariables.allocateVariable(varList.getPrimitiveName(i) + "." + j));
 				// new dd col variable
-				varDDColVars[i].addVar(modelVariables.allocateVariable(varList.getName(i) + "'." + j));
+				varDDColVars[i].addVar(modelVariables.allocateVariable(varList.getPrimitiveName(i) + "'." + j));
 			}
 		}
 	}
@@ -484,7 +484,7 @@ public class ExplicitFiles2MTBDD
 		for (i = 0; i < numVars; i++) {
 			// set each element of the identity matrix
 			id = JDD.Constant(0);
-			for (j = 0; j < varList.getRange(i); j++) {
+			for (j = 0; j < varList.getPrimitiveRange(i); j++) {
 				id = JDD.SetMatrixElement(id, varDDRowVars[i], varDDColVars[i], j, j, 1);
 			}
 			varIdentities[i] = id;
@@ -494,7 +494,7 @@ public class ExplicitFiles2MTBDD
 		// product of identities for vars in module
 		id = JDD.Constant(1);
 		for (j = 0; j < numVars; j++) {
-			if (varList.getModule(j) == 0) {
+			if (varList.getPrimitiveModule(j) == 0) {
 				JDD.Ref(varIdentities[j]);
 				id = JDD.Apply(JDD.TIMES, id, varIdentities[j]);
 			}

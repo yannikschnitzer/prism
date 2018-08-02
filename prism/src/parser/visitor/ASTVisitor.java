@@ -69,6 +69,7 @@ public interface ASTVisitor
 	public Object visit(ExpressionITE e) throws PrismLangException;
 	public Object visit(ExpressionBinaryOp e) throws PrismLangException;
 	public Object visit(ExpressionUnaryOp e) throws PrismLangException;
+	public Object visit(ExpressionArrayAccess e) throws PrismLangException;
 	public Object visit(ExpressionFunc e) throws PrismLangException;
 	public Object visit(ExpressionIdent e) throws PrismLangException;
 	public Object visit(ExpressionLiteral e) throws PrismLangException;
@@ -76,6 +77,7 @@ public interface ASTVisitor
 	public Object visit(ExpressionFormula e) throws PrismLangException;
 	public Object visit(ExpressionVar e) throws PrismLangException;
 	public Object visit(ExpressionInterval e) throws PrismLangException;
+	public Object visit(ExpressionArray e) throws PrismLangException;
 	public Object visit(ExpressionProb e) throws PrismLangException;
 	public Object visit(ExpressionReward e) throws PrismLangException;
 	public Object visit(ExpressionSS e) throws PrismLangException;

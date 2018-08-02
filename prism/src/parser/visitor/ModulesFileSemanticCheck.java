@@ -28,9 +28,28 @@ package parser.visitor;
 
 import java.util.Vector;
 
-import parser.ast.*;
-import parser.type.*;
-import prism.ModelType;
+import parser.ast.ASTElement;
+import parser.ast.Command;
+import parser.ast.ConstantList;
+import parser.ast.Declaration;
+import parser.ast.DeclarationArray;
+import parser.ast.DeclarationClock;
+import parser.ast.DeclarationInt;
+import parser.ast.Expression;
+import parser.ast.ExpressionLabel;
+import parser.ast.ExpressionVar;
+import parser.ast.FormulaList;
+import parser.ast.LabelList;
+import parser.ast.ModulesFile;
+import parser.ast.Observable;
+import parser.ast.ObservableVars;
+import parser.ast.SystemHide;
+import parser.ast.SystemParallel;
+import parser.ast.SystemReference;
+import parser.ast.SystemRename;
+import parser.ast.Update;
+import parser.ast.UpdateElement;
+import parser.type.TypeClock;
 import prism.PrismLangException;
 
 /**
@@ -43,9 +62,11 @@ public class ModulesFileSemanticCheck extends SemanticCheck
 	// Sometimes we need to keep track of parent (ancestor) objects
 	//private Module inModule = null;
 	private Expression inInvariant = null;
+	private Declaration inDeclarationName = null;
 	private Expression inGuard = null;
 	private ASTElement inObservable = null;
 	//private Update inUpdate = null;
+	private Expression inUpdateVarRef = null;
 
 	public ModulesFileSemanticCheck(ModulesFile modulesFile)
 	{
@@ -134,6 +155,19 @@ public class ModulesFileSemanticCheck extends SemanticCheck
 		}
 	}
 
+	public Object visit(Declaration e) throws PrismLangException
+	{
+		// Override this so we can keep track of when we are in an invariant
+		visitPre(e);
+		inDeclarationName = e;
+		if (e.getVarRef() != null) e.getVarRef().accept(this);
+		inDeclarationName = null;
+		if (e.getDeclType() != null) e.getDeclType().accept(this);
+		if (e.getStart() != null) e.getStart().accept(this);
+		visitPost(e);
+		return null;
+	}
+	
 	public void visitPost(Declaration e) throws PrismLangException
 	{
 		if (e.getStart() != null && !e.getStart().isConstant()) {
@@ -142,7 +176,7 @@ public class ModulesFileSemanticCheck extends SemanticCheck
 		// Clocks cannot be given initial variables
 		// (Note: it is safe to use getType() here because the type of a Declaration
 		// is set on construction, not during type checking).
-		if (e.getStart() != null && e.getType() instanceof TypeClock) {
+		if (e.getType().contains(t -> t instanceof TypeClock) && e.getStart() != null) {
 			throw new PrismLangException("Cannot specify initial value for a clock", e);
 		}
 	}
@@ -159,11 +193,9 @@ public class ModulesFileSemanticCheck extends SemanticCheck
 
 	public void visitPost(DeclarationArray e) throws PrismLangException
 	{
-		if (e.getLow() != null && !e.getLow().isConstant()) {
-			throw new PrismLangException("Array lower bound \"" + e.getLow() + "\" is not constant", e.getLow());
-		}
-		if (e.getHigh() != null && !e.getHigh().isConstant()) {
-			throw new PrismLangException("Array upper bound \"" + e.getLow() + "\" is not constant", e.getLow());
+		// Array lengths must be constant
+		if (e.getLength() != null && !e.getLength().isConstant()) {
+			throw new PrismLangException("Array length \"" + e.getLength() + "\" is not constant", e.getLength());
 		}
 	}
 
@@ -244,18 +276,34 @@ public class ModulesFileSemanticCheck extends SemanticCheck
 		n = e.getNumElements();
 		for (i = 0; i < n; i++) {
 			// Check that the update is allowed to modify this variable
-			var = e.getVar(i);
+			var = e.getElement(i).getVarName();
 			isLocal = m.isLocalVariable(var);
 			isGlobal = isLocal ? false : modulesFile.isGlobalVariable(var);
 			if (!isLocal && !isGlobal) {
 				s = "Module \"" + m.getName() + "\" is not allowed to modify variable \"" + var + "\"";
-				throw new PrismLangException(s, e.getVarIdent(i));
+				throw new PrismLangException(s, e.getVarRef(i));
 			}
 			if (isGlobal && !c.getSynch().equals("")) {
 				s = "Synchronous command cannot modify global variable";
-				throw new PrismLangException(s, e.getVarIdent(i));
+				throw new PrismLangException(s, e.getVarRef(i));
 			}
 		}
+	}
+
+	public Object visit(UpdateElement e) throws PrismLangException
+	{
+		// Override this so we can keep track of when we are in an update variable reference
+		visitPre(e);
+		inUpdateVarRef = e.getVarRef();
+		if (e.getVarRef() != null) {
+			e.getVarRef().accept(this);
+		}
+		inUpdateVarRef = null;
+		if (e.getExpression() != null) {
+			e.getExpression().accept(this);
+		}
+		visitPost(e);
+		return null;
 	}
 
 	public void visitPre(ObservableVars e) throws PrismLangException
@@ -362,7 +410,7 @@ public class ModulesFileSemanticCheck extends SemanticCheck
 		// Clock references, in models, can only appear in certain places
 		// (Note: type checking has not been done, but we know types for ExpressionVars)
 		if (e.getType() instanceof TypeClock) {
-			if (inInvariant == null && inGuard == null && inObservable == null) {
+			if (inInvariant == null && inDeclarationName == null && inGuard == null && inObservable == null && inUpdateVarRef == null) {
 				throw new PrismLangException("Reference to a clock variable cannot appear here", e);
 			}
 		}
