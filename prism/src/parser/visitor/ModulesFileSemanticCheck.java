@@ -26,6 +26,7 @@
 
 package parser.visitor;
 
+import java.util.HashSet;
 import java.util.Vector;
 
 import parser.ast.ASTElement;
@@ -35,6 +36,7 @@ import parser.ast.Declaration;
 import parser.ast.DeclarationArray;
 import parser.ast.DeclarationClock;
 import parser.ast.DeclarationInt;
+import parser.ast.DeclarationStruct;
 import parser.ast.Expression;
 import parser.ast.ExpressionLabel;
 import parser.ast.ExpressionVar;
@@ -196,6 +198,19 @@ public class ModulesFileSemanticCheck extends SemanticCheck
 		// Array lengths must be constant
 		if (e.getLength() != null && !e.getLength().isConstant()) {
 			throw new PrismLangException("Array length \"" + e.getLength() + "\" is not constant", e.getLength());
+		}
+	}
+
+	public void visitPost(DeclarationStruct e) throws PrismLangException
+	{
+		// Check for duplicate field names
+		HashSet<String> names = new HashSet<>(); 
+		int numFields = e.getNumFields();
+		for (int i = 0; i < numFields; i++) {
+			String fieldName = e.getFieldName(i);
+			if (!names.add(fieldName)) {
+				throw new PrismLangException("Duplicate field \"" + fieldName + "\" in struct declaration", e);
+			}
 		}
 	}
 

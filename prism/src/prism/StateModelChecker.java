@@ -40,6 +40,7 @@ import jdd.*;
 import odd.*;
 import parser.*;
 import parser.VarList.VarArray;
+import parser.VarList.VarStruct;
 import parser.ast.*;
 import parser.ast.ExpressionFilter.FilterOperator;
 import parser.type.*;
@@ -274,6 +275,10 @@ public class StateModelChecker extends PrismComponent implements ModelChecker
 		// Arrays
 		else if (expr instanceof ExpressionArrayAccess) {
 			res = checkExpressionArrayAccess((ExpressionArrayAccess) expr, statesOfInterest);
+		}
+		// Structs
+		else if (expr instanceof ExpressionStructAccess) {
+			res = checkExpressionStructAccess((ExpressionStructAccess) expr, statesOfInterest);
 		}
 		// Functions
 		else if (expr instanceof ExpressionFunc) {
@@ -743,6 +748,40 @@ public class StateModelChecker extends PrismComponent implements ModelChecker
 	 * <br>[ REFS: <i>result</i>, DEREFS: statesOfInterest ]
 	 */
 	protected StateValues checkExpressionArrayAccess(ExpressionArrayAccess expr, JDDNode statesOfInterest) throws PrismException
+	{
+		// Compute an MTBDD of the variable indices for all states
+		JDDNode ddVarIndex = computeVarIndices(expr, statesOfInterest.copy());
+		// Compute the range of possible variable indices
+		int varIndexMin = (int) JDD.FindMinOver(ddVarIndex, statesOfInterest.copy());
+		int varIndexMax = (int) JDD.FindMaxOver(ddVarIndex, statesOfInterest.copy());
+		// Iterate though them and build up the MTBDDs for each one
+		// They don't overlap, so we can just add them up to get the final result
+		// NB: Might get weird results for unreachable states if 0 is in the index range,
+		// but this'll get filtered out in the parent call
+		JDDNode res = JDD.Constant(0);
+		for (int varIndex = varIndexMin; varIndex <= varIndexMax; varIndex++) {
+			int l = varList.getPrimitiveLow(varIndex);
+			int h = varList.getPrimitiveHigh(varIndex);
+			JDDNode dd = JDD.Constant(0);
+			for (int i = l; i <= h; i++) {
+				dd = JDD.SetVectorElement(dd, varDDRowVars[varIndex], i - l, i);
+			}
+			dd = JDD.ITE(JDD.Equals(ddVarIndex.copy(), varIndex), dd, JDD.Constant(0));
+			res = JDD.Apply(JDD.PLUS, res, dd);
+		}
+		// Derefs
+		JDD.Deref(ddVarIndex);
+		JDD.Deref(statesOfInterest);
+
+		return new StateValuesMTBDD(res, model);
+	}
+	
+	/**
+	 * Check a struct access.
+	 * The result will have valid results at least for the states of interest (use model.getReach().copy() for all reachable states)
+	 * <br>[ REFS: <i>result</i>, DEREFS: statesOfInterest ]
+	 */
+	protected StateValues checkExpressionStructAccess(ExpressionStructAccess expr, JDDNode statesOfInterest) throws PrismException
 	{
 		// Compute an MTBDD of the variable indices for all states
 		JDDNode ddVarIndex = computeVarIndices(expr, statesOfInterest.copy());
@@ -1608,6 +1647,14 @@ public class StateModelChecker extends PrismComponent implements ModelChecker
 //				JDD.PrintTerminalsAndNumbers(ddVarIndex, allDDRowVars.n());
 				// Recurse
 				ptr = exprArray.getArray();
+			} else if (ptr instanceof ExpressionStructAccess) {
+				ExpressionStructAccess exprStruct = (ExpressionStructAccess) ptr;
+				// Add the field offset 
+				int fieldIndex = exprStruct.getFieldIndex();
+				int fieldOffset = ((VarStruct) varPath.get(i)).fieldOffsets.get(fieldIndex);
+				ddVarIndex = JDD.Apply(JDD.PLUS, ddVarIndex, JDD.Constant(fieldOffset));
+				// Recurse
+				ptr = exprStruct.getStruct();
 			} else {
 				throw new PrismLangException("Unexpected expression type when translating array access", varRef);
 			}

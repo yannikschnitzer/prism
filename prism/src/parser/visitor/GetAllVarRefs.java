@@ -31,6 +31,7 @@ import java.util.function.Predicate;
 
 import parser.ast.Expression;
 import parser.ast.ExpressionArrayAccess;
+import parser.ast.ExpressionStructAccess;
 import parser.ast.ExpressionVar;
 import parser.type.Type;
 import prism.PrismLangException;
@@ -53,6 +54,13 @@ public class GetAllVarRefs extends ASTTraverse
 	}
 	
 	public void visitPost(ExpressionArrayAccess e) throws PrismLangException
+	{
+		if (pred.test(e.getType()) && !list.contains(e)) {
+			list.add(e);
+		}
+	}
+	
+	public void visitPost(ExpressionStructAccess e) throws PrismLangException
 	{
 		if (pred.test(e.getType()) && !list.contains(e)) {
 			list.add(e);

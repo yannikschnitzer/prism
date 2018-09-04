@@ -42,16 +42,19 @@ import parser.ast.DeclarationClock;
 import parser.ast.DeclarationDoubleUnbounded;
 import parser.ast.DeclarationInt;
 import parser.ast.DeclarationIntUnbounded;
+import parser.ast.DeclarationStruct;
 import parser.ast.DeclarationType;
 import parser.ast.Expression;
 import parser.ast.ExpressionArrayAccess;
 import parser.ast.ExpressionLiteral;
+import parser.ast.ExpressionStructAccess;
 import parser.ast.ExpressionVar;
 import parser.type.Type;
 import parser.type.TypeArray;
 import parser.type.TypeBool;
 import parser.type.TypeClock;
 import parser.type.TypeInt;
+import parser.type.TypeStruct;
 import parser.visitor.ASTTraverse;
 import prism.ModelInfo;
 import prism.PrismException;
@@ -293,6 +296,25 @@ public class VarList
 			varArray.elementSize = varArray.elements.get(0).numPrimitives;
 			var = varArray;
 		}
+		// Variable is a struct
+		else if (declType instanceof DeclarationStruct) {
+			DeclarationStruct declStruct = (DeclarationStruct) declType;
+			int numFields = declStruct.getNumFields();
+			VarStruct varStruct = new VarStruct(nameTop + nameSuffix, declType.getType());
+//			if (!(exprInit instanceof ExpressionStruct)) {
+//				throw new PrismLangException("Struct variable can only be initialised to a struct", decl);
+//			}
+			int fieldOffset = 0;
+			for (int i = 0; i < numFields; i++) {
+				String fieldName = declStruct.getFieldName(i);
+				Var varField = createVarRec(nameTop, typeTop, declStruct.getFieldType(i), module, nameSuffix + "." + fieldName, new VarAccessStruct(varAccess, i, fieldName));
+				varStruct.fields.add(varField);
+				varStruct.fieldNames.add(fieldName);
+				varStruct.fieldOffsets.add(fieldOffset);
+				fieldOffset += varField.numPrimitives;
+			}
+			var = varStruct;
+		}
 		// Unknown variable type
 		else {
 			throw new PrismLangException("Unknown variable type \"" + declType + "\" in declaration", declType);
@@ -327,6 +349,10 @@ public class VarList
 			VarArray varArray = (VarArray) getVarForVarRef(((ExpressionArrayAccess) varRef).getArray(), ec);
 			int evalIndex = ((ExpressionArrayAccess) varRef).evaluateIndex(ec, varArray.elements.size());
 			return varArray.elements.get(evalIndex);
+		} else if (varRef instanceof ExpressionStructAccess) {
+			int fieldIndex = ((ExpressionStructAccess) varRef).getFieldIndex();
+			VarStruct varStruct = (VarStruct) getVarForVarRef(((ExpressionStructAccess) varRef).getStruct(), ec);
+			return varStruct.fields.get(fieldIndex);
 		} else {
 			throw new PrismLangException("Invalid variable reference", varRef);
 		}
@@ -345,6 +371,10 @@ public class VarList
 			VarArray varArray = (VarArray) getSomeVarForVarRef(((ExpressionArrayAccess) varRef).getArray());
 			// Just use the first element (they are all the same type)
 			return varArray.elements.get(0);
+		} else if (varRef instanceof ExpressionStructAccess) {
+			int fieldIndex = ((ExpressionStructAccess) varRef).getFieldIndex();
+			VarStruct varStruct = (VarStruct) getSomeVarForVarRef(((ExpressionStructAccess) varRef).getStruct());
+			return varStruct.fields.get(fieldIndex);
 		} else {
 			throw new PrismLangException("Invalid variable reference", varRef);
 		}
@@ -369,6 +399,11 @@ public class VarList
 			varPath.add(varArray.elements.get(0));
 			// Just use the first element (they are all the same type)
 			return varArray.elements.get(0);
+		} else if (varRef instanceof ExpressionStructAccess) {
+			int fieldIndex = ((ExpressionStructAccess) varRef).getFieldIndex();
+			VarStruct varStruct = (VarStruct) getSomeVarPathForVarRefRec(((ExpressionStructAccess) varRef).getStruct(), varPath);
+			varPath.add(varStruct.fields.get(fieldIndex));
+			return varStruct.fields.get(fieldIndex);
 		} else {
 			throw new PrismLangException("Invalid variable reference", varRef);
 		}
@@ -627,6 +662,13 @@ public class VarList
 				for (Var varChild : varArray.elements) {
 					encodeVarValueToIntsRec(varChild, startIndex, val, enc);
 				}
+			} else if (var instanceof VarStruct) {
+				VarStruct varStruct = (VarStruct) var;
+				int numFields = varStruct.fields.size();
+				for (int i = 0; i < numFields; i++) {
+					List<?> valFields = ((TypeStruct) var.type).castValueTo(val);
+					encodeVarValueToIntsRec(varStruct.fields.get(i), startIndex, valFields.get(i), enc);
+				}
 			} else {
 				throw new PrismLangException("Can't encode variable of type " + var.getClass());
 			}
@@ -761,6 +803,14 @@ public class VarList
 					list.add(decodeStateFromIntsRec(varChild, enc));
 				}
 				return list;
+			} else if (var instanceof VarStruct) {
+				VarStruct varStruct = (VarStruct) var;
+				int numFields = varStruct.fields.size();
+				List<Object> list = new ArrayList<>(numFields);
+				for (int i = 0; i < numFields; i++) {
+					list.add(decodeStateFromIntsRec(varStruct.fields.get(i), enc));
+				}
+				return list;
 			}
 		}
 		return null;
@@ -795,7 +845,8 @@ public class VarList
 	/**
 	 * Cache variable indexing info recursively within an ASTElement tree.
 	 * In particular, set the variable indices on ExpressionVar objects,
-	 * and the array length and element size for ExpressionArrayAccess objects.
+	 * the array length and element size for ExpressionArrayAccess objects,
+	 * and the field info for ExpressionStructAccess objects.
 	 * This info is primarily to assist reading (e.g., Expression evaluation)
 	 * rather than writing (e.g., variable updates), since latter requires
 	 * index/range info attached to variables, in order to e.g. check for
@@ -809,6 +860,17 @@ public class VarList
 
 		e.accept(new ASTTraverse()
 		{
+			public void visitPost(ExpressionStructAccess varRef) throws PrismLangException
+			{
+				// Look up field in associated type and store
+				TypeStruct typeStruct = (TypeStruct) varRef.getStruct().getType();
+				int fieldIndex = typeStruct.getFieldIndex(varRef.getFieldName());
+				if (fieldIndex == -1) {
+					throw new PrismLangException("Unknown field " + varRef.getFieldName(), varRef);
+				}
+				varRef.setFieldIndex(fieldIndex);
+			}
+
 			public void visitPost(ExpressionVar varRef) throws PrismLangException
 			{
 				// Look up the variable name and store
@@ -871,6 +933,27 @@ public class VarList
 		// Assignment to primitive: just casting possibly needing
 		else if (var.type.isPrimitive()) {
 			return var.type.castValueTo(value, evalMode);
+		}
+		// Might need to recurse into a struct (e.g. if it contains an array)
+		// TODO CHECK THIS
+		else if (var instanceof VarStruct) {
+			int numFields = ((VarStruct) var).fields.size();
+			if (!(value instanceof List && type instanceof TypeStruct)) {
+				// Shouldn't happen: type checking would catch earlier
+				throw new PrismLangException("Cannot assign value " + value + " of type " + type + " to a variable of type " + var.type, var.ref);
+			}
+			@SuppressWarnings("unchecked")
+			List<Object> valueStruct = (List<Object>) value;
+			TypeStruct typeStruct = (TypeStruct) type;
+			List<Object> l = new ArrayList<>(numFields);
+			if (valueStruct.size() != numFields) {
+				// Shouldn't happen: type checking would catch earlier
+				throw new PrismLangException("Value " + value + " is the wrong size for struct " + var.ref, var.ref);
+			}
+			for (int i = 0; i < numFields; i++) {
+				l.add(getVarAssignmentValueRec(((VarStruct) var).fields.get(i), valueStruct.get(i), typeStruct.getFieldType(i), evalMode));
+			}
+			return l;
 		}
 		// Assignment to array
 		else if (var instanceof VarArray) {
@@ -1118,6 +1201,45 @@ public class VarList
 		}
 	}
 
+	public class VarStruct extends Var
+	{
+		// Fields of the struct
+		public List<Var> fields = new ArrayList<>();
+
+		// Names of each struct field
+		public List<String> fieldNames = new ArrayList<>();
+
+		// Offsets of each struct field (in terms of number of primitive vars)
+		public List<Integer> fieldOffsets = new ArrayList<>();
+
+		/** Default constructor */
+		public VarStruct(String name, Type type)
+		{
+			super(name, type);
+		}
+
+		/** Copy constructor */
+		public VarStruct(VarStruct var)
+		{
+			super(var);
+			for (Var field : var.fields) {
+				fields.add(field.deepCopy());
+			}
+			for (String name : var.fieldNames) {
+				fieldNames.add(name);
+			}
+			for (int offset : var.fieldOffsets) {
+				fieldOffsets.add(offset);
+			}
+		}
+
+		@Override
+		public VarStruct deepCopy()
+		{
+			return new VarStruct(this);
+		}
+	}
+
 	// Classes to store information about access to a variable, or subvariable
 
 	static abstract class VarAccess
@@ -1152,6 +1274,41 @@ public class VarList
 		public Expression createVarRef(ExpressionVar var)
 		{
 			return new ExpressionArrayAccess(array == null ? var : array.createVarRef(var), ExpressionLiteral.Int(index));
+		}
+	}
+
+	static class VarAccessStruct extends VarAccess
+	{
+		public VarAccess struct;
+		public int index;
+		public String fieldName;
+
+		/** Default constructor */
+		public VarAccessStruct(VarAccess struct, int index, String fieldName)
+		{
+			this.struct = struct;
+			this.index = index;
+			this.fieldName = fieldName;
+		}
+
+		public VarAccess getChild()
+		{
+			return struct;
+		}
+
+		public int getIndex()
+		{
+			return index;
+		}
+
+		public String getFieldName()
+		{
+			return fieldName;
+		}
+
+		public Expression createVarRef(ExpressionVar var)
+		{
+			return new ExpressionStructAccess(struct == null ? var : struct.createVarRef(var), fieldName);
 		}
 	}
 }

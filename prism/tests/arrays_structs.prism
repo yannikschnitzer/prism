@@ -1,0 +1,24 @@
+// Testing mixtures of arrays and structs
+
+dtmc
+
+const int N = 2;
+const int K = 10;
+
+module M
+
+	x : [0..10];
+	
+	b : array[N] of struct(y:[0..K], z:[0..K]) init struct(1,2);
+	c : struct(y:array[N] of [0..K], z:array[N] of array [2] of [0..K]);
+	d : array[2] of struct(y:array[N] of [0..K], z:array[N] of array [1] of [0..K]);
+	
+	[] x=0 -> (x'=x+1) & (b[0]'=struct(2,3));
+	[] x=1 -> (x'=x+1) & (c.z'=[4,5]);
+	[] x=2 -> (x'=x+1) & (c.z'=5);
+	[] x=3 -> (x'=x+1) & (d'=struct(6,7));
+	[] x=4 -> (x'=x+1) & (d[1]'=struct([8,9],10));
+	
+	[] x>4 -> true;
+	
+endmodule

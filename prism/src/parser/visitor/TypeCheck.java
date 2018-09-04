@@ -343,6 +343,19 @@ public class TypeCheck extends ASTTraverse
 		e.setType(((TypeArray) tArray).getSubType());
 	}
 
+	public void visitPost(ExpressionStructAccess e) throws PrismLangException
+	{
+		Type tStruct = e.getStruct().getType();
+		if (!(tStruct instanceof TypeStruct)) {
+			throw new PrismLangException("Type error: " + e.getStruct() + " is not a struct", e);
+		}
+		int fieldIndex = ((TypeStruct) tStruct).getFieldIndex(e.getFieldName());
+		if (fieldIndex == -1) {
+			throw new PrismLangException("Type error: struct has no field " + e.getFieldName(), e);
+		}
+		e.setType(((TypeStruct) tStruct).getFieldType(fieldIndex));
+	}
+
 	public void visitPost(ExpressionFunc e) throws PrismLangException
 	{
 		int i, n;
@@ -438,6 +451,18 @@ public class TypeCheck extends ASTTraverse
 			break;
 
 		}
+	}
+
+	public void visitPost(ExpressionStruct e) throws PrismLangException
+	{
+		// Field types can be anything but are used to construct the type of this expression
+		// (note that field names are ommitted since not provided)
+		int n = e.getNumFields();
+		TypeStruct tStruct = new TypeStruct();
+		for (int i = 0; i < n; i++) {
+			tStruct.addField(null, e.getField(i).getType());
+		}
+		e.setType(tStruct);
 	}
 
 	public void visitPost(ExpressionIdent e) throws PrismLangException

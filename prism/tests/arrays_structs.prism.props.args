@@ -1,0 +1,4 @@
+-exportmodel arrays_structs.prism.sta,tra -ex
+# arrays_structs.prism.sta,tra -h
+# arrays_structs.prism.sta,tra -s
+# arrays_structs.prism.sta,tra -m

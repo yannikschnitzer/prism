@@ -32,6 +32,7 @@ import java.util.List;
 import parser.ast.Expression;
 import parser.ast.ExpressionArrayAccess;
 import parser.ast.ExpressionLiteral;
+import parser.ast.ExpressionStructAccess;
 import parser.ast.ExpressionVar;
 import parser.type.Type;
 import parser.visitor.ASTTraverseModify;
@@ -44,7 +45,7 @@ public class VarUtils
 {
 	/**
 	 * Is an Expression a variable reference,
-	 * i.e., an ExpressionVar, plus some combination of array accesses
+	 * i.e., an ExpressionVar, plus some combination of array/struct accesses
 	 */
 	public static boolean isVarRef(Expression expr)
 	{
@@ -52,6 +53,8 @@ public class VarUtils
 			return true;
 		} else if (expr instanceof ExpressionArrayAccess) {
 			return isVarRef(((ExpressionArrayAccess) expr).getArray());
+		} else if (expr instanceof ExpressionStructAccess) {
+			return isVarRef(((ExpressionStructAccess) expr).getStruct());
 		} else {
 			return false;
 		}
@@ -67,6 +70,8 @@ public class VarUtils
 			return ((ExpressionVar) varRef).getName();
 		} else if (varRef instanceof ExpressionArrayAccess) {
 			return getVarNameFromVarRef(((ExpressionArrayAccess) varRef).getArray());
+		} else if (varRef instanceof ExpressionStructAccess) {
+			return getVarNameFromVarRef(((ExpressionStructAccess) varRef).getStruct());
 		}
 		return null;
 	}
@@ -81,6 +86,8 @@ public class VarUtils
 			return varRef;
 		} else if (varRef instanceof ExpressionArrayAccess) {
 			return getVarFromVarRef(((ExpressionArrayAccess) varRef).getArray());
+		} else if (varRef instanceof ExpressionStructAccess) {
+			return getVarFromVarRef(((ExpressionStructAccess) varRef).getStruct());
 		}
 		return null;
 	}
@@ -107,6 +114,10 @@ public class VarUtils
 			Expression array = evaluateVarRef(((ExpressionArrayAccess) varRef).getArray(), ec);
 			Object index = ((ExpressionArrayAccess) varRef).getIndex().evaluate(ec);
 			return new ExpressionArrayAccess(array, Expression.Literal(index));
+		} else if (varRef instanceof ExpressionStructAccess) {
+			Expression struct = evaluateVarRef(((ExpressionStructAccess) varRef).getStruct(), ec);
+			String fieldName = ((ExpressionStructAccess) varRef).getFieldName();
+			return new ExpressionStructAccess(struct, fieldName);
 		} else {
 			throw new PrismLangException("Invalid variable reference", varRef);
 		}
@@ -151,6 +162,12 @@ public class VarUtils
 			// Get array index (including bounds check) and extract required element
 			int arrayIndex = ((ExpressionArrayAccess) varRef).evaluateIndex(ec, list.size());
 			return list.get(arrayIndex);
+		} else if (varRef instanceof ExpressionStructAccess) {
+			int fieldIndex = ((ExpressionStructAccess) varRef).getFieldIndex();
+			// Get the value for the struct recursively, and then extract the required field
+			@SuppressWarnings("unchecked")
+			List<Object> list = (List<Object>) readVarValueFromState(((ExpressionStructAccess) varRef).getStruct(), state);
+			return list.get(fieldIndex);
 		} else {
 			throw new PrismLangException("Invalid variable reference", varRef);
 		}
@@ -198,6 +215,8 @@ public class VarUtils
 				int accessIndex = -1;
 				if (ptr instanceof ExpressionArrayAccess) {
 					accessIndex = ((ExpressionArrayAccess) ptr).evaluateIndex(ec, list.size());
+				} else if (ptr instanceof ExpressionStructAccess) {
+					accessIndex = ((ExpressionStructAccess) ptr).getFieldIndex();
 				} else {
 					throw new PrismLangException("Invalid variable reference", varRef);
 				}
@@ -244,6 +263,11 @@ public class VarUtils
 				return new ExpressionLiteral(e.getType(), varRefVals[varRefs.indexOf(e)]);
 			}
 			
+			public Object visit(ExpressionStructAccess e) throws PrismLangException
+			{
+				return new ExpressionLiteral(e.getType(), varRefVals[varRefs.indexOf(e)]);
+			}
+			
 			public Object visit(ExpressionVar e) throws PrismLangException
 			{
 				return new ExpressionLiteral(e.getType(), varRefVals[varRefs.indexOf(e)]);
@@ -271,6 +295,8 @@ public class VarUtils
 	{
 		if (varRef instanceof ExpressionArrayAccess) {
 			flattenVarRefRec(((ExpressionArrayAccess) varRef).getArray(), varRefFlat);
+		} else if (varRef instanceof ExpressionStructAccess) {
+			flattenVarRefRec(((ExpressionStructAccess) varRef).getStruct(), varRefFlat);
 		}
 		varRefFlat.add(varRef);
 	}

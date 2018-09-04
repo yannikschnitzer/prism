@@ -61,6 +61,7 @@ import parser.ast.ExpressionLabel;
 import parser.ast.ExpressionLiteral;
 import parser.ast.ExpressionObs;
 import parser.ast.ExpressionProp;
+import parser.ast.ExpressionStructAccess;
 import parser.ast.ExpressionUnaryOp;
 import parser.ast.ExpressionVar;
 import parser.ast.LabelList;
@@ -627,6 +628,10 @@ public class StateModelChecker extends PrismComponent
 		else if (expr instanceof ExpressionArrayAccess) {
 			res = checkExpressionArrayAccess(model, (ExpressionArrayAccess) expr, statesOfInterest);
 		}
+		// Structs
+		else if (expr instanceof ExpressionStructAccess) {
+			res = checkExpressionStructAccess(model, (ExpressionStructAccess) expr, statesOfInterest);
+		}
 		// Functions
 		else if (expr instanceof ExpressionFunc) {
 			res = checkExpressionFunc(model, (ExpressionFunc) expr, statesOfInterest);
@@ -801,6 +806,21 @@ public class StateModelChecker extends PrismComponent
 		// Access array
 		res1.applyFunction(expr.getType(), (v1, v2) -> ExpressionArrayAccess.applyAccess(v1, v2), res2, statesOfInterest);
 		return res1;
+	}
+
+	/**
+	 * Model check a struct access.
+	 * @param statesOfInterest the states of interest, see checkExpression()
+	 */
+	protected StateValues checkExpressionStructAccess(Model model, ExpressionStructAccess expr, BitSet statesOfInterest) throws PrismException
+	{
+		int numStates = model.getNumStates();
+		StateValues res = new StateValues(expr.getType(), model);
+		List<State> statesList = model.getStatesList();
+		for (int i = 0; i < numStates; i++) {
+			res.setValue(i, expr.evaluate(constantValues, statesList.get(i)));
+		}
+		return res;
 	}
 
 	/**

@@ -30,6 +30,7 @@ import java.util.List;
 
 import parser.ast.Expression;
 import parser.ast.ExpressionArrayAccess;
+import parser.ast.ExpressionStructAccess;
 import parser.ast.ExpressionVar;
 import prism.PrismLangException;
 
@@ -48,6 +49,14 @@ public class GetAllMaximalVarRefs extends ASTTraverse
 	}
 	
 	public Object visit(ExpressionArrayAccess e) throws PrismLangException
+	{
+		if (!list.contains(e)) {
+			list.add(e);
+		}
+		return null;
+	}
+	
+	public Object visit(ExpressionStructAccess e) throws PrismLangException
 	{
 		if (!list.contains(e)) {
 			list.add(e);

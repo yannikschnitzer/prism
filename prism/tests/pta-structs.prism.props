@@ -1,0 +1,7 @@
+// RESULT: 0.6
+Pmax=? [ F "target" ];
+
+// Second property requires scaling to be done properly for digital clocks
+
+// RESULT: 1
+Pmax=? [ F<=2 "end" ];

@@ -85,6 +85,19 @@ public class TypeTraverseModify
 	}
 	public void visitPost(TypeArray t) throws PrismLangException { defaultVisitPost(t); }
 	// -----------------------------------------------------------------------------------
+	public void visitPre(TypeStruct t) throws PrismLangException { defaultVisitPre(t); }
+	public Object visit(TypeStruct t) throws PrismLangException
+	{
+		visitPre(t);
+		int numFields = t.getNumFields();
+		for (int i = 0; i < numFields; i++) {
+			if (t.getFieldType(i) != null) t.setFieldType(i, (Type) (t.getFieldType(i).accept(this)));
+		}
+		visitPost(t);
+		return t;
+	}
+	public void visitPost(TypeStruct t) throws PrismLangException { defaultVisitPost(t); }
+	// -----------------------------------------------------------------------------------
 	public void visitPre(TypeInterval t) throws PrismLangException { defaultVisitPre(t); }
 	public Object visit(TypeInterval t) throws PrismLangException
 	{

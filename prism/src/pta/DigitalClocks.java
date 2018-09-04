@@ -54,6 +54,7 @@ import parser.ast.ExpressionIdent;
 import parser.ast.ExpressionLabel;
 import parser.ast.ExpressionProb;
 import parser.ast.ExpressionProp;
+import parser.ast.ExpressionStructAccess;
 import parser.ast.ExpressionTemporal;
 import parser.ast.ExpressionVar;
 import parser.ast.LabelList;
@@ -281,6 +282,14 @@ public class DigitalClocks extends PrismComponent
 							return e;
 						}
 					}
+					public Object visit(ExpressionStructAccess e) throws PrismLangException
+					{
+						if (e.getType() instanceof TypeClock) {
+							return Expression.Plus(e, Expression.Int(1));
+						} else {
+							return e;
+						}
+					}
 				});
 				// Construct command representing progression of time
 				Command timeCommand = new Command();
@@ -379,6 +388,23 @@ public class DigitalClocks extends PrismComponent
 				boolean isClockVal = e.getType() instanceof TypeClock; 
 				// First recurse to change any nested clock ExpressionVars to ints
 				e.setArray((Expression)(e.getArray().accept(this)));
+				// If this is a clock value, may need to scale it
+				if (isClockVal) {
+					// Scale if necessary
+					if (inDeclVarRef == null && inUpdateVarRef == null) {
+						return scaleUp(e);
+					}
+				}
+				return e;
+			}
+			
+			// Variable ref: struct
+			public Object visit(ExpressionStructAccess e) throws PrismLangException
+			{
+				// Remember if this is a clock value
+				boolean isClockVal = e.getType() instanceof TypeClock;
+				// First recurse to change any nested clock ExpressionVars to ints
+				e.setStruct((Expression)(e.getStruct().accept(this)));
 				// If this is a clock value, may need to scale it
 				if (isClockVal) {
 					// Scale if necessary
