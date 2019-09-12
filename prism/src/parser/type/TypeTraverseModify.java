@@ -75,6 +75,15 @@ public class TypeTraverseModify
 	}
 	public void visitPost(TypeClock t) throws PrismLangException { defaultVisitPost(t); }
 	// -----------------------------------------------------------------------------------
+	public void visitPre(TypeEnum t) throws PrismLangException { defaultVisitPre(t); }
+	public Object visit(TypeEnum t) throws PrismLangException
+	{
+		visitPre(t);
+		visitPost(t);
+		return t;
+	}
+	public void visitPost(TypeEnum t) throws PrismLangException { defaultVisitPost(t); }
+	// -----------------------------------------------------------------------------------
 	public void visitPre(TypeArray t) throws PrismLangException { defaultVisitPre(t); }
 	public Object visit(TypeArray t) throws PrismLangException
 	{

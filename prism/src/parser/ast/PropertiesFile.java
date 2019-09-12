@@ -341,6 +341,9 @@ public class PropertiesFile extends ASTElement
 		// Find all references to observables (i.e. locate "labels" which are observables).
 		findAllObsRefs(modelInfo.getObservableNames(), modelInfo.getObservableTypes());
 		
+		// Find all instances of enum constants, replace identifiers.
+		findAllEnumConstants(modulesFile.getEnumConstantTypes());
+		
 		// Find all instances of property refs
 		findAllPropRefs(null, this);
 		// Check property references for cyclic dependencies

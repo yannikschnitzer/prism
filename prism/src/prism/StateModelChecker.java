@@ -1558,6 +1558,10 @@ public class StateModelChecker extends PrismComponent implements ModelChecker
 		else if (type instanceof TypeBool) {
 			return ((TypeBool) type).castValueTo(val).booleanValue() ? 1.0 : 0.0;
 		}
+		// Enum type
+		else if (type instanceof TypeEnum) {
+			return ((TypeEnum) type).castValueTo(val).getIndex();
+		}
 		// Anything else
 		throw new PrismException("Could not encode type " + type + " into an MTBDD");
 	}
@@ -1577,6 +1581,10 @@ public class StateModelChecker extends PrismComponent implements ModelChecker
 		// Boolean type
 		else if (type instanceof TypeBool) {
 			return val > 0;
+		}
+		// Enum type
+		else if (type instanceof TypeEnum) {
+			return ((TypeEnum) type).getConstant((int) val); 
 		}
 		// Anything else
 		return null;

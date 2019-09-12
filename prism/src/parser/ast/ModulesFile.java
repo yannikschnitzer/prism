@@ -27,8 +27,10 @@
 package parser.ast;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import parser.EvaluateContext;
@@ -40,6 +42,7 @@ import parser.VarUtils;
 import parser.type.Type;
 import parser.type.TypeArray;
 import parser.type.TypeDouble;
+import parser.type.TypeEnum;
 import parser.type.TypeInterval;
 import parser.visitor.ASTTraverse;
 import parser.visitor.ASTVisitor;
@@ -93,6 +96,8 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 	private ArrayList<String> observableNames;
 	private ArrayList<Type> observableTypes;
 	private ArrayList<String> observableVars;
+	// List of all enum constants and the type to which they belong
+	private Map<String, TypeEnum> enumConstTypes;
 
 	// Copy of the evaluation context used to defined undefined constants (null if none)
 	private EvaluateContext ecUndefined;
@@ -133,6 +138,7 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 		observableNames = new ArrayList<>();
 		observableTypes = new ArrayList<>();
 		observableVars = new ArrayList<>();
+		enumConstTypes = new HashMap<>();
 		ecUndefined = null;
 		constantValues = null;
 		ec = EvaluateContext.create();
@@ -869,6 +875,14 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 	}
 	
 	/**
+	 * Get a mapping from enum constants to their containing types.
+	 */
+	public Map<String, TypeEnum> getEnumConstantTypes()
+	{
+		return enumConstTypes;
+	}
+
+	/**
 	 * Method to "tidy up" after parsing (must be called)
 	 * (do some checks and extract some information)
 	 */
@@ -882,7 +896,8 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 		varNames.clear();
 		varTypes.clear();
 		varModules.clear();
-		
+		enumConstTypes.clear();
+
 		// Expansion of formulas and renaming
 
 		// Check formula identifiers
@@ -917,6 +932,11 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 		// Find all instances of variables, replace identifiers with variables.
 		// Also check variables valid, store indices, etc.
 		findAllVars(varNames, varTypes);
+
+		// Check all enum declarations, extract constants
+		checkEnums();
+		// Find all instances of enum constants, replace identifiers.
+		findAllEnumConstants(enumConstTypes);
 
 		// Find all instances of property refs
 		findAllPropRefs(this, null);
@@ -1139,6 +1159,37 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 		// check there is at least one variable
 		if (varNames.size() == 0) {
 			throw new PrismLangException("There must be at least one variable");
+		}
+	}
+
+	// Check all enum declarations
+
+	private void checkEnums() throws PrismLangException
+	{
+		// Go through previously extracted declarations
+		// and extract the set of unique enum declarations
+		// NB: need recursive traversal in case there are nested declarations,
+		// but don't traverse whole model in case DeclarationTypes are used elsewhere
+		HashSet<DeclarationEnum> enumDecls = new HashSet<DeclarationEnum>();
+		for (Declaration decl : varDecls) {
+			decl.accept(new ASTTraverse()
+			{
+				public void visitPost(DeclarationEnum e) throws PrismLangException
+				{
+					enumDecls.add(e);
+				}
+			});
+
+		}
+
+		// Now check that constants are unique across all (distinct) enums
+		// Store a list of them all to, in order to identify usage elsewhere
+		for (DeclarationEnum decl : enumDecls) {
+			int n = decl.getNumConstants();
+			for (int i = 0; i < n; i++) {
+				checkAndAddIdentifier(decl.getConstant(i), decl.getConstantIdent(i), "eunm");
+				enumConstTypes.put(decl.getConstant(i), (TypeEnum) decl.getType());
+			}
 		}
 	}
 
@@ -1504,7 +1555,7 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 			}
 		}
 	}
-	
+
 	/**
 	 * Returns true if one or more of the probabilities in a guarded command contains an interval.
 	 */
@@ -1512,7 +1563,7 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 	{
 		return findIntervalInProbabilities() != null;
 	}
-	
+
 	/**
 	 * If one or more of the probabilities in a guarded command contains an interval,
 	 * return it; otherwise return null.

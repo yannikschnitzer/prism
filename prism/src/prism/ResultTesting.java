@@ -39,6 +39,7 @@ import parser.ast.Expression;
 import parser.type.Type;
 import parser.type.TypeBool;
 import parser.type.TypeDouble;
+import parser.type.TypeEnum;
 import parser.type.TypeInt;
 import parser.type.TypeVoid;
 import prism.Accuracy.AccuracyLevel;
@@ -113,6 +114,15 @@ public class ResultTesting
 		// Double-valued or integer-valued properties exact mode)
 		else if ((type instanceof TypeDouble || type instanceof TypeInt) && result instanceof BigRational) {
 			checkExactAgainstExpectedResultString(strExpected, constValues, type, resultObj);
+		}
+		// Enum-valued properties
+		else if (type instanceof TypeEnum) {
+			// Just compare strings - nothing fancy
+			if (!(result instanceof EnumConstant))
+				throw new PrismException("Result is wrong type for (enum-valued) property");
+			if (!((EnumConstant) result).getName().equals(strExpected)) {
+				throw new PrismException("Wrong result (expected " + strExpected + ", got " + result + ")");
+			}
 		}
 		else if (type instanceof TypeVoid && result instanceof TileList) { //Pareto curve
 			checkParetoAgainstExpectedResultString(strExpected, constValues, resultObj);

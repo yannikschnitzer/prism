@@ -40,6 +40,7 @@ import parser.ast.DeclarationArray;
 import parser.ast.DeclarationBool;
 import parser.ast.DeclarationClock;
 import parser.ast.DeclarationDoubleUnbounded;
+import parser.ast.DeclarationEnum;
 import parser.ast.DeclarationInt;
 import parser.ast.DeclarationIntUnbounded;
 import parser.ast.DeclarationStruct;
@@ -53,6 +54,7 @@ import parser.type.Type;
 import parser.type.TypeArray;
 import parser.type.TypeBool;
 import parser.type.TypeClock;
+import parser.type.TypeEnum;
 import parser.type.TypeInt;
 import parser.type.TypeStruct;
 import parser.visitor.ASTTraverse;
@@ -255,6 +257,12 @@ public class VarList
 			// Variable is a Boolean
 			else if (declType instanceof DeclarationBool) {
 				var = new VarPrimitive(nameTop + nameSuffix, declType.getType(), 0, 1);
+			}
+
+			// Variable is an enum
+			else if (declType instanceof DeclarationEnum) {
+				int size = ((DeclarationEnum) declType).getNumConstants();
+				var = new VarPrimitive(nameTop + nameSuffix, declType.getType(), 0, size - 1);
 			}
 
 			// Variable is a clock
@@ -697,6 +705,10 @@ public class VarList
 			else if (type instanceof TypeBool) {
 				return ((TypeBool) type).castValueTo(val).booleanValue() ? 1 : 0;
 			}
+			// Enum type
+			else if (type instanceof TypeEnum) {
+				return ((TypeEnum) type).castValueTo(val).getIndex();
+			}
 			// Anything else
 			else {
 				throw new PrismLangException("Unknown type " + type + " for variable " + getPrimitiveName(i));
@@ -734,6 +746,10 @@ public class VarList
 				throw new PrismLangException("\"" + s + "\" is not a valid Boolean value");
 
 		}
+		// Enum type
+		else if (type instanceof TypeEnum) {
+			return ((TypeEnum) type).getConstantByName(s).getIndex();
+		}
 		// Anything else
 		else {
 			throw new PrismLangException("Unknown type " + type + " for variable " + getPrimitiveName(i));
@@ -765,6 +781,10 @@ public class VarList
 			// Boolean type
 			else if (type instanceof TypeBool) {
 				return val != 0;
+			}
+			// Enum type
+			else if (type instanceof TypeEnum) {
+				return ((TypeEnum) type).getConstant(val);
 			}
 			// Unknown
 			return null;

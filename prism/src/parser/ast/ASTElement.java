@@ -28,6 +28,7 @@ package parser.ast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 import parser.EvaluateContext;
@@ -39,6 +40,7 @@ import parser.State;
 import parser.Token;
 import parser.Values;
 import parser.type.Type;
+import parser.type.TypeEnum;
 import parser.visitor.ASTTraverse;
 import parser.visitor.ASTVisitor;
 import parser.visitor.ComputeProbNesting;
@@ -50,6 +52,7 @@ import parser.visitor.ExpandLabels;
 import parser.visitor.ExpandPropRefsAndLabels;
 import parser.visitor.FindAllActions;
 import parser.visitor.FindAllConstants;
+import parser.visitor.FindAllEnumConstants;
 import parser.visitor.FindAllFormulas;
 import parser.visitor.FindAllObsRefs;
 import parser.visitor.FindAllPropRefs;
@@ -489,6 +492,16 @@ public abstract class ASTElement implements Cloneable
 	public ASTElement replaceVars(Values varValues) throws PrismLangException
 	{
 		return evaluatePartially(new EvaluateContextValues(null, varValues));
+	}
+
+	/**
+	 * Find all references to enum constants, replace any identifier objects with literal objects
+	 * (i.e. convert ExpressionIdent -> ExpressionLiteral).
+	 */
+	public ASTElement findAllEnumConstants(Map<String, TypeEnum> enumConstTypes) throws PrismLangException
+	{
+		FindAllEnumConstants visitor = new FindAllEnumConstants(enumConstTypes);
+		return (ASTElement) accept(visitor);
 	}
 
 	/**
