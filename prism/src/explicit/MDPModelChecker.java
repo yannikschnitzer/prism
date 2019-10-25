@@ -869,6 +869,25 @@ public class MDPModelChecker extends ProbModelChecker
 		if (known != null)
 			unknown.andNot(known);
 
+		// Temporary code
+		boolean bypassValiter = false;
+		if (bypassValiter) {
+			// Print the MDP
+			for (int s = 0; s < n; s++) {
+				for (int k = 0; k < mdp.getNumChoices(s); k++) {
+					Iterator<Map.Entry<Integer, Double>> iter = mdp.getTransitionsIterator(s, k);
+					while (iter.hasNext()) {
+						Map.Entry<Integer, Double> e = iter.next();
+						mainLog.println(s + " -" + e.getValue() + "-> " + e.getKey());
+					}
+				}
+			}
+			// Return dummy result
+			ModelCheckerResult res = new ModelCheckerResult();
+			res.soln = new double[n];
+			return res;
+		}
+		
 		if (iterationsExport != null)
 			iterationsExport.exportVector(init, 0);
 
