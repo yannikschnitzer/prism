@@ -691,6 +691,23 @@ public class DTMCModelChecker extends ProbModelChecker
 
 		boolean termCritAbsolute = termCrit == TermCrit.ABSOLUTE;
 
+		// Temporary code
+		boolean bypassValiter = false;
+		if (bypassValiter) {
+			// Print the DTMC
+			for (int s = 0; s < n; s++) {
+				Iterator<Map.Entry<Integer, Double>> iter = dtmc.getTransitionsIterator(s);
+				while (iter.hasNext()) {
+					Map.Entry<Integer, Double> e = iter.next();
+					mainLog.println(s + " -" + e.getValue() + "-> " + e.getKey());
+				}
+			}
+			// Return dummy result
+			ModelCheckerResult resNew = new ModelCheckerResult();
+			resNew.soln = new double[n];
+			return resNew;
+		}
+		
 		// Compute probabilities
 		IterationMethod iterationMethod = null;
 
