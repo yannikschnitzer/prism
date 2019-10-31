@@ -35,6 +35,7 @@ import java.util.PrimitiveIterator;
 import java.util.PrimitiveIterator.OfInt;
 
 import common.IterableStateSet;
+import explicit.IncomingChoiceRelation.Choice;
 import explicit.rewards.MCRewards;
 import explicit.rewards.MDPRewards;
 import prism.PrismUtils;
@@ -123,6 +124,28 @@ public interface MDP extends MDPGeneric<Double>
 		forEachTransition(s, i, sum::accept);
 
 		return sum.sum;
+	}
+	
+	/**
+	 * Given a state {@code source} and choice {@code i},
+	 * return the probability of reaching a state {@code target}
+	 * @param source the original state 
+	 * @param i the choice
+	 * @param target the target state
+	 * @return
+	 */
+	public default double getProb(final int source, final int i, final int target) {
+		class Finder {
+			double p = 0.0;
+			void accept(int s, int t, double d) {
+				if (t == target) {
+					p = d;
+				}
+			}
+		}
+		Finder finder = new Finder();
+		forEachTransition(source,i, finder::accept);
+		return finder.p;
 	}
 
 	/**

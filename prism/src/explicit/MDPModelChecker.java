@@ -871,20 +871,186 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Temporary code
 		boolean bypassValiter = false;
+		// different from strat to prevent error
 		if (bypassValiter) {
 			// Print the MDP
 			for (int s = 0; s < n; s++) {
+				if (unknown.get(s))
+					mainLog.println("UNKNOWN"); 
+				else
+					mainLog.println("KNOWN");
 				for (int k = 0; k < mdp.getNumChoices(s); k++) {
 					Iterator<Map.Entry<Integer, Double>> iter = mdp.getTransitionsIterator(s, k);
 					while (iter.hasNext()) {
 						Map.Entry<Integer, Double> e = iter.next();
-						mainLog.println(s + " -" + e.getValue() + "-> " + e.getKey());
+						mainLog.println(s + " - " + k + " - " + e.getValue() + " -> " + e.getKey());
 					}
 				}
 			}
-			// Return dummy result
+			
+			for(int s = 0; s < n ; s++) {
+				for(int k = 0; k < mdp.getNumChoices(s); k++) {
+					for(int t = 0; t < n; t ++) {
+						double v = mdp.getProb(s,k,t);
+						mainLog.println("P( " + s + " , " + k + " , " + t + " ) = " + v);
+					}
+				}
+				
+			}
+			// Instantiate result
+			ModelCheckerResult res = new ModelCheckerResult();
+			
+			int[] choice = new int[n]; //strat = new int[n];
+			
+			res.lastSoln = init;
+			res.soln = new double[n];
+			
+			mainLog.println("Should be 1.0 : " + res.lastSoln[2]);
+			
+			while(res.numIters < 100) {
+				for(int s = 0; s < n; s++) {
+					res.soln[s] = res.lastSoln[s];
+					if (unknown.get(s)) {
+						double bound = min ? 1.0 : 0.0;
+						for(int k = 0; k <mdp.getNumChoices(s); k++) {
+							double sum = 0;
+							Iterator<Map.Entry<Integer, Double>> iter = mdp.getTransitionsIterator(s, k);
+							while(iter.hasNext()) {
+								Map.Entry<Integer, Double> e = iter.next();
+								sum += (res.lastSoln[e.getKey()] * e.getValue());
+							}
+							if (min ? sum < bound : sum > bound) {
+								bound = sum;
+								choice[s] = k;
+							}
+							// bound = min ? Double.min(bound,sum) : Double.max(bound,sum);
+						}
+						res.soln[s] = bound;
+						//mainLog.println(s + " : " + res.soln[s]);
+					}
+				}
+				// update lastSoln
+				for(int s = 0; s < n; s ++){
+					res.lastSoln[s] = res.soln[s];
+				}
+				res.numIters++;
+			}
+			return res;
+		}
+		
+		boolean soundIter = true;
+		if (soundIter) {
+			double[] lastX = new double[n];
+			double[] lastY = new double[n];
+			for (i = 0; i < n; i++) {
+				lastX[i] = yes.get(i)     ? 1.0 : 0.0;
+				lastY[i] = unknown.get(i) ? 1.0 : 0.0;
+			}
+			double[] currX = new double[n];
+			double[] currY = new double[n];
+			
+			int initState = mdp.getFirstInitialState();
+			// TODO: write for Markov Chain first, and then return to this...
+			double l = Double.NEGATIVE_INFINITY;
+			double u = Double.POSITIVE_INFINITY;
+			double d = Double.POSITIVE_INFINITY;
+			double epsilion = 0.001;
+			
+			int choice[] = new int[n];
+			
+			do {
+				for(int s=0; s < n; s++) {
+					currX[s] = yes.get(s)     ? 1.0 : 0.0;  
+					currY[s] = unknown.get(s) ? 1.0 : 0.0; 
+				}
+				for(int s=0; s < n; s++) {
+					if(unknown.get(s)) {
+						// find action
+						double bound = min ? 0.0 : 1.0;
+						for(int k=0; k < mdp.getNumChoices(s); k++) {
+							double sum = 0;
+							Iterator<Map.Entry<Integer, Double>> iter = mdp.getTransitionsIterator(s, k);
+							while(iter.hasNext()) {
+								Map.Entry<Integer, Double> e = iter.next();
+								if(u != Double.POSITIVE_INFINITY) {
+									sum += e.getValue() * (lastX[e.getKey()] + lastY[e.getKey()] * u);
+								}else {
+									sum += e.getValue() * (lastY[e.getKey()]);
+								}
+							}
+							mainLog.println("SUM:" + sum);
+							if (min ? sum < bound : sum > bound) {
+								bound = sum;
+								choice[s] = k;
+							}
+						}
+						// find decision value
+						double potentialD = Double.NEGATIVE_INFINITY;
+						for(int k=0; k <mdp.getNumChoices(s); k++) {
+							if(k != choice[s]) {
+								double deltaY = 0.0;
+								for(int t = 0; t < n ; t++) {
+									deltaY += ( mdp.getProb(s, choice[s], t) - mdp.getProb(s, k, t) ) * currY[t];
+								}
+								if (min ? deltaY < 1 : deltaY > 0) {
+									double deltaX = 0.0;
+									for(int t = 0; t < n ; t++) {
+										deltaX += (mdp.getProb(s, k, t) - mdp.getProb(s, choice[s], t)) * currX[t]; 
+									}
+									if(min) {
+										potentialD = Double.min(potentialD, deltaX / deltaY);
+									}else {
+										potentialD = Double.max(potentialD, deltaX / deltaY);
+									}
+								}
+							}
+						}
+						mainLog.println("PD: " + potentialD);
+						d = Double.max(d, potentialD);
+						mainLog.println("D: " + d);
+						
+						// update vectors x and y
+						Iterator<Map.Entry<Integer, Double>> iter = mdp.getTransitionsIterator(s, choice[s]);
+						while(iter.hasNext()) {
+							Map.Entry<Integer, Double> e = iter.next();
+							currX[s] += e.getValue() * lastX[e.getKey()]; 
+							currX[s] += e.getValue() * lastY[e.getKey()];
+						}
+						mainLog.println("X[" + s + "] :" + currX[s]);
+						mainLog.println("Y[" + s + "] :" + currY[s]);
+					}	
+				}
+				for(int s = 0; s < n; s++) {
+					lastX[s] = currX[s];
+					lastY[s] = currY[s];
+				}
+				
+				// update bounds l and u
+				boolean allNotOne = true;
+				double minFrac = 1.0;
+				double maxFrac = 0.0;
+				for(int s = 0; s < n; s++) {
+					if(unknown.get(s)) {
+						double frac = currX[s] / (1 - currY[s]);
+						minFrac = Double.min(minFrac, frac);
+						maxFrac = Double.max(maxFrac, frac);
+						allNotOne = currY[s] < 1.0 ? allNotOne : false;
+					}
+				}
+				if(allNotOne) {
+					l = Double.max(l , minFrac);
+					u = Double.min(u , Double.max(d, maxFrac));
+				}
+				mainLog.println("L: " + l);
+				mainLog.println("U: " + u);
+				mainLog.println("U - L : " + (u - l));
+			}while (currY[initState] * (u - l) > 2 * epsilion);
+			
 			ModelCheckerResult res = new ModelCheckerResult();
 			res.soln = new double[n];
+			for(int s = 0 ; s < n ; s++) {
+				res.soln[s] = currX[s] + (currY[s] * (l + u) / 2);
+			} 
 			return res;
 		}
 		
