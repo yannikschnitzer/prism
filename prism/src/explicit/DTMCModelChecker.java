@@ -691,8 +691,8 @@ public class DTMCModelChecker extends ProbModelChecker
 
 		boolean termCritAbsolute = termCrit == TermCrit.ABSOLUTE;
 
-		// Temporary code
-		boolean bypassValiter = false;
+		// Implementation of Sound Value Iteration for Markov Chains
+		boolean bypassValiter = true;
 		if (bypassValiter) {
 			// Print the DTMC
 			for (int s = 0; s < n; s++) {
@@ -702,9 +702,62 @@ public class DTMCModelChecker extends ProbModelChecker
 					mainLog.println(s + " -" + e.getValue() + "-> " + e.getKey());
 				}
 			}
-			// Return dummy result
+			
+			double[] lastX = new double[n], lastY = new double[n];
+			double[] currX = new double[n], currY = new double[n];
+			double[] tempX = new double[n], tempY = new double[n];
+			boolean[] unknown = new boolean[n];
+			for(int s = 0; s < n; s++) {
+				unknown[s] = ! (yes.get(s) || no.get(s));
+				lastX[s] = yes.get(s) ? 1 : 0;
+				lastY[s] = unknown[s] ? 1 : 0;
+			}
+			double l = Double.NEGATIVE_INFINITY, u = Double.POSITIVE_INFINITY;
+			double eps = 1.0E-5;
+			
+			boolean done = false;
+			while(!done) {
+				done = true;
+				boolean changeBounds = true; 			// all s ∈ S? (y[s] < 1)
+				double cand; 							// x[s] / (1 - y[s])
+				double qmin = Double.POSITIVE_INFINITY; // min s ∈ S? (x[s] / (1 - y[s]))
+				double qmax = Double.NEGATIVE_INFINITY; // max s ∈ S? (x[s] / (1 - y[s]))
+				for(int s = 0; s < n; s++) {
+					currX[s] = yes.get(s) ? 1.0 : 0.0;  // f(x)[S0] = 0, f(x)[G]  = 1
+					currY[s] = 0.0;                     // h(y)[S0] = 0, h(y)[G]  = 0
+					if(unknown[s]) {
+						Iterator<Map.Entry<Integer, Double>> iter = dtmc.getTransitionsIterator(s);
+						while(iter.hasNext()) {
+							Map.Entry<Integer, Double> e = iter.next();
+							double p = e.getValue();
+							int    t = e.getKey();
+							currX[s] += p * lastX[t]; // f(x)[s]  = sum ( P(s,t) * x[t] ) for all s in S?
+							currY[s] += p * lastY[t]; // h(y)[s]  = sum ( P(s,t) * y[t] ) for all s in S?
+						}
+						done = currY[s] * (u - l) > 2 * eps ? false : done;
+						changeBounds = currY[s] >= 1.0 ? false : changeBounds;
+						cand = currX[s] / (1 - currY[s]);
+						qmin = Double.min(qmin, cand);
+						qmax = Double.max(qmax, cand);
+					}	
+				}
+				// swap
+				tempX = currX; tempY = currY;
+				currX = lastX; currY = lastY;
+				lastX = tempX; lastY = tempY;
+							
+				if(changeBounds) {
+					l = Double.max(l , qmin);
+					u = Double.min(u , qmax);
+					mainLog.println("L : " + l + "\nU :" + u);
+				}
+			}
+			
 			ModelCheckerResult resNew = new ModelCheckerResult();
 			resNew.soln = new double[n];
+			for(int s = 0; s < n; s++) {
+				resNew.soln[s] = currX[s] + currY[s] * ((l + u) / 2.0);
+			}
 			return resNew;
 		}
 		

@@ -923,10 +923,8 @@ public class MDPModelChecker extends ProbModelChecker
 								bound = sum;
 								choice[s] = k;
 							}
-							// bound = min ? Double.min(bound,sum) : Double.max(bound,sum);
 						}
 						res.soln[s] = bound;
-						//mainLog.println(s + " : " + res.soln[s]);
 					}
 				}
 				// update lastSoln
@@ -940,118 +938,7 @@ public class MDPModelChecker extends ProbModelChecker
 		
 		boolean soundIter = true;
 		if (soundIter) {
-			double[] lastX = new double[n];
-			double[] lastY = new double[n];
-			for (i = 0; i < n; i++) {
-				lastX[i] = yes.get(i)     ? 1.0 : 0.0;
-				lastY[i] = unknown.get(i) ? 1.0 : 0.0;
-			}
-			double[] currX = new double[n];
-			double[] currY = new double[n];
-			
-			int initState = mdp.getFirstInitialState();
-			// TODO: write for Markov Chain first, and then return to this...
-			double l = Double.NEGATIVE_INFINITY;
-			double u = Double.POSITIVE_INFINITY;
-			double d = Double.POSITIVE_INFINITY;
-			double epsilion = 0.001;
-			
-			int choice[] = new int[n];
-			
-			do {
-				for(int s=0; s < n; s++) {
-					currX[s] = yes.get(s)     ? 1.0 : 0.0;  
-					currY[s] = unknown.get(s) ? 1.0 : 0.0; 
-				}
-				for(int s=0; s < n; s++) {
-					if(unknown.get(s)) {
-						// find action
-						double bound = min ? 0.0 : 1.0;
-						for(int k=0; k < mdp.getNumChoices(s); k++) {
-							double sum = 0;
-							Iterator<Map.Entry<Integer, Double>> iter = mdp.getTransitionsIterator(s, k);
-							while(iter.hasNext()) {
-								Map.Entry<Integer, Double> e = iter.next();
-								if(u != Double.POSITIVE_INFINITY) {
-									sum += e.getValue() * (lastX[e.getKey()] + lastY[e.getKey()] * u);
-								}else {
-									sum += e.getValue() * (lastY[e.getKey()]);
-								}
-							}
-							mainLog.println("SUM:" + sum);
-							if (min ? sum < bound : sum > bound) {
-								bound = sum;
-								choice[s] = k;
-							}
-						}
-						// find decision value
-						double potentialD = Double.NEGATIVE_INFINITY;
-						for(int k=0; k <mdp.getNumChoices(s); k++) {
-							if(k != choice[s]) {
-								double deltaY = 0.0;
-								for(int t = 0; t < n ; t++) {
-									deltaY += ( mdp.getProb(s, choice[s], t) - mdp.getProb(s, k, t) ) * currY[t];
-								}
-								if (min ? deltaY < 1 : deltaY > 0) {
-									double deltaX = 0.0;
-									for(int t = 0; t < n ; t++) {
-										deltaX += (mdp.getProb(s, k, t) - mdp.getProb(s, choice[s], t)) * currX[t]; 
-									}
-									if(min) {
-										potentialD = Double.min(potentialD, deltaX / deltaY);
-									}else {
-										potentialD = Double.max(potentialD, deltaX / deltaY);
-									}
-								}
-							}
-						}
-						mainLog.println("PD: " + potentialD);
-						d = Double.max(d, potentialD);
-						mainLog.println("D: " + d);
-						
-						// update vectors x and y
-						Iterator<Map.Entry<Integer, Double>> iter = mdp.getTransitionsIterator(s, choice[s]);
-						while(iter.hasNext()) {
-							Map.Entry<Integer, Double> e = iter.next();
-							currX[s] += e.getValue() * lastX[e.getKey()]; 
-							currX[s] += e.getValue() * lastY[e.getKey()];
-						}
-						mainLog.println("X[" + s + "] :" + currX[s]);
-						mainLog.println("Y[" + s + "] :" + currY[s]);
-					}	
-				}
-				for(int s = 0; s < n; s++) {
-					lastX[s] = currX[s];
-					lastY[s] = currY[s];
-				}
-				
-				// update bounds l and u
-				boolean allNotOne = true;
-				double minFrac = 1.0;
-				double maxFrac = 0.0;
-				for(int s = 0; s < n; s++) {
-					if(unknown.get(s)) {
-						double frac = currX[s] / (1 - currY[s]);
-						minFrac = Double.min(minFrac, frac);
-						maxFrac = Double.max(maxFrac, frac);
-						allNotOne = currY[s] < 1.0 ? allNotOne : false;
-					}
-				}
-				if(allNotOne) {
-					l = Double.max(l , minFrac);
-					u = Double.min(u , Double.max(d, maxFrac));
-				}
-				mainLog.println("L: " + l);
-				mainLog.println("U: " + u);
-				mainLog.println("U - L : " + (u - l));
-			}while (currY[initState] * (u - l) > 2 * epsilion);
-			
-			ModelCheckerResult res = new ModelCheckerResult();
-			res.soln = new double[n];
-			for(int s = 0 ; s < n ; s++) {
-				res.soln[s] = currX[s] + (currY[s] * (l + u) / 2);
-			} 
-			return res;
+			return doSoundValueIteration(mdp, yes, unknown, min);
 		}
 		
 		if (iterationsExport != null)
@@ -1079,6 +966,146 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 	}
 
+	// for sound value iteration
+	protected int findAction(MDP mdp, boolean min, double x[] , double y[], int s, double u) {
+		int action = 0;
+		double cand = min ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+		for(int i = 0; i < mdp.getNumChoices(s) ; i++) {
+			double sum = 0;
+			Iterator<Entry<Integer,Double>> iter = mdp.getTransitionsIterator(s, i);
+			while(iter.hasNext()) {
+				Entry<Integer,Double> e = iter.next();
+				int    t = e.getKey();
+				double p = e.getValue();
+				if(u != Double.POSITIVE_INFINITY) {
+					sum += p * (x[t] + y[t] * u);
+				}else {
+					sum += p * y[t];
+				}
+			}
+			if(min ? sum < cand : sum > cand){
+				action = i;
+				cand = sum;
+			}
+		}
+		return action;
+	}
+	
+	protected double decisionValue(MDP mdp, boolean min, double x[], double y[], int s, int a) {
+		double d = min ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+		Iterator<Entry<Integer,Double>> iter;
+		Entry<Integer,Double> e;
+		double dx, dy, p;
+		int t;
+		
+		for(int b = 0; b < mdp.getNumChoices(s); b++) {
+			// for each β ∈ Act(s) \ {α}
+			if(b != a) {
+				dy = 0;
+				dx = 0;
+				iter = mdp.getTransitionsIterator(s, a);
+				while(iter.hasNext()) {
+					e = iter.next();
+					p = e.getValue();
+					t = e.getKey();
+					dy += p * y[t];
+					dx -= p * x[t];
+				}
+				iter = mdp.getTransitionsIterator(s, b);
+				while(iter.hasNext()) {
+					e = iter.next();
+					p = e.getValue();
+					t = e.getKey();
+					dy -= p * y[t];
+					dx += p * y[t];
+				}
+				
+				if(min ? dy < 0 : dy > 0) { //how does this change for min == true and min == false
+					d = min ? Double.min(d , dx/dy ) : Double.max(d, dx/dy);
+				}
+				
+			}
+		}
+		return d;
+	}
+	
+	protected ModelCheckerResult doSoundValueIteration(MDP mdp, BitSet yes, BitSet unknown, boolean min) {
+		int n = mdp.getNumStates();
+		
+		double[] lastX = new double[n], lastY = new double[n];
+		double[] currX = new double[n], currY = new double[n];
+		double[] tempX = new double[n], tempY = new double[n];
+		
+		for(int s = 0; s < n; s++) {
+			lastX[s] = yes.get(s)     ? 1 : 0;
+			lastY[s] = unknown.get(s) ? 1 : 0;
+		}
+		
+		double l = Double.NEGATIVE_INFINITY, u = Double.POSITIVE_INFINITY;
+		
+		// EXPERIMENT LINE : to see what d does
+		// double d = min ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+		double d = min ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+
+		int loops = 0;
+		int action;
+		double eps = 1.0E-5;
+		
+		boolean done = false;
+		while(!done) {
+			boolean changeBounds = true;
+			done = true;
+			
+			double cand; 							// x[s] / (1 - y[s])
+			double qmin = Double.POSITIVE_INFINITY; // min s ∈ S? (x[s] / (1 - y[s]))
+			double qmax = Double.NEGATIVE_INFINITY; // max s ∈ S? (x[s] / (1 - y[s]))
+			for(int s = 0; s < mdp.getNumStates(); s++) {
+				currX[s] = yes.get(s) ? 1.0 : 0.0;
+				currY[s] = 0.0;
+				if(unknown.get(s)) {
+					action = findAction(mdp, min, lastX, lastY, s, u);
+					cand = decisionValue(mdp, min, lastX, lastY, s, action);
+					d = min ? Double.min(d, cand) : Double.max(d, cand); 
+					// update x[s] and y[s]
+					Iterator<Entry<Integer,Double>> iter = mdp.getTransitionsIterator(s, action);
+					while(iter.hasNext()) {
+						Entry<Integer,Double> e = iter.next();
+						double p = e.getValue();
+						int t = e.getKey();
+						currX[s] += p * lastX[t];
+						currY[s] += p * lastY[t];
+					}
+					// update changeBounds and done
+					done = currY[s] * (u - l) > 2 * eps ? false : done;
+					changeBounds = currY[s] >= 1.0 ? false : changeBounds;
+					cand = currX[s] / (1 - currY[s]);
+					qmin = Double.min(qmin, cand);
+					qmax = Double.max(qmax, cand);
+				}
+			}
+			mainLog.println("D: " + d);
+			mainLog.println("QMAX: " + qmax);
+			// swap
+			tempX = currX; tempY = currY;
+			currX = lastX; currY = lastY;
+			lastX = tempX; lastY = tempY;
+			if(changeBounds) {
+				l = Double.max(l, qmin);
+				u = Double.min(u, Double.max(d, qmax));
+			}
+			loops++;
+		}
+		
+		mainLog.println("LOOPS: " + loops);
+		
+		ModelCheckerResult res = new ModelCheckerResult();
+		res.soln = new double[n];
+		for(int s = 0; s < n; s++) {
+			res.soln[s] = currX[s] + currY[s] * ((l + u) / 2.0);
+		}
+		return res;
+	}
+	
 	/**
 	 * Compute reachability probabilities using interval iteration.
 	 * Optionally, store optimal (memoryless) strategy info.
