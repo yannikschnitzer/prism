@@ -880,7 +880,7 @@ public class MDPModelChecker extends ProbModelChecker
 		if (testMyGauss) {
 			double v[] = new double[n];
 			double error = 1.0E-7;
-			gaussSeidelWithError(mdp, yes, no, unknown, min, error, v);
+			gaussSeidelWithError(mdp, yes, unknown, min, error, v);
 			ModelCheckerResult res = new ModelCheckerResult();
 			res.soln = v;
 			return res;
@@ -889,7 +889,7 @@ public class MDPModelChecker extends ProbModelChecker
 		// Temporary code
 		boolean optimistic = true;
 		if (optimistic) {
-			return doOptimisticValueIteration(mdp, yes, no, unknown, min);	
+			return doOptimisticValueIteration(mdp, yes, unknown, min);	
 		}
 		
 		if (iterationsExport != null)
@@ -1057,8 +1057,8 @@ public class MDPModelChecker extends ProbModelChecker
 		return res;
 	}
 	
-	protected void gaussSeidelWithError(MDP mdp, BitSet yes, BitSet no, BitSet unknown, boolean min, double error, double v[]) {
-		mainLog.println("Starting Gauss Seidel with error: " + error);
+	protected void gaussSeidelWithError(MDP mdp, BitSet yes, BitSet unknown, boolean min, double error, double v[]) {
+		mainLog.println("Starting Gauss-Seidel with error: " + error);
 		
 		int n = mdp.getNumStates();
 		for(int s=0; s<n; s++) {
@@ -1089,9 +1089,10 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 	}
 	
-	protected ModelCheckerResult doOptimisticValueIteration(MDP mdp, BitSet yes, BitSet no, BitSet unknown, boolean min) {
+	protected ModelCheckerResult doOptimisticValueIteration(MDP mdp, BitSet yes, BitSet unknown, boolean min) {
 		// TODO: Find a good example to test this on
-		double eps   = 1.0E-8;
+		// ie. the one in paper!
+		double eps   = 1.0E-8; //TODO: Use provided error
 		double error = eps;
 		int n = mdp.getNumStates();
 		double v[] = new double[n];
@@ -1103,7 +1104,7 @@ public class MDPModelChecker extends ProbModelChecker
 		boolean done = false;
 		while(!done) {
 			// perform Gauss-Seidel Value Iteration to give v
-			gaussSeidelWithError(mdp, yes, no, unknown, min, error, v);
+			gaussSeidelWithError(mdp, yes, unknown, min, error, v);
 			// vector u[s] = v[s] * (1 + error) for all s ∈ S?
 			for(int s=0; s<n; s++) {
 				mainLog.println("v[" + s + "] = " + v[s]);
@@ -1113,6 +1114,7 @@ public class MDPModelChecker extends ProbModelChecker
 			while(true) {
 				error = 0;
 				boolean up = true, down = true, cross = false;
+				boolean inEps = true;
 				// foreach s ∈ S?
 				for(int s=0; s<n; s++) {
 					if(unknown.get(s)) {
@@ -1141,18 +1143,18 @@ public class MDPModelChecker extends ProbModelChecker
 							cross = true;
 						v[s] = vnew;
 						u[s] = unew;
+						inEps = (u[s] - v[s]) > 2*eps * v[s] ? false : inEps;
 					}
 				}
 				if (up || cross)
 					break;
 				
-				// The MDP potentially has no initial states...
-				// TODO: Check this condition on all unknown states...
-				if (down && (u[0] - v[0]) <= 2*eps * v[0]) {
+				if (down && inEps) {
 					done = true;
 					break;
 				}
 			}
+			error = error / 2;
 		}
 		ModelCheckerResult res = new ModelCheckerResult();
 		res.soln = u;

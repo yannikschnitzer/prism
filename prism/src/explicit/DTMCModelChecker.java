@@ -692,17 +692,10 @@ public class DTMCModelChecker extends ProbModelChecker
 		boolean termCritAbsolute = termCrit == TermCrit.ABSOLUTE;
 
 		// Implementation of Sound Value Iteration for Markov Chains
-		boolean bypassValiter = true;
-		if (bypassValiter) {
-			// Print the DTMC
-			for (int s = 0; s < n; s++) {
-				Iterator<Map.Entry<Integer, Double>> iter = dtmc.getTransitionsIterator(s);
-				while (iter.hasNext()) {
-					Map.Entry<Integer, Double> e = iter.next();
-					mainLog.println(s + " -" + e.getValue() + "-> " + e.getKey());
-				}
-			}
-			
+		boolean sound = false;
+		if (sound) {
+			return doSoundValueIteration(dtmc, yes, no);
+			/*
 			double[] lastX = new double[n], lastY = new double[n];
 			double[] currX = new double[n], currY = new double[n];
 			double[] tempX = new double[n], tempY = new double[n];
@@ -759,6 +752,16 @@ public class DTMCModelChecker extends ProbModelChecker
 				resNew.soln[s] = currX[s] + currY[s] * ((l + u) / 2.0);
 			}
 			return resNew;
+			*/
+		}
+		
+		boolean optimistic = true;
+		if(optimistic) {
+			BitSet unknown = new BitSet();
+			unknown.set(0,n);
+			unknown.andNot(yes);
+			unknown.andNot(no);
+			return doOptimisticValueIteration(dtmc, yes, unknown);
 		}
 		
 		// Compute probabilities
@@ -800,6 +803,162 @@ public class DTMCModelChecker extends ProbModelChecker
 	}
 
 
+	protected ModelCheckerResult doSoundValueIteration(DTMC dtmc, BitSet yes, BitSet no) {
+		int n = dtmc.getNumStates();
+		
+		double[] lastX = new double[n], lastY = new double[n];
+		double[] currX = new double[n], currY = new double[n];
+		double[] tempX = new double[n], tempY = new double[n];
+		boolean[] unknown = new boolean[n];
+		for(int s = 0; s < n; s++) {
+			unknown[s] = ! (yes.get(s) || no.get(s));
+			lastX[s] = yes.get(s) ? 1 : 0;
+			lastY[s] = unknown[s] ? 1 : 0;
+		}
+		double l = Double.NEGATIVE_INFINITY, u = Double.POSITIVE_INFINITY;
+		double eps = 1.0E-5;
+		
+		boolean done = false;
+		while(!done) {
+			done = true;
+			boolean changeBounds = true; 			// all s ∈ S? (y[s] < 1)
+			double cand; 							// x[s] / (1 - y[s])
+			double qmin = Double.POSITIVE_INFINITY; // min s ∈ S? (x[s] / (1 - y[s]))
+			double qmax = Double.NEGATIVE_INFINITY; // max s ∈ S? (x[s] / (1 - y[s]))
+			for(int s = 0; s < n; s++) {
+				currX[s] = yes.get(s) ? 1.0 : 0.0;  // f(x)[S0] = 0, f(x)[G]  = 1
+				currY[s] = 0.0;                     // h(y)[S0] = 0, h(y)[G]  = 0
+				if(unknown[s]) {
+					Iterator<Map.Entry<Integer, Double>> iter = dtmc.getTransitionsIterator(s);
+					while(iter.hasNext()) {
+						Map.Entry<Integer, Double> e = iter.next();
+						double p = e.getValue();
+						int    t = e.getKey();
+						currX[s] += p * lastX[t]; // f(x)[s]  = sum ( P(s,t) * x[t] ) for all s in S?
+						currY[s] += p * lastY[t]; // h(y)[s]  = sum ( P(s,t) * y[t] ) for all s in S?
+					}
+					done = currY[s] * (u - l) > 2 * eps ? false : done;
+					changeBounds = currY[s] >= 1.0 ? false : changeBounds;
+					cand = currX[s] / (1 - currY[s]);
+					qmin = Double.min(qmin, cand);
+					qmax = Double.max(qmax, cand);
+				}	
+			}
+			// swap
+			tempX = currX; tempY = currY;
+			currX = lastX; currY = lastY;
+			lastX = tempX; lastY = tempY;
+						
+			if(changeBounds) {
+				l = Double.max(l , qmin);
+				u = Double.min(u , qmax);
+				mainLog.println("L : " + l + "\nU :" + u);
+			}
+		}
+		
+		ModelCheckerResult resNew = new ModelCheckerResult();
+		resNew.soln = new double[n];
+		for(int s = 0; s < n; s++) {
+			resNew.soln[s] = currX[s] + currY[s] * ((l + u) / 2.0);
+		}
+		return resNew;
+	}
+	
+	protected void gaussSeidelWithError(DTMC dtmc, BitSet yes, BitSet unknown, double error, double v[]) {
+		mainLog.println("Starting Gauss-Seidel with error: " + error);
+		
+		int n = dtmc.getNumStates();
+		for(int s=0; s<n; s++) {
+			v[s] = yes.get(s) ? 1 : 0;
+		}
+		
+		boolean done = false;
+		while(!done) {
+			done = true;
+			for(int s=0; s<n; s++) {
+				if(unknown.get(s)) {
+					double sum = 0;
+					Iterator<Entry<Integer,Double>> iter = dtmc.getTransitionsIterator(s);
+					while(iter.hasNext()) {
+						Entry<Integer,Double> e = iter.next();
+						int    t = e.getKey();
+						double p = e.getValue();
+						sum += p * v[t];
+					}
+					done = sum - v[s] > error ? false : done;
+					v[s] = sum;
+				}
+			}
+		}
+		
+	}
+	
+	protected ModelCheckerResult doOptimisticValueIteration(DTMC dtmc, BitSet yes, BitSet unknown) {
+		double eps = 1.0E-6; //TODO: Use provided error
+		double error = eps;
+		int n = dtmc.getNumStates();
+		double v[] = new double[n];
+		double u[] = new double[n];
+		
+		Iterator<Entry<Integer,Double>> iter;
+		Entry<Integer,Double> e;
+		
+		boolean done = false;
+		while(!done) {
+			gaussSeidelWithError(dtmc, yes, unknown, error, v);
+			// vector u[s] = v[s] * (1 + error) for all s ∈ S?
+			for(int s=0; s<n; s++) {
+				mainLog.println("v[" + s + "] = " + v[s]);
+				u[s] = unknown.get(s) ? v[s] * (1 + eps) : v[s];
+				mainLog.println("u[" + s + "] = " + u[s]);
+			}
+			while(true) {
+				error = 0;
+				boolean up = true, down = true, cross = false;
+				boolean inEps = true;
+				for(int s=0; s<n;s++) {
+					if(unknown.get(s)) {
+						double vnew = 0.0;
+						double unew = 0.0;
+						for(iter = dtmc.getTransitionsIterator(s); iter.hasNext(); ) {
+							e = iter.next();
+							double p = e.getValue();
+							int    t = e.getKey();
+							vnew += p * v[t];
+							unew += p * u[t];
+						}
+						if (vnew > 0)
+							error = Double.max(error, (vnew - v[s]));
+						if (unew < u[s])
+							up = false;
+						if (unew > u[s])
+							down = false;
+						if (unew < vnew)
+							cross = true;
+						v[s] = vnew;
+						u[s] = unew;
+						inEps &= (u[s] - v[s]) <= 2*eps * v[s];
+					}
+				}
+				if (up || cross)
+					break;
+				if (down && inEps) {
+					done = true;
+					break;
+				}
+			}
+			error = error / 2;
+		}
+		ModelCheckerResult res = new ModelCheckerResult();
+		res.soln = u;
+		for(int s=0; s<n; s++) {
+			res.soln[s] += v[s];
+			res.soln[s] /= 2;
+		}
+		return res;
+	}
+	
+	
 	/**
 	 * Prob0 precomputation algorithm (using predecessor relation),
 	 * i.e. determine the states of a DTMC which, with probability 0,
