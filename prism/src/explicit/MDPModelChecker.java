@@ -870,7 +870,21 @@ public class MDPModelChecker extends ProbModelChecker
 			unknown.andNot(known);
 
 		// Temporary code
-		boolean soundIter = false;
+		for(int s=0; s<n; s++) {
+			if(yes.get(s)) {
+				mainLog.println("YES: " + s);
+			}
+			if(no.get(s)) {
+				mainLog.println("NO: " + s);
+			}
+			if(unknown.get(s)) {
+				mainLog.println("UNK : " + s);
+			}
+		}
+		
+		
+		// Temporary code
+		boolean soundIter = true;
 		if (soundIter) {
 			return doSoundValueIteration(mdp, yes, unknown, min);
 		}
@@ -879,15 +893,14 @@ public class MDPModelChecker extends ProbModelChecker
 		boolean testMyGauss = false;
 		if (testMyGauss) {
 			double v[] = new double[n];
-			double error = 1.0E-7;
-			gaussSeidelWithError(mdp, yes, unknown, min, error, v);
+			gaussSeidelWithError(mdp, yes, unknown, min, termCritParam, v);
 			ModelCheckerResult res = new ModelCheckerResult();
 			res.soln = v;
 			return res;
 		}
 		
 		// Temporary code
-		boolean optimistic = true;
+		boolean optimistic = false;
 		if (optimistic) {
 			return doOptimisticValueIteration(mdp, yes, unknown, min);	
 		}
@@ -972,7 +985,8 @@ public class MDPModelChecker extends ProbModelChecker
 				}
 				
 				if(min ? dy < 0 : dy > 0) { // TODO: Look into this line
-					d = min ? Double.min(d , dx/dy ) : Double.max(d, dx/dy);
+					// d = min ? Double.min(d , dx/dy ) : Double.max(d, dx/dy);
+					d = Double.max(d, dx / dy);
 				}
 				
 			}
@@ -987,20 +1001,48 @@ public class MDPModelChecker extends ProbModelChecker
 		double[] currX = new double[n], currY = new double[n];
 		double[] tempX, tempY;
 		
+		//temp.
+		boolean cheat = false;
+		if (cheat) {
+			unknown.set(0, false);
+			unknown.set(2, false);
+		}
+		
 		for(int s = 0; s < n; s++) {
+			// PRINT THAT BOI
+			mainLog.println("------ State: " + s);
+			for(int i = 0; i < mdp.getNumChoices(s); i++) {
+				mainLog.println("---- Choice: " + i);
+				Iterator<Entry<Integer,Double>> iter = mdp.getTransitionsIterator(s, i);
+				while(iter.hasNext()) {
+					Entry<Integer,Double> e = iter.next();
+					int t    = e.getKey();
+					double p = e.getValue();
+					mainLog.println(s + " --> " + t + " : " + p);
+				}
+			}
+			
 			lastX[s] = yes.get(s)     ? 1 : 0;
 			lastY[s] = unknown.get(s) ? 1 : 0;
+			
+			if(yes.get(s)) {
+				mainLog.println("YES: " + s);
+			}
+			if(unknown.get(s)) {
+				mainLog.println("UNKNOWN " + s);
+			}
+			
 		}
 		
 		double l = Double.NEGATIVE_INFINITY, u = Double.POSITIVE_INFINITY;
 		
 		// EXPERIMENT LINE : to see what d does
-		// double d = min ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
-		double d = min ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
-
+		//double d = min ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+		double d = Double.NEGATIVE_INFINITY;
+		
 		int loops = 0;
 		int action;
-		double eps = 1.0E-5; // TODO: find where epsilon is defined
+		double eps = termCritParam;
 		
 		boolean done = false;
 		while(!done) {
@@ -1015,6 +1057,8 @@ public class MDPModelChecker extends ProbModelChecker
 				currY[s] = 0.0;
 				if(unknown.get(s)) {
 					action = findAction(mdp, min, lastX, lastY, s, u);
+					mainLog.println("State " + s + " has action " + action);
+					
 					cand = decisionValue(mdp, min, lastX, lastY, s, action);
 					d = min ? Double.min(d, cand) : Double.max(d, cand); 
 					// update x[s] and y[s]
@@ -1026,23 +1070,41 @@ public class MDPModelChecker extends ProbModelChecker
 						currX[s] += p * lastX[t];
 						currY[s] += p * lastY[t];
 					}
-					// update changeBounds and done
-					done = currY[s] * (u - l) > 2 * eps ? false : done;
-					changeBounds = currY[s] >= 1.0 ? false : changeBounds;
-					cand = currX[s] / (1 - currY[s]);
-					qmin = Double.min(qmin, cand);
-					qmax = Double.max(qmax, cand);
+					
+					// y[s] * (u − l) < 2 * ε
+					done &= currY[s] * (u - l) < 2 * eps;
+					
+					// if y[s] < 1 for all s ∈ S?
+					changeBounds &= currY[s] < 1.0;
+					
+					// mainLog.println("currY[s] : " + currY[s]);
+					
+					if (changeBounds) {
+						cand = currX[s] / (1 - currY[s]);
+						qmin = Double.min(qmin, cand);
+						qmax = Double.max(qmax, cand);
+					}
 				}
 			}
-			mainLog.println("D: " + d);
-			mainLog.println("QMAX: " + qmax);
+			
+			if(qmax != qmax) {
+				mainLog.println("qmax is NaN");
+				while(true);
+			}
+			
+			// mainLog.println("D: " + d);
+			// mainLog.println("QMAX: " + qmax);
+			
 			// swap
 			tempX = currX; tempY = currY;
 			currX = lastX; currY = lastY;
 			lastX = tempX; lastY = tempY;
+			
 			if(changeBounds) {
 				l = Double.max(l, qmin);
 				u = Double.min(u, Double.max(d, qmax));
+				mainLog.println("L: " + l);
+				mainLog.println("U: " + u);
 			}
 			loops++;
 		}
@@ -1052,7 +1114,12 @@ public class MDPModelChecker extends ProbModelChecker
 		ModelCheckerResult res = new ModelCheckerResult();
 		res.soln = new double[n];
 		for(int s = 0; s < n; s++) {
-			res.soln[s] = currX[s] + currY[s] * ((l + u) / 2.0);
+			if(unknown.get(s)) {
+				res.soln[s] = currX[s] + currY[s] * ((l + u) / 2.0);
+			}else {
+				res.soln[s] = currX[s];
+			}
+				
 		}
 		return res;
 	}
@@ -1092,7 +1159,7 @@ public class MDPModelChecker extends ProbModelChecker
 	protected ModelCheckerResult doOptimisticValueIteration(MDP mdp, BitSet yes, BitSet unknown, boolean min) {
 		// TODO: Find a good example to test this on
 		// ie. the one in paper!
-		double eps   = 1.0E-8; //TODO: Use provided error
+		double eps   = termCritParam;
 		double error = eps;
 		int n = mdp.getNumStates();
 		double v[] = new double[n];
@@ -1107,9 +1174,9 @@ public class MDPModelChecker extends ProbModelChecker
 			gaussSeidelWithError(mdp, yes, unknown, min, error, v);
 			// vector u[s] = v[s] * (1 + error) for all s ∈ S?
 			for(int s=0; s<n; s++) {
-				mainLog.println("v[" + s + "] = " + v[s]);
+				// mainLog.println("v[" + s + "] = " + v[s]);
 				u[s] = unknown.get(s) ? v[s] * (1 + eps) : v[s];
-				mainLog.println("u[" + s + "] = " + u[s]);
+				// mainLog.println("u[" + s + "] = " + u[s]);
 			}
 			while(true) {
 				error = 0;
@@ -1135,7 +1202,10 @@ public class MDPModelChecker extends ProbModelChecker
 						}
 						if (vnew > 0)
 							error = Double.max(error, (vnew - v[s]) / vnew);
-						if(unew < u[s])
+						
+						// if unew == u[s] then we run into termination trouble
+						// if we keep up as false
+						if(unew <= u[s]) // if(unew < u[s])
 							up = false;
 						if(unew > u[s])
 							down = false;
@@ -1146,8 +1216,12 @@ public class MDPModelChecker extends ProbModelChecker
 						inEps = (u[s] - v[s]) > 2*eps * v[s] ? false : inEps;
 					}
 				}
-				if (up || cross)
+				// mainLog.println("inEps: " + inEps);
+				if (up || cross) {
+					// mainLog.println("Up: " + up);
+					// mainLog.println("Cross: " + cross);
 					break;
+				}
 				
 				if (down && inEps) {
 					done = true;

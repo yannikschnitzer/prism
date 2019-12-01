@@ -816,7 +816,7 @@ public class DTMCModelChecker extends ProbModelChecker
 			lastY[s] = unknown[s] ? 1 : 0;
 		}
 		double l = Double.NEGATIVE_INFINITY, u = Double.POSITIVE_INFINITY;
-		double eps = 1.0E-5;
+		double eps = termCritParam;
 		
 		boolean done = false;
 		while(!done) {
@@ -894,7 +894,7 @@ public class DTMCModelChecker extends ProbModelChecker
 	}
 	
 	protected ModelCheckerResult doOptimisticValueIteration(DTMC dtmc, BitSet yes, BitSet unknown) {
-		double eps = 1.0E-6; //TODO: Use provided error
+		double eps = termCritParam;
 		double error = eps;
 		int n = dtmc.getNumStates();
 		double v[] = new double[n];
@@ -929,7 +929,7 @@ public class DTMCModelChecker extends ProbModelChecker
 						}
 						if (vnew > 0)
 							error = Double.max(error, (vnew - v[s]));
-						if (unew < u[s])
+						if (unew <= u[s])
 							up = false;
 						if (unew > u[s])
 							down = false;

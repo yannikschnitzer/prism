@@ -253,7 +253,7 @@ public class PrismSettings implements Observer
 																				"Use interval iteration (from above and below) in iterative numerical methods."},
 			{ STRING_TYPE,		PRISM_INTERVAL_ITER_OPTIONS,				"Interval iteration options",				"4.3.1",		"",																		"",
 																	"Interval iteration options, a comma-separated list of the following:\n" + OptionsIntervalIteration.getOptionsDescription() },
-			{ CHOICE_TYPE,		PRISM_MDP_SOLN_METHOD,					"MDP solution method",				"4.0",			"Value iteration",																"Value iteration,Gauss-Seidel,Policy iteration,Modified policy iteration,Linear programming",
+			{ CHOICE_TYPE,		PRISM_MDP_SOLN_METHOD,					"MDP solution method",				"4.0",			"Value iteration",																"Value iteration,Gauss-Seidel,Sound,Optimistic,Policy iteration,Modified policy iteration,Linear programming",
 																			"Which method to use when solving Markov decision processes." },
 			{ CHOICE_TYPE,		PRISM_MDP_MULTI_SOLN_METHOD,			"MDP multi-objective solution method",				"4.0.3",			"Value iteration",											"Value iteration,Gauss-Seidel,Linear programming",
 																			"Which method to use when solving multi-objective queries on Markov decision processes." },
@@ -1069,6 +1069,10 @@ public class PrismSettings implements Observer
 		} else if (sw.equals("linprog") || sw.equals("lp")) {
 			set(PRISM_MDP_SOLN_METHOD, "Linear programming");
 			set(PRISM_MDP_MULTI_SOLN_METHOD, "Linear programming");
+		} else if (sw.equals("sound")) {
+			set(PRISM_MDP_SOLN_METHOD, "Sound");
+		} else if (sw.equals("optimistic") || sw.equals("op")) {
+			set(PRISM_MDP_SOLN_METHOD, "Optimistic");
 		}
 
 		// Interval iterations

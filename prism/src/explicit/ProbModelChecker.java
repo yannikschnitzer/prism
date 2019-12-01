@@ -127,7 +127,7 @@ public class ProbModelChecker extends NonProbModelChecker
 
 	// Method used for solving MDPs
 	public enum MDPSolnMethod {
-		VALUE_ITERATION, GAUSS_SEIDEL, POLICY_ITERATION, MODIFIED_POLICY_ITERATION, LINEAR_PROGRAMMING;
+		VALUE_ITERATION, GAUSS_SEIDEL, POLICY_ITERATION, MODIFIED_POLICY_ITERATION, LINEAR_PROGRAMMING, SOUND, OPTIMISTIC;
 		public String fullName()
 		{
 			switch (this) {
@@ -203,6 +203,10 @@ public class ProbModelChecker extends NonProbModelChecker
 				setMDPSolnMethod(MDPSolnMethod.MODIFIED_POLICY_ITERATION);
 			} else if (s.equals("Linear programming")) {
 				setMDPSolnMethod(MDPSolnMethod.LINEAR_PROGRAMMING);
+			} else if (s.equals("Sound")) {
+				setMDPSolnMethod(MDPSolnMethod.SOUND);
+			} else if (s.equals("Optimistic")) {
+				setMDPSolnMethod(MDPSolnMethod.OPTIMISTIC);
 			} else {
 				throw new PrismNotSupportedException("Explicit engine does not support MDP solution method \"" + s + "\"");
 			}
