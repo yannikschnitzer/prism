@@ -884,7 +884,7 @@ public class MDPModelChecker extends ProbModelChecker
 		
 		
 		// Temporary code
-		boolean soundIter = true;
+		boolean soundIter = false;
 		if (soundIter) {
 			return doSoundValueIteration(mdp, yes, unknown, min);
 		}
@@ -893,16 +893,16 @@ public class MDPModelChecker extends ProbModelChecker
 		boolean testMyGauss = false;
 		if (testMyGauss) {
 			double v[] = new double[n];
-			gaussSeidelWithError(mdp, yes, unknown, min, termCritParam, v);
+			gaussSeidelWithError(mdp, yes, unknown, min, termCritParam, v, strat);
 			ModelCheckerResult res = new ModelCheckerResult();
 			res.soln = v;
 			return res;
 		}
-		
+				
 		// Temporary code
 		boolean optimistic = false;
 		if (optimistic) {
-			return doOptimisticValueIteration(mdp, yes, unknown, min);	
+			return doOptimisticValueIteration(mdp, yes, unknown, min, strat);	
 		}
 		
 		if (iterationsExport != null)
@@ -1001,12 +1001,8 @@ public class MDPModelChecker extends ProbModelChecker
 		double[] currX = new double[n], currY = new double[n];
 		double[] tempX, tempY;
 		
-		//temp.
-		boolean cheat = false;
-		if (cheat) {
-			unknown.set(0, false);
-			unknown.set(2, false);
-		}
+		// TODO: Ensure that prob0 and prob1 states have been calculated
+		// find the check that exists for Interval Iteration
 		
 		for(int s = 0; s < n; s++) {
 			// PRINT THAT BOI
@@ -1095,6 +1091,7 @@ public class MDPModelChecker extends ProbModelChecker
 			// mainLog.println("D: " + d);
 			// mainLog.println("QMAX: " + qmax);
 			
+			// TODO: Change this to Gauss-Seidel
 			// swap
 			tempX = currX; tempY = currY;
 			currX = lastX; currY = lastY;
@@ -1124,9 +1121,8 @@ public class MDPModelChecker extends ProbModelChecker
 		return res;
 	}
 	
-	protected void gaussSeidelWithError(MDP mdp, BitSet yes, BitSet unknown, boolean min, double error, double v[]) {
+	protected void gaussSeidelWithError(MDP mdp, BitSet yes, BitSet unknown, boolean min, double error, double v[], int strat[]) {
 		mainLog.println("Starting Gauss-Seidel with error: " + error);
-		
 		int n = mdp.getNumStates();
 		for(int s=0; s<n; s++) {
 			v[s] = yes.get(s) ? 1 : 0;
@@ -1147,7 +1143,13 @@ public class MDPModelChecker extends ProbModelChecker
 							double p = e.getValue();
 							sum += p * v[t];
 						}
-						candidate = min ? Double.min(candidate,sum) : Double.max(candidate,sum);
+						// candidate = min ? Double.min(candidate,sum) : Double.max(candidate,sum);
+						if(min ? sum < candidate : sum > candidate) {
+							candidate = sum;
+							if (strat != null) {
+								strat[s] = i;
+							}
+						}
 					}
 					done = candidate - v[s] > error ? false : done;
 					v[s] = candidate;
@@ -1156,14 +1158,14 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 	}
 	
-	protected ModelCheckerResult doOptimisticValueIteration(MDP mdp, BitSet yes, BitSet unknown, boolean min) {
-		// TODO: Find a good example to test this on
-		// ie. the one in paper!
+	protected ModelCheckerResult doOptimisticValueIteration(MDP mdp, BitSet yes, BitSet unknown, boolean min, int strat[]) {
 		double eps   = termCritParam;
 		double error = eps;
 		int n = mdp.getNumStates();
-		double v[] = new double[n];
-		double u[] = new double[n];
+		
+		double v[]    = new double[n];
+		double u[]    = new double[n];
+		double temp[] = new double[n];
 		
 		Iterator<Entry<Integer,Double>> iter;
 		Entry<Integer,Double> e;
@@ -1171,7 +1173,7 @@ public class MDPModelChecker extends ProbModelChecker
 		boolean done = false;
 		while(!done) {
 			// perform Gauss-Seidel Value Iteration to give v
-			gaussSeidelWithError(mdp, yes, unknown, min, error, v);
+			gaussSeidelWithError(mdp, yes, unknown, min, error, v, strat);
 			// vector u[s] = v[s] * (1 + error) for all s ∈ S?
 			for(int s=0; s<n; s++) {
 				// mainLog.println("v[" + s + "] = " + v[s]);
@@ -1180,11 +1182,15 @@ public class MDPModelChecker extends ProbModelChecker
 			}
 			while(true) {
 				error = 0;
+				// TODO: consider edge case where S? is empty
+				boolean anyUnknown = false;
+				
 				boolean up = true, down = true, cross = false;
 				boolean inEps = true;
 				// foreach s ∈ S?
 				for(int s=0; s<n; s++) {
 					if(unknown.get(s)) {
+						anyUnknown = true;
 						double vnew = min ? 1 : 0;
 						double unew = min ? 1 : 0;
 						for(int i = 0 ; i < mdp.getNumChoices(s); i++) {
@@ -1200,26 +1206,52 @@ public class MDPModelChecker extends ProbModelChecker
 							vnew = min ? Double.min(vnew, vcand) : Double.max(vnew, vcand);
 							unew = min ? Double.min(unew, ucand) : Double.max(unew, ucand);
 						}
-						if (vnew > 0)
-							error = Double.max(error, (vnew - v[s]) / vnew);
-						
+						if (vnew > 0) {
+							// TODO: Think about this bit
+							error = Double.min(error, (vnew - v[s]) / vnew);
+							// error = Double.max(error, (vnew - v[s]) / vnew);
+							/* 
+							setting this to min rather than max resolves
+							non-termination issue in Bad Test (1) 
+							is unusual case, as test appears to do
+							preprocessing 
+							*/
+							
+						}
+							
 						// if unew == u[s] then we run into termination trouble
 						// if we keep up as false
+						// (likely caused by lack of preprocessing)
 						if(unew <= u[s]) // if(unew < u[s])
 							up = false;
-						if(unew > u[s])
+						if(unew > u[s]) {
+							mainLog.println("-----------");
+							mainLog.println("u[" + s + "] :" + u[s]);
+							mainLog.println("unew : " + unew);
 							down = false;
+						}
 						if(unew < vnew)
 							cross = true;
 						v[s] = vnew;
 						u[s] = unew;
-						inEps = (u[s] - v[s]) > 2*eps * v[s] ? false : inEps;
+						inEps &= (u[s] - v[s]) <= 2*eps * v[s];
 					}
 				}
-				// mainLog.println("inEps: " + inEps);
+				
+				if(!anyUnknown) {
+					done = true;
+					break;
+				}
+				
+				// optimisation: if u moved up for all s ∈ S?
+				// then it is in fact a lower bound
+				if (up) {
+					temp = v;
+					v = u;
+					u = temp;
+				}
+				
 				if (up || cross) {
-					// mainLog.println("Up: " + up);
-					// mainLog.println("Cross: " + cross);
 					break;
 				}
 				
@@ -1230,11 +1262,13 @@ public class MDPModelChecker extends ProbModelChecker
 			}
 			error = error / 2;
 		}
+		
 		ModelCheckerResult res = new ModelCheckerResult();
 		res.soln = u;
 		for(int s=0; s<n; s++) {
 			res.soln[s] += v[s];
 			res.soln[s] /= 2;
+			// TODO: What to do with strat?
 		}
 		return res;
 	}

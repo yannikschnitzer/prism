@@ -53,6 +53,9 @@ import prism.PrismUtils;
 import acceptance.AcceptanceReach;
 import acceptance.AcceptanceType;
 import automata.DA;
+import cern.colt.matrix.DoubleFactory2D;
+import cern.colt.matrix.DoubleMatrix2D;
+import cern.colt.matrix.linalg.LUDecomposition;
 import common.IntSet;
 import common.StopWatch;
 import common.IterableBitSet;
@@ -695,73 +698,20 @@ public class DTMCModelChecker extends ProbModelChecker
 		boolean sound = false;
 		if (sound) {
 			return doSoundValueIteration(dtmc, yes, no);
-			/*
-			double[] lastX = new double[n], lastY = new double[n];
-			double[] currX = new double[n], currY = new double[n];
-			double[] tempX = new double[n], tempY = new double[n];
-			boolean[] unknown = new boolean[n];
-			for(int s = 0; s < n; s++) {
-				unknown[s] = ! (yes.get(s) || no.get(s));
-				lastX[s] = yes.get(s) ? 1 : 0;
-				lastY[s] = unknown[s] ? 1 : 0;
-			}
-			double l = Double.NEGATIVE_INFINITY, u = Double.POSITIVE_INFINITY;
-			double eps = 1.0E-5;
-			
-			boolean done = false;
-			while(!done) {
-				done = true;
-				boolean changeBounds = true; 			// all s ∈ S? (y[s] < 1)
-				double cand; 							// x[s] / (1 - y[s])
-				double qmin = Double.POSITIVE_INFINITY; // min s ∈ S? (x[s] / (1 - y[s]))
-				double qmax = Double.NEGATIVE_INFINITY; // max s ∈ S? (x[s] / (1 - y[s]))
-				for(int s = 0; s < n; s++) {
-					currX[s] = yes.get(s) ? 1.0 : 0.0;  // f(x)[S0] = 0, f(x)[G]  = 1
-					currY[s] = 0.0;                     // h(y)[S0] = 0, h(y)[G]  = 0
-					if(unknown[s]) {
-						Iterator<Map.Entry<Integer, Double>> iter = dtmc.getTransitionsIterator(s);
-						while(iter.hasNext()) {
-							Map.Entry<Integer, Double> e = iter.next();
-							double p = e.getValue();
-							int    t = e.getKey();
-							currX[s] += p * lastX[t]; // f(x)[s]  = sum ( P(s,t) * x[t] ) for all s in S?
-							currY[s] += p * lastY[t]; // h(y)[s]  = sum ( P(s,t) * y[t] ) for all s in S?
-						}
-						done = currY[s] * (u - l) > 2 * eps ? false : done;
-						changeBounds = currY[s] >= 1.0 ? false : changeBounds;
-						cand = currX[s] / (1 - currY[s]);
-						qmin = Double.min(qmin, cand);
-						qmax = Double.max(qmax, cand);
-					}	
-				}
-				// swap
-				tempX = currX; tempY = currY;
-				currX = lastX; currY = lastY;
-				lastX = tempX; lastY = tempY;
-							
-				if(changeBounds) {
-					l = Double.max(l , qmin);
-					u = Double.min(u , qmax);
-					mainLog.println("L : " + l + "\nU :" + u);
-				}
-			}
-			
-			ModelCheckerResult resNew = new ModelCheckerResult();
-			resNew.soln = new double[n];
-			for(int s = 0; s < n; s++) {
-				resNew.soln[s] = currX[s] + currY[s] * ((l + u) / 2.0);
-			}
-			return resNew;
-			*/
 		}
 		
-		boolean optimistic = true;
+		boolean optimistic = false;
 		if(optimistic) {
 			BitSet unknown = new BitSet();
 			unknown.set(0,n);
 			unknown.andNot(yes);
 			unknown.andNot(no);
 			return doOptimisticValueIteration(dtmc, yes, unknown);
+		}
+		
+		boolean lu = true;
+		if(lu) {
+			return doLowerUpper(dtmc, yes, no, known, init);
 		}
 		
 		// Compute probabilities
@@ -914,10 +864,13 @@ public class DTMCModelChecker extends ProbModelChecker
 			}
 			while(true) {
 				error = 0;
+				boolean anyUnknown = false;
+				
 				boolean up = true, down = true, cross = false;
 				boolean inEps = true;
 				for(int s=0; s<n;s++) {
 					if(unknown.get(s)) {
+						anyUnknown = true;
 						double vnew = 0.0;
 						double unew = 0.0;
 						for(iter = dtmc.getTransitionsIterator(s); iter.hasNext(); ) {
@@ -940,6 +893,11 @@ public class DTMCModelChecker extends ProbModelChecker
 						inEps &= (u[s] - v[s]) <= 2*eps * v[s];
 					}
 				}
+				if(!anyUnknown) {
+					done = true;
+					break;
+				}
+				
 				if (up || cross)
 					break;
 				if (down && inEps) {
@@ -958,6 +916,81 @@ public class DTMCModelChecker extends ProbModelChecker
 		return res;
 	}
 	
+	protected ModelCheckerResult doLowerUpper(DTMC dtmc, BitSet yes, BitSet no, BitSet known, double[] init) {
+		int n = dtmc.getNumStates();
+		double[][] a = new double[n][n];
+		double[][] b = new double[n][1];
+		
+		// print that boi
+		for(int s=0; s<n; s++) {
+			if(yes.get(s)) {
+				mainLog.println("YES");
+			}else if(no.get(s)) {
+				mainLog.println("NO");
+			}else {
+				mainLog.println("UNK");
+			}
+			Iterator<Entry<Integer,Double>> iter = dtmc.getTransitionsIterator(s);
+			while(iter.hasNext()){
+				Entry<Integer,Double> e = iter.next();
+				int    t = e.getKey();
+				double p = e.getValue();
+				mainLog.println(s + " --> " + t + " : " + p);
+			}
+		}
+		
+		for(int i=0; i<n; i++)
+			for(int j=0; j<n; j++)
+				a[i][j] = 0;
+		
+		// TODO: Debug the construction of this array
+		for (int s=0; s<n; s++) {
+			if(yes.get(s)) {
+				a[s][s] = 1;
+				b[s][0] = 1;
+			}else if (no.get(s)) {
+				a[s][s] = 1;
+				b[s][0] = 0;
+			}else if (known != null && known.get(s)) {
+				a[s][s] = 1;
+				b[s][0] = init[s];
+			}else {
+				Iterator<Entry<Integer,Double>> iter = dtmc.getTransitionsIterator(s);
+				while(iter.hasNext()) {
+					Entry<Integer,Double> e = iter.next();
+					int t = e.getKey();
+					double p = e.getValue();
+					a[s][t] = p;
+				}
+				a[s][s] -= 1;
+				b[s][0] = 0;
+			}
+		}
+		
+		mainLog.println("Creating matrices");
+		
+		DoubleFactory2D f    = DoubleFactory2D.sparse;
+		DoubleMatrix2D  A    = f.make(a);
+		
+		mainLog.println("A rows: " + A.rows());
+		mainLog.println("A cols: " + A.columns());
+		
+		DoubleMatrix2D  B    = f.make(b);
+		
+		mainLog.println("B rows: " + B.rows());
+		mainLog.println("B cols: " + B.columns());
+		
+		LUDecomposition lu   = new LUDecomposition(A);
+		DoubleMatrix2D  soln = lu.solve(B);
+		
+		ModelCheckerResult res = new ModelCheckerResult();
+		res.soln = new double[n];
+		for(int i = 0; i<n; i++) {
+			res.soln[i] = soln.get(i, 0);
+			mainLog.println("(" + i + ") : " + res.soln[i]);
+		}
+		return res;
+	}
 	
 	/**
 	 * Prob0 precomputation algorithm (using predecessor relation),
