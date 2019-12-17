@@ -939,6 +939,8 @@ public class DTMCModelChecker extends ProbModelChecker
 			}
 		}
 		
+		// TODO: Can optimise if we work from the DoubleMatrix
+		//       from the beginning
 		for(int i=0; i<n; i++)
 			for(int j=0; j<n; j++)
 				a[i][j] = 0;
@@ -969,13 +971,13 @@ public class DTMCModelChecker extends ProbModelChecker
 		
 		mainLog.println("Creating matrices");
 		
-		DoubleFactory2D f    = DoubleFactory2D.sparse;
-		DoubleMatrix2D  A    = f.make(a);
+		DoubleFactory2D f = DoubleFactory2D.sparse;
+		DoubleMatrix2D  A = f.make(a);
 		
 		mainLog.println("A rows: " + A.rows());
 		mainLog.println("A cols: " + A.columns());
 		
-		DoubleMatrix2D  B    = f.make(b);
+		DoubleMatrix2D  B = f.make(b);
 		
 		mainLog.println("B rows: " + B.rows());
 		mainLog.println("B cols: " + B.columns());

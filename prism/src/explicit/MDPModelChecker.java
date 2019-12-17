@@ -55,6 +55,9 @@ import strat.MDStrategyArray;
 import acceptance.AcceptanceReach;
 import acceptance.AcceptanceType;
 import automata.DA;
+import cern.colt.matrix.DoubleFactory2D;
+import cern.colt.matrix.DoubleMatrix2D;
+import cern.colt.matrix.linalg.LUDecomposition;
 import common.IntSet;
 import common.IterableBitSet;
 import explicit.modelviews.EquivalenceRelationInteger;
@@ -868,20 +871,6 @@ public class MDPModelChecker extends ProbModelChecker
 		unknown.andNot(no);
 		if (known != null)
 			unknown.andNot(known);
-
-		// Temporary code
-		for(int s=0; s<n; s++) {
-			if(yes.get(s)) {
-				mainLog.println("YES: " + s);
-			}
-			if(no.get(s)) {
-				mainLog.println("NO: " + s);
-			}
-			if(unknown.get(s)) {
-				mainLog.println("UNK : " + s);
-			}
-		}
-		
 		
 		// Temporary code
 		boolean soundIter = false;
@@ -903,6 +892,12 @@ public class MDPModelChecker extends ProbModelChecker
 		boolean optimistic = false;
 		if (optimistic) {
 			return doOptimisticValueIteration(mdp, yes, unknown, min, strat);	
+		}
+		
+		// Temporary code
+		boolean lowerUpper = true;
+		if (lowerUpper) {
+			return doLowerUpper(mdp, yes, no, unknown, known, init, min, strat);
 		}
 		
 		if (iterationsExport != null)
@@ -1269,6 +1264,117 @@ public class MDPModelChecker extends ProbModelChecker
 			res.soln[s] += v[s];
 			res.soln[s] /= 2;
 			// TODO: What to do with strat?
+		}
+		return res;
+	}
+	
+	
+	protected ModelCheckerResult doLowerUpper(MDP mdp, BitSet yes, BitSet no, BitSet unknown, BitSet known, double[] init, boolean min, int[] strat) {
+		
+		int n = mdp.getNumStates();
+		
+		// TODO: strat can be null, resolve this
+		if (strat == null) {
+			strat = new int[n];
+			for(int s = 0; s < n; s++)
+				strat[s] = 0;
+		}else {
+		// initialise strategy for unknown states
+			for(int s = 0; s < n; s++) {
+				if(unknown.get(s))
+					strat[s] = 0;
+			}
+		}
+		DoubleMatrix2D soln = null;
+		
+		boolean done = false;
+		while(!done) {
+			// compute reachability for DTMC
+			double[][] a = new double[n][n];
+			double[][] b = new double[n][1];
+			
+			for(int i = 0; i < n; i++)
+				for(int j = 0; j < n; j++)
+					a[i][j] = 0;
+			
+			for(int s = 0; s < n; s++) {
+				if(yes.get(s)) {
+					a[s][s] = 1;
+					b[s][0] = 1;
+				}else if(no.get(s)) {
+					a[s][s] = 1;
+					b[s][0] = 0;
+				}else if(known != null && known.get(s)) {
+					a[s][s] = 1;
+					b[s][0] = init[s];
+				}else {
+					Iterator<Entry<Integer,Double>> iter = mdp.getTransitionsIterator(s, strat[s]);
+					while(iter.hasNext()) {
+						Entry<Integer,Double> e = iter.next();
+						int    t = e.getKey();
+						double p = e.getValue();
+						a[s][t] = p;
+					}
+					a[s][s] -= 1;
+					b[s][0] = 0;
+				}
+			}
+			
+			mainLog.println("Creating matrices");
+			
+			DoubleFactory2D f = DoubleFactory2D.sparse;
+			DoubleMatrix2D  A = f.make(a);
+			
+			mainLog.println("A rows: " + A.rows());
+			mainLog.println("A cols: " + A.columns());
+			
+			DoubleMatrix2D  B = f.make(b);
+			
+			mainLog.println("B rows: " + B.rows());
+			mainLog.println("B cols: " + B.columns());
+			
+			LUDecomposition lu   = new LUDecomposition(A);
+			// TODO: On Bad Test run configuration
+			// have matrix is singular exception
+			// ( prism-tests/bugfixes/advgenexplicit.nm prism-tests/bugfixes/advgenexplicit.nm.props -exportadv 
+			//   prism-tests/bugfixes/tmp.advgenexplicit.nm.props.adv.tra -nopre -ex -testall )
+			
+			// examine other bad cases also, to see what's going on here
+			soln = lu.solve(B);
+			
+			// Improve adversary in each state
+			done = true;
+			for(int s = 0; s < n; s++) {
+				if(unknown.get(s)) {
+					// σ'(s) = opt { Σ μ(t) * Prob(σ , t, F a)  |  (α,μ) ∈ Steps(s) }
+					int cand = 0;
+					double v = min ? 1 : 0;
+					for(int i = 0; i < mdp.getNumChoices(s); i++) {
+						double sum = 0;
+						Iterator<Entry<Integer,Double>> iter = mdp.getTransitionsIterator(s, i);
+						while(iter.hasNext()) {
+							Entry<Integer,Double> e = iter.next();
+							int    t = e.getKey();
+							double p = e.getValue();
+							sum += p * soln.get(t, 0);
+						}
+						if(min ? sum < v : sum > v) {
+							cand = i;
+							v = sum;
+						}
+					}
+					done &= strat[s] == cand;
+					strat[s] = cand;
+				}
+			}
+		
+		}
+		
+		ModelCheckerResult res = new ModelCheckerResult();
+		res.soln = new double[n];
+		for(int i = 0; i < n; i++) {
+			res.soln[i] = soln.get(i, 0);
+			mainLog.println("(" + i + ") : " + res.soln[i]);
 		}
 		return res;
 	}
