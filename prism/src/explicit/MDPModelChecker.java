@@ -873,9 +873,9 @@ public class MDPModelChecker extends ProbModelChecker
 			unknown.andNot(known);
 		
 		// Temporary code
-		boolean soundIter = false;
-		if (soundIter) {
-			return doSoundValueIteration(mdp, yes, unknown, min);
+		boolean sound = false;
+		if (sound) {
+			return doSoundValueIteration(mdp, yes, unknown, strat, min);
 		}
 		
 		// Temporary code
@@ -951,7 +951,8 @@ public class MDPModelChecker extends ProbModelChecker
 	}
 	
 	protected double decisionValue(MDP mdp, boolean min, double x[], double y[], int s, int a) {
-		double d = min ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+		//double d = min ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+		double d = Double.NEGATIVE_INFINITY;
 		Iterator<Entry<Integer,Double>> iter;
 		Entry<Integer,Double> e;
 		double dx, dy, p;
@@ -979,7 +980,11 @@ public class MDPModelChecker extends ProbModelChecker
 					dx += p * y[t];
 				}
 				
-				if(min ? dy < 0 : dy > 0) { // TODO: Look into this line
+				mainLog.println("DY: " + dy);
+				mainLog.println("DX: " + dx);
+				
+				if (dy > 0) {
+				// if(min ? dy < 0 : dy > 0) { // TODO: Look into this line
 					// d = min ? Double.min(d , dx/dy ) : Double.max(d, dx/dy);
 					d = Double.max(d, dx / dy);
 				}
@@ -989,17 +994,28 @@ public class MDPModelChecker extends ProbModelChecker
 		return d;
 	}
 	
-	protected ModelCheckerResult doSoundValueIteration(MDP mdp, BitSet yes, BitSet unknown, boolean min) {
+	protected ModelCheckerResult doSoundValueIteration(MDP mdp, BitSet yes, BitSet unknown, int strat[], boolean min) throws PrismException{
+		
+		// TODO: Presently, BadTest (2) is giving a v v incorrect answer
+		//       Lower bound l converges bang on the exact answer (0.08553841555933606)
+		//       Upper bound u becomes something crazy (219.39100346021067)
+		// is quite possibly error in decisionValue method??
+		// have read of paper to see what the hip hap is
+		
+		// Ensure that prob0 and prob1 states have been calculated
+		if (!(precomp && prob0 && prob1)) {
+			throw new PrismNotSupportedException("Precomputations (Prob0 & Prob1) must be enabled for Sound Value Iteration");
+		}
+		
 		int n = mdp.getNumStates();
 		
 		double[] lastX = new double[n], lastY = new double[n];
 		double[] currX = new double[n], currY = new double[n];
 		double[] tempX, tempY;
 		
-		// TODO: Ensure that prob0 and prob1 states have been calculated
-		// find the check that exists for Interval Iteration
 		
 		for(int s = 0; s < n; s++) {
+			/*
 			// PRINT THAT BOI
 			mainLog.println("------ State: " + s);
 			for(int i = 0; i < mdp.getNumChoices(s); i++) {
@@ -1012,18 +1028,22 @@ public class MDPModelChecker extends ProbModelChecker
 					mainLog.println(s + " --> " + t + " : " + p);
 				}
 			}
+			*/
 			
 			lastX[s] = yes.get(s)     ? 1 : 0;
 			lastY[s] = unknown.get(s) ? 1 : 0;
 			
+			/*
 			if(yes.get(s)) {
 				mainLog.println("YES: " + s);
 			}
 			if(unknown.get(s)) {
 				mainLog.println("UNKNOWN " + s);
 			}
+			*/
 			
 		}
+		
 		
 		double l = Double.NEGATIVE_INFINITY, u = Double.POSITIVE_INFINITY;
 		
@@ -1047,11 +1067,18 @@ public class MDPModelChecker extends ProbModelChecker
 				currX[s] = yes.get(s) ? 1.0 : 0.0;
 				currY[s] = 0.0;
 				if(unknown.get(s)) {
-					action = findAction(mdp, min, lastX, lastY, s, u);
-					mainLog.println("State " + s + " has action " + action);
-					
+					action = findAction(mdp, min, lastX, lastY, s, u);			
+					// update strat
+					if(strat != null)
+						strat[s] = action;
 					cand = decisionValue(mdp, min, lastX, lastY, s, action);
-					d = min ? Double.min(d, cand) : Double.max(d, cand); 
+					
+					mainLog.println("CAND: " + cand);
+					
+					// TODO: Consider this line here...
+					// d = min ? Double.min(d, cand) : Double.max(d, cand); 
+					d = Double.max(d, cand);
+					
 					// update x[s] and y[s]
 					Iterator<Entry<Integer,Double>> iter = mdp.getTransitionsIterator(s, action);
 					while(iter.hasNext()) {
@@ -1083,7 +1110,7 @@ public class MDPModelChecker extends ProbModelChecker
 				while(true);
 			}
 			
-			// mainLog.println("D: " + d);
+			mainLog.println("D: " + d);
 			// mainLog.println("QMAX: " + qmax);
 			
 			// TODO: Change this to Gauss-Seidel

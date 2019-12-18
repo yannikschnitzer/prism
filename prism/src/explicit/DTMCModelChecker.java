@@ -753,7 +753,13 @@ public class DTMCModelChecker extends ProbModelChecker
 	}
 
 
-	protected ModelCheckerResult doSoundValueIteration(DTMC dtmc, BitSet yes, BitSet no) {
+	protected ModelCheckerResult doSoundValueIteration(DTMC dtmc, BitSet yes, BitSet no) throws PrismException{
+		
+		// Ensure that prob0 and prob1 states have been calculated	
+		if (!(precomp && prob0 && prob1)) {
+			throw new PrismNotSupportedException("Precomputations (Prob0 & Prob1) must be enabled for Sound Value Iteration");
+		}
+		
 		int n = dtmc.getNumStates();
 		
 		double[] lastX = new double[n], lastY = new double[n];
