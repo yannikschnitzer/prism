@@ -695,7 +695,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		boolean termCritAbsolute = termCrit == TermCrit.ABSOLUTE;
 
 		// Implementation of Sound Value Iteration for Markov Chains
-		boolean sound = false;
+		boolean sound = true;
 		if (sound) {
 			return doSoundValueIteration(dtmc, yes, no);
 		}
@@ -709,7 +709,7 @@ public class DTMCModelChecker extends ProbModelChecker
 			return doOptimisticValueIteration(dtmc, yes, unknown);
 		}
 		
-		boolean lu = true;
+		boolean lu = false;
 		if(lu) {
 			return doLowerUpper(dtmc, yes, no, known, init);
 		}
@@ -766,15 +766,28 @@ public class DTMCModelChecker extends ProbModelChecker
 		double[] currX = new double[n], currY = new double[n];
 		double[] tempX = new double[n], tempY = new double[n];
 		boolean[] unknown = new boolean[n];
+		boolean anyUnknown = false;
 		for(int s = 0; s < n; s++) {
 			unknown[s] = ! (yes.get(s) || no.get(s));
+			if(unknown[s]) {
+				mainLog.println("UNKNOWN S " + s);
+			}
+			anyUnknown = anyUnknown || unknown[s];
 			lastX[s] = yes.get(s) ? 1 : 0;
 			lastY[s] = unknown[s] ? 1 : 0;
 		}
 		double l = Double.NEGATIVE_INFINITY, u = Double.POSITIVE_INFINITY;
 		double eps = termCritParam;
 		
+		// I assume issue might be the lack of unknown states...
+		// ... appears to be the case
+		if(anyUnknown) { 
+			mainLog.println("ANY UNKNOWN");
+		}else {
+			mainLog.println("NONE UNKNOWN");
+		}
 		boolean done = false;
+		
 		while(!done) {
 			done = true;
 			boolean changeBounds = true; 			// all s ∈ S? (y[s] < 1)
@@ -785,6 +798,7 @@ public class DTMCModelChecker extends ProbModelChecker
 				currX[s] = yes.get(s) ? 1.0 : 0.0;  // f(x)[S0] = 0, f(x)[G]  = 1
 				currY[s] = 0.0;                     // h(y)[S0] = 0, h(y)[G]  = 0
 				if(unknown[s]) {
+					mainLog.println("UNKNOWN BOI");
 					Iterator<Map.Entry<Integer, Double>> iter = dtmc.getTransitionsIterator(s);
 					while(iter.hasNext()) {
 						Map.Entry<Integer, Double> e = iter.next();
@@ -811,12 +825,21 @@ public class DTMCModelChecker extends ProbModelChecker
 				mainLog.println("L : " + l + "\nU :" + u);
 			}
 		}
-		
+
+		// Must figure out how to solve issue of
+		// zero unknown states...
 		ModelCheckerResult resNew = new ModelCheckerResult();
 		resNew.soln = new double[n];
 		for(int s = 0; s < n; s++) {
-			resNew.soln[s] = currX[s] + currY[s] * ((l + u) / 2.0);
+			if(yes.get(s)) {
+				resNew.soln[s] = 1.0;
+			}else if(no.get(s)) {
+				resNew.soln[s] = 0.0;
+			}else {
+				resNew.soln[s] = currX[s] + currY[s] * ((l + u) / 2.0);
+			}
 		}
+		
 		return resNew;
 	}
 	

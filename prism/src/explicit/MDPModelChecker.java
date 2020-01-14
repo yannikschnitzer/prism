@@ -873,7 +873,7 @@ public class MDPModelChecker extends ProbModelChecker
 			unknown.andNot(known);
 		
 		// Temporary code
-		boolean sound = false;
+		boolean sound = true;
 		if (sound) {
 			return doSoundValueIteration(mdp, yes, unknown, strat, min);
 		}
@@ -895,7 +895,7 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 		
 		// Temporary code
-		boolean lowerUpper = true;
+		boolean lowerUpper = false;
 		if (lowerUpper) {
 			return doLowerUpper(mdp, yes, no, unknown, known, init, min, strat);
 		}
