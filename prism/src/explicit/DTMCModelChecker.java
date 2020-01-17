@@ -695,7 +695,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		boolean termCritAbsolute = termCrit == TermCrit.ABSOLUTE;
 
 		// Implementation of Sound Value Iteration for Markov Chains
-		boolean sound = true;
+		boolean sound = false;
 		if (sound) {
 			return doSoundValueIteration(dtmc, yes, no);
 		}
@@ -709,7 +709,7 @@ public class DTMCModelChecker extends ProbModelChecker
 			return doOptimisticValueIteration(dtmc, yes, unknown);
 		}
 		
-		boolean lu = false;
+		boolean lu = true;
 		if(lu) {
 			return doLowerUpper(dtmc, yes, no, known, init);
 		}
@@ -945,82 +945,64 @@ public class DTMCModelChecker extends ProbModelChecker
 		return res;
 	}
 	
-	protected ModelCheckerResult doLowerUpper(DTMC dtmc, BitSet yes, BitSet no, BitSet known, double[] init) {
-		int n = dtmc.getNumStates();
-		double[][] a = new double[n][n];
-		double[][] b = new double[n][1];
-		
-		// print that boi
-		for(int s=0; s<n; s++) {
-			if(yes.get(s)) {
-				mainLog.println("YES");
-			}else if(no.get(s)) {
-				mainLog.println("NO");
-			}else {
-				mainLog.println("UNK");
-			}
-			Iterator<Entry<Integer,Double>> iter = dtmc.getTransitionsIterator(s);
-			while(iter.hasNext()){
-				Entry<Integer,Double> e = iter.next();
-				int    t = e.getKey();
-				double p = e.getValue();
-				mainLog.println(s + " --> " + t + " : " + p);
-			}
+	protected ModelCheckerResult doLowerUpper(DTMC dtmc, BitSet yes, BitSet no, BitSet known, double[] init) throws PrismException{
+
+		// Ensure that prob0 and prob1 states have been calculated
+		if (!(precomp && prob0 && prob1)) {
+			throw new PrismNotSupportedException("Precomputations (Prob0 & Prob1) must be enabled for Sound Value Iteration");
 		}
-		
-		// TODO: Can optimise if we work from the DoubleMatrix
-		//       from the beginning
-		for(int i=0; i<n; i++)
-			for(int j=0; j<n; j++)
-				a[i][j] = 0;
-		
-		// TODO: Debug the construction of this array
-		for (int s=0; s<n; s++) {
-			if(yes.get(s)) {
-				a[s][s] = 1;
-				b[s][0] = 1;
-			}else if (no.get(s)) {
-				a[s][s] = 1;
-				b[s][0] = 0;
-			}else if (known != null && known.get(s)) {
-				a[s][s] = 1;
-				b[s][0] = init[s];
-			}else {
-				Iterator<Entry<Integer,Double>> iter = dtmc.getTransitionsIterator(s);
-				while(iter.hasNext()) {
-					Entry<Integer,Double> e = iter.next();
-					int t = e.getKey();
-					double p = e.getValue();
-					a[s][t] = p;
+
+		try {
+			int n = dtmc.getNumStates();
+			double[][] a = new double[n][n];
+			double[][] b = new double[n][1];
+			
+			// TODO: Can optimise if we work from the DoubleMatrix
+			//       from the beginning
+			for(int i=0; i<n; i++)
+				for(int j=0; j<n; j++)
+					a[i][j] = 0;
+			
+			for (int s=0; s<n; s++) {
+				if(yes.get(s)) {
+					a[s][s] = 1;
+					b[s][0] = 1;
+				}else if (no.get(s)) {
+					a[s][s] = 1;
+					b[s][0] = 0;
+				}else if (known != null && known.get(s)) {
+					a[s][s] = 1;
+					b[s][0] = init[s];
+				}else {
+					Iterator<Entry<Integer,Double>> iter = dtmc.getTransitionsIterator(s);
+					while(iter.hasNext()) {
+						Entry<Integer,Double> e = iter.next();
+						int t = e.getKey();
+						double p = e.getValue();
+						a[s][t] = p;
+					}
+					a[s][s] -= 1;
+					b[s][0] = 0;
 				}
-				a[s][s] -= 1;
-				b[s][0] = 0;
 			}
+			
+			DoubleFactory2D f    = DoubleFactory2D.sparse;
+			DoubleMatrix2D  A    = f.make(a);
+			DoubleMatrix2D  B    = f.make(b);
+			LUDecomposition lu   = new LUDecomposition(A);
+			DoubleMatrix2D  soln = lu.solve(B);
+			
+			ModelCheckerResult res = new ModelCheckerResult();
+			res.soln = new double[n];
+			for(int i = 0; i<n; i++) {
+				res.soln[i] = soln.get(i, 0);
+			}
+			return res;
+		
+		} catch (OutOfMemoryError e) {
+			throw new PrismException("Insufficient memory");
 		}
 		
-		mainLog.println("Creating matrices");
-		
-		DoubleFactory2D f = DoubleFactory2D.sparse;
-		DoubleMatrix2D  A = f.make(a);
-		
-		mainLog.println("A rows: " + A.rows());
-		mainLog.println("A cols: " + A.columns());
-		
-		DoubleMatrix2D  B = f.make(b);
-		
-		mainLog.println("B rows: " + B.rows());
-		mainLog.println("B cols: " + B.columns());
-		
-		LUDecomposition lu   = new LUDecomposition(A);
-		DoubleMatrix2D  soln = lu.solve(B);
-		
-		ModelCheckerResult res = new ModelCheckerResult();
-		res.soln = new double[n];
-		for(int i = 0; i<n; i++) {
-			res.soln[i] = soln.get(i, 0);
-			mainLog.println("(" + i + ") : " + res.soln[i]);
-		}
-		return res;
 	}
 	
 	/**

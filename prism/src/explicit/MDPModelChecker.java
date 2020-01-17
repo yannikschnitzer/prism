@@ -873,7 +873,7 @@ public class MDPModelChecker extends ProbModelChecker
 			unknown.andNot(known);
 		
 		// Temporary code
-		boolean sound = true;
+		boolean sound = false;
 		if (sound) {
 			return doSoundValueIteration(mdp, yes, unknown, strat, min);
 		}
@@ -895,7 +895,7 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 		
 		// Temporary code
-		boolean lowerUpper = false;
+		boolean lowerUpper = true;
 		if (lowerUpper) {
 			return doLowerUpper(mdp, yes, no, unknown, known, init, min, strat);
 		}
@@ -1296,11 +1296,18 @@ public class MDPModelChecker extends ProbModelChecker
 	}
 	
 	
-	protected ModelCheckerResult doLowerUpper(MDP mdp, BitSet yes, BitSet no, BitSet unknown, BitSet known, double[] init, boolean min, int[] strat) {
+	protected ModelCheckerResult doLowerUpper(MDP mdp, BitSet yes, BitSet no, BitSet unknown, BitSet known, double[] init, boolean min, int[] strat) throws PrismException{
+		
+		// Ensure that prob0 and prob1 states have been calculated
+		if (!(precomp && prob0 && prob1)) {
+			throw new PrismNotSupportedException("Precomputations (Prob0 & Prob1) must be enabled for Sound Value Iteration");
+		}
 		
 		int n = mdp.getNumStates();
 		
-		// TODO: strat can be null, resolve this
+		try {
+		
+		// strat can be null
 		if (strat == null) {
 			strat = new int[n];
 			for(int s = 0; s < n; s++)
@@ -1317,6 +1324,12 @@ public class MDPModelChecker extends ProbModelChecker
 		boolean done = false;
 		while(!done) {
 			// compute reachability for DTMC
+			
+			// Note: one test gives us a OutOfMemoryError exception here
+			// namely:
+			// bin/ngprism ../prism-tests/functionality/verify/ptas/reach/firewire_abst.nm
+			// ../prism-tests/functionality/verify/ptas/reach/firewire_abst.nm.props -const delay=30 -const L=2 -ptamethod digital -ex -testall
+			// TODO: Catch that
 			double[][] a = new double[n][n];
 			double[][] b = new double[n][1];
 			
@@ -1347,26 +1360,10 @@ public class MDPModelChecker extends ProbModelChecker
 				}
 			}
 			
-			mainLog.println("Creating matrices");
-			
-			DoubleFactory2D f = DoubleFactory2D.sparse;
-			DoubleMatrix2D  A = f.make(a);
-			
-			mainLog.println("A rows: " + A.rows());
-			mainLog.println("A cols: " + A.columns());
-			
-			DoubleMatrix2D  B = f.make(b);
-			
-			mainLog.println("B rows: " + B.rows());
-			mainLog.println("B cols: " + B.columns());
-			
-			LUDecomposition lu   = new LUDecomposition(A);
-			// TODO: On Bad Test run configuration
-			// have matrix is singular exception
-			// ( prism-tests/bugfixes/advgenexplicit.nm prism-tests/bugfixes/advgenexplicit.nm.props -exportadv 
-			//   prism-tests/bugfixes/tmp.advgenexplicit.nm.props.adv.tra -nopre -ex -testall )
-			
-			// examine other bad cases also, to see what's going on here
+			DoubleFactory2D f  = DoubleFactory2D.sparse;
+			DoubleMatrix2D  A  = f.make(a);			
+			DoubleMatrix2D  B  = f.make(b);
+			LUDecomposition lu = new LUDecomposition(A);
 			soln = lu.solve(B);
 			
 			// Improve adversary in each state
@@ -1401,9 +1398,13 @@ public class MDPModelChecker extends ProbModelChecker
 		res.soln = new double[n];
 		for(int i = 0; i < n; i++) {
 			res.soln[i] = soln.get(i, 0);
-			mainLog.println("(" + i + ") : " + res.soln[i]);
 		}
 		return res;
+		
+		} catch (OutOfMemoryError e) {
+			throw new PrismException("Insufficient memory");
+		}
+		
 	}
 	
 	/**
