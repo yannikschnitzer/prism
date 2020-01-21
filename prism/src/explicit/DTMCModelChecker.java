@@ -695,7 +695,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		boolean termCritAbsolute = termCrit == TermCrit.ABSOLUTE;
 
 		// Implementation of Sound Value Iteration for Markov Chains
-		boolean sound = false;
+		boolean sound = true;
 		if (sound) {
 			return doSoundValueIteration(dtmc, yes, no);
 		}
@@ -709,7 +709,7 @@ public class DTMCModelChecker extends ProbModelChecker
 			return doOptimisticValueIteration(dtmc, yes, unknown);
 		}
 		
-		boolean lu = true;
+		boolean lu = false;
 		if(lu) {
 			return doLowerUpper(dtmc, yes, no, known, init);
 		}
@@ -788,7 +788,11 @@ public class DTMCModelChecker extends ProbModelChecker
 		}
 		boolean done = false;
 		
-		while(!done) {
+		// problem looks to be early termination
+		// running for more iterations converges on right answer
+		// TODO: Check line of done!
+		
+		while(true) {
 			done = true;
 			boolean changeBounds = true; 			// all s ∈ S? (y[s] < 1)
 			double cand; 							// x[s] / (1 - y[s])
@@ -807,6 +811,8 @@ public class DTMCModelChecker extends ProbModelChecker
 						currX[s] += p * lastX[t]; // f(x)[s]  = sum ( P(s,t) * x[t] ) for all s in S?
 						currY[s] += p * lastY[t]; // h(y)[s]  = sum ( P(s,t) * y[t] ) for all s in S?
 					}
+					
+					// TRY MOVING CHECK FOR DONE
 					done = currY[s] * (u - l) > 2 * eps ? false : done;
 					changeBounds = currY[s] >= 1.0 ? false : changeBounds;
 					cand = currX[s] / (1 - currY[s]);
@@ -814,6 +820,12 @@ public class DTMCModelChecker extends ProbModelChecker
 					qmax = Double.max(qmax, cand);
 				}	
 			}
+			
+			done &= l != Double.NEGATIVE_INFINITY;
+			done &= u != Double.POSITIVE_INFINITY;
+			// the dangers of not using the Gauss-Seidel Method!!
+			if(done) break;
+			
 			// swap
 			tempX = currX; tempY = currY;
 			currX = lastX; currY = lastY;
@@ -881,6 +893,13 @@ public class DTMCModelChecker extends ProbModelChecker
 		
 		Iterator<Entry<Integer,Double>> iter;
 		Entry<Integer,Double> e;
+		
+		// TODO: the export vector appears to be given the first seven state probabilities
+		//       whereas testing expects the last seven
+		// see prism-tests/functionality/export/vector/tmp.exportvector.prism.2.props.txt
+		//       and
+		//     prism-tests/functionality/export/vector/exportvector.prism.3.props.txt
+		// after running run config. Bad Export
 		
 		boolean done = false;
 		while(!done) {

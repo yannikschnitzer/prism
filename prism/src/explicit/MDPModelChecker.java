@@ -895,7 +895,7 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 		
 		// Temporary code
-		boolean lowerUpper = true;
+		boolean lowerUpper = false;
 		if (lowerUpper) {
 			return doLowerUpper(mdp, yes, no, unknown, known, init, min, strat);
 		}
@@ -1046,6 +1046,10 @@ public class MDPModelChecker extends ProbModelChecker
 		
 		
 		double l = Double.NEGATIVE_INFINITY, u = Double.POSITIVE_INFINITY;
+		
+		// TODO: Re-work code to work with min == true
+		// Upon reading paper more closely, this looks
+		// to be an issue
 		
 		// EXPERIMENT LINE : to see what d does
 		//double d = min ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
