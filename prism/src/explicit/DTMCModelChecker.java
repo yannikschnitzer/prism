@@ -695,7 +695,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		boolean termCritAbsolute = termCrit == TermCrit.ABSOLUTE;
 
 		// Implementation of Sound Value Iteration for Markov Chains
-		boolean sound = true;
+		boolean sound = false;
 		if (sound) {
 			return doSoundValueIteration(dtmc, yes, no);
 		}

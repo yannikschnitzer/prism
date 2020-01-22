@@ -873,7 +873,7 @@ public class MDPModelChecker extends ProbModelChecker
 			unknown.andNot(known);
 		
 		// Temporary code
-		boolean sound = false;
+		boolean sound = true;
 		if (sound) {
 			return doSoundValueIteration(mdp, yes, unknown, strat, min);
 		}
@@ -926,7 +926,7 @@ public class MDPModelChecker extends ProbModelChecker
 	}
 
 	// for sound value iteration
-	protected int findAction(MDP mdp, boolean min, double x[] , double y[], int s, double u) {
+	protected int findAction(MDP mdp, boolean min, double x[] , double y[], int s, double l, double u) {
 		int action = 0;
 		double cand = min ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
 		for(int i = 0; i < mdp.getNumChoices(s) ; i++) {
@@ -936,10 +936,23 @@ public class MDPModelChecker extends ProbModelChecker
 				Entry<Integer,Double> e = iter.next();
 				int    t = e.getKey();
 				double p = e.getValue();
-				if(u != Double.POSITIVE_INFINITY) {
-					sum += p * (x[t] + y[t] * u);
+				
+				// recent changes here -- brings us closer to right answer
+				// I think that findAction is giving us the wrong answer
+				// and hence why the prob for initial state is wrong
+				// for Run Configuration Sound MDP
+				if(!min) {
+					if(u != Double.POSITIVE_INFINITY) {
+						sum += p * (x[t] + y[t] * u);
+					}else {
+						sum += p * y[t];
+					}
 				}else {
-					sum += p * y[t];
+					if(l != Double.NEGATIVE_INFINITY) {
+						sum += p * (x[t] + y[t] * l);
+					}else {
+						sum += p * y[t];
+					}
 				}
 			}
 			if(min ? sum < cand : sum > cand){
@@ -980,13 +993,13 @@ public class MDPModelChecker extends ProbModelChecker
 					dx += p * y[t];
 				}
 				
-				mainLog.println("DY: " + dy);
-				mainLog.println("DX: " + dx);
+				// mainLog.println("DY: " + dy);
+				// mainLog.println("DX: " + dx);
 				
 				if (dy > 0) {
 				// if(min ? dy < 0 : dy > 0) { // TODO: Look into this line
-					// d = min ? Double.min(d , dx/dy ) : Double.max(d, dx/dy);
-					d = Double.max(d, dx / dy);
+					 // d = min ? Double.min(d , dx/dy ) : Double.max(d, dx/dy);
+					 d = Double.max(d, dx / dy);
 				}
 				
 			}
@@ -996,12 +1009,6 @@ public class MDPModelChecker extends ProbModelChecker
 	
 	protected ModelCheckerResult doSoundValueIteration(MDP mdp, BitSet yes, BitSet unknown, int strat[], boolean min) throws PrismException{
 		
-		// TODO: Presently, BadTest (2) is giving a v v incorrect answer
-		//       Lower bound l converges bang on the exact answer (0.08553841555933606)
-		//       Upper bound u becomes something crazy (219.39100346021067)
-		// is quite possibly error in decisionValue method??
-		// have read of paper to see what the hip hap is
-		
 		// Ensure that prob0 and prob1 states have been calculated
 		if (!(precomp && prob0 && prob1)) {
 			throw new PrismNotSupportedException("Precomputations (Prob0 & Prob1) must be enabled for Sound Value Iteration");
@@ -1009,49 +1016,35 @@ public class MDPModelChecker extends ProbModelChecker
 		
 		int n = mdp.getNumStates();
 		
+		/*
 		double[] lastX = new double[n], lastY = new double[n];
 		double[] currX = new double[n], currY = new double[n];
 		double[] tempX, tempY;
-		
+		*/
+		double[] x , y;
+		x = new double[n];
+		y = new double[n];
 		
 		for(int s = 0; s < n; s++) {
 			/*
-			// PRINT THAT BOI
-			mainLog.println("------ State: " + s);
-			for(int i = 0; i < mdp.getNumChoices(s); i++) {
-				mainLog.println("---- Choice: " + i);
-				Iterator<Entry<Integer,Double>> iter = mdp.getTransitionsIterator(s, i);
-				while(iter.hasNext()) {
-					Entry<Integer,Double> e = iter.next();
-					int t    = e.getKey();
-					double p = e.getValue();
-					mainLog.println(s + " --> " + t + " : " + p);
-				}
-			}
-			*/
-			
 			lastX[s] = yes.get(s)     ? 1 : 0;
 			lastY[s] = unknown.get(s) ? 1 : 0;
-			
-			/*
-			if(yes.get(s)) {
-				mainLog.println("YES: " + s);
-			}
-			if(unknown.get(s)) {
-				mainLog.println("UNKNOWN " + s);
-			}
 			*/
-			
+			x[s] = yes.get(s)     ? 1 : 0;
+			y[s] = unknown.get(s) ? 1 : 0;
 		}
 		
 		
 		double l = Double.NEGATIVE_INFINITY, u = Double.POSITIVE_INFINITY;
 		
-		// TODO: Re-work code to work with min == true
-		// Upon reading paper more closely, this looks
-		// to be an issue
+		// TODO: Run Configuration Sound MDP fails test 2
+		// should get 0.851563
+		// but instead gets 1.0 
+		// we get x[0] = 1.0 which clearly should not be happening
 		
-		// EXPERIMENT LINE : to see what d does
+		// TODO: Examine paper to see if my changes make sense for
+		// min == true
+		
 		//double d = min ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
 		double d = Double.NEGATIVE_INFINITY;
 		
@@ -1068,20 +1061,27 @@ public class MDPModelChecker extends ProbModelChecker
 			double qmin = Double.POSITIVE_INFINITY; // min s ∈ S? (x[s] / (1 - y[s]))
 			double qmax = Double.NEGATIVE_INFINITY; // max s ∈ S? (x[s] / (1 - y[s]))
 			for(int s = 0; s < mdp.getNumStates(); s++) {
+				/*
 				currX[s] = yes.get(s) ? 1.0 : 0.0;
 				currY[s] = 0.0;
+				*/
 				if(unknown.get(s)) {
-					action = findAction(mdp, min, lastX, lastY, s, u);			
+					// action = findAction(mdp, min, lastX, lastY, s, u);			
+					action = findAction(mdp, min, x, y, s, l, u);
 					// update strat
 					if(strat != null)
 						strat[s] = action;
-					cand = decisionValue(mdp, min, lastX, lastY, s, action);
+					// cand = decisionValue(mdp, min, lastX, lastY, s, action);
+					cand = decisionValue(mdp, min, x, y, s, action);
 					
-					mainLog.println("CAND: " + cand);
+					// mainLog.println("CAND: " + cand);
 					
 					// TODO: Consider this line here...
 					// d = min ? Double.min(d, cand) : Double.max(d, cand); 
 					d = Double.max(d, cand);
+					
+					double sumX = 0;
+					double sumY = 0;
 					
 					// update x[s] and y[s]
 					Iterator<Entry<Integer,Double>> iter = mdp.getTransitionsIterator(s, action);
@@ -1089,41 +1089,58 @@ public class MDPModelChecker extends ProbModelChecker
 						Entry<Integer,Double> e = iter.next();
 						double p = e.getValue();
 						int t = e.getKey();
+						/*
 						currX[s] += p * lastX[t];
 						currY[s] += p * lastY[t];
+						*/
+						sumX += p * x[t];
+						sumY += p * y[t];
 					}
+					x[s] = sumX;
+					y[s] = sumY;
 					
 					// y[s] * (u − l) < 2 * ε
-					done &= currY[s] * (u - l) < 2 * eps;
+					// done &= currY[s] * (u - l) < 2 * eps;
+					done &= y[s] * (u - l) < 2 * eps;
 					
 					// if y[s] < 1 for all s ∈ S?
-					changeBounds &= currY[s] < 1.0;
+					// changeBounds &= currY[s] < 1.0;
+					changeBounds &= y[s] < 1.0;
 					
 					// mainLog.println("currY[s] : " + currY[s]);
 					
 					if (changeBounds) {
-						cand = currX[s] / (1 - currY[s]);
+						// cand = currX[s] / (1 - currY[s]);
+						cand = x[s] / (1 - y[s]);
 						qmin = Double.min(qmin, cand);
 						qmax = Double.max(qmax, cand);
 					}
 				}
 			}
 			
+			done &= l != Double.NEGATIVE_INFINITY;
+			done &= u != Double.POSITIVE_INFINITY;
+			// the dangers of not using Gauss-Seidel
+			if(done) break;
+			
 			if(qmax != qmax) {
 				mainLog.println("qmax is NaN");
 				while(true);
 			}
 			
-			mainLog.println("D: " + d);
+			// mainLog.println("D: " + d);
 			// mainLog.println("QMAX: " + qmax);
 			
 			// TODO: Change this to Gauss-Seidel
 			// swap
+			/*
 			tempX = currX; tempY = currY;
 			currX = lastX; currY = lastY;
 			lastX = tempX; lastY = tempY;
+			*/
 			
 			if(changeBounds) {
+				
 				l = Double.max(l, qmin);
 				u = Double.min(u, Double.max(d, qmax));
 				mainLog.println("L: " + l);
@@ -1133,14 +1150,21 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 		
 		mainLog.println("LOOPS: " + loops);
+		mainLog.println("\n L: " + l + "\t U: " + u);
 		
 		ModelCheckerResult res = new ModelCheckerResult();
 		res.soln = new double[n];
 		for(int s = 0; s < n; s++) {
 			if(unknown.get(s)) {
-				res.soln[s] = currX[s] + currY[s] * ((l + u) / 2.0);
-			}else {
-				res.soln[s] = currX[s];
+				if(s == 0) {
+					// mainLog.println("x[" + s + "] : " + currX[s]);
+					// mainLog.println("y[" + s + "] : " + currY[s]);
+				}
+				// res.soln[s] = currX[s] + currY[s] * ((l + u) / 2.0);
+				res.soln[s] = x[s] + y[s] * ((l + u) / 2.0);
+ 			}else {
+				// res.soln[s] = currX[s];
+ 				res.soln[s] = x[s];
 			}
 				
 		}
