@@ -617,6 +617,12 @@ public class DTMCModelChecker extends ProbModelChecker
 		case BACKWARDS_GAUSS_SEIDEL:
 		case JACOBI:
 			break; // supported
+		case SOUND:
+			break;
+		case OPTIMISTIC:
+			break;
+		case LOWER_UPPER:
+			break;
 		default:
 			linEqMethod = LinEqMethod.GAUSS_SEIDEL;
 			mainLog.printWarning("Switching to linear equation solution method \"" + linEqMethod.fullName() + "\"");
@@ -694,24 +700,41 @@ public class DTMCModelChecker extends ProbModelChecker
 
 		boolean termCritAbsolute = termCrit == TermCrit.ABSOLUTE;
 
+		mainLog.println(linEqMethod);
+		
+		// CHANGE THIS FOR BENCHMARKING
+		linEqMethod = LinEqMethod.LOWER_UPPER;
+		
 		// Implementation of Sound Value Iteration for Markov Chains
-		boolean sound = false;
-		if (sound) {
-			return doSoundValueIteration(dtmc, yes, no);
+		if (linEqMethod == LinEqMethod.SOUND) {
+			mainLog.println("Running sound value iter");
+			res = doSoundValueIteration(dtmc, yes, no);
+			timer = System.currentTimeMillis() - timer;
+			res.timeTaken = timer;
+			mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
+			return res;
 		}
 		
-		boolean optimistic = false;
-		if(optimistic) {
+		if (linEqMethod == LinEqMethod.OPTIMISTIC) {
+			mainLog.println("Running optimisitc value iter");
 			BitSet unknown = new BitSet();
 			unknown.set(0,n);
 			unknown.andNot(yes);
 			unknown.andNot(no);
-			return doOptimisticValueIteration(dtmc, yes, unknown);
+			res = doOptimisticValueIteration(dtmc, yes, unknown);
+			timer = System.currentTimeMillis() - timer;
+			res.timeTaken = timer;
+			mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
+			return res;
 		}
 		
-		boolean lu = false;
-		if(lu) {
-			return doLowerUpper(dtmc, yes, no, known, init);
+		if(linEqMethod == LinEqMethod.LOWER_UPPER) {
+			mainLog.println("Lower-upper decomp. approach");
+			res = doLowerUpper(dtmc, yes, no, known, init);
+			timer = System.currentTimeMillis() - timer;
+			res.timeTaken = timer;
+			mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
+			return res;
 		}
 		
 		// Compute probabilities
@@ -762,35 +785,20 @@ public class DTMCModelChecker extends ProbModelChecker
 		
 		int n = dtmc.getNumStates();
 		
-		double[] lastX = new double[n], lastY = new double[n];
-		double[] currX = new double[n], currY = new double[n];
-		double[] tempX = new double[n], tempY = new double[n];
+		double[] x = new double[n];
+		double[] y = new double[n];
 		boolean[] unknown = new boolean[n];
-		boolean anyUnknown = false;
 		for(int s = 0; s < n; s++) {
 			unknown[s] = ! (yes.get(s) || no.get(s));
-			if(unknown[s]) {
-				mainLog.println("UNKNOWN S " + s);
-			}
-			anyUnknown = anyUnknown || unknown[s];
-			lastX[s] = yes.get(s) ? 1 : 0;
-			lastY[s] = unknown[s] ? 1 : 0;
+			x[s] = yes.get(s) ? 1 : 0; // f(x)[S0] = 0, f(x)[G]  = 1
+			y[s] = unknown[s] ? 1 : 0;
 		}
 		double l = Double.NEGATIVE_INFINITY, u = Double.POSITIVE_INFINITY;
 		double eps = termCritParam;
 		
-		// I assume issue might be the lack of unknown states...
-		// ... appears to be the case
-		if(anyUnknown) { 
-			mainLog.println("ANY UNKNOWN");
-		}else {
-			mainLog.println("NONE UNKNOWN");
-		}
 		boolean done = false;
 		
-		// problem looks to be early termination
-		// running for more iterations converges on right answer
-		// TODO: Check line of done!
+		// TODO: Change to Gauss-Seidel before benchmarking
 		
 		while(true) {
 			done = true;
@@ -799,25 +807,26 @@ public class DTMCModelChecker extends ProbModelChecker
 			double qmin = Double.POSITIVE_INFINITY; // min s ∈ S? (x[s] / (1 - y[s]))
 			double qmax = Double.NEGATIVE_INFINITY; // max s ∈ S? (x[s] / (1 - y[s]))
 			for(int s = 0; s < n; s++) {
-				currX[s] = yes.get(s) ? 1.0 : 0.0;  // f(x)[S0] = 0, f(x)[G]  = 1
-				currY[s] = 0.0;                     // h(y)[S0] = 0, h(y)[G]  = 0
 				if(unknown[s]) {
-					mainLog.println("UNKNOWN BOI");
+					double sumX = 0;
+					double sumY = 0;
 					Iterator<Map.Entry<Integer, Double>> iter = dtmc.getTransitionsIterator(s);
 					while(iter.hasNext()) {
 						Map.Entry<Integer, Double> e = iter.next();
 						double p = e.getValue();
 						int    t = e.getKey();
-						currX[s] += p * lastX[t]; // f(x)[s]  = sum ( P(s,t) * x[t] ) for all s in S?
-						currY[s] += p * lastY[t]; // h(y)[s]  = sum ( P(s,t) * y[t] ) for all s in S?
+						sumX += p * x[t]; // f(x)[s]  = sum ( P(s,t) * x[t] ) for all s in S?
+						sumY += p * y[t]; // h(y)[s]  = sum ( P(s,t) * y[t] ) for all s in S?
 					}
-					
-					// TRY MOVING CHECK FOR DONE
-					done = currY[s] * (u - l) > 2 * eps ? false : done;
-					changeBounds = currY[s] >= 1.0 ? false : changeBounds;
-					cand = currX[s] / (1 - currY[s]);
-					qmin = Double.min(qmin, cand);
-					qmax = Double.max(qmax, cand);
+					x[s] = sumX;
+					y[s] = sumY;
+					done &= y[s] * (u - l) < 2 * eps;
+					changeBounds &= y[s] < 1.0;
+					if(changeBounds) {
+						cand = x[s] / (1 - y[s]);
+						qmin = Double.min(qmin, cand);
+						qmax = Double.max(qmax, cand);
+					}
 				}	
 			}
 			
@@ -827,9 +836,9 @@ public class DTMCModelChecker extends ProbModelChecker
 			if(done) break;
 			
 			// swap
-			tempX = currX; tempY = currY;
-			currX = lastX; currY = lastY;
-			lastX = tempX; lastY = tempY;
+			// tempX = currX; tempY = currY;
+			// currX = lastX; currY = lastY;
+			// lastX = tempX; lastY = tempY;
 						
 			if(changeBounds) {
 				l = Double.max(l , qmin);
@@ -848,7 +857,7 @@ public class DTMCModelChecker extends ProbModelChecker
 			}else if(no.get(s)) {
 				resNew.soln[s] = 0.0;
 			}else {
-				resNew.soln[s] = currX[s] + currY[s] * ((l + u) / 2.0);
+				resNew.soln[s] = x[s] + y[s] * ((l + u) / 2.0);
 			}
 		}
 		

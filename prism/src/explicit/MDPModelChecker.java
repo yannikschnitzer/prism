@@ -571,6 +571,30 @@ public class MDPModelChecker extends ProbModelChecker
 			}
 			res = computeReachProbsModPolIter(mdp, no, yes, min, strat);
 			break;
+		case SOUND:
+			//TODO: Decide what to do here
+			if (doIntervalIteration) {
+				doIntervalIteration = false; // placeholder
+			}
+			//TODO: iteration method
+			iterationMethod = new IterationMethodPower(termCrit == TermCrit.ABSOLUTE, termCritParam);
+			break;
+		case OPTIMISTIC:
+			//TODO: Decide what to do here
+			if (doIntervalIteration) {
+				doIntervalIteration = false; // placeholder
+			}
+			// TODO: iteration method
+			iterationMethod = new IterationMethodPower(termCrit == TermCrit.ABSOLUTE, termCritParam);
+			break;
+		case LU_POLICY:
+			//TODO: Decide what to do here
+			if (doIntervalIteration) {
+				doIntervalIteration = false; // placeholder
+			}
+			//TODO: iteration method
+			iterationMethod = new IterationMethodPower(termCrit == TermCrit.ABSOLUTE, termCritParam);
+			break;
 		default:
 			throw new PrismException("Unknown MDP solution method " + mdpSolnMethod.fullName());
 		}
@@ -873,9 +897,16 @@ public class MDPModelChecker extends ProbModelChecker
 			unknown.andNot(known);
 		
 		// Temporary code
-		boolean sound = true;
-		if (sound) {
-			return doSoundValueIteration(mdp, yes, unknown, strat, min);
+		ModelCheckerResult res = null;
+		
+		// CHANGE THIS FOR BENCHMARKING
+		mdpSolnMethod = MDPSolnMethod.LU_POLICY;
+		
+		if (mdpSolnMethod == MDPSolnMethod.SOUND) {
+			res = doSoundValueIteration(mdp, yes, unknown, strat, min);
+			// mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
+			res.timeTaken = timer / 1000;
+			return res;
 		}
 		
 		// Temporary code
@@ -883,21 +914,25 @@ public class MDPModelChecker extends ProbModelChecker
 		if (testMyGauss) {
 			double v[] = new double[n];
 			gaussSeidelWithError(mdp, yes, unknown, min, termCritParam, v, strat);
-			ModelCheckerResult res = new ModelCheckerResult();
+			res = new ModelCheckerResult();
 			res.soln = v;
 			return res;
 		}
 				
 		// Temporary code
-		boolean optimistic = false;
-		if (optimistic) {
-			return doOptimisticValueIteration(mdp, yes, unknown, min, strat);	
+		if (mdpSolnMethod == MDPSolnMethod.OPTIMISTIC) {
+			res = doOptimisticValueIteration(mdp, yes, unknown, min, strat);
+			res.timeTaken = timer / 1000;
+			// mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
+			return res;
 		}
 		
 		// Temporary code
-		boolean lowerUpper = false;
-		if (lowerUpper) {
-			return doLowerUpper(mdp, yes, no, unknown, known, init, min, strat);
+		if (mdpSolnMethod == MDPSolnMethod.LU_POLICY) {
+			res = doLowerUpper(mdp, yes, no, unknown, known, init, min, strat);
+			// mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
+			res.timeTaken = timer / 1000;
+			return res;
 		}
 		
 		if (iterationsExport != null)
@@ -964,18 +999,20 @@ public class MDPModelChecker extends ProbModelChecker
 	}
 	
 	protected double decisionValue(MDP mdp, boolean min, double x[], double y[], int s, int a) {
-		//double d = min ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
-		double d = Double.NEGATIVE_INFINITY;
+		double d = min ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+		// double d = Double.NEGATIVE_INFINITY;
 		Iterator<Entry<Integer,Double>> iter;
 		Entry<Integer,Double> e;
 		double dx, dy, p;
 		int t;
 		
+		// TODO: am I doing this right???
 		for(int b = 0; b < mdp.getNumChoices(s); b++) {
 			// for each β ∈ Act(s) \ {α}
 			if(b != a) {
 				dy = 0;
 				dx = 0;
+				
 				iter = mdp.getTransitionsIterator(s, a);
 				while(iter.hasNext()) {
 					e = iter.next();
@@ -990,16 +1027,16 @@ public class MDPModelChecker extends ProbModelChecker
 					p = e.getValue();
 					t = e.getKey();
 					dy -= p * y[t];
-					dx += p * y[t];
+					dx += p * x[t];
 				}
 				
 				// mainLog.println("DY: " + dy);
 				// mainLog.println("DX: " + dx);
-				
+		
 				if (dy > 0) {
 				// if(min ? dy < 0 : dy > 0) { // TODO: Look into this line
-					 // d = min ? Double.min(d , dx/dy ) : Double.max(d, dx/dy);
-					 d = Double.max(d, dx / dy);
+					 d = min ? Double.min(d , dx/dy ) : Double.max(d, dx/dy);
+					 // d = Double.max(d, dx / dy);
 				}
 				
 			}
@@ -1016,20 +1053,11 @@ public class MDPModelChecker extends ProbModelChecker
 		
 		int n = mdp.getNumStates();
 		
-		/*
-		double[] lastX = new double[n], lastY = new double[n];
-		double[] currX = new double[n], currY = new double[n];
-		double[] tempX, tempY;
-		*/
 		double[] x , y;
 		x = new double[n];
 		y = new double[n];
 		
 		for(int s = 0; s < n; s++) {
-			/*
-			lastX[s] = yes.get(s)     ? 1 : 0;
-			lastY[s] = unknown.get(s) ? 1 : 0;
-			*/
 			x[s] = yes.get(s)     ? 1 : 0;
 			y[s] = unknown.get(s) ? 1 : 0;
 		}
@@ -1045,12 +1073,17 @@ public class MDPModelChecker extends ProbModelChecker
 		// TODO: Examine paper to see if my changes make sense for
 		// min == true
 		
-		//double d = min ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
-		double d = Double.NEGATIVE_INFINITY;
+		// NOTE: Problem is early termination!
+		// overshooting correct answer and then going back????
+		
+		double d = min ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+		// double d = Double.NEGATIVE_INFINITY;
 		
 		int loops = 0;
 		int action;
 		double eps = termCritParam;
+		
+		int k = 0;
 		
 		boolean done = false;
 		while(!done) {
@@ -1061,10 +1094,7 @@ public class MDPModelChecker extends ProbModelChecker
 			double qmin = Double.POSITIVE_INFINITY; // min s ∈ S? (x[s] / (1 - y[s]))
 			double qmax = Double.NEGATIVE_INFINITY; // max s ∈ S? (x[s] / (1 - y[s]))
 			for(int s = 0; s < mdp.getNumStates(); s++) {
-				/*
-				currX[s] = yes.get(s) ? 1.0 : 0.0;
-				currY[s] = 0.0;
-				*/
+
 				if(unknown.get(s)) {
 					// action = findAction(mdp, min, lastX, lastY, s, u);			
 					action = findAction(mdp, min, x, y, s, l, u);
@@ -1077,8 +1107,8 @@ public class MDPModelChecker extends ProbModelChecker
 					// mainLog.println("CAND: " + cand);
 					
 					// TODO: Consider this line here...
-					// d = min ? Double.min(d, cand) : Double.max(d, cand); 
-					d = Double.max(d, cand);
+					d = min ? Double.min(d, cand) : Double.max(d, cand); 
+					// d = Double.max(d, cand);
 					
 					double sumX = 0;
 					double sumY = 0;
@@ -1089,28 +1119,23 @@ public class MDPModelChecker extends ProbModelChecker
 						Entry<Integer,Double> e = iter.next();
 						double p = e.getValue();
 						int t = e.getKey();
-						/*
-						currX[s] += p * lastX[t];
-						currY[s] += p * lastY[t];
-						*/
 						sumX += p * x[t];
 						sumY += p * y[t];
 					}
 					x[s] = sumX;
 					y[s] = sumY;
 					
+					if(s == 0) {
+						mainLog.println("x[0] " + x[0]);
+					}
+					
 					// y[s] * (u − l) < 2 * ε
-					// done &= currY[s] * (u - l) < 2 * eps;
 					done &= y[s] * (u - l) < 2 * eps;
 					
 					// if y[s] < 1 for all s ∈ S?
-					// changeBounds &= currY[s] < 1.0;
 					changeBounds &= y[s] < 1.0;
-					
-					// mainLog.println("currY[s] : " + currY[s]);
-					
+
 					if (changeBounds) {
-						// cand = currX[s] / (1 - currY[s]);
 						cand = x[s] / (1 - y[s]);
 						qmin = Double.min(qmin, cand);
 						qmax = Double.max(qmax, cand);
@@ -1120,6 +1145,7 @@ public class MDPModelChecker extends ProbModelChecker
 			
 			done &= l != Double.NEGATIVE_INFINITY;
 			done &= u != Double.POSITIVE_INFINITY;
+			done &= k-- <= 0;
 			// the dangers of not using Gauss-Seidel
 			if(done) break;
 			
@@ -1140,11 +1166,15 @@ public class MDPModelChecker extends ProbModelChecker
 			*/
 			
 			if(changeBounds) {
-				
-				l = Double.max(l, qmin);
-				u = Double.min(u, Double.max(d, qmax));
-				mainLog.println("L: " + l);
-				mainLog.println("U: " + u);
+				if(!min) {
+					l = Double.max(l, qmin);
+					u = Double.min(u, Double.max(d, qmax));
+				}else {
+					l = Double.max(l, Double.min(d,qmin));
+					u = Double.min(u, qmax);
+				}
+				//mainLog.println("L: " + l);
+				//mainLog.println("U: " + u);
 			}
 			loops++;
 		}
@@ -1157,8 +1187,8 @@ public class MDPModelChecker extends ProbModelChecker
 		for(int s = 0; s < n; s++) {
 			if(unknown.get(s)) {
 				if(s == 0) {
-					// mainLog.println("x[" + s + "] : " + currX[s]);
-					// mainLog.println("y[" + s + "] : " + currY[s]);
+					mainLog.println("x[" + s + "] : " + x[s]);
+					mainLog.println("y[" + s + "] : " + y[s]);
 				}
 				// res.soln[s] = currX[s] + currY[s] * ((l + u) / 2.0);
 				res.soln[s] = x[s] + y[s] * ((l + u) / 2.0);
@@ -1172,7 +1202,7 @@ public class MDPModelChecker extends ProbModelChecker
 	}
 	
 	protected void gaussSeidelWithError(MDP mdp, BitSet yes, BitSet unknown, boolean min, double error, double v[], int strat[]) {
-		mainLog.println("Starting Gauss-Seidel with error: " + error);
+		// mainLog.println("Starting Gauss-Seidel with error: " + error);
 		int n = mdp.getNumStates();
 		for(int s=0; s<n; s++) {
 			v[s] = yes.get(s) ? 1 : 0;

@@ -101,7 +101,7 @@ public class ProbModelChecker extends NonProbModelChecker
 
 	// Method used for numerical solution
 	public enum LinEqMethod {
-		POWER, JACOBI, GAUSS_SEIDEL, BACKWARDS_GAUSS_SEIDEL, JOR, SOR, BACKWARDS_SOR;
+		POWER, JACOBI, GAUSS_SEIDEL, BACKWARDS_GAUSS_SEIDEL, JOR, SOR, BACKWARDS_SOR, SOUND, OPTIMISTIC, LOWER_UPPER;
 		public String fullName()
 		{
 			switch (this) {
@@ -119,6 +119,12 @@ public class ProbModelChecker extends NonProbModelChecker
 				return "SOR";
 			case BACKWARDS_SOR:
 				return "Backwards SOR";
+			case SOUND:
+				return "Sound";
+			case OPTIMISTIC:
+				return "Optimistic";
+			case LOWER_UPPER:
+				return "Lower-upper";
 			default:
 				return this.toString();
 			}
@@ -127,7 +133,7 @@ public class ProbModelChecker extends NonProbModelChecker
 
 	// Method used for solving MDPs
 	public enum MDPSolnMethod {
-		VALUE_ITERATION, GAUSS_SEIDEL, POLICY_ITERATION, MODIFIED_POLICY_ITERATION, LINEAR_PROGRAMMING, SOUND, OPTIMISTIC;
+		VALUE_ITERATION, GAUSS_SEIDEL, POLICY_ITERATION, MODIFIED_POLICY_ITERATION, LINEAR_PROGRAMMING, SOUND, OPTIMISTIC, LU_POLICY;
 		public String fullName()
 		{
 			switch (this) {
@@ -141,6 +147,12 @@ public class ProbModelChecker extends NonProbModelChecker
 				return "Modified policy iteration";
 			case LINEAR_PROGRAMMING:
 				return "Linear programming";
+			case SOUND:
+				return "Sound";
+			case OPTIMISTIC:
+				return "Optimistic";
+			case LU_POLICY:
+				return "Lower-upper";
 			default:
 				return this.toString();
 			}
@@ -188,6 +200,12 @@ public class ProbModelChecker extends NonProbModelChecker
 				setLinEqMethod(LinEqMethod.SOR);
 			} else if (s.equals("Backwards SOR")) {
 				setLinEqMethod(LinEqMethod.BACKWARDS_SOR);
+			} else if (s.equals("Sound")) {
+				setLinEqMethod(LinEqMethod.SOUND);
+			} else if (s.equals("Optimistic")) {
+				setLinEqMethod(LinEqMethod.OPTIMISTIC);
+			} else if (s.equals("Lower-upper")) {
+				setLinEqMethod(LinEqMethod.LOWER_UPPER);
 			} else {
 				throw new PrismNotSupportedException("Explicit engine does not support linear equation solution method \"" + s + "\"");
 			}
@@ -207,6 +225,8 @@ public class ProbModelChecker extends NonProbModelChecker
 				setMDPSolnMethod(MDPSolnMethod.SOUND);
 			} else if (s.equals("Optimistic")) {
 				setMDPSolnMethod(MDPSolnMethod.OPTIMISTIC);
+			} else if (s.equals("Lower-upper")) {
+				setMDPSolnMethod(MDPSolnMethod.LU_POLICY);
 			} else {
 				throw new PrismNotSupportedException("Explicit engine does not support MDP solution method \"" + s + "\"");
 			}
