@@ -1,0 +1,72 @@
+PRISM
+=====
+
+Version: 4.5.dev
+Date: Tue Jan 28 18:44:16 GMT 2020
+Hostname: cca-lg04-049.cs.bham.ac.uk
+Memory limits: cudd=1g, java(heap)=910.5m
+Command line: prism /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/brp/brp.pm -const 'N=32,MAX=5' -fixdl /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/brp/p2.pctl -mainlog 'logs/lu-dtmc-logs/brp.pm.const.N=32,MAX=5.fixdl.p2.pctl.log'
+
+Parsing model file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/brp/brp.pm"...
+
+Type:        DTMC
+Modules:     sender receiver checker channelK channelL 
+Variables:   s srep nrtr i bs s_ab fs ls r rrep fr lr br r_ab recv T k l 
+
+Parsing properties file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/brp/p2.pctl"...
+
+1 property:
+(1) "p2": P=? [ F s=5&srep=2 ]
+
+---------------------------------------------------------------------
+
+Model checking: "p2": P=? [ F s=5&srep=2 ]
+Model constants: N=32,MAX=5
+
+Building model...
+Model constants: N=32,MAX=5
+
+Computing reachable states...
+
+Reachability (BFS): 207 iterations in 0.07 seconds (average 0.000333, setup 0.00)
+
+Time for model construction: 0.24 seconds.
+
+Warning: Deadlocks detected and fixed in 70 states
+
+Type:        DTMC
+States:      2600 (1 initial)
+Transitions: 3459
+
+Transition matrix: 2320 nodes (6 terminal), 3459 minterms, vars: 34r/34c
+
+Prob0: 202 iterations in 0.05 seconds (average 0.000262, setup 0.00)
+
+Prob1: 15 iterations in 0.01 seconds (average 0.000333, setup 0.00)
+
+yes = 7, no = 363, maybe = 2230
+
+Computing remaining probabilities...
+Engine: Hybrid
+
+Building hybrid MTBDD matrix... [levels=34, nodes=2211] [103.6 KB]
+Adding explicit sparse matrices... [levels=34, num=1, compact] [14.6 KB]
+Creating vector for diagonals... [dist=1, compact] [5.1 KB]
+Creating vector for RHS... [dist=2, compact] [5.1 KB]
+Allocating iteration vectors... [2 x 20.3 KB]
+TOTAL: [169.1 KB]
+
+Starting iterations...
+
+Jacobi: 233 iterations in 0.01 seconds (average 0.000017, setup 0.00)
+
+Value in the initial state: 7.003213239624259E-10
+
+Time for model checking: 0.077 seconds.
+
+Result: 7.003213239624259E-10 (value in the initial state)
+
+---------------------------------------------------------------------
+
+Note: There was 1 warning during computation.
+

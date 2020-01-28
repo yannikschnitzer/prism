@@ -703,7 +703,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		mainLog.println(linEqMethod);
 		
 		// CHANGE THIS FOR BENCHMARKING
-		linEqMethod = LinEqMethod.LOWER_UPPER;
+		// linEqMethod = LinEqMethod.LOWER_UPPER;
 		
 		// Implementation of Sound Value Iteration for Markov Chains
 		if (linEqMethod == LinEqMethod.SOUND) {

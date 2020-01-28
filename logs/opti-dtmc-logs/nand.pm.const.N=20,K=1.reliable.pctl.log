@@ -1,0 +1,66 @@
+PRISM
+=====
+
+Version: 4.5.dev
+Date: Tue Jan 28 15:33:11 GMT 2020
+Hostname: cca-lg04-049.cs.bham.ac.uk
+Memory limits: cudd=1g, java(heap)=910.5m
+Command line: prism /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/nand/nand.pm -const 'N=20,K=1' /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/nand/reliable.pctl -mainlog 'logs/opti-dtmc-logs/nand.pm.const.N=20,K=1.reliable.pctl.log'
+
+Parsing model file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/nand/nand.pm"...
+
+Type:        DTMC
+Modules:     multiplex 
+Variables:   u c s z zx zy x y 
+
+Parsing properties file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/nand/reliable.pctl"...
+
+1 property:
+(1) "reliable": P=? [ F s=4&z/N<0.1 ]
+
+---------------------------------------------------------------------
+
+Model checking: "reliable": P=? [ F s=4&z/N<0.1 ]
+Model constants: N=20,K=1
+
+Building model...
+Model constants: N=20,K=1
+
+Computing reachable states...
+
+Reachability (BFS): 242 iterations in 0.13 seconds (average 0.000529, setup 0.00)
+
+Time for model construction: 0.308 seconds.
+
+Type:        DTMC
+States:      78332 (1 initial)
+Transitions: 121512
+
+Transition matrix: 13582 nodes (131 terminal), 121512 minterms, vars: 27r/27c
+
+Prob0: 242 iterations in 0.15 seconds (average 0.000624, setup 0.00)
+
+Prob1: 169 iterations in 0.10 seconds (average 0.000604, setup 0.00)
+
+yes = 16, no = 29276, maybe = 49040
+
+Computing remaining probabilities...
+Engine: Hybrid
+
+Building hybrid MTBDD matrix... [levels=27, nodes=17931] [840.5 KB]
+Adding explicit sparse matrices... [levels=27, num=1, compact] [376.0 KB]
+Creating vector for diagonals... [dist=1, compact] [153.0 KB]
+Creating vector for RHS... [dist=2, compact] [153.0 KB]
+Allocating iteration vectors... [2 x 612.0 KB]
+TOTAL: [2.7 MB]
+
+Starting iterations...
+
+Jacobi: 241 iterations in 0.14 seconds (average 0.000369, setup 0.06)
+
+Value in the initial state: 0.28641904638485005
+
+Time for model checking: 0.427 seconds.
+
+Result: 0.28641904638485005 (value in the initial state)
+

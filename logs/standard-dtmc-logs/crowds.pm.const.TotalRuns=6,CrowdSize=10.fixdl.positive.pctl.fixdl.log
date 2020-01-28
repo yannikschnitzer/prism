@@ -1,0 +1,136 @@
+PRISM
+=====
+
+Version: 4.5.dev
+Date: Mon Jan 27 18:23:12 GMT 2020
+Hostname: cca-lg04-050.cs.bham.ac.uk
+Memory limits: cudd=1g, java(heap)=910.5m
+Command line: prism /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/crowds/crowds.pm -const 'TotalRuns=6,CrowdSize=10' -fixdl /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/crowds/positive.pctl -fixdl -mainlog 'logs/standard-dtmc-logs/crowds.pm.const.TotalRuns=6,CrowdSize=10.fixdl.positive.pctl.fixdl.log'
+
+Parsing model file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/crowds/crowds.pm"...
+
+Type:        DTMC
+Modules:     crowds 
+Variables:   launch new runCount start run lastSeen good bad recordLast badObserve deliver done observe0 observe1 observe2 observe3 observe4 observe5 observe6 observe7 observe8 observe9 observe10 observe11 observe12 observe13 observe14 observe15 observe16 observe17 observe18 observe19 
+
+Parsing properties file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/crowds/positive.pctl"...
+
+1 property:
+(1) "positive": P=? [ F observe0>1 ]
+
+---------------------------------------------------------------------
+
+Model checking: "positive": P=? [ F observe0>1 ]
+Model constants: TotalRuns=6,CrowdSize=10
+
+Building model...
+Model constants: TotalRuns=6,CrowdSize=10
+
+Warning: Guard for command 6 of module "crowds" is never satisfied.
+
+Warning: Guard for command 7 of module "crowds" is never satisfied.
+
+Warning: Guard for command 8 of module "crowds" is never satisfied.
+
+Warning: Guard for command 10 of module "crowds" is never satisfied.
+
+Warning: Guard for command 11 of module "crowds" is never satisfied.
+
+Warning: Guard for command 2 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 3 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 4 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 5 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 9 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 12 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 13 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 14 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 15 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 16 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 17 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 18 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 19 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 20 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 21 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 22 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 23 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 24 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 25 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 26 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 27 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 28 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 29 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 30 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 31 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 32 of module "crowds" overlaps with previous commands.
+
+Warning: Guard for command 33 of module "crowds" overlaps with previous commands.
+
+Computing reachable states...
+
+Reachability (BFS): 56 iterations in 0.06 seconds (average 0.001018, setup 0.00)
+
+Time for model construction: 0.296 seconds.
+
+Warning: Deadlocks detected and fixed in 8008 states
+
+Type:        DTMC
+States:      352535 (1 initial)
+Transitions: 833015
+
+Transition matrix: 14079 nodes (7 terminal), 833015 minterms, vars: 78r/78c
+
+Prob0: 14 iterations in 0.04 seconds (average 0.002857, setup 0.00)
+
+Prob1: 37 iterations in 0.04 seconds (average 0.001054, setup 0.00)
+
+yes = 32786, no = 227271, maybe = 92478
+
+Computing remaining probabilities...
+Engine: Hybrid
+
+Building hybrid MTBDD matrix... [levels=78, nodes=14456] [677.6 KB]
+Adding explicit sparse matrices... [levels=65, num=354, compact] [753.7 KB]
+Creating vector for diagonals... [dist=1, compact] [688.6 KB]
+Creating vector for RHS... [dist=2, compact] [688.6 KB]
+Allocating iteration vectors... [2 x 2.7 MB]
+TOTAL: [8.1 MB]
+
+Starting iterations...
+
+Jacobi: 212 iterations in 0.57 seconds (average 0.002047, setup 0.14)
+
+Value in the initial state: 0.1454838628666124
+
+Time for model checking: 0.677 seconds.
+
+Result: 0.1454838628666124 (value in the initial state)
+
+---------------------------------------------------------------------
+
+Note: There were 33 warnings during computation.
+

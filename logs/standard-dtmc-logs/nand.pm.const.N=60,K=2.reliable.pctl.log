@@ -1,0 +1,79 @@
+PRISM
+=====
+
+Version: 4.5.dev
+Date: Mon Jan 27 18:32:17 GMT 2020
+Hostname: cca-lg04-050.cs.bham.ac.uk
+Memory limits: cudd=1g, java(heap)=910.5m
+Command line: prism /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/nand/nand.pm -const 'N=60,K=2' /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/nand/reliable.pctl -mainlog 'logs/standard-dtmc-logs/nand.pm.const.N=60,K=2.reliable.pctl.log'
+
+Parsing model file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/nand/nand.pm"...
+
+Type:        DTMC
+Modules:     multiplex 
+Variables:   u c s z zx zy x y 
+
+Parsing properties file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/nand/reliable.pctl"...
+
+1 property:
+(1) "reliable": P=? [ F s=4&z/N<0.1 ]
+
+---------------------------------------------------------------------
+
+Model checking: "reliable": P=? [ F s=4&z/N<0.1 ]
+Model constants: N=60,K=2
+
+Building model...
+Model constants: N=60,K=2
+
+Computing reachable states...
+
+Reachability (BFS): 1202 iterations in 4.04 seconds (average 0.003365, setup 0.00)
+
+Time for model construction: 4.483 seconds.
+
+Type:        DTMC
+States:      9420422 (1 initial)
+Transitions: 14899892
+
+Transition matrix: 97443 nodes (1103 terminal), 14899892 minterms, vars: 32r/32c
+
+Prob0: 1202 iterations in 3.97 seconds (average 0.003301, setup 0.00)
+
+Prob1: 985 iterations in 3.57 seconds (average 0.003626, setup 0.00)
+
+yes = 547, no = 1757695, maybe = 7662180
+
+Computing remaining probabilities...
+Engine: Hybrid
+
+Building hybrid MTBDD matrix... [levels=32, nodes=136727] [6.3 MB]
+Adding explicit sparse matrices... [levels=14, num=365, compact] [769.2 KB]
+Creating vector for diagonals... [dist=1, compact] [18.0 MB]
+Creating vector for RHS... [dist=2, compact] [18.0 MB]
+Allocating iteration vectors... [2 x 71.9 MB]
+TOTAL: [186.7 MB]
+
+Starting iterations...
+Iteration 88: max relative diff=1.000000, 5.05 sec so far
+Iteration 175: max relative diff=1.000000, 10.06 sec so far
+Iteration 259: max relative diff=1.000000, 15.07 sec so far
+Iteration 344: max relative diff=1.000000, 20.08 sec so far
+Iteration 431: max relative diff=1.000000, 25.09 sec so far
+Iteration 519: max relative diff=1.000000, 30.15 sec so far
+Iteration 607: max relative diff=1.000000, 35.19 sec so far
+Iteration 695: max relative diff=1.000000, 40.24 sec so far
+Iteration 782: max relative diff=1.000000, 45.25 sec so far
+Iteration 869: max relative diff=1.000000, 50.25 sec so far
+Iteration 956: max relative diff=1.000000, 55.27 sec so far
+Iteration 1043: max relative diff=1.000000, 60.28 sec so far
+Iteration 1130: max relative diff=1.000000, 65.29 sec so far
+
+Jacobi: 1201 iterations in 73.53 seconds (average 0.057777, setup 4.13)
+
+Value in the initial state: 0.5175335545542981
+
+Time for model checking: 81.416 seconds.
+
+Result: 0.5175335545542981 (value in the initial state)
+

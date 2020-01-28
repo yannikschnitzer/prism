@@ -1,0 +1,66 @@
+PRISM
+=====
+
+Version: 4.5.dev
+Date: Mon Jan 27 18:34:40 GMT 2020
+Hostname: cca-lg04-050.cs.bham.ac.uk
+Memory limits: cudd=1g, java(heap)=910.5m
+Command line: prism /home/students/tjw625/work/FYP/prism-benchmarks/models/mdps/consensus/coin2.nm -const K=16 /home/students/tjw625/work/FYP/prism-benchmarks/models/mdps/consensus/disagree.pctl -maxiters 100000 -mainlog logs/standard-mdp-logs/coin2.nm.const.K=16.disagree.pctl.maxiters.100000.log
+
+Parsing model file "/home/students/tjw625/work/FYP/prism-benchmarks/models/mdps/consensus/coin2.nm"...
+
+Type:        MDP
+Modules:     process1 process2 
+Variables:   counter pc1 coin1 pc2 coin2 
+
+Parsing properties file "/home/students/tjw625/work/FYP/prism-benchmarks/models/mdps/consensus/disagree.pctl"...
+
+1 property:
+(1) "disagree": Pmax=? [ F "finished"&!"agree" ]
+
+---------------------------------------------------------------------
+
+Model checking: "disagree": Pmax=? [ F "finished"&!"agree" ]
+Model constants: K=16
+
+Building model...
+Model constants: K=16
+
+Computing reachable states...
+
+Reachability (BFS): 289 iterations in 0.03 seconds (average 0.000100, setup 0.00)
+
+Time for model construction: 0.195 seconds.
+
+Type:        MDP
+States:      2064 (1 initial)
+Transitions: 3852
+Choices:     3088
+
+Transition matrix: 443 nodes (3 terminal), 3852 minterms, vars: 13r/13c/2nd
+
+Prob0A: 291 iterations in 0.03 seconds (average 0.000086, setup 0.00)
+
+Prob1E: 6115 iterations in 0.42 seconds (average 0.000069, setup 0.00)
+
+yes = 12, no = 30, maybe = 2022
+
+Computing remaining probabilities...
+Engine: Hybrid
+
+Building hybrid MTBDD matrices... [nm=2, levels=13, nodes=512] [24.0 KB]
+Adding sparse bits... [levels=13-13, num=2, compact=2/2] [18.9 KB]
+Creating vector for yes... [dist=2, compact] [4.0 KB]
+Allocating iteration vectors... [3 x 16.1 KB]
+TOTAL: [95.3 KB]
+
+Starting iterations...
+
+Iterative method: 26751 iterations in 0.54 seconds (average 0.000020, setup 0.00)
+
+Value in the initial state: 0.015618082185381363
+
+Time for model checking: 1.022 seconds.
+
+Result: 0.015618082185381363 (value in the initial state)
+

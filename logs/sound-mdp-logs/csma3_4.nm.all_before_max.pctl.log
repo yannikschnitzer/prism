@@ -1,0 +1,64 @@
+PRISM
+=====
+
+Version: 4.5.dev
+Date: Mon Jan 27 17:55:10 GMT 2020
+Hostname: cca-lg04-050.cs.bham.ac.uk
+Memory limits: cudd=1g, java(heap)=910.5m
+Command line: prism /home/students/tjw625/work/FYP/prism-benchmarks/models/mdps/csma/csma3_4.nm /home/students/tjw625/work/FYP/prism-benchmarks/models/mdps/csma/all_before_max.pctl -mainlog logs/sound-mdp-logs/csma3_4.nm.all_before_max.pctl.log
+
+Parsing model file "/home/students/tjw625/work/FYP/prism-benchmarks/models/mdps/csma/csma3_4.nm"...
+
+Type:        MDP
+Modules:     bus station1 station2 station3 
+Variables:   b y1 y2 s1 x1 bc1 cd1 s2 x2 bc2 cd2 s3 x3 bc3 cd3 
+
+Parsing properties file "/home/students/tjw625/work/FYP/prism-benchmarks/models/mdps/csma/all_before_max.pctl"...
+
+1 property:
+(1) "all_before_max": Pmax=? [ !"collision_max_backoff" U "all_delivered" ]
+
+---------------------------------------------------------------------
+
+Model checking: "all_before_max": Pmax=? [ !"collision_max_backoff" U "all_delivered" ]
+
+Building model...
+
+Computing reachable states...
+
+Reachability (BFS): 135 iterations in 1.08 seconds (average 0.007978, setup 0.00)
+
+Time for model construction: 1.469 seconds.
+
+Type:        MDP
+States:      1460287 (1 initial)
+Transitions: 2396727
+Choices:     1471059
+
+Transition matrix: 75002 nodes (6 terminal), 2396727 minterms, vars: 51r/51c/13nd
+
+Prob0A: 133 iterations in 2.41 seconds (average 0.018098, setup 0.00)
+
+Prob1E: 533 iterations in 19.95 seconds (average 0.037422, setup 0.00)
+
+yes = 710317, no = 31622, maybe = 718348
+
+Computing remaining probabilities...
+Engine: Hybrid
+
+Building hybrid MTBDD matrices... [nm=14, levels=51, nodes=195961] [9.0 MB]
+Adding sparse bits... [levels=17-50, num=4654, compact=14/14] [8.7 MB]
+Creating vector for yes... [dist=2, compact] [2.8 MB]
+Allocating iteration vectors... [3 x 11.1 MB]
+TOTAL: [53.9 MB]
+
+Starting iterations...
+
+Iterative method: 97 iterations in 6.46 seconds (average 0.047608, setup 1.85)
+
+Value in the initial state: 0.9324464641692023
+
+Time for model checking: 28.922 seconds.
+
+Result: 0.9324464641692023 (value in the initial state)
+

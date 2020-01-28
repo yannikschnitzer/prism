@@ -1,0 +1,62 @@
+PRISM
+=====
+
+Version: 4.5.dev
+Date: Mon Jan 27 18:54:29 GMT 2020
+Hostname: cca-lg04-050.cs.bham.ac.uk
+Memory limits: cudd=1g, java(heap)=910.5m
+Command line: prism /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/egl/egl.pm -const 'N=20,L=6' /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/egl/unfairB.pctl -m -mainlog 'logs/sound-dtmc-logs/egl.pm.const.N=20,L=6.unfairB.pctl.m.log'
+
+Parsing model file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/egl/egl.pm"...
+
+Type:        DTMC
+Modules:     counter partyA partyB 
+Variables:   b n phase party b0 b20 b1 b21 b2 b22 b3 b23 b4 b24 b5 b25 b6 b26 b7 b27 b8 b28 b9 b29 b10 b30 b11 b31 b12 b32 b13 b33 b14 b34 b15 b35 b16 b36 b17 b37 b18 b38 b19 b39 a0 a20 a1 a21 a2 a22 a3 a23 a4 a24 a5 a25 a6 a26 a7 a27 a8 a28 a9 a29 a10 a30 a11 a31 a12 a32 a13 a33 a14 a34 a15 a35 a16 a36 a17 a37 a18 a38 a19 a39 
+
+Parsing properties file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/egl/unfairB.pctl"...
+
+1 property:
+(1) "unfairB": P=? [ F !"knowB"&"knowA" ]
+
+---------------------------------------------------------------------
+
+Model checking: "unfairB": P=? [ F !"knowB"&"knowA" ]
+Model constants: N=20,L=6
+
+Building model...
+Model constants: N=20,L=6
+
+Computing reachable states...
+
+Reachability (BFS): 521 iterations in 6.71 seconds (average 0.012869, setup 0.00)
+
+Time for model construction: 7.829 seconds.
+
+Type:        DTMC
+States:      487083651104766 (1 initial)
+Transitions: 488183162732541
+
+Transition matrix: 196086 nodes (3 terminal), 488183162732541 minterms, vars: 252r/252c
+
+Prob0: 243 iterations in 8.43 seconds (average 0.034671, setup 0.00)
+
+Prob1: 40 iterations in 2.20 seconds (average 0.055100, setup 0.00)
+
+yes = 123145392488250, no = 363938257043653, maybe = 1572863
+
+Computing remaining probabilities...
+Engine: MTBDD
+
+Iteration matrix MTBDD... [nodes=18515] [361.6 Kb]
+Diagonals MTBDD... [nodes=83665] [1634.1 Kb]
+
+Starting iterations...
+
+Jacobi: 39 iterations in 1.27 seconds (average 0.031154, setup 0.06)
+
+Value in the initial state: 0.4999990463256836
+
+Time for model checking: 15.4 seconds.
+
+Result: 0.4999990463256836 (value in the initial state)
+

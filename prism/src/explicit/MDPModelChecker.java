@@ -900,7 +900,7 @@ public class MDPModelChecker extends ProbModelChecker
 		ModelCheckerResult res = null;
 		
 		// CHANGE THIS FOR BENCHMARKING
-		mdpSolnMethod = MDPSolnMethod.LU_POLICY;
+		// mdpSolnMethod = MDPSolnMethod.LU_POLICY;
 		
 		if (mdpSolnMethod == MDPSolnMethod.SOUND) {
 			res = doSoundValueIteration(mdp, yes, unknown, strat, min);

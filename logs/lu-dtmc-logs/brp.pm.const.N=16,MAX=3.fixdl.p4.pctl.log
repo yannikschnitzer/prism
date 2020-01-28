@@ -1,0 +1,72 @@
+PRISM
+=====
+
+Version: 4.5.dev
+Date: Tue Jan 28 18:44:28 GMT 2020
+Hostname: cca-lg04-049.cs.bham.ac.uk
+Memory limits: cudd=1g, java(heap)=910.5m
+Command line: prism /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/brp/brp.pm -const 'N=16,MAX=3' -fixdl /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/brp/p4.pctl -mainlog 'logs/lu-dtmc-logs/brp.pm.const.N=16,MAX=3.fixdl.p4.pctl.log'
+
+Parsing model file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/brp/brp.pm"...
+
+Type:        DTMC
+Modules:     sender receiver checker channelK channelL 
+Variables:   s srep nrtr i bs s_ab fs ls r rrep fr lr br r_ab recv T k l 
+
+Parsing properties file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/brp/p4.pctl"...
+
+1 property:
+(1) "p4": P=? [ F !(srep=0)&!recv ]
+
+---------------------------------------------------------------------
+
+Model checking: "p4": P=? [ F !(srep=0)&!recv ]
+Model constants: N=16,MAX=3
+
+Building model...
+Model constants: N=16,MAX=3
+
+Computing reachable states...
+
+Reachability (BFS): 107 iterations in 0.04 seconds (average 0.000383, setup 0.00)
+
+Time for model construction: 0.208 seconds.
+
+Warning: Deadlocks detected and fixed in 36 states
+
+Type:        DTMC
+States:      886 (1 initial)
+Transitions: 1155
+
+Transition matrix: 2179 nodes (6 terminal), 1155 minterms, vars: 32r/32c
+
+Prob0: 11 iterations in 0.00 seconds (average 0.000273, setup 0.00)
+
+Prob1: 3 iterations in 0.00 seconds (average 0.000667, setup 0.00)
+
+yes = 5, no = 873, maybe = 8
+
+Computing remaining probabilities...
+Engine: Hybrid
+
+Building hybrid MTBDD matrix... [levels=32, nodes=249] [11.7 KB]
+Adding explicit sparse matrices... [levels=32, num=1, compact] [0.9 KB]
+Creating vector for diagonals... [dist=1, compact] [1.7 KB]
+Creating vector for RHS... [dist=2, compact] [1.7 KB]
+Allocating iteration vectors... [2 x 6.9 KB]
+TOTAL: [29.9 KB]
+
+Starting iterations...
+
+Jacobi: 9 iterations in 0.00 seconds (average 0.000000, setup 0.00)
+
+Value in the initial state: 1.6000000000000003E-7
+
+Time for model checking: 0.018 seconds.
+
+Result: 1.6000000000000003E-7 (value in the initial state)
+
+---------------------------------------------------------------------
+
+Note: There was 1 warning during computation.
+
