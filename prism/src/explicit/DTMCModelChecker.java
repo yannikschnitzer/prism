@@ -601,6 +601,7 @@ public class DTMCModelChecker extends ProbModelChecker
 	 */
 	public ModelCheckerResult computeReachProbs(DTMC dtmc, BitSet remain, BitSet target, double init[], BitSet known) throws PrismException
 	{
+
 		ModelCheckerResult res = null;
 		BitSet no, yes;
 		int n, numYes, numNo;
@@ -701,9 +702,6 @@ public class DTMCModelChecker extends ProbModelChecker
 		boolean termCritAbsolute = termCrit == TermCrit.ABSOLUTE;
 
 		mainLog.println(linEqMethod);
-		
-		// CHANGE THIS FOR BENCHMARKING
-		// linEqMethod = LinEqMethod.LOWER_UPPER;
 		
 		// Implementation of Sound Value Iteration for Markov Chains
 		if (linEqMethod == LinEqMethod.SOUND) {
@@ -843,7 +841,6 @@ public class DTMCModelChecker extends ProbModelChecker
 			if(changeBounds) {
 				l = Double.max(l , qmin);
 				u = Double.min(u , qmax);
-				mainLog.println("L : " + l + "\nU :" + u);
 			}
 		}
 

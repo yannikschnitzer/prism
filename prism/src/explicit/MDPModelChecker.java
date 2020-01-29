@@ -899,9 +899,7 @@ public class MDPModelChecker extends ProbModelChecker
 		// Temporary code
 		ModelCheckerResult res = null;
 		
-		// CHANGE THIS FOR BENCHMARKING
-		// mdpSolnMethod = MDPSolnMethod.LU_POLICY;
-		
+		// TODO: find out whether should set res.timeTaken here
 		if (mdpSolnMethod == MDPSolnMethod.SOUND) {
 			res = doSoundValueIteration(mdp, yes, unknown, strat, min);
 			// mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
