@@ -1,0 +1,62 @@
+PRISM
+=====
+
+Version: 4.5.dev
+Date: Wed Jan 29 12:07:14 GMT 2020
+Hostname: cca-ug04-039.cs.bham.ac.uk
+Memory limits: cudd=1g, java(heap)=910.5m
+Command line: prism /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/crowds/crowds.pm -const 'TotalRuns=4,CrowdSize=20' -fixdl /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/crowds/positive.pctl -fixdl -ex -mainlog 'logs/standard-dtmc-logs/crowds.pm.const.TotalRuns=4,CrowdSize=20.fixdl.positive.pctl.fixdl.ex.log'
+
+Parsing model file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/crowds/crowds.pm"...
+
+Type:        DTMC
+Modules:     crowds 
+Variables:   launch new runCount start run lastSeen good bad recordLast badObserve deliver done observe0 observe1 observe2 observe3 observe4 observe5 observe6 observe7 observe8 observe9 observe10 observe11 observe12 observe13 observe14 observe15 observe16 observe17 observe18 observe19 
+
+Parsing properties file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/crowds/positive.pctl"...
+
+1 property:
+(1) "positive": P=? [ F observe0>1 ]
+
+---------------------------------------------------------------------
+
+Model checking: "positive": P=? [ F observe0>1 ]
+Model constants: TotalRuns=4,CrowdSize=20
+
+Building model...
+Model constants: TotalRuns=4,CrowdSize=20
+
+Computing reachable states... 333455 states
+Reachable states exploration and model construction done in 1.964 secs.
+Sorting reachable states list...
+
+Time for model construction: 2.183 seconds.
+
+Warning: Deadlocks detected and fixed in 10626 states
+
+Type:        DTMC
+States:      333455 (1 initial)
+Transitions: 1183535
+
+Starting probabilistic reachability...
+Calculating predecessor relation for discrete-time Markov chain...  done (0.102 seconds)
+Starting Prob0...
+Prob0 took 0.042 seconds.
+Starting Prob1...
+Prob1 took 0.167 seconds.
+target=4216, yes=4447, no=295655, maybe=33353
+JACOBI
+Starting value iteration (with Jacobi)...
+Value iteration (with Jacobi) took 166 iterations, 37747238 multiplications and 0.128 seconds.
+Probabilistic reachability took 0.453 seconds.
+
+Value in the initial state: 0.0553777176409254
+
+Time for model checking: 0.594 seconds.
+
+Result: 0.0553777176409254 (value in the initial state)
+
+---------------------------------------------------------------------
+
+Note: There was 1 warning during computation.
+

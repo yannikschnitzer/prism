@@ -1,0 +1,179 @@
+PRISM
+=====
+
+Version: 4.5.dev
+Date: Wed Jan 29 13:07:51 GMT 2020
+Hostname: cca-ug04-039.cs.bham.ac.uk
+Memory limits: cudd=1g, java(heap)=910.5m
+Command line: prism /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/crowds/crowds.pm -const 'TotalRuns=4,CrowdSize=5' -fixdl /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/crowds/positive.pctl -fixdl -ex -sound -mainlog 'logs/sound-dtmc-logs/crowds.pm.const.TotalRuns=4,CrowdSize=5.fixdl.positive.pctl.fixdl.ex.sound.log'
+
+Parsing model file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/crowds/crowds.pm"...
+
+Type:        DTMC
+Modules:     crowds 
+Variables:   launch new runCount start run lastSeen good bad recordLast badObserve deliver done observe0 observe1 observe2 observe3 observe4 observe5 observe6 observe7 observe8 observe9 observe10 observe11 observe12 observe13 observe14 observe15 observe16 observe17 observe18 observe19 
+
+Parsing properties file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/crowds/positive.pctl"...
+
+1 property:
+(1) "positive": P=? [ F observe0>1 ]
+
+---------------------------------------------------------------------
+
+Model checking: "positive": P=? [ F observe0>1 ]
+Model constants: TotalRuns=4,CrowdSize=5
+
+Building model...
+Model constants: TotalRuns=4,CrowdSize=5
+
+Computing reachable states... 3515 states
+Reachable states exploration and model construction done in 0.106 secs.
+Sorting reachable states list...
+
+Time for model construction: 0.199 seconds.
+
+Warning: Deadlocks detected and fixed in 126 states
+
+Type:        DTMC
+States:      3515 (1 initial)
+Transitions: 6035
+
+Starting probabilistic reachability...
+Calculating predecessor relation for discrete-time Markov chain...  done (0.008 seconds)
+Starting Prob0...
+Prob0 took 0.008 seconds.
+Starting Prob1...
+Prob1 took 0.003 seconds.
+target=346, yes=367, no=2120, maybe=1028
+SOUND
+Running sound value iter
+L : 0.0023342566824867466
+U :1.000000000000004
+L : 0.0030339847638697214
+U :1.000000000000004
+L : 0.0035648629267411146
+U :1.0000000000000038
+L : 0.003974585941692426
+U :1.000000000000002
+L : 0.004293579563766493
+U :1.000000000000002
+L : 0.0045429174056349705
+U :0.9461007955359367
+L : 0.004738026501403457
+U :0.8570355640517451
+L : 0.0048906111031955645
+U :0.7630672580346846
+L : 0.005009747890373377
+U :0.6803359948050979
+L : 0.005102564684523273
+U :0.612949946744833
+L : 0.005174694423757514
+U :0.5597524290771387
+L : 0.005230598949749632
+U :0.518171428836875
+L : 0.005273811624280034
+U :0.48568587590006784
+L : 0.005307125485524062
+U :0.46022177028988853
+L : 0.005332742351683168
+U :0.44017296286133273
+L : 0.005352392384447952
+U :0.4243202405350196
+L : 0.005367430450470553
+U :0.4117405238049341
+L : 0.005378913832571451
+U :0.40173123687485446
+L : 0.005387664770096576
+U :0.393752994257896
+L : 0.005394320607288183
+U :0.3873876945842871
+L : 0.005399373826756019
+U :0.38230822524060715
+L : 0.005403203855996788
+U :0.37825654198680225
+L : 0.005406102216265444
+U :0.3750276860151524
+L : 0.005408292314492603
+U :0.37245799265872603
+L : 0.005409944950125032
+U :0.3704162691933058
+L : 0.005411190413987812
+U :0.36879709358302665
+L : 0.005412127891553422
+U :0.367515647051802
+L : 0.005412832744989899
+U :0.36650367298880704
+L : 0.005413362133869568
+U :0.3657062774646829
+L : 0.005413759340374773
+U :0.3650793702664392
+L : 0.005414057088300012
+U :0.3645876022978552
+L : 0.005414280083390127
+U :0.3642026940568686
+L : 0.005414446953101761
+U :0.3639020766063749
+L : 0.005414571724551617
+U :0.363667785024912
+L : 0.00541466494833937
+U :0.36348555747211
+L : 0.005414734551512154
+U :0.36334410253967336
+L : 0.005414786483841377
+U :0.36323450467404966
+L : 0.005414825206717348
+U :0.363149742927993
+L : 0.005414854062441522
+U :0.36308430262546626
+L : 0.005414875552792406
+U :0.3630338630289277
+L : 0.005414891548885212
+U :0.36299504698689483
+L : 0.005414903449081938
+U :0.3629652209483405
+L : 0.00541491229767862
+U :0.3629423357508829
+L : 0.005414918874018496
+U :0.3629248002874346
+L : 0.005414923759334276
+U :0.3629113815806915
+L : 0.005414927386838845
+U :0.36290112598646973
+L : 0.005414930079229746
+U :0.362893297239019
+L : 0.0054149320767467755
+U :0.36288732787309497
+L : 0.005414933558145871
+U :0.36288278123427153
+L : 0.0054149346563661035
+U :0.3628793218431486
+L : 0.005414935470224394
+U :0.36287669233047065
+L : 0.005414936073139251
+U :0.36287469552583107
+L : 0.005414936519634214
+U :0.3628731805774035
+L : 0.00541493685018315
+U :0.3628720322166265
+L : 0.005414937094818131
+U :0.3628711624706653
+L : 0.005414937275814411
+U :0.36287050427574097
+L : 0.00541493740968757
+U :0.36287000656348734
+L : 0.0054149375086782695
+U :0.3628696304865217
+L : 0.00541493758185556
+U :0.3628693465234107
+Probabilistic reachability took 0.053 seconds.
+
+Value in the initial state: 0.09619978165415088
+
+Time for model checking: 0.067 seconds.
+
+Result: 0.09619978165415088 (value in the initial state)
+
+---------------------------------------------------------------------
+
+Note: There was 1 warning during computation.
+

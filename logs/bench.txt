@@ -1,0 +1,29 @@
+
+DTMCs
+
+Standard
+prism/etc/scripts/prism-auto -x -ex ../prism-benchmarks/properties/dtmcs-reachability-quantitative.txt -p prism/bin/prism -l logs/standard-dtmc-logs
+
+Sound
+prism/etc/scripts/prism-auto -x '-ex -sound' ../prism-benchmarks/properties/dtmcs-reachability-quantitative.txt -p prism/bin/prism -l logs/sound-dtmc-logs
+
+Optimistic
+prism/etc/scripts/prism-auto -x '-ex -op' ../prism-benchmarks/properties/dtmcs-reachability-quantitative.txt -p prism/bin/prism -l logs/opti-dtmc-logs
+
+Lower-Upper Policy Iteration
+prism/etc/scripts/prism-auto -x '-ex -lu' ../prism-benchmarks/properties/dtmcs-reachability-quantitative.txt -p prism/bin/prism -l logs/lu-dtmc-logs
+
+MDPs
+
+Standard
+prism/etc/scripts/prism-auto -x -ex ../prism-benchmarks/properties/mdps-reachability-quantitative.txt -p prism/bin/prism -l logs/standard-mdp-logs
+
+Sound
+prism/etc/scripts/prism-auto -x '-ex -sound' ../prism-benchmarks/properties/mdps-reachability-quantitative.txt -p prism/bin/prism -l logs/sound-mdp-logs 
+
+Optimistic
+prism/etc/scripts/prism-auto -x '-ex -op' ../prism-benchmarks/properties/mdps-reachability-quantitative.txt -p prism/bin/prism -l logs/opti-mdp-logs
+
+Lower-Upper
+prism/etc/scripts/prism-auto -x '-ex -lu' ../prism-benchmarks/properties/mdps-reachability-quantitative.txt -p prism/bin/prism -l logs/lu-mdp-logs
+

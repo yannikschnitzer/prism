@@ -1,0 +1,56 @@
+PRISM
+=====
+
+Version: 4.5.dev
+Date: Wed Jan 29 12:29:14 GMT 2020
+Hostname: cca-ug04-039.cs.bham.ac.uk
+Memory limits: cudd=1g, java(heap)=910.5m
+Command line: prism /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/nand/nand.pm -const 'N=20,K=4' /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/nand/reliable.pctl -ex -mainlog 'logs/standard-dtmc-logs/nand.pm.const.N=20,K=4.reliable.pctl.ex.log'
+
+Parsing model file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/nand/nand.pm"...
+
+Type:        DTMC
+Modules:     multiplex 
+Variables:   u c s z zx zy x y 
+
+Parsing properties file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/nand/reliable.pctl"...
+
+1 property:
+(1) "reliable": P=? [ F s=4&z/N<0.1 ]
+
+---------------------------------------------------------------------
+
+Model checking: "reliable": P=? [ F s=4&z/N<0.1 ]
+Model constants: N=20,K=4
+
+Building model...
+Model constants: N=20,K=4
+
+Computing reachable states... 308162 states
+Reachable states exploration and model construction done in 0.812 secs.
+Sorting reachable states list...
+
+Time for model construction: 0.981 seconds.
+
+Type:        DTMC
+States:      308162 (1 initial)
+Transitions: 476472
+
+Starting probabilistic reachability...
+Calculating predecessor relation for discrete-time Markov chain...  done (0.134 seconds)
+Starting Prob0...
+Prob0 took 0.061 seconds.
+Starting Prob1...
+Prob1 took 0.09 seconds.
+target=2, yes=16, no=29276, maybe=278870
+JACOBI
+Starting value iteration (with Jacobi)...
+Value iteration (with Jacobi) took 721 iterations, 311019933 multiplications and 2.167 seconds.
+Probabilistic reachability took 2.464 seconds.
+
+Value in the initial state: 0.4941580597977725
+
+Time for model checking: 2.535 seconds.
+
+Result: 0.4941580597977725 (value in the initial state)
+

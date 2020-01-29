@@ -1,0 +1,71 @@
+PRISM
+=====
+
+Version: 4.5.dev
+Date: Wed Jan 29 13:10:14 GMT 2020
+Hostname: cca-ug04-039.cs.bham.ac.uk
+Memory limits: cudd=1g, java(heap)=910.5m
+Command line: prism /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/egl/egl.pm -const 'N=5,L=6' /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/egl/unfairA.pctl -m -ex -sound -mainlog 'logs/sound-dtmc-logs/egl.pm.const.N=5,L=6.unfairA.pctl.m.ex.sound.log'
+
+Parsing model file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/egl/egl.pm"...
+
+Type:        DTMC
+Modules:     counter partyA partyB 
+Variables:   b n phase party b0 b20 b1 b21 b2 b22 b3 b23 b4 b24 b5 b25 b6 b26 b7 b27 b8 b28 b9 b29 b10 b30 b11 b31 b12 b32 b13 b33 b14 b34 b15 b35 b16 b36 b17 b37 b18 b38 b19 b39 a0 a20 a1 a21 a2 a22 a3 a23 a4 a24 a5 a25 a6 a26 a7 a27 a8 a28 a9 a29 a10 a30 a11 a31 a12 a32 a13 a33 a14 a34 a15 a35 a16 a36 a17 a37 a18 a38 a19 a39 
+
+Parsing properties file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/egl/unfairA.pctl"...
+
+1 property:
+(1) "unfairA": P=? [ F !"knowA"&"knowB" ]
+
+---------------------------------------------------------------------
+
+Model checking: "unfairA": P=? [ F !"knowA"&"knowB" ]
+Model constants: N=5,L=6
+
+Building model...
+Model constants: N=5,L=6
+
+Computing reachable states... 115710 states
+Reachable states exploration and model construction done in 0.905 secs.
+Sorting reachable states list...
+
+Time for model construction: 1.126 seconds.
+
+Type:        DTMC
+States:      115710 (1 initial)
+Transitions: 116733
+
+Starting probabilistic reachability...
+Calculating predecessor relation for discrete-time Markov chain...  done (0.051 seconds)
+Starting Prob0...
+Prob0 took 0.028 seconds.
+Starting Prob1...
+Prob1 took 0.044 seconds.
+target=2687, yes=30287, no=85376, maybe=47
+SOUND
+Running sound value iter
+L : 0.0
+U :0.6666666666666666
+L : 0.0
+U :0.6666666666666666
+L : 0.0
+U :0.5714285714285714
+L : 0.0
+U :0.5714285714285714
+L : 0.0
+U :0.5333333333333333
+L : 0.0
+U :0.5333333333333333
+L : 0.0
+U :0.5161290322580645
+L : 0.03125
+U :0.5161290322580645
+Probabilistic reachability took 0.155 seconds.
+
+Value in the initial state: 0.515625
+
+Time for model checking: 0.2 seconds.
+
+Result: 0.515625 (value in the initial state)
+

@@ -1,0 +1,29 @@
+PRISM
+=====
+
+Version: 4.5.dev
+Date: Wed Jan 29 12:59:13 GMT 2020
+Hostname: cca-ug04-039.cs.bham.ac.uk
+Memory limits: cudd=1g, java(heap)=910.5m
+Command line: prism /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/nand/nand.pm -const 'N=60,K=2' /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/nand/reliable.pctl -ex -mainlog 'logs/standard-dtmc-logs/nand.pm.const.N=60,K=2.reliable.pctl.ex.log'
+
+Parsing model file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/nand/nand.pm"...
+
+Type:        DTMC
+Modules:     multiplex 
+Variables:   u c s z zx zy x y 
+
+Parsing properties file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/nand/reliable.pctl"...
+
+1 property:
+(1) "reliable": P=? [ F s=4&z/N<0.1 ]
+
+---------------------------------------------------------------------
+
+Model checking: "reliable": P=? [ F s=4&z/N<0.1 ]
+Model constants: N=60,K=2
+
+Building model...
+Model constants: N=60,K=2
+
+Computing reachable states... 915649 1455396 2084009 2152640 2167678 2174034 2175876 2176234 2176304 2176318 2176320

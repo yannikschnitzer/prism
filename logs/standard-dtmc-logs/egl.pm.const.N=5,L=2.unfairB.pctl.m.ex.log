@@ -1,0 +1,56 @@
+PRISM
+=====
+
+Version: 4.5.dev
+Date: Wed Jan 29 12:18:40 GMT 2020
+Hostname: cca-ug04-039.cs.bham.ac.uk
+Memory limits: cudd=1g, java(heap)=910.5m
+Command line: prism /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/egl/egl.pm -const 'N=5,L=2' /home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/egl/unfairB.pctl -m -ex -mainlog 'logs/standard-dtmc-logs/egl.pm.const.N=5,L=2.unfairB.pctl.m.ex.log'
+
+Parsing model file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/egl/egl.pm"...
+
+Type:        DTMC
+Modules:     counter partyA partyB 
+Variables:   b n phase party b0 b20 b1 b21 b2 b22 b3 b23 b4 b24 b5 b25 b6 b26 b7 b27 b8 b28 b9 b29 b10 b30 b11 b31 b12 b32 b13 b33 b14 b34 b15 b35 b16 b36 b17 b37 b18 b38 b19 b39 a0 a20 a1 a21 a2 a22 a3 a23 a4 a24 a5 a25 a6 a26 a7 a27 a8 a28 a9 a29 a10 a30 a11 a31 a12 a32 a13 a33 a14 a34 a15 a35 a16 a36 a17 a37 a18 a38 a19 a39 
+
+Parsing properties file "/home/students/tjw625/work/FYP/prism-benchmarks/models/dtmcs/egl/unfairB.pctl"...
+
+1 property:
+(1) "unfairB": P=? [ F !"knowB"&"knowA" ]
+
+---------------------------------------------------------------------
+
+Model checking: "unfairB": P=? [ F !"knowB"&"knowA" ]
+Model constants: N=5,L=2
+
+Building model...
+Model constants: N=5,L=2
+
+Computing reachable states... 33790 states
+Reachable states exploration and model construction done in 0.414 secs.
+Sorting reachable states list...
+
+Time for model construction: 0.575 seconds.
+
+Type:        DTMC
+States:      33790 (1 initial)
+Transitions: 34813
+
+Starting probabilistic reachability...
+Calculating predecessor relation for discrete-time Markov chain...  done (0.025 seconds)
+Starting Prob0...
+Prob0 took 0.016 seconds.
+Starting Prob1...
+Prob1 took 0.023 seconds.
+target=2839, yes=9672, no=24071, maybe=47
+JACOBI
+Starting value iteration (with Jacobi)...
+Value iteration (with Jacobi) took 11 iterations, 1034 multiplications and 0.022 seconds.
+Probabilistic reachability took 0.101 seconds.
+
+Value in the initial state: 0.484375
+
+Time for model checking: 0.124 seconds.
+
+Result: 0.484375 (value in the initial state)
+
