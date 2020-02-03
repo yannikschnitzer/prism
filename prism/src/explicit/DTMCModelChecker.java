@@ -860,16 +860,19 @@ public class DTMCModelChecker extends ProbModelChecker
 		// Must figure out how to solve issue of
 		// zero unknown states...
 		ModelCheckerResult resNew = new ModelCheckerResult();
-		resNew.soln = new double[n];
-		for(int s = 0; s < n; s++) {
-			if(yes.get(s)) {
-				resNew.soln[s] = 1.0;
-			}else if(no.get(s)) {
-				resNew.soln[s] = 0.0;
-			}else {
-				resNew.soln[s] = x[s] + y[s] * ((l + u) / 2.0);
-			}
+		resNew.soln = x;
+		
+		OfInt stateIter = unknownStates.iterator();
+		while(stateIter.hasNext()) {
+			int s = stateIter.nextInt();
+			resNew.soln[s] += y[s] * ((l + u) / 2.0);
 		}
+		
+		/*
+		 * for(int s = 0; s < n; s++) { if(yes.get(s)) { resNew.soln[s] = 1.0; }else
+		 * if(no.get(s)) { resNew.soln[s] = 0.0; }else { resNew.soln[s] = x[s] + y[s] *
+		 * ((l + u) / 2.0); } }
+		 */
 		
 		return resNew;
 	}
