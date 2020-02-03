@@ -37,6 +37,7 @@ import java.util.Vector;
 
 import common.IterableStateSet;
 import common.StopWatch;
+import common.iterable.EmptyIterator.OfInt;
 import parser.VarList;
 import parser.ast.Declaration;
 import parser.ast.DeclarationIntUnbounded;
@@ -852,7 +853,7 @@ public class MDPModelChecker extends ProbModelChecker
 		int i, n;
 		double initVal;
 		long timer;
-
+		
 		// Start value iteration
 		timer = System.currentTimeMillis();
 		String description = (min ? "min" : "max")
@@ -888,6 +889,59 @@ public class MDPModelChecker extends ProbModelChecker
 				init[i] = yes.get(i) ? 1.0 : no.get(i) ? 0.0 : initVal;
 		}
 
+		// Temporary code
+		ModelCheckerResult res = null;
+		
+		// TODO: Use this while testing on MDPs
+		// mdpSolnMethod = MDPSolnMethod.SOUND;
+		
+		// TODO: find out whether should set res.timeTaken here
+		if (mdpSolnMethod == MDPSolnMethod.SOUND) {
+			unknown = new BitSet();
+			unknown.set(0, n);
+			unknown.andNot(yes);
+			unknown.andNot(no);
+			
+			IntSet unknownStates = IntSet.asIntSet(unknown);
+			
+			res = doSoundValueIteration(mdp, yes, no, unknownStates, strat, min);
+			// mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
+			res.timeTaken = timer / 1000;
+			return res;
+		}
+				
+		// Temporary code
+		if (mdpSolnMethod == MDPSolnMethod.OPTIMISTIC) {
+			unknown = new BitSet();
+			unknown.set(0, n);
+			unknown.andNot(yes);
+			unknown.andNot(no);
+			
+			IntSet unknownStates = IntSet.asIntSet(unknown);
+			
+			res = doOptimisticValueIteration(mdp, yes, unknownStates, min, strat);
+			res.timeTaken = timer / 1000;
+			// mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
+			return res;
+		}
+		
+		// Temporary code
+		if (mdpSolnMethod == MDPSolnMethod.LU_POLICY) {
+			unknown = new BitSet();
+			unknown.set(0, n);
+			unknown.andNot(yes);
+			unknown.andNot(no);
+			if(known != null)
+				unknown.andNot(known);
+				
+			IntSet unknownStates = IntSet.asIntSet(unknown);
+			
+			res = doLowerUpper(mdp, yes, no, unknownStates, known, init, min, strat);
+			// mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
+			res.timeTaken = timer / 1000;
+			return res;
+		}
+
 		// Determine set of states actually need to compute values for
 		unknown = new BitSet();
 		unknown.set(0, n);
@@ -896,42 +950,6 @@ public class MDPModelChecker extends ProbModelChecker
 		if (known != null)
 			unknown.andNot(known);
 		
-		// Temporary code
-		ModelCheckerResult res = null;
-		
-		// TODO: find out whether should set res.timeTaken here
-		if (mdpSolnMethod == MDPSolnMethod.SOUND) {
-			res = doSoundValueIteration(mdp, yes, unknown, strat, min);
-			// mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
-			res.timeTaken = timer / 1000;
-			return res;
-		}
-		
-		// Temporary code
-		boolean testMyGauss = false;
-		if (testMyGauss) {
-			double v[] = new double[n];
-			gaussSeidelWithError(mdp, yes, unknown, min, termCritParam, v, strat);
-			res = new ModelCheckerResult();
-			res.soln = v;
-			return res;
-		}
-				
-		// Temporary code
-		if (mdpSolnMethod == MDPSolnMethod.OPTIMISTIC) {
-			res = doOptimisticValueIteration(mdp, yes, unknown, min, strat);
-			res.timeTaken = timer / 1000;
-			// mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
-			return res;
-		}
-		
-		// Temporary code
-		if (mdpSolnMethod == MDPSolnMethod.LU_POLICY) {
-			res = doLowerUpper(mdp, yes, no, unknown, known, init, min, strat);
-			// mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
-			res.timeTaken = timer / 1000;
-			return res;
-		}
 		
 		if (iterationsExport != null)
 			iterationsExport.exportVector(init, 0);
@@ -1027,14 +1045,9 @@ public class MDPModelChecker extends ProbModelChecker
 					dy -= p * y[t];
 					dx += p * x[t];
 				}
-				
-				// mainLog.println("DY: " + dy);
-				// mainLog.println("DX: " + dx);
-		
+
 				if (dy > 0) {
-				// if(min ? dy < 0 : dy > 0) { // TODO: Look into this line
 					 d = min ? Double.min(d , dx/dy ) : Double.max(d, dx/dy);
-					 // d = Double.max(d, dx / dy);
 				}
 				
 			}
@@ -1042,7 +1055,7 @@ public class MDPModelChecker extends ProbModelChecker
 		return d;
 	}
 	
-	protected ModelCheckerResult doSoundValueIteration(MDP mdp, BitSet yes, BitSet unknown, int strat[], boolean min) throws PrismException{
+	protected ModelCheckerResult doSoundValueIteration(MDP mdp, BitSet yes, BitSet no, IntSet unknownStates, int strat[], boolean min) throws PrismException{
 		
 		// Ensure that prob0 and prob1 states have been calculated
 		if (!(precomp && prob0 && prob1)) {
@@ -1057,9 +1070,8 @@ public class MDPModelChecker extends ProbModelChecker
 		
 		for(int s = 0; s < n; s++) {
 			x[s] = yes.get(s)     ? 1 : 0;
-			y[s] = unknown.get(s) ? 1 : 0;
+			y[s] = !(yes.get(s) || no.get(s)) ? 1 : 0;
 		}
-		
 		
 		double l = Double.NEGATIVE_INFINITY, u = Double.POSITIVE_INFINITY;
 		
@@ -1075,13 +1087,10 @@ public class MDPModelChecker extends ProbModelChecker
 		// overshooting correct answer and then going back????
 		
 		double d = min ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
-		// double d = Double.NEGATIVE_INFINITY;
 		
 		int loops = 0;
 		int action;
 		double eps = termCritParam;
-		
-		int k = 0;
 		
 		boolean done = false;
 		while(!done) {
@@ -1091,77 +1100,63 @@ public class MDPModelChecker extends ProbModelChecker
 			double cand; 							// x[s] / (1 - y[s])
 			double qmin = Double.POSITIVE_INFINITY; // min s ∈ S? (x[s] / (1 - y[s]))
 			double qmax = Double.NEGATIVE_INFINITY; // max s ∈ S? (x[s] / (1 - y[s]))
-			for(int s = 0; s < mdp.getNumStates(); s++) {
-
-				if(unknown.get(s)) {
-					// action = findAction(mdp, min, lastX, lastY, s, u);			
-					action = findAction(mdp, min, x, y, s, l, u);
-					// update strat
-					if(strat != null)
-						strat[s] = action;
-					// cand = decisionValue(mdp, min, lastX, lastY, s, action);
-					cand = decisionValue(mdp, min, x, y, s, action);
-					
-					// mainLog.println("CAND: " + cand);
-					
-					// TODO: Consider this line here...
-					d = min ? Double.min(d, cand) : Double.max(d, cand); 
-					// d = Double.max(d, cand);
-					
-					double sumX = 0;
-					double sumY = 0;
-					
-					// update x[s] and y[s]
-					Iterator<Entry<Integer,Double>> iter = mdp.getTransitionsIterator(s, action);
-					while(iter.hasNext()) {
-						Entry<Integer,Double> e = iter.next();
-						double p = e.getValue();
-						int t = e.getKey();
-						sumX += p * x[t];
-						sumY += p * y[t];
-					}
-					x[s] = sumX;
-					y[s] = sumY;
-					
-					if(s == 0) {
-						mainLog.println("x[0] " + x[0]);
-					}
-					
-					// y[s] * (u − l) < 2 * ε
-					done &= y[s] * (u - l) < 2 * eps;
-					
-					// if y[s] < 1 for all s ∈ S?
-					changeBounds &= y[s] < 1.0;
-
-					if (changeBounds) {
-						cand = x[s] / (1 - y[s]);
-						qmin = Double.min(qmin, cand);
-						qmax = Double.max(qmax, cand);
-					}
+			
+			PrimitiveIterator.OfInt stateIter = unknownStates.iterator();
+			while(stateIter.hasNext()) {
+				int s = stateIter.nextInt();	
+				// action = findAction(mdp, min, lastX, lastY, s, u);			
+				action = findAction(mdp, min, x, y, s, l, u);
+				// update strat
+				if(strat != null)
+					strat[s] = action;
+				// cand = decisionValue(mdp, min, lastX, lastY, s, action);
+				cand = decisionValue(mdp, min, x, y, s, action);
+				
+				// mainLog.println("CAND: " + cand);
+				
+				// TODO: Consider this line here...
+				d = min ? Double.min(d, cand) : Double.max(d, cand); 
+				// d = Double.max(d, cand);
+				
+				double sumX = 0;
+				double sumY = 0;
+				
+				// update x[s] and y[s]
+				Iterator<Entry<Integer,Double>> iter = mdp.getTransitionsIterator(s, action);
+				while(iter.hasNext()) {
+					Entry<Integer,Double> e = iter.next();
+					double p = e.getValue();
+					int t = e.getKey();
+					sumX += p * x[t];
+					sumY += p * y[t];
+				}
+				if(sumX < x[s])
+					mainLog.println("x["+s+"] DOWN: " + x[s] + " --> " + sumX);// throw new PrismException("x[s] went down!");
+				if(sumY > y[s])
+					mainLog.println("y["+s+"]   UP: " + y[s] + " --> " + sumY);// throw new PrismException("y[s] went up!");
+				x[s] = sumX;
+				y[s] = sumY;
+				
+				// y[s] * (u − l) < 2 * ε
+				done &= y[s] * (u - l) < 2 * eps;
+				
+				// if y[s] < 1 for all s ∈ S?
+				changeBounds &= y[s] < 1.0;
+			
+				if (changeBounds) {
+					cand = x[s] / (1 - y[s]);
+					qmin = Double.min(qmin, cand);
+					qmax = Double.max(qmax, cand);
 				}
 			}
 			
 			done &= l != Double.NEGATIVE_INFINITY;
 			done &= u != Double.POSITIVE_INFINITY;
-			done &= k-- <= 0;
-			// the dangers of not using Gauss-Seidel
-			if(done) break;
 			
 			if(qmax != qmax) {
 				mainLog.println("qmax is NaN");
 				while(true);
 			}
-			
-			// mainLog.println("D: " + d);
-			// mainLog.println("QMAX: " + qmax);
-			
-			// TODO: Change this to Gauss-Seidel
-			// swap
-			/*
-			tempX = currX; tempY = currY;
-			currX = lastX; currY = lastY;
-			lastX = tempX; lastY = tempY;
-			*/
 			
 			if(changeBounds) {
 				if(!min) {
@@ -1181,83 +1176,85 @@ public class MDPModelChecker extends ProbModelChecker
 		mainLog.println("\n L: " + l + "\t U: " + u);
 		
 		ModelCheckerResult res = new ModelCheckerResult();
-		res.soln = new double[n];
-		for(int s = 0; s < n; s++) {
-			if(unknown.get(s)) {
-				if(s == 0) {
-					mainLog.println("x[" + s + "] : " + x[s]);
-					mainLog.println("y[" + s + "] : " + y[s]);
-				}
-				// res.soln[s] = currX[s] + currY[s] * ((l + u) / 2.0);
-				res.soln[s] = x[s] + y[s] * ((l + u) / 2.0);
- 			}else {
-				// res.soln[s] = currX[s];
- 				res.soln[s] = x[s];
-			}
-				
+		
+		// efficiency
+		res.soln = x;
+		
+		PrimitiveIterator.OfInt stateIter = unknownStates.iterator();
+		while(stateIter.hasNext()) {
+			int s = stateIter.nextInt();
+			res.soln[s] += y[s] * ( (l + u) / 2.0); 
 		}
+		
+		/*
+		 * for(int s = 0; s < n; s++) { if(! (yes.get(s) || no.get(s))) { res.soln[s] =
+		 * x[s] + y[s] * ((l + u) / 2.0); }else { res.soln[s] = x[s]; }
+		 * 
+		 * }
+		 */
 		return res;
 	}
 	
-	protected void gaussSeidelWithError(MDP mdp, BitSet yes, BitSet unknown, boolean min, double error, double v[], int strat[]) {
+	protected void gaussSeidelWithError(MDP mdp, BitSet yes, IntSet unknownStates, boolean min, double error, double v[], double u[], int strat[]) {
 		// mainLog.println("Starting Gauss-Seidel with error: " + error);
+		
+		// TODO: should only calculate this once
 		int n = mdp.getNumStates();
-		for(int s=0; s<n; s++) {
-			v[s] = yes.get(s) ? 1 : 0;
-		}
+		// for(int s=0; s<n; s++) {
+		// 	v[s] = yes.get(s) ? 1 : 0;
+		// }
 		
 		boolean done = false;
 		while(!done) {
 			done = true;
-			for(int s=0; s<n; s++) {
-				if(unknown.get(s)) {
-					double candidate = min ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
-					for(int i=0; i<mdp.getNumChoices(s); i++) {
-						double sum = 0;
-						Iterator<Entry<Integer,Double>> iter = mdp.getTransitionsIterator(s, i);
-						while(iter.hasNext()) {
-							Entry<Integer,Double> e = iter.next();
-							int    t = e.getKey();
-							double p = e.getValue();
-							sum += p * v[t];
-						}
-						// candidate = min ? Double.min(candidate,sum) : Double.max(candidate,sum);
-						if(min ? sum < candidate : sum > candidate) {
-							candidate = sum;
-							if (strat != null) {
-								strat[s] = i;
-							}
+			PrimitiveIterator.OfInt stateIter = unknownStates.iterator();
+			while(stateIter.hasNext()) {
+				int s = stateIter.nextInt();
+				double candidate = min ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+				for(int i=0; i<mdp.getNumChoices(s); i++) {
+					double sum = 0;
+					Iterator<Entry<Integer,Double>> iter = mdp.getTransitionsIterator(s, i);
+					while(iter.hasNext()) {
+						Entry<Integer,Double> e = iter.next();
+						int    t = e.getKey();
+						double p = e.getValue();
+						sum += p * v[t];
+					}
+					// candidate = min ? Double.min(candidate,sum) : Double.max(candidate,sum);
+					if(min ? sum < candidate : sum > candidate) {
+						candidate = sum;
+						if (strat != null) {
+							strat[s] = i;
 						}
 					}
-					done = candidate - v[s] > error ? false : done;
-					v[s] = candidate;
 				}
+			done = candidate - v[s] > error ? false : done;
+			v[s] = candidate;
+			u[s] = v[s] * (1 + termCritParam); // u[s] = v[s] * (1 + error) for all s ∈ S?
 			}
 		}
 	}
 	
-	protected ModelCheckerResult doOptimisticValueIteration(MDP mdp, BitSet yes, BitSet unknown, boolean min, int strat[]) {
+	protected ModelCheckerResult doOptimisticValueIteration(MDP mdp, BitSet yes, IntSet unknownStates, boolean min, int strat[]) {
 		double eps   = termCritParam;
 		double error = eps;
 		int n = mdp.getNumStates();
 		
-		double v[]    = new double[n];
-		double u[]    = new double[n];
-		double temp[] = new double[n];
+		double v[] = new double[n];
+		double u[] = new double[n];
 		
 		Iterator<Entry<Integer,Double>> iter;
 		Entry<Integer,Double> e;
 		
+		for(int s=0; s<n; s++) {
+			v[s] = yes.get(s) ? 1 : 0;
+			u[s] = v[s]; // will change for unknown states
+		}
+		
 		boolean done = false;
 		while(!done) {
-			// perform Gauss-Seidel Value Iteration to give v
-			gaussSeidelWithError(mdp, yes, unknown, min, error, v, strat);
-			// vector u[s] = v[s] * (1 + error) for all s ∈ S?
-			for(int s=0; s<n; s++) {
-				// mainLog.println("v[" + s + "] = " + v[s]);
-				u[s] = unknown.get(s) ? v[s] * (1 + eps) : v[s];
-				// mainLog.println("u[" + s + "] = " + u[s]);
-			}
+			// perform Gauss-Seidel Value Iteration to give v and u
+			gaussSeidelWithError(mdp, yes, unknownStates, min, error, v, u, strat);
 			while(true) {
 				error = 0;
 				// TODO: consider edge case where S? is empty
@@ -1266,54 +1263,50 @@ public class MDPModelChecker extends ProbModelChecker
 				boolean up = true, down = true, cross = false;
 				boolean inEps = true;
 				// foreach s ∈ S?
-				for(int s=0; s<n; s++) {
-					if(unknown.get(s)) {
-						anyUnknown = true;
-						double vnew = min ? 1 : 0;
-						double unew = min ? 1 : 0;
-						for(int i = 0 ; i < mdp.getNumChoices(s); i++) {
-							double vcand = 0.0;
-							double ucand = 0.0;
-							for(iter = mdp.getTransitionsIterator(s, i); iter.hasNext(); ) {
-								e = iter.next();
-								double p = e.getValue();
-								int    t = e.getKey();
-								vcand += p * v[t];
-								ucand += p * u[t];
-							}
-							vnew = min ? Double.min(vnew, vcand) : Double.max(vnew, vcand);
-							unew = min ? Double.min(unew, ucand) : Double.max(unew, ucand);
+				PrimitiveIterator.OfInt stateIter = unknownStates.iterator();
+				while(stateIter.hasNext()) {
+					int s = stateIter.nextInt();
+					anyUnknown = true;
+					double vnew = min ? 1 : 0;
+					double unew = min ? 1 : 0;
+					for(int i = 0 ; i < mdp.getNumChoices(s); i++) {
+						double vcand = 0.0;
+						double ucand = 0.0;
+						for(iter = mdp.getTransitionsIterator(s, i); iter.hasNext(); ) {
+							e = iter.next();
+							double p = e.getValue();
+							int    t = e.getKey();
+							vcand += p * v[t];
+							ucand += p * u[t];
 						}
-						if (vnew > 0) {
-							// TODO: Think about this bit
-							error = Double.min(error, (vnew - v[s]) / vnew);
-							// error = Double.max(error, (vnew - v[s]) / vnew);
-							/* 
-							setting this to min rather than max resolves
-							non-termination issue in Bad Test (1) 
-							is unusual case, as test appears to do
-							preprocessing 
-							*/
-							
-						}
-							
-						// if unew == u[s] then we run into termination trouble
-						// if we keep up as false
-						// (likely caused by lack of preprocessing)
-						if(unew <= u[s]) // if(unew < u[s])
-							up = false;
-						if(unew > u[s]) {
-							mainLog.println("-----------");
-							mainLog.println("u[" + s + "] :" + u[s]);
-							mainLog.println("unew : " + unew);
-							down = false;
-						}
-						if(unew < vnew)
-							cross = true;
-						v[s] = vnew;
-						u[s] = unew;
-						inEps &= (u[s] - v[s]) <= 2*eps * v[s];
+						vnew = min ? Double.min(vnew, vcand) : Double.max(vnew, vcand);
+						unew = min ? Double.min(unew, ucand) : Double.max(unew, ucand);
 					}
+					if (vnew > 0) {
+						// TODO: Think about this bit
+						error = Double.min(error, (vnew - v[s]) / vnew);
+						// error = Double.max(error, (vnew - v[s]) / vnew);
+						/* 
+						setting this to min rather than max resolves
+						non-termination issue in Bad Test (1) 
+						is unusual case, as test appears to do
+						preprocessing 
+						*/
+						
+					}
+					// if unew == u[s] then we run into termination trouble
+					// if we keep up as false
+					// (likely caused by lack of preprocessing)
+					if(unew <= u[s]) // if(unew < u[s])
+						up = false;
+					if(unew > u[s]) {
+						down = false;
+					}
+					if(unew < vnew)
+						cross = true;
+					v[s] = vnew;
+					u[s] = unew;
+					inEps &= (u[s] - v[s]) <= 2*eps * v[s];					
 				}
 				
 				if(!anyUnknown) {
@@ -1324,7 +1317,7 @@ public class MDPModelChecker extends ProbModelChecker
 				// optimisation: if u moved up for all s ∈ S?
 				// then it is in fact a lower bound
 				if (up) {
-					temp = v;
+					double temp[] = v;
 					v = u;
 					u = temp;
 				}
@@ -1346,17 +1339,16 @@ public class MDPModelChecker extends ProbModelChecker
 		for(int s=0; s<n; s++) {
 			res.soln[s] += v[s];
 			res.soln[s] /= 2;
-			// TODO: What to do with strat?
 		}
 		return res;
 	}
 	
 	
-	protected ModelCheckerResult doLowerUpper(MDP mdp, BitSet yes, BitSet no, BitSet unknown, BitSet known, double[] init, boolean min, int[] strat) throws PrismException{
+	protected ModelCheckerResult doLowerUpper(MDP mdp, BitSet yes, BitSet no, IntSet unknownStates, BitSet known, double[] init, boolean min, int[] strat) throws PrismException{
 		
 		// Ensure that prob0 and prob1 states have been calculated
 		if (!(precomp && prob0 && prob1)) {
-			throw new PrismNotSupportedException("Precomputations (Prob0 & Prob1) must be enabled for Sound Value Iteration");
+			throw new PrismNotSupportedException("Precomputations (Prob0 & Prob1) must be enabled for Lower-Upper Policy Iteration");
 		}
 		
 		int n = mdp.getNumStates();
@@ -1369,10 +1361,9 @@ public class MDPModelChecker extends ProbModelChecker
 			for(int s = 0; s < n; s++)
 				strat[s] = 0;
 		}else {
-		// initialise strategy for unknown states
-			for(int s = 0; s < n; s++) {
-				if(unknown.get(s))
-					strat[s] = 0;
+			PrimitiveIterator.OfInt stateIter = unknownStates.iterator();
+			while(stateIter.hasNext()) {
+				strat[stateIter.nextInt()] = 0;
 			}
 		}
 		DoubleMatrix2D soln = null;
@@ -1424,28 +1415,28 @@ public class MDPModelChecker extends ProbModelChecker
 			
 			// Improve adversary in each state
 			done = true;
-			for(int s = 0; s < n; s++) {
-				if(unknown.get(s)) {
-					// σ'(s) = opt { Σ μ(t) * Prob(σ , t, F a)  |  (α,μ) ∈ Steps(s) }
-					int cand = 0;
-					double v = min ? 1 : 0;
-					for(int i = 0; i < mdp.getNumChoices(s); i++) {
-						double sum = 0;
-						Iterator<Entry<Integer,Double>> iter = mdp.getTransitionsIterator(s, i);
-						while(iter.hasNext()) {
-							Entry<Integer,Double> e = iter.next();
-							int    t = e.getKey();
-							double p = e.getValue();
-							sum += p * soln.get(t, 0);
-						}
-						if(min ? sum < v : sum > v) {
-							cand = i;
-							v = sum;
-						}
+			PrimitiveIterator.OfInt stateIter = unknownStates.iterator();
+			while(stateIter.hasNext()) {
+				int s = stateIter.nextInt();
+				// σ'(s) = opt { Σ μ(t) * Prob(σ , t, F a)  |  (α,μ) ∈ Steps(s) }
+				int cand = 0;
+				double v = min ? 1 : 0;
+				for(int i = 0; i < mdp.getNumChoices(s); i++) {
+					double sum = 0;
+					Iterator<Entry<Integer,Double>> iter = mdp.getTransitionsIterator(s, i);
+					while(iter.hasNext()) {
+						Entry<Integer,Double> e = iter.next();
+						int    t = e.getKey();
+						double p = e.getValue();
+						sum += p * soln.get(t, 0);
 					}
-					done &= strat[s] == cand;
-					strat[s] = cand;
+					if(min ? sum < v : sum > v) {
+						cand = i;
+						v = sum;
+					}
 				}
+				done &= strat[s] == cand;
+				strat[s] = cand;
 			}
 		
 		}

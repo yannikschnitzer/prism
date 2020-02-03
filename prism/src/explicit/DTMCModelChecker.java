@@ -700,13 +700,32 @@ public class DTMCModelChecker extends ProbModelChecker
 		mainLog.println("target=" + target.cardinality() + ", yes=" + numYes + ", no=" + numNo + ", maybe=" + (n - (numYes + numNo)));
 
 		boolean termCritAbsolute = termCrit == TermCrit.ABSOLUTE;
-
-		mainLog.println(linEqMethod);
+		
+		// TODO: Just for testing
+		// linEqMethod = LinEqMethod.SOUND;
 		
 		// Implementation of Sound Value Iteration for Markov Chains
 		if (linEqMethod == LinEqMethod.SOUND) {
+			BitSet unknown = new BitSet();
+			unknown.set(0, n);
+			unknown.andNot(yes);
+			unknown.andNot(no);
+			
+			// TODO: Have a think as to how to use
+			// known without violating algorithm's assumptions
+			
+			// might be as simple as:
+			// for s in known
+			// x[s] = init[s]
+			// y[s] = 0
+			
+			// if (known != null)
+			//	unknown.andNot(known);
+			
+			IntSet unknownStates = IntSet.asIntSet(unknown);
+			
 			mainLog.println("Running sound value iter");
-			res = doSoundValueIteration(dtmc, yes, no);
+			res = doSoundValueIteration(dtmc, yes, no, unknownStates);
 			timer = System.currentTimeMillis() - timer;
 			res.timeTaken = timer;
 			mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
@@ -719,7 +738,10 @@ public class DTMCModelChecker extends ProbModelChecker
 			unknown.set(0,n);
 			unknown.andNot(yes);
 			unknown.andNot(no);
-			res = doOptimisticValueIteration(dtmc, yes, unknown);
+			
+			IntSet unknownStates = IntSet.asIntSet(unknown);
+			
+			res = doOptimisticValueIteration(dtmc, yes, unknownStates);
 			timer = System.currentTimeMillis() - timer;
 			res.timeTaken = timer;
 			mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
@@ -755,6 +777,8 @@ public class DTMCModelChecker extends ProbModelChecker
 			throw new PrismException("Unknown linear equation solution method " + linEqMethod.fullName());
 		}
 
+		mainLog.println("TOPOLOGICAL:" + getDoTopologicalValueIteration());
+		
 		if (doIntervalIteration) {
 			res = doIntervalIterationReachProbs(dtmc, no, yes, init, known, iterationMethod, getDoTopologicalValueIteration());
 		} else {
@@ -774,7 +798,7 @@ public class DTMCModelChecker extends ProbModelChecker
 	}
 
 
-	protected ModelCheckerResult doSoundValueIteration(DTMC dtmc, BitSet yes, BitSet no) throws PrismException{
+	protected ModelCheckerResult doSoundValueIteration(DTMC dtmc, BitSet yes, BitSet no, IntSet unknownStates) throws PrismException{
 		
 		// Ensure that prob0 and prob1 states have been calculated	
 		if (!(precomp && prob0 && prob1)) {
@@ -782,62 +806,51 @@ public class DTMCModelChecker extends ProbModelChecker
 		}
 		
 		int n = dtmc.getNumStates();
-		
 		double[] x = new double[n];
 		double[] y = new double[n];
-		boolean[] unknown = new boolean[n];
 		for(int s = 0; s < n; s++) {
-			unknown[s] = ! (yes.get(s) || no.get(s));
 			x[s] = yes.get(s) ? 1 : 0; // f(x)[S0] = 0, f(x)[G]  = 1
-			y[s] = unknown[s] ? 1 : 0;
+			y[s] = ! (yes.get(s) || no.get(s)) ? 1 : 0;
 		}
+		
 		double l = Double.NEGATIVE_INFINITY, u = Double.POSITIVE_INFINITY;
 		double eps = termCritParam;
 		
-		boolean done = false;
-		
-		// TODO: Change to Gauss-Seidel before benchmarking
-		
 		while(true) {
-			done = true;
+			boolean done = true;
 			boolean changeBounds = true; 			// all s ∈ S? (y[s] < 1)
 			double cand; 							// x[s] / (1 - y[s])
 			double qmin = Double.POSITIVE_INFINITY; // min s ∈ S? (x[s] / (1 - y[s]))
 			double qmax = Double.NEGATIVE_INFINITY; // max s ∈ S? (x[s] / (1 - y[s]))
-			for(int s = 0; s < n; s++) {
-				if(unknown[s]) {
-					double sumX = 0;
-					double sumY = 0;
-					Iterator<Map.Entry<Integer, Double>> iter = dtmc.getTransitionsIterator(s);
-					while(iter.hasNext()) {
-						Map.Entry<Integer, Double> e = iter.next();
-						double p = e.getValue();
-						int    t = e.getKey();
-						sumX += p * x[t]; // f(x)[s]  = sum ( P(s,t) * x[t] ) for all s in S?
-						sumY += p * y[t]; // h(y)[s]  = sum ( P(s,t) * y[t] ) for all s in S?
-					}
-					x[s] = sumX;
-					y[s] = sumY;
-					done &= y[s] * (u - l) < 2 * eps;
-					changeBounds &= y[s] < 1.0;
-					if(changeBounds) {
-						cand = x[s] / (1 - y[s]);
-						qmin = Double.min(qmin, cand);
-						qmax = Double.max(qmax, cand);
-					}
-				}	
-			}
 			
+			OfInt stateIter = unknownStates.iterator();
+			while(stateIter.hasNext()) {
+				int s = stateIter.nextInt();
+				double sumX = 0;
+				double sumY = 0;
+				Iterator<Map.Entry<Integer, Double>> iter = dtmc.getTransitionsIterator(s);
+				while(iter.hasNext()) {
+					Map.Entry<Integer, Double> e = iter.next();
+					double p = e.getValue();
+					int    t = e.getKey();
+					sumX += p * x[t]; // f(x)[s]  = sum ( P(s,t) * x[t] ) for all s in S?
+					sumY += p * y[t]; // h(y)[s]  = sum ( P(s,t) * y[t] ) for all s in S?
+				}
+				x[s] = sumX;
+				y[s] = sumY;
+				done &= y[s] * (u - l) < 2 * eps;
+				changeBounds &= y[s] < 1.0;
+				if(changeBounds) {
+					cand = x[s] / (1 - y[s]);
+					qmin = Double.min(qmin, cand);
+					qmax = Double.max(qmax, cand);
+				}
+			}
 			done &= l != Double.NEGATIVE_INFINITY;
 			done &= u != Double.POSITIVE_INFINITY;
-			// the dangers of not using the Gauss-Seidel Method!!
-			if(done) break;
 			
-			// swap
-			// tempX = currX; tempY = currY;
-			// currX = lastX; currY = lastY;
-			// lastX = tempX; lastY = tempY;
-						
+			if(done) break;
+		
 			if(changeBounds) {
 				l = Double.max(l , qmin);
 				u = Double.min(u , qmax);
@@ -861,38 +874,33 @@ public class DTMCModelChecker extends ProbModelChecker
 		return resNew;
 	}
 	
-	protected void gaussSeidelWithError(DTMC dtmc, BitSet yes, BitSet unknown, double error, double v[]) {
-		mainLog.println("Starting Gauss-Seidel with error: " + error);
-		
-		int n = dtmc.getNumStates();
-		for(int s=0; s<n; s++) {
-			v[s] = yes.get(s) ? 1 : 0;
-		}
+	protected void gaussSeidelWithError(DTMC dtmc, BitSet yes, IntSet unknownStates, double error, double v[], double u[]) {
+		//mainLog.println("Starting Gauss-Seidel with error: " + error);
 		
 		boolean done = false;
 		while(!done) {
 			done = true;
-			for(int s=0; s<n; s++) {
-				if(unknown.get(s)) {
-					double sum = 0;
-					Iterator<Entry<Integer,Double>> iter = dtmc.getTransitionsIterator(s);
-					while(iter.hasNext()) {
-						Entry<Integer,Double> e = iter.next();
-						int    t = e.getKey();
-						double p = e.getValue();
-						sum += p * v[t];
-					}
-					done = sum - v[s] > error ? false : done;
-					v[s] = sum;
+			OfInt stateIter = unknownStates.iterator();
+			while(stateIter.hasNext()) {
+				int s = stateIter.nextInt();
+				double sum = 0;
+				Iterator<Entry<Integer,Double>> iter = dtmc.getTransitionsIterator(s);
+				while(iter.hasNext()) {
+					Entry<Integer,Double> e = iter.next();
+					int    t = e.getKey();
+					double p = e.getValue();
+					sum += p * v[t];
 				}
+				done &= sum - v[s] <= error;
+				v[s] = sum;
+				u[s] = v[s] * (1 + termCritParam); // u[s] = v[s] * (1 + error) for all s ∈ S?
 			}
 		}
 		
 	}
 	
-	protected ModelCheckerResult doOptimisticValueIteration(DTMC dtmc, BitSet yes, BitSet unknown) {
-		double eps = termCritParam;
-		double error = eps;
+	protected ModelCheckerResult doOptimisticValueIteration(DTMC dtmc, BitSet yes, IntSet unknownStates) {
+		double error = termCritParam;
 		int n = dtmc.getNumStates();
 		double v[] = new double[n];
 		double u[] = new double[n];
@@ -907,49 +915,56 @@ public class DTMCModelChecker extends ProbModelChecker
 		//     prism-tests/functionality/export/vector/exportvector.prism.3.props.txt
 		// after running run config. Bad Export
 		
+		for(int s=0; s<n; s++) {
+			v[s] = yes.get(s) ? 1 : 0;
+			u[s] = v[s]; // will change for unknown states
+		}
+		
 		boolean done = false;
 		while(!done) {
-			gaussSeidelWithError(dtmc, yes, unknown, error, v);
-			// vector u[s] = v[s] * (1 + error) for all s ∈ S?
-			for(int s=0; s<n; s++) {
-				mainLog.println("v[" + s + "] = " + v[s]);
-				u[s] = unknown.get(s) ? v[s] * (1 + eps) : v[s];
-				mainLog.println("u[" + s + "] = " + u[s]);
-			}
+			gaussSeidelWithError(dtmc, yes, unknownStates, error, v, u);
 			while(true) {
 				error = 0;
-				boolean anyUnknown = false;
-				
+				boolean anyUnknown = false;		
 				boolean up = true, down = true, cross = false;
 				boolean inEps = true;
-				for(int s=0; s<n;s++) {
-					if(unknown.get(s)) {
-						anyUnknown = true;
-						double vnew = 0.0;
-						double unew = 0.0;
-						for(iter = dtmc.getTransitionsIterator(s); iter.hasNext(); ) {
-							e = iter.next();
-							double p = e.getValue();
-							int    t = e.getKey();
-							vnew += p * v[t];
-							unew += p * u[t];
-						}
-						if (vnew > 0)
-							error = Double.max(error, (vnew - v[s]));
-						if (unew <= u[s])
-							up = false;
-						if (unew > u[s])
-							down = false;
-						if (unew < vnew)
-							cross = true;
-						v[s] = vnew;
-						u[s] = unew;
-						inEps &= (u[s] - v[s]) <= 2*eps * v[s];
+				
+				OfInt stateIter = unknownStates.iterator();
+				while(stateIter.hasNext()) {
+					int s = stateIter.nextInt();
+					anyUnknown = true;
+					double vnew = 0.0;
+					double unew = 0.0;
+					for(iter = dtmc.getTransitionsIterator(s); iter.hasNext(); ) {
+						e = iter.next();
+						double p = e.getValue();
+						int    t = e.getKey();
+						vnew += p * v[t];
+						unew += p * u[t];
 					}
+					if (vnew > 0)
+						error = Double.max(error, (vnew - v[s]));
+					if (unew <= u[s])
+						up = false;
+					if (unew > u[s])
+						down = false;
+					if (unew < vnew)
+						cross = true;
+					v[s] = vnew;
+					u[s] = unew;
+					inEps &= (u[s] - v[s]) <= 2*termCritParam * v[s];
 				}
 				if(!anyUnknown) {
 					done = true;
 					break;
+				}
+				
+				// optimisation: if u moved up for all s ∈ S?
+				// then it is in fact a lower bound
+				if (up) {
+					double temp[] = v;
+					v = u;
+					u = temp;
 				}
 				
 				if (up || cross)
@@ -974,7 +989,7 @@ public class DTMCModelChecker extends ProbModelChecker
 
 		// Ensure that prob0 and prob1 states have been calculated
 		if (!(precomp && prob0 && prob1)) {
-			throw new PrismNotSupportedException("Precomputations (Prob0 & Prob1) must be enabled for Sound Value Iteration");
+			throw new PrismNotSupportedException("Precomputations (Prob0 & Prob1) must be enabled for Lower-Upper");
 		}
 
 		try {
