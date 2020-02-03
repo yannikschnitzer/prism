@@ -996,13 +996,13 @@ public class MDPModelChecker extends ProbModelChecker
 					if(u != Double.POSITIVE_INFINITY) {
 						sum += p * (x[t] + y[t] * u);
 					}else {
-						sum += p * y[t];
+						sum += p * x[t];
 					}
 				}else {
 					if(l != Double.NEGATIVE_INFINITY) {
 						sum += p * (x[t] + y[t] * l);
 					}else {
-						sum += p * y[t];
+						sum += p * x[t];
 					}
 				}
 			}
@@ -1152,11 +1152,6 @@ public class MDPModelChecker extends ProbModelChecker
 			
 			done &= l != Double.NEGATIVE_INFINITY;
 			done &= u != Double.POSITIVE_INFINITY;
-			
-			if(qmax != qmax) {
-				mainLog.println("qmax is NaN");
-				while(true);
-			}
 			
 			if(changeBounds) {
 				if(!min) {
