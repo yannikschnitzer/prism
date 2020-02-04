@@ -848,7 +848,7 @@ public class MDPModelChecker extends ProbModelChecker
 	 */
 	protected ModelCheckerResult doValueIterationReachProbs(MDP mdp, BitSet no, BitSet yes, boolean min, double init[], BitSet known, IterationMethod iterationMethod, boolean topological, int strat[])
 			throws PrismException
-	{
+	{	
 		BitSet unknown;
 		int i, n;
 		double initVal;
@@ -916,7 +916,9 @@ public class MDPModelChecker extends ProbModelChecker
 			unknown.set(0, n);
 			unknown.andNot(yes);
 			unknown.andNot(no);
-			
+			/*if(known != null)
+				unknown.andNot(known);
+			*/
 			IntSet unknownStates = IntSet.asIntSet(unknown);
 			
 			res = doOptimisticValueIteration(mdp, yes, unknownStates, min, strat);
@@ -1062,6 +1064,8 @@ public class MDPModelChecker extends ProbModelChecker
 			throw new PrismNotSupportedException("Precomputations (Prob0 & Prob1) must be enabled for Sound Value Iteration");
 		}
 		
+		mainLog.println("termCritParam: " + termCritParam);
+		
 		int n = mdp.getNumStates();
 		
 		double[] x , y;
@@ -1093,6 +1097,7 @@ public class MDPModelChecker extends ProbModelChecker
 		double eps = termCritParam;
 		
 		boolean done = false;
+		
 		while(!done) {
 			boolean changeBounds = true;
 			done = true;
@@ -1130,19 +1135,30 @@ public class MDPModelChecker extends ProbModelChecker
 					sumX += p * x[t];
 					sumY += p * y[t];
 				}
+				
 				if(sumX < x[s])
 					mainLog.println("x["+s+"] DOWN: " + x[s] + " --> " + sumX);// throw new PrismException("x[s] went down!");
 				if(sumY > y[s])
 					mainLog.println("y["+s+"]   UP: " + y[s] + " --> " + sumY);// throw new PrismException("y[s] went up!");
+				
+				
+				// A small number of cases were terminating early.
+				// TODO: Find out whether this line is the fix to use.
+				// TODO: See how it affects number of iterations
+				// this essentially makes it value iteration with
+				// extra checks
+				done &= sumX - x[s] < eps;
+				
 				x[s] = sumX;
 				y[s] = sumY;
 				
 				// y[s] * (u − l) < 2 * ε
 				done &= y[s] * (u - l) < 2 * eps;
+				// TODO: how to decide if y[s] has underflowed??
 				
 				// if y[s] < 1 for all s ∈ S?
 				changeBounds &= y[s] < 1.0;
-			
+				
 				if (changeBounds) {
 					cand = x[s] / (1 - y[s]);
 					qmin = Double.min(qmin, cand);
@@ -1163,12 +1179,14 @@ public class MDPModelChecker extends ProbModelChecker
 				}
 				//mainLog.println("L: " + l);
 				//mainLog.println("U: " + u);
+				
+				stateIter = unknownStates.iterator();
 			}
 			loops++;
 		}
 		
 		mainLog.println("LOOPS: " + loops);
-		mainLog.println("\n L: " + l + "\t U: " + u);
+		mainLog.println("L: " + l + "\t U: " + u);
 		
 		ModelCheckerResult res = new ModelCheckerResult();
 		
@@ -1178,7 +1196,7 @@ public class MDPModelChecker extends ProbModelChecker
 		PrimitiveIterator.OfInt stateIter = unknownStates.iterator();
 		while(stateIter.hasNext()) {
 			int s = stateIter.nextInt();
-			res.soln[s] += y[s] * ( (l + u) / 2.0); 
+			res.soln[s] += y[s] * ( (l + u) / 2.0);
 		}
 		
 		/*
