@@ -889,61 +889,6 @@ public class MDPModelChecker extends ProbModelChecker
 				init[i] = yes.get(i) ? 1.0 : no.get(i) ? 0.0 : initVal;
 		}
 
-		// Temporary code
-		ModelCheckerResult res = null;
-		
-		// TODO: Use this while testing on MDPs
-		// mdpSolnMethod = MDPSolnMethod.SOUND;
-		
-		// TODO: find out whether should set res.timeTaken here
-		if (mdpSolnMethod == MDPSolnMethod.SOUND) {
-			unknown = new BitSet();
-			unknown.set(0, n);
-			unknown.andNot(yes);
-			unknown.andNot(no);
-			
-			IntSet unknownStates = IntSet.asIntSet(unknown);
-			
-			res = doSoundValueIteration(mdp, yes, no, unknownStates, strat, min);
-			// mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
-			res.timeTaken = timer / 1000;
-			return res;
-		}
-				
-		// Temporary code
-		if (mdpSolnMethod == MDPSolnMethod.OPTIMISTIC) {
-			unknown = new BitSet();
-			unknown.set(0, n);
-			unknown.andNot(yes);
-			unknown.andNot(no);
-			if(known != null)
-				unknown.andNot(known);
-			
-			IntSet unknownStates = IntSet.asIntSet(unknown);
-			
-			res = doOptimisticValueIteration(mdp, yes, unknownStates, min, strat, init);
-			res.timeTaken = timer / 1000;
-			// mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
-			return res;
-		}
-		
-		// Temporary code
-		if (mdpSolnMethod == MDPSolnMethod.LU_POLICY) {
-			unknown = new BitSet();
-			unknown.set(0, n);
-			unknown.andNot(yes);
-			unknown.andNot(no);
-			if(known != null)
-				unknown.andNot(known);
-				
-			IntSet unknownStates = IntSet.asIntSet(unknown);
-			
-			res = doLowerUpper(mdp, yes, no, unknownStates, known, init, min, strat);
-			// mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
-			res.timeTaken = timer / 1000;
-			return res;
-		}
-
 		// Determine set of states actually need to compute values for
 		unknown = new BitSet();
 		unknown.set(0, n);
@@ -952,14 +897,38 @@ public class MDPModelChecker extends ProbModelChecker
 		if (known != null)
 			unknown.andNot(known);
 		
+		IntSet unknownStates = IntSet.asIntSet(unknown);
+		
+		// Temporary code
+		ModelCheckerResult res = null;
+		
+		// TODO: find out whether should set res.timeTaken here
+		if (mdpSolnMethod == MDPSolnMethod.SOUND) {
+			res = doSoundValueIteration(mdp, yes, no, unknownStates, strat, min, init);
+			res.timeTaken = timer / 1000;
+			return res;
+		}
+				
+		// Temporary code
+		if (mdpSolnMethod == MDPSolnMethod.OPTIMISTIC) {
+			res = doOptimisticValueIteration(mdp, yes, unknownStates, min, strat, init);
+			res.timeTaken = timer / 1000;
+			return res;
+		}
+		
+		// Temporary code
+		if (mdpSolnMethod == MDPSolnMethod.LU_POLICY) {
+			res = doLowerUpper(mdp, yes, no, unknownStates, known, init, min, strat);
+			// mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
+			res.timeTaken = timer / 1000;
+			return res;
+		}
 		
 		if (iterationsExport != null)
 			iterationsExport.exportVector(init, 0);
 
 		IterationMethod.IterationValIter iteration = iterationMethod.forMvMultMinMax(mdp, min, strat);
 		iteration.init(init);
-
-		IntSet unknownStates = IntSet.asIntSet(unknown);
 		
 		if (topological) {
 			// Compute SCCInfo, including trivial SCCs in the subgraph obtained when only considering
@@ -1057,38 +1026,37 @@ public class MDPModelChecker extends ProbModelChecker
 		return d;
 	}
 	
-	protected ModelCheckerResult doSoundValueIteration(MDP mdp, BitSet yes, BitSet no, IntSet unknownStates, int strat[], boolean min) throws PrismException{
+	protected ModelCheckerResult doSoundValueIteration(MDP mdp, BitSet yes, BitSet no, IntSet unknownStates, int strat[], boolean min, double[] init) throws PrismException{
 		
 		// Ensure that prob0 and prob1 states have been calculated
 		if (!(precomp && prob0 && prob1)) {
 			throw new PrismNotSupportedException("Precomputations (Prob0 & Prob1) must be enabled for Sound Value Iteration");
 		}
 		
-		mainLog.println("termCritParam: " + termCritParam);
-		
 		int n = mdp.getNumStates();
 		
 		double[] x , y;
-		x = new double[n];
-		y = new double[n];
-		
-		for(int s = 0; s < n; s++) {
-			x[s] = yes.get(s)     ? 1 : 0;
-			y[s] = !(yes.get(s) || no.get(s)) ? 1 : 0;
+
+		if(init!= null) {
+			x = init;
+			y = new double[n];
+			Arrays.fill(y, 0);
+			PrimitiveIterator.OfInt stateIter = unknownStates.iterator();
+			while(stateIter.hasNext()) {
+				y[stateIter.nextInt()] = 1;
+			}
+			
+		}else {
+			x = new double[n];
+			y = new double[n];
+			for(int s = 0; s < n; s++) {
+				x[s] = yes.get(s) ? 1 : 0; // f(x)[S0] = 0, f(x)[G]  = 1
+				y[s] = ! (yes.get(s) || no.get(s)) ? 1 : 0;
+			}
 		}
 		
-		double l = Double.NEGATIVE_INFINITY, u = Double.POSITIVE_INFINITY;
-		
-		// TODO: Run Configuration Sound MDP fails test 2
-		// should get 0.851563
-		// but instead gets 1.0 
-		// we get x[0] = 1.0 which clearly should not be happening
-		
-		// TODO: Examine paper to see if my changes make sense for
-		// min == true
-		
-		// NOTE: Problem is early termination!
-		// overshooting correct answer and then going back????
+		double l = Double.NEGATIVE_INFINITY;
+		double u = Double.POSITIVE_INFINITY;
 		
 		double d = min ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
 		

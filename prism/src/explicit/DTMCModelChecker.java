@@ -700,31 +700,19 @@ public class DTMCModelChecker extends ProbModelChecker
 
 		boolean termCritAbsolute = termCrit == TermCrit.ABSOLUTE;
 		
-		// TODO: Just for testing
-		linEqMethod = LinEqMethod.OPTIMISTIC;
+		BitSet unknown = new BitSet();
+		unknown.set(0,n);
+		unknown.andNot(yes);
+		unknown.andNot(no);
+		if(known != null)
+			unknown.andNot(known);
+		
+		IntSet unknownStates = IntSet.asIntSet(unknown);
 		
 		// Implementation of Sound Value Iteration for Markov Chains
 		if (linEqMethod == LinEqMethod.SOUND) {
-			BitSet unknown = new BitSet();
-			unknown.set(0, n);
-			unknown.andNot(yes);
-			unknown.andNot(no);
-			
-			// TODO: Have a think as to how to use
-			// known without violating algorithm's assumptions
-			
-			// might be as simple as:
-			// for s in known
-			// x[s] = init[s]
-			// y[s] = 0
-			
-			// if (known != null)
-			//	unknown.andNot(known);
-			
-			IntSet unknownStates = IntSet.asIntSet(unknown);
-			
-			mainLog.println("Running sound value iter");
-			res = doSoundValueIteration(dtmc, yes, no, unknownStates);
+			mainLog.println("Running sound value iteration on DTMC");
+			res = doSoundValueIteration(dtmc, yes, no, unknownStates, init);
 			timer = System.currentTimeMillis() - timer;
 			res.timeTaken = timer;
 			mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
@@ -732,16 +720,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		}
 		
 		if (linEqMethod == LinEqMethod.OPTIMISTIC) {
-			mainLog.println("Running optimisitc value iter");
-			BitSet unknown = new BitSet();
-			unknown.set(0,n);
-			unknown.andNot(yes);
-			unknown.andNot(no);
-			if(known != null)
-				unknown.andNot(known);
-			
-			IntSet unknownStates = IntSet.asIntSet(unknown);
-			
+			mainLog.println("Running optimistic value iteration on DTMC");
 			res = doOptimisticValueIteration(dtmc, yes, unknownStates, init);
 			timer = System.currentTimeMillis() - timer;
 			res.timeTaken = timer;
@@ -750,7 +729,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		}
 		
 		if(linEqMethod == LinEqMethod.LOWER_UPPER) {
-			mainLog.println("Lower-upper decomp. approach");
+			mainLog.println("Lower-upper decomposition of DTMC");
 			res = doLowerUpper(dtmc, yes, no, known, init);
 			timer = System.currentTimeMillis() - timer;
 			res.timeTaken = timer;
@@ -799,7 +778,7 @@ public class DTMCModelChecker extends ProbModelChecker
 	}
 
 
-	protected ModelCheckerResult doSoundValueIteration(DTMC dtmc, BitSet yes, BitSet no, IntSet unknownStates) throws PrismException{
+	protected ModelCheckerResult doSoundValueIteration(DTMC dtmc, BitSet yes, BitSet no, IntSet unknownStates, double init[]) throws PrismException{
 		
 		// Ensure that prob0 and prob1 states have been calculated	
 		if (!(precomp && prob0 && prob1)) {
@@ -807,13 +786,27 @@ public class DTMCModelChecker extends ProbModelChecker
 		}
 		
 		int n = dtmc.getNumStates();
-		double[] x = new double[n];
-		double[] y = new double[n];
-		for(int s = 0; s < n; s++) {
-			x[s] = yes.get(s) ? 1 : 0; // f(x)[S0] = 0, f(x)[G]  = 1
-			y[s] = ! (yes.get(s) || no.get(s)) ? 1 : 0;
-		}
 		
+		double[] x, y;
+		
+		if(init!= null) {
+			x = init;
+			y = new double[n];
+			Arrays.fill(y, 0);
+			OfInt stateIter = unknownStates.iterator();
+			while(stateIter.hasNext()) {
+				y[stateIter.nextInt()] = 1;
+			}
+			
+		}else {
+			x = new double[n];
+			y = new double[n];
+			for(int s = 0; s < n; s++) {
+				x[s] = yes.get(s) ? 1 : 0; // f(x)[S0] = 0, f(x)[G]  = 1
+				y[s] = ! (yes.get(s) || no.get(s)) ? 1 : 0;
+			}
+		}
+	
 		double l = Double.NEGATIVE_INFINITY, u = Double.POSITIVE_INFINITY;
 		double eps = termCritParam;
 		
@@ -837,6 +830,9 @@ public class DTMCModelChecker extends ProbModelChecker
 					sumX += p * x[t]; // f(x)[s]  = sum ( P(s,t) * x[t] ) for all s in S?
 					sumY += p * y[t]; // h(y)[s]  = sum ( P(s,t) * y[t] ) for all s in S?
 				}
+				
+				done &= sumX - x[s] < eps;
+				
 				x[s] = sumX;
 				y[s] = sumY;
 				done &= y[s] * (u - l) < 2 * eps;
