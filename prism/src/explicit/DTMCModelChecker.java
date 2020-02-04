@@ -601,7 +601,6 @@ public class DTMCModelChecker extends ProbModelChecker
 	 */
 	public ModelCheckerResult computeReachProbs(DTMC dtmc, BitSet remain, BitSet target, double init[], BitSet known) throws PrismException
 	{
-
 		ModelCheckerResult res = null;
 		BitSet no, yes;
 		int n, numYes, numNo;
@@ -609,7 +608,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		PredecessorRelation pre = null;
 		// Local copy of setting
 		LinEqMethod linEqMethod = this.linEqMethod;
-
+		
 		// Switch to a supported method, if necessary
 		switch (linEqMethod)
 		{
@@ -702,7 +701,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		boolean termCritAbsolute = termCrit == TermCrit.ABSOLUTE;
 		
 		// TODO: Just for testing
-		// linEqMethod = LinEqMethod.SOUND;
+		linEqMethod = LinEqMethod.OPTIMISTIC;
 		
 		// Implementation of Sound Value Iteration for Markov Chains
 		if (linEqMethod == LinEqMethod.SOUND) {
@@ -738,10 +737,12 @@ public class DTMCModelChecker extends ProbModelChecker
 			unknown.set(0,n);
 			unknown.andNot(yes);
 			unknown.andNot(no);
+			if(known != null)
+				unknown.andNot(known);
 			
 			IntSet unknownStates = IntSet.asIntSet(unknown);
 			
-			res = doOptimisticValueIteration(dtmc, yes, unknownStates);
+			res = doOptimisticValueIteration(dtmc, yes, unknownStates, init);
 			timer = System.currentTimeMillis() - timer;
 			res.timeTaken = timer;
 			mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
@@ -896,17 +897,18 @@ public class DTMCModelChecker extends ProbModelChecker
 				}
 				done &= sum - v[s] <= error;
 				v[s] = sum;
-				u[s] = v[s] * (1 + termCritParam); // u[s] = v[s] * (1 + error) for all s ∈ S?
+				// u[s] = v[s] * (1 + error) for all s ∈ S?
+				u[s] = Double.min(1 , v[s] * (1 + termCritParam) );
 			}
 		}
 		
 	}
 	
-	protected ModelCheckerResult doOptimisticValueIteration(DTMC dtmc, BitSet yes, IntSet unknownStates) {
+	protected ModelCheckerResult doOptimisticValueIteration(DTMC dtmc, BitSet yes, IntSet unknownStates, double[] init) {
 		double error = termCritParam;
 		int n = dtmc.getNumStates();
-		double v[] = new double[n];
-		double u[] = new double[n];
+		double v[];
+		double u[];
 		
 		Iterator<Entry<Integer,Double>> iter;
 		Entry<Integer,Double> e;
@@ -918,9 +920,16 @@ public class DTMCModelChecker extends ProbModelChecker
 		//     prism-tests/functionality/export/vector/exportvector.prism.3.props.txt
 		// after running run config. Bad Export
 		
-		for(int s=0; s<n; s++) {
-			v[s] = yes.get(s) ? 1 : 0;
-			u[s] = v[s]; // will change for unknown states
+		if(init != null) {
+			v = init;
+			u = Arrays.copyOf(v, n); // will change for unknown states
+		}else {
+			v = new double[n];
+			u = new double[n];
+			for(int s=0; s<n; s++) {
+				v[s] = yes.get(s) ? 1 : 0;
+				u[s] = v[s]; // will change for unknown states
+			}
 		}
 		
 		boolean done = false;
@@ -985,6 +994,7 @@ public class DTMCModelChecker extends ProbModelChecker
 			res.soln[s] += v[s];
 			res.soln[s] /= 2;
 		}
+		
 		return res;
 	}
 	

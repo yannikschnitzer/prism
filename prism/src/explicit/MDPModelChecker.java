@@ -916,12 +916,12 @@ public class MDPModelChecker extends ProbModelChecker
 			unknown.set(0, n);
 			unknown.andNot(yes);
 			unknown.andNot(no);
-			/*if(known != null)
+			if(known != null)
 				unknown.andNot(known);
-			*/
+			
 			IntSet unknownStates = IntSet.asIntSet(unknown);
 			
-			res = doOptimisticValueIteration(mdp, yes, unknownStates, min, strat);
+			res = doOptimisticValueIteration(mdp, yes, unknownStates, min, strat, init);
 			res.timeTaken = timer / 1000;
 			// mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
 			return res;
@@ -1248,20 +1248,27 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 	}
 	
-	protected ModelCheckerResult doOptimisticValueIteration(MDP mdp, BitSet yes, IntSet unknownStates, boolean min, int strat[]) {
+	protected ModelCheckerResult doOptimisticValueIteration(MDP mdp, BitSet yes, IntSet unknownStates, boolean min, int strat[], double init[]) {
 		double eps   = termCritParam;
 		double error = eps;
 		int n = mdp.getNumStates();
 		
-		double v[] = new double[n];
-		double u[] = new double[n];
+		double v[];
+		double u[];
 		
 		Iterator<Entry<Integer,Double>> iter;
 		Entry<Integer,Double> e;
 		
-		for(int s=0; s<n; s++) {
-			v[s] = yes.get(s) ? 1 : 0;
-			u[s] = v[s]; // will change for unknown states
+		if(init != null) {
+			v = init;
+			u = Arrays.copyOf(v, n); // will change for unknown states
+		}else {
+			v = new double[n];
+			u = new double[n];
+			for(int s=0; s<n; s++) {
+				v[s] = yes.get(s) ? 1 : 0;
+				u[s] = v[s]; // will change for unknown states
+			}
 		}
 		
 		boolean done = false;
