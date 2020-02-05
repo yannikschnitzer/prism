@@ -899,6 +899,9 @@ public class MDPModelChecker extends ProbModelChecker
 		
 		IntSet unknownStates = IntSet.asIntSet(unknown);
 		
+		if (iterationsExport != null)
+			iterationsExport.exportVector(init, 0);
+		
 		// Temporary code
 		ModelCheckerResult res = null;
 		
@@ -923,9 +926,6 @@ public class MDPModelChecker extends ProbModelChecker
 			res.timeTaken = timer / 1000;
 			return res;
 		}
-		
-		if (iterationsExport != null)
-			iterationsExport.exportVector(init, 0);
 
 		IterationMethod.IterationValIter iteration = iterationMethod.forMvMultMinMax(mdp, min, strat);
 		iteration.init(init);
@@ -1332,6 +1332,7 @@ public class MDPModelChecker extends ProbModelChecker
 	}
 	
 	
+	
 	protected ModelCheckerResult doLowerUpper(MDP mdp, BitSet yes, BitSet no, IntSet unknownStates, BitSet known, double[] init, boolean min, int[] strat) throws PrismException{
 		
 		// Ensure that prob0 and prob1 states have been calculated
@@ -1356,6 +1357,9 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 		DoubleMatrix2D soln = null;
 		
+		double[][] a = new double[n][n];
+		double[][] b = new double[n][1];
+		
 		boolean done = false;
 		while(!done) {
 			// compute reachability for DTMC
@@ -1365,8 +1369,6 @@ public class MDPModelChecker extends ProbModelChecker
 			// bin/ngprism ../prism-tests/functionality/verify/ptas/reach/firewire_abst.nm
 			// ../prism-tests/functionality/verify/ptas/reach/firewire_abst.nm.props -const delay=30 -const L=2 -ptamethod digital -ex -testall
 			// TODO: Catch that
-			double[][] a = new double[n][n];
-			double[][] b = new double[n][1];
 			
 			for(int i = 0; i < n; i++)
 				for(int j = 0; j < n; j++)
@@ -1399,7 +1401,14 @@ public class MDPModelChecker extends ProbModelChecker
 			DoubleMatrix2D  A  = f.make(a);			
 			DoubleMatrix2D  B  = f.make(b);
 			LUDecomposition lu = new LUDecomposition(A);
-			soln = lu.solve(B);
+			
+			if(lu.isNonsingular()) {
+				mainLog.println("SOLVING");
+				soln = lu.solve(B);
+			}else {
+				mainLog.println("NON-SINGULAR");
+				soln = B;
+			}
 			
 			// Improve adversary in each state
 			done = true;
@@ -1418,16 +1427,24 @@ public class MDPModelChecker extends ProbModelChecker
 						double p = e.getValue();
 						sum += p * soln.get(t, 0);
 					}
+					
 					if(min ? sum < v : sum > v) {
+					//if(min ? sum <= v : sum >= v) {
 						cand = i;
 						v = sum;
 					}
 				}
+				//mainLog.println("CAND: " + cand);
+				
 				done &= strat[s] == cand;
 				strat[s] = cand;
+				//if(s == 1)
+				//mainLog.println("strat["+s+"] : " + cand);
 			}
 		
 		}
+		
+		mainLog.println("Done");
 		
 		ModelCheckerResult res = new ModelCheckerResult();
 		res.soln = new double[n];
