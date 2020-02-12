@@ -1049,7 +1049,7 @@ public class DTMCModelChecker extends ProbModelChecker
 			return res;
 		
 		} catch (OutOfMemoryError e) {
-			throw new PrismException("Insufficient memory");
+			throw new PrismNotSupportedException("Insufficient memory");
 		}
 		
 	}
@@ -1099,7 +1099,7 @@ public class DTMCModelChecker extends ProbModelChecker
 
 		return result;
 	}
-
+	
 	/**
 	 * Prob0 precomputation algorithm (using a fixed-point computation),
 	 * i.e. determine the states of a DTMC which, with probability 0,
@@ -1240,6 +1240,55 @@ public class DTMCModelChecker extends ProbModelChecker
 		return result;
 	}
 
+	// static equiv
+	public static BitSet prob1Static(DTMC dtmc, BitSet remain, BitSet target, PredecessorRelation pre) {
+		// Implements the constrained reachability algorithm from
+		// Baier, Katoen: Principles of Model Checking (Corollary 10.31 Qualitative Constrained Reachability)
+
+		// Special case: no 'target' states
+		if (target.isEmpty()) {
+			// empty set
+			return new BitSet();
+		}
+
+		// mark all states in 'target' and all states not in 'remain' as absorbing
+		BitSet absorbing = new BitSet();
+		if (remain != null) {
+			// complement remain
+			absorbing.set(0, dtmc.getNumStates(), true);
+			absorbing.andNot(remain);
+		} else {
+			// for remain == null, remain consists of all states
+			// thus, absorbing = the empty set is already the complementation of remain
+		}
+		// union with 'target'
+		absorbing.or(target);
+
+		// M' = DTMC where all 'absorbing' states are considered to be absorbing
+
+		// the set of states that satisfy E [ F target ] in M'
+		// Pre*(target)
+		BitSet canReachTarget = pre.calculatePreStar(null, target, absorbing);
+
+		// complement canReachTarget
+		// S\Pre*(target)
+		BitSet canNotReachTarget = new BitSet();
+		canNotReachTarget.set(0, dtmc.getNumStates(), true);
+		canNotReachTarget.andNot(canReachTarget);
+
+		// the set of states that can reach a canNotReachTarget state in M'
+		// Pre*(S\Pre*(target))
+		BitSet probTargetNot1 = pre.calculatePreStar(null, canNotReachTarget, absorbing);
+
+		// complement probTargetNot1
+		// S\Pre*(S\Pre*(target))
+		BitSet result = new BitSet();
+		result.set(0, dtmc.getNumStates(), true);
+		result.andNot(probTargetNot1);
+
+		return result;
+	}
+	
 	/**
 	 * Prob1 precomputation algorithm (using a fixed-point computation)
 	 * i.e. determine the states of a DTMC which, with probability 1,

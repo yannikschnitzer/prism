@@ -512,6 +512,8 @@ public class MDPModelChecker extends ProbModelChecker
 						res.soln[i] = res1.soln[maxQuotient.mapStateToRestrictedModel(i)];
 					}
 				}
+			} else if (mdpSolnMethod == mdpSolnMethod.LU_POLICY) {
+				res = doLowerUpper(mdp, target, yes, no, min, strat);
 			} else {
 				res = computeReachProbsNumeric(mdp, mdpSolnMethod, no, yes, min, init, known, strat);
 			}
@@ -593,9 +595,10 @@ public class MDPModelChecker extends ProbModelChecker
 			if (doIntervalIteration) {
 				doIntervalIteration = false; // placeholder
 			}
-			//TODO: iteration method
-			iterationMethod = new IterationMethodPower(termCrit == TermCrit.ABSOLUTE, termCritParam);
-			break;
+			// TODO: Call Lower-Upper Policy Iteration from here so we can
+			// use target states (rather than yes states) in dtmc MC's prob0 and prob1 calc
+			throw new PrismNotSupportedException("SHOULD NOT HAVE GOT HERE!!!!");
+			
 		default:
 			throw new PrismException("Unknown MDP solution method " + mdpSolnMethod.fullName());
 		}
@@ -894,7 +897,7 @@ public class MDPModelChecker extends ProbModelChecker
 		unknown.set(0, n);
 		unknown.andNot(yes);
 		unknown.andNot(no);
-		if (known != null)
+		if (known != null && mdpSolnMethod != MDPSolnMethod.LU_POLICY)
 			unknown.andNot(known);
 		
 		IntSet unknownStates = IntSet.asIntSet(unknown);
@@ -921,10 +924,8 @@ public class MDPModelChecker extends ProbModelChecker
 		
 		// Temporary code
 		if (mdpSolnMethod == MDPSolnMethod.LU_POLICY) {
-			res = doLowerUpper(mdp, yes, no, unknownStates, known, init, min, strat);
-			// mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
-			res.timeTaken = timer / 1000;
-			return res;
+			mainLog.println("BAD TIMES");
+			throw new PrismNotSupportedException("SHOULD NOT HAVE GOT TO THIS POINT");
 		}
 
 		IterationMethod.IterationValIter iteration = iterationMethod.forMvMultMinMax(mdp, min, strat);
@@ -959,10 +960,6 @@ public class MDPModelChecker extends ProbModelChecker
 				int    t = e.getKey();
 				double p = e.getValue();
 				
-				// recent changes here -- brings us closer to right answer
-				// I think that findAction is giving us the wrong answer
-				// and hence why the prob for initial state is wrong
-				// for Run Configuration Sound MDP
 				if(!min) {
 					if(u != Double.POSITIVE_INFINITY) {
 						sum += p * (x[t] + y[t] * u);
@@ -1177,14 +1174,7 @@ public class MDPModelChecker extends ProbModelChecker
 	}
 	
 	protected void gaussSeidelWithError(MDP mdp, BitSet yes, IntSet unknownStates, boolean min, double error, double v[], double u[], int strat[]) {
-		// mainLog.println("Starting Gauss-Seidel with error: " + error);
-		
-		// TODO: should only calculate this once
-		int n = mdp.getNumStates();
-		// for(int s=0; s<n; s++) {
-		// 	v[s] = yes.get(s) ? 1 : 0;
-		// }
-		
+		// mainLog.println("Starting Gauss-Seidel with error: " + error);	
 		boolean done = false;
 		while(!done) {
 			done = true;
@@ -1332,17 +1322,41 @@ public class MDPModelChecker extends ProbModelChecker
 	}
 	
 	
+	// TODO:
+	// can do with or without calculating prob0 and prob1 for MDPs
+	// but can use the fact that they have been calculated
 	
-	protected ModelCheckerResult doLowerUpper(MDP mdp, BitSet yes, BitSet no, IntSet unknownStates, BitSet known, double[] init, boolean min, int[] strat) throws PrismException{
+	// can write this variant later:
+	// protected ModelCheckerResult doLowerUpper(MDP mdp, BitSet yes, BitSet no, IntSet unknownStates, BitSet known, double[] init, boolean min, int[] strat) 
+	
+	protected ModelCheckerResult doLowerUpper(MDP mdp, BitSet target, BitSet yes, BitSet no, boolean min, int[] strat) throws PrismException{
 		
-		// Ensure that prob0 and prob1 states have been calculated
-		if (!(precomp && prob0 && prob1)) {
-			throw new PrismNotSupportedException("Precomputations (Prob0 & Prob1) must be enabled for Lower-Upper Policy Iteration");
-		}
+		// NOTE: If we don't use known states properly
+		// then we will have problem when using unknownStates to iterate
+		// so at present, don't use them
+		
+		// when we call the DTMC Model Checker
+		// we will have done these
+		precomp = true;
+		prob0 = true;
+		prob1 = true;
+		
+		double timer = System.currentTimeMillis();
+		
+		DTMCModelChecker mcDTMC;
+		mcDTMC = new DTMCModelChecker(this);
+		mcDTMC.inheritSettings(this);
+		mcDTMC.setLog(new PrismDevNullLog());
 		
 		int n = mdp.getNumStates();
 		
-		try {
+		// Create solution vectors
+		double[] soln = new double[n];
+		double[] soln2 = new double[n];
+
+		// Initialise solution vectors.
+		for (int i = 0; i < n; i++)
+			soln[i] = soln2[i] = yes.get(i) ? 1.0 : 0.0;
 		
 		// strat can be null
 		if (strat == null) {
@@ -1350,113 +1364,65 @@ public class MDPModelChecker extends ProbModelChecker
 			for(int s = 0; s < n; s++)
 				strat[s] = 0;
 		}else {
-			PrimitiveIterator.OfInt stateIter = unknownStates.iterator();
-			while(stateIter.hasNext()) {
-				strat[stateIter.nextInt()] = 0;
+			for(int s=0; s<n; s++)
+			if(yes.get(s) || no.get(s)) {
+				strat[s] = 0;
 			}
 		}
-		DoubleMatrix2D soln = null;
 		
-		double[][] a = new double[n][n];
-		double[][] b = new double[n][1];
 		
+		int iters = 0;
+		int totalIters = 0;
 		boolean done = false;
 		while(!done) {
+			iters++;
 			// compute reachability for DTMC
+			DTMC dtmc = new DTMCFromMDPMemorylessAdversary(mdp, strat);
+			PredecessorRelation pre = new PredecessorRelation(dtmc);
 			
-			// Note: one test gives us a OutOfMemoryError exception here
-			// namely:
-			// bin/ngprism ../prism-tests/functionality/verify/ptas/reach/firewire_abst.nm
-			// ../prism-tests/functionality/verify/ptas/reach/firewire_abst.nm.props -const delay=30 -const L=2 -ptamethod digital -ex -testall
-			// TODO: Catch that
+			// is the problem that
+			// prob1 states for MDP differ from target states ???
+			// (yes != target)
 			
-			for(int i = 0; i < n; i++)
-				for(int j = 0; j < n; j++)
-					a[i][j] = 0;
+			BitSet dtmcNo = mcDTMC.prob0(dtmc, null, target, pre);
+			BitSet dtmcYes = mcDTMC.prob1(dtmc, null, target, pre);
 			
-			for(int s = 0; s < n; s++) {
-				if(yes.get(s)) {
-					a[s][s] = 1;
-					b[s][0] = 1;
-				}else if(no.get(s)) {
-					a[s][s] = 1;
-					b[s][0] = 0;
-				}else if(known != null && known.get(s)) {
-					a[s][s] = 1;
-					b[s][0] = init[s];
-				}else {
-					Iterator<Entry<Integer,Double>> iter = mdp.getTransitionsIterator(s, strat[s]);
-					while(iter.hasNext()) {
-						Entry<Integer,Double> e = iter.next();
-						int    t = e.getKey();
-						double p = e.getValue();
-						a[s][t] = p;
-					}
-					a[s][s] -= 1;
-					b[s][0] = 0;
-				}
-			}
-			
-			DoubleFactory2D f  = DoubleFactory2D.sparse;
-			DoubleMatrix2D  A  = f.make(a);			
-			DoubleMatrix2D  B  = f.make(b);
-			LUDecomposition lu = new LUDecomposition(A);
-			
-			if(lu.isNonsingular()) {
-				mainLog.println("SOLVING");
-				soln = lu.solve(B);
-			}else {
-				mainLog.println("NON-SINGULAR");
-				soln = B;
-			}
-			
-			// Improve adversary in each state
-			done = true;
-			PrimitiveIterator.OfInt stateIter = unknownStates.iterator();
-			while(stateIter.hasNext()) {
-				int s = stateIter.nextInt();
-				// σ'(s) = opt { Σ μ(t) * Prob(σ , t, F a)  |  (α,μ) ∈ Steps(s) }
-				int cand = 0;
-				double v = min ? 1 : 0;
-				for(int i = 0; i < mdp.getNumChoices(s); i++) {
-					double sum = 0;
-					Iterator<Entry<Integer,Double>> iter = mdp.getTransitionsIterator(s, i);
-					while(iter.hasNext()) {
-						Entry<Integer,Double> e = iter.next();
-						int    t = e.getKey();
-						double p = e.getValue();
-						sum += p * soln.get(t, 0);
-					}
-					
-					if(min ? sum < v : sum > v) {
-					//if(min ? sum <= v : sum >= v) {
-						cand = i;
-						v = sum;
-					}
-				}
-				//mainLog.println("CAND: " + cand);
+			try {
+				// TODO: Swap this out for a trusted function, see what happens.
+				// hence problem is with this step
 				
-				done &= strat[s] == cand;
-				strat[s] = cand;
-				//if(s == 1)
-				//mainLog.println("strat["+s+"] : " + cand);
+				ModelCheckerResult res = mcDTMC.doLowerUpper(dtmc, dtmcYes, dtmcNo, null, null);
+				//ModelCheckerResult res = mcDTMC.computeReachProbsGaussSeidel(dtmc, dtmcNo, dtmcYes, null, null, false);
+				mainLog.println("Got result");
+				soln = res.soln;
+				totalIters += res.numIters;
+			} catch (PrismNotSupportedException e) {
+				throw e;
 			}
-		
+			// see if best
+			// Check if optimal, improve non-optimal choices			
+			mdp.mvMultMinMax(soln, min, soln2, null, false, null);
+			done = true;
+			for(int s=0; s<n; s++) {
+				if(yes.get(s) || no.get(s))
+					continue;
+				if (!PrismUtils.doublesAreClose(soln[s], soln2[s], termCritParam, termCrit == TermCrit.ABSOLUTE)) {
+					done = false;
+					List<Integer> opt = mdp.mvMultMinMaxSingleChoices(s, soln, min, soln2[s]);
+					// Only update strategy if strictly better
+					if (!opt.contains(strat[s]))
+						strat[s] = opt.get(0);
+				}
+			}
 		}
+		timer = System.currentTimeMillis() - timer;
 		
-		mainLog.println("Done");
-		
-		ModelCheckerResult res = new ModelCheckerResult();
-		res.soln = new double[n];
-		for(int i = 0; i < n; i++) {
-			res.soln[i] = soln.get(i, 0);
-		}
+		ModelCheckerResult res;
+		res = new ModelCheckerResult();
+		res.soln = soln;
+		res.numIters = totalIters;
+		res.timeTaken = timer / 1000.0;
 		return res;
-		
-		} catch (OutOfMemoryError e) {
-			throw new PrismException("Insufficient memory");
-		}
-		
 	}
 	
 	/**
