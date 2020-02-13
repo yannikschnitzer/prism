@@ -1331,9 +1331,30 @@ public class MDPModelChecker extends ProbModelChecker
 	
 	protected ModelCheckerResult doLowerUpper(MDP mdp, BitSet target, BitSet yes, BitSet no, boolean min, int[] strat) throws PrismException{
 		
-		// NOTE: If we don't use known states properly
-		// then we will have problem when using unknownStates to iterate
-		// so at present, don't use them
+		int n = mdp.getNumStates();
+		
+		mainLog.println("-- -- Printing the MDP -- --");
+		for(int s=0; s<n; s++) {
+			mainLog.print("--- STATE " + s);
+			mainLog.println(target.get(s) ? " TARGET" : "");
+			for(int i=0; i<mdp.getNumChoices(s); i++) {
+				mainLog.println("CHOICE " + i);
+				Iterator<Entry<Integer,Double>> iter = mdp.getTransitionsIterator(s, i);
+				while(iter.hasNext()) {
+					Entry<Integer,Double> e = iter.next();
+					int t = e.getKey();
+					double p = e.getValue();
+					mainLog.println("\t-->" + t + " : " + p);
+				}
+			}
+		}
+		
+		// force preprocessing of yes and no states to see if that is issue
+		/*
+		strat = new int[n];
+		yes = prob1(mdp, null, target, min, strat);
+		no  = prob0(mdp, null, target, min, strat);
+		*/
 		
 		// when we call the DTMC Model Checker
 		// we will have done these
@@ -1348,15 +1369,13 @@ public class MDPModelChecker extends ProbModelChecker
 		mcDTMC.inheritSettings(this);
 		mcDTMC.setLog(new PrismDevNullLog());
 		
-		int n = mdp.getNumStates();
-		
 		// Create solution vectors
 		double[] soln = new double[n];
 		double[] soln2 = new double[n];
 
-		// Initialise solution vectors.
+		// Initialise 2nd solution vectors.
 		for (int i = 0; i < n; i++)
-			soln[i] = soln2[i] = yes.get(i) ? 1.0 : 0.0;
+			soln2[i] = yes.get(i) ? 1.0 : 0.0;
 		
 		// strat can be null
 		if (strat == null) {
@@ -1368,8 +1387,7 @@ public class MDPModelChecker extends ProbModelChecker
 			if(yes.get(s) || no.get(s)) {
 				strat[s] = 0;
 			}
-		}
-		
+		}	
 		
 		int iters = 0;
 		int totalIters = 0;
@@ -1383,22 +1401,55 @@ public class MDPModelChecker extends ProbModelChecker
 			// is the problem that
 			// prob1 states for MDP differ from target states ???
 			// (yes != target)
+			// NO! using target instead of yes causes problems
 			
-			BitSet dtmcNo = mcDTMC.prob0(dtmc, null, target, pre);
-			BitSet dtmcYes = mcDTMC.prob1(dtmc, null, target, pre);
+			BitSet dtmcNo = mcDTMC.prob0(dtmc, null, yes, pre);
+			BitSet dtmcYes = mcDTMC.prob1(dtmc, null, yes, pre);
+			
+			// this seems to be the fix
+			dtmcYes.and(yes);
+			dtmcNo.or(no);
+			
+			// (example: bin/ngprism ../prism-tests/pmc/lec13and14mdp.nm ../prism-tests/pmc/lec13and14mdp.nm.props -ex -lu -testall)
 			
 			try {
 				// TODO: Swap this out for a trusted function, see what happens.
-				// hence problem is with this step
 				
 				ModelCheckerResult res = mcDTMC.doLowerUpper(dtmc, dtmcYes, dtmcNo, null, null);
 				//ModelCheckerResult res = mcDTMC.computeReachProbsGaussSeidel(dtmc, dtmcNo, dtmcYes, null, null, false);
+				
 				mainLog.println("Got result");
 				soln = res.soln;
 				totalIters += res.numIters;
 			} catch (PrismNotSupportedException e) {
 				throw e;
 			}
+			
+			// problem might be with functions
+			// mvMultMinMax, doublesAreClose & mvMultMinMaxSingleChoices
+			// so... write an equiv that does not rely on epsilon???
+			/*
+			done = true;
+			for(int s=0; s<n; s++) {
+				if(yes.get(s) || no.get(s))
+					continue;
+				for(int i=0; i<mdp.getNumChoices(s); i++) {
+					double sum = 0;
+					Iterator<Entry<Integer,Double>> iter = mdp.getTransitionsIterator(s, i);
+					while(iter.hasNext()) {
+						Entry<Integer,Double> e = iter.next();
+						int    t = e.getKey();
+						double p = e.getValue();
+						sum += p * soln[t]; 
+					}
+					if(min ? sum < soln[s] : sum > soln[s]) {
+						strat[s] = i;
+						done = false;
+					}
+				}
+			}
+			*/
+			
 			// see if best
 			// Check if optimal, improve non-optimal choices			
 			mdp.mvMultMinMax(soln, min, soln2, null, false, null);
@@ -1414,6 +1465,7 @@ public class MDPModelChecker extends ProbModelChecker
 						strat[s] = opt.get(0);
 				}
 			}
+			
 		}
 		timer = System.currentTimeMillis() - timer;
 		
