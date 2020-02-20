@@ -863,7 +863,7 @@ public class MDPModelChecker extends ProbModelChecker
 		String description = (min ? "min" : "max")
 				+ (topological ? ", topological": "" )
 				+ ", with " + iterationMethod.getDescriptionShort();
-
+		
 		mainLog.println("Starting value iteration (" + description + ")...");
 
 		ExportIterations iterationsExport = null;
@@ -901,7 +901,7 @@ public class MDPModelChecker extends ProbModelChecker
 		unknown.set(0, n);
 		unknown.andNot(yes);
 		unknown.andNot(no);
-		if (known != null && mdpSolnMethod != MDPSolnMethod.LU_POLICY)
+		if (known != null)
 			unknown.andNot(known);
 		
 		IntSet unknownStates = IntSet.asIntSet(unknown);
@@ -909,19 +909,11 @@ public class MDPModelChecker extends ProbModelChecker
 		if (iterationsExport != null)
 			iterationsExport.exportVector(init, 0);
 		
-		// Temporary code
-		ModelCheckerResult res = null;
+		if (sound)
+			return doSoundValueIteration(mdp, yes, no, unknownStates, strat, min, init, timer);
 		
-		if (sound) {
-			res = doSoundValueIteration(mdp, yes, no, unknownStates, strat, min, init, timer);
-			return res;
-		}
-				
-		// Temporary code
-		if (optimistic) {
-			res = doOptimisticValueIteration(mdp, yes, unknownStates, min, strat, init);
-			return res;
-		}
+		if (optimistic)
+			return doOptimisticValueIteration(mdp, yes, unknownStates, min, strat, init, timer);
 
 		IterationMethod.IterationValIter iteration = iterationMethod.forMvMultMinMax(mdp, min, strat);
 		iteration.init(init);
@@ -1126,7 +1118,6 @@ public class MDPModelChecker extends ProbModelChecker
 					l = Double.max(l, Double.min(d,qmin));
 					u = Double.min(u, qmax);
 				}
-
 			}
 		}
 		
@@ -1185,7 +1176,7 @@ public class MDPModelChecker extends ProbModelChecker
 		return iters;
 	}
 	
-	protected ModelCheckerResult doOptimisticValueIteration(MDP mdp, BitSet yes, IntSet unknownStates, boolean min, int strat[], double init[]) {
+	protected ModelCheckerResult doOptimisticValueIteration(MDP mdp, BitSet yes, IntSet unknownStates, boolean min, int strat[], double init[], long startTime) {
 		double eps   = termCritParam;
 		double error = eps;
 		int n = mdp.getNumStates();
@@ -1195,8 +1186,6 @@ public class MDPModelChecker extends ProbModelChecker
 		
 		Iterator<Entry<Integer,Double>> iter;
 		Entry<Integer,Double> e;
-		
-		double timer = System.currentTimeMillis();
 		
 		if(init != null) {
 			v = init;
@@ -1208,11 +1197,9 @@ public class MDPModelChecker extends ProbModelChecker
 				v[s] = yes.get(s) ? 1 : 0;
 				u[s] = v[s]; // will change for unknown states
 			}
-		}
-		
+		}	
 		int iters = 0;
 		int totalIters = 0; // for inner loop
-		
 		boolean done = false;
 		while(!done) {
 			iters++;
@@ -1249,8 +1236,6 @@ public class MDPModelChecker extends ProbModelChecker
 						// error = Double.max(error, (vnew - v[s]) / vnew);
 					}
 					// if unew == u[s] then we run into termination trouble
-					// if we keep up as false
-					// (likely caused by lack of preprocessing)
 					if(unew <= u[s]) // if(unew < u[s])
 						up = false;
 					if(unew > u[s]) {
@@ -1288,7 +1273,11 @@ public class MDPModelChecker extends ProbModelChecker
 			error = error / 2;
 		}
 		
-		timer = System.currentTimeMillis() - timer;
+		long timer = System.currentTimeMillis() - startTime;
+		
+		mainLog.print("Optimisitic value iteration took " + totalIters + " iterations ");
+		mainLog.print("(Gauss-seidel VI was called " + iters + " times) ");
+		mainLog.println("and " + timer / 1000 + " seconds");
 		
 		ModelCheckerResult res = new ModelCheckerResult();
 		res.soln = u;
@@ -1297,7 +1286,7 @@ public class MDPModelChecker extends ProbModelChecker
 			res.soln[s] /= 2;
 		}
 		res.numIters = totalIters;
-		res.timeTaken = timer; // is this the boiiii?
+		res.timeTaken = timer;
 		return res;
 	}
 	
@@ -1360,21 +1349,11 @@ public class MDPModelChecker extends ProbModelChecker
 			// NO! using target instead of yes causes problems
 			
 			BitSet dtmcNo = mcDTMC.prob0(dtmc, null, yes, pre);
-			BitSet dtmcYes = mcDTMC.prob1(dtmc, null, yes, pre);
-			
-			// this seems to be the fix
-			dtmcYes.and(yes);
 			dtmcNo.or(no);
-			
 			// (example: bin/ngprism ../prism-tests/pmc/lec13and14mdp.nm ../prism-tests/pmc/lec13and14mdp.nm.props -ex -lu -testall)
 			
 			try {
-				// TODO: Swap this out for a trusted function, see what happens.
-				
-				ModelCheckerResult res = mcDTMC.doLowerUpper(dtmc, dtmcYes, dtmcNo, null, null);
-				//ModelCheckerResult res = mcDTMC.computeReachProbsGaussSeidel(dtmc, dtmcNo, dtmcYes, null, null, false);
-				
-				mainLog.println("Got result");
+				ModelCheckerResult res = mcDTMC.doLowerUpper(dtmc, yes, dtmcNo, null, null);
 				soln = res.soln;
 			} catch (PrismNotSupportedException e) {
 				throw e;
