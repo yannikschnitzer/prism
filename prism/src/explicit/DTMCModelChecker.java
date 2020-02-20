@@ -709,7 +709,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		
 		IntSet unknownStates = IntSet.asIntSet(unknown);
 		
-		// Implementation of Sound Value Iteration for Markov Chains
+		/*
 		if (linEqMethod == LinEqMethod.SOUND) {
 			mainLog.println("Running sound value iteration on DTMC");
 			res = doSoundValueIteration(dtmc, yes, no, unknownStates, init);
@@ -727,6 +727,7 @@ public class DTMCModelChecker extends ProbModelChecker
 			mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
 			return res;
 		}
+		*/
 		
 		if(linEqMethod == LinEqMethod.LOWER_UPPER) {
 			mainLog.println("Lower-upper decomposition of DTMC");
@@ -739,7 +740,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		
 		// Compute probabilities
 		IterationMethod iterationMethod = null;
-
+		
 		switch (linEqMethod) {
 		case POWER:
 			iterationMethod = new IterationMethodPower(termCritAbsolute, termCritParam);
@@ -753,6 +754,12 @@ public class DTMCModelChecker extends ProbModelChecker
 			iterationMethod = new IterationMethodGS(termCritAbsolute, termCritParam, backwards);
 			break;
 		}
+		case SOUND:
+			doIntervalIteration = false;
+			break;
+		case OPTIMISTIC:
+			doIntervalIteration = false;
+			break;
 		default:
 			throw new PrismException("Unknown linear equation solution method " + linEqMethod.fullName());
 		}
@@ -778,7 +785,7 @@ public class DTMCModelChecker extends ProbModelChecker
 	}
 
 
-	protected ModelCheckerResult doSoundValueIteration(DTMC dtmc, BitSet yes, BitSet no, IntSet unknownStates, double init[]) throws PrismException{
+	protected ModelCheckerResult doSoundValueIteration(DTMC dtmc, BitSet yes, BitSet no, IntSet unknownStates, double init[], long startTime) throws PrismException{
 		
 		// Ensure that prob0 and prob1 states have been calculated	
 		if (!(precomp && prob0 && prob1)) {
@@ -789,28 +796,30 @@ public class DTMCModelChecker extends ProbModelChecker
 		
 		double[] x, y;
 		
+		//boolean hasInitialStates = dtmc.getNumInitialStates() > 0;
+		
 		if(init!= null) {
 			x = init;
 			y = new double[n];
-			Arrays.fill(y, 0);
-			OfInt stateIter = unknownStates.iterator();
-			while(stateIter.hasNext()) {
-				y[stateIter.nextInt()] = 1;
+			for(int s = 0; s < n; s++) {
+				y[s] = (yes.get(s) || no.get(s)) ? 0 : 1;
 			}
-			
 		}else {
 			x = new double[n];
 			y = new double[n];
 			for(int s = 0; s < n; s++) {
 				x[s] = yes.get(s) ? 1 : 0; // f(x)[S0] = 0, f(x)[G]  = 1
-				y[s] = ! (yes.get(s) || no.get(s)) ? 1 : 0;
+				y[s] = (yes.get(s) || no.get(s)) ? 0 : 1;
 			}
 		}
 	
 		double l = Double.NEGATIVE_INFINITY, u = Double.POSITIVE_INFINITY;
 		double eps = termCritParam;
 		
+		int iters = 0;
+		
 		while(true) {
+			iters++;
 			boolean done = true;
 			boolean changeBounds = true; 			// all s ∈ S? (y[s] < 1)
 			double cand; 							// x[s] / (1 - y[s])
@@ -820,6 +829,7 @@ public class DTMCModelChecker extends ProbModelChecker
 			OfInt stateIter = unknownStates.iterator();
 			while(stateIter.hasNext()) {
 				int s = stateIter.nextInt();
+				
 				double sumX = 0;
 				double sumY = 0;
 				Iterator<Map.Entry<Integer, Double>> iter = dtmc.getTransitionsIterator(s);
@@ -831,11 +841,15 @@ public class DTMCModelChecker extends ProbModelChecker
 					sumY += p * y[t]; // h(y)[s]  = sum ( P(s,t) * y[t] ) for all s in S?
 				}
 				
-				done &= sumX - x[s] < eps;
+				//if(! hasInitialStates || dtmc.isInitialState(s))
+				done &= sumX - x[s] < eps; //prism-tests/bugfixes/jltlbug2.nm prism-tests/bugfixes/jltlbug2.nm.props
 				
 				x[s] = sumX;
 				y[s] = sumY;
+				
+				//if(! hasInitialStates || dtmc.isInitialState(s))
 				done &= y[s] * (u - l) < 2 * eps;
+				
 				changeBounds &= y[s] < 1.0;
 				if(changeBounds) {
 					cand = x[s] / (1 - y[s]);
@@ -853,32 +867,29 @@ public class DTMCModelChecker extends ProbModelChecker
 				u = Double.min(u , qmax);
 			}
 		}
-
-		// Must figure out how to solve issue of
-		// zero unknown states...
-		ModelCheckerResult resNew = new ModelCheckerResult();
-		resNew.soln = x;
 		
+		long timer = System.currentTimeMillis() - startTime;
+		
+		ModelCheckerResult res = new ModelCheckerResult();
+		res.soln = x;
 		OfInt stateIter = unknownStates.iterator();
 		while(stateIter.hasNext()) {
 			int s = stateIter.nextInt();
-			resNew.soln[s] += y[s] * ((l + u) / 2.0);
+			res.soln[s] += y[s] * ((l + u) / 2.0);
 		}
+		res.numIters = iters;
 		
-		/*
-		 * for(int s = 0; s < n; s++) { if(yes.get(s)) { resNew.soln[s] = 1.0; }else
-		 * if(no.get(s)) { resNew.soln[s] = 0.0; }else { resNew.soln[s] = x[s] + y[s] *
-		 * ((l + u) / 2.0); } }
-		 */
-		
-		return resNew;
+		mainLog.print("Sound value iteration took " + iters + " iterations ");
+		mainLog.println(" and " + timer / 1000 + " seconds");
+		return res;
 	}
 	
-	protected void gaussSeidelWithError(DTMC dtmc, BitSet yes, IntSet unknownStates, double error, double v[], double u[]) {
+	protected int gaussSeidelWithError(DTMC dtmc, BitSet yes, IntSet unknownStates, double error, double v[], double u[]) {
 		//mainLog.println("Starting Gauss-Seidel with error: " + error);
-		
+		int iters = 0;
 		boolean done = false;
 		while(!done) {
+			iters++;
 			done = true;
 			OfInt stateIter = unknownStates.iterator();
 			while(stateIter.hasNext()) {
@@ -897,10 +908,10 @@ public class DTMCModelChecker extends ProbModelChecker
 				u[s] = Double.min(1 , v[s] * (1 + termCritParam) );
 			}
 		}
-		
+		return iters;
 	}
 	
-	protected ModelCheckerResult doOptimisticValueIteration(DTMC dtmc, BitSet yes, IntSet unknownStates, double[] init) {
+	protected ModelCheckerResult doOptimisticValueIteration(DTMC dtmc, BitSet yes, IntSet unknownStates, double[] init, long startTime) {
 		double error = termCritParam;
 		int n = dtmc.getNumStates();
 		double v[];
@@ -908,13 +919,6 @@ public class DTMCModelChecker extends ProbModelChecker
 		
 		Iterator<Entry<Integer,Double>> iter;
 		Entry<Integer,Double> e;
-		
-		// TODO: the export vector appears to be given the first seven state probabilities
-		//       whereas testing expects the last seven
-		// see prism-tests/functionality/export/vector/tmp.exportvector.prism.2.props.txt
-		//       and
-		//     prism-tests/functionality/export/vector/exportvector.prism.3.props.txt
-		// after running run config. Bad Export
 		
 		if(init != null) {
 			v = init;
@@ -928,9 +932,13 @@ public class DTMCModelChecker extends ProbModelChecker
 			}
 		}
 		
+		int iters = 0;
+		int totalIters = 0;
+		
 		boolean done = false;
 		while(!done) {
-			gaussSeidelWithError(dtmc, yes, unknownStates, error, v, u);
+			iters++;
+			totalIters += gaussSeidelWithError(dtmc, yes, unknownStates, error, v, u);
 			while(true) {
 				error = 0;
 				boolean anyUnknown = false;		
@@ -967,7 +975,7 @@ public class DTMCModelChecker extends ProbModelChecker
 					break;
 				}
 				
-				// optimisation: if u moved up for all s ∈ S?
+				// if u moved up for all s ∈ S?
 				// then it is in fact a lower bound
 				if (up) {
 					double temp[] = v;
@@ -984,12 +992,20 @@ public class DTMCModelChecker extends ProbModelChecker
 			}
 			error = error / 2;
 		}
+		
+		long timer = System.currentTimeMillis() - startTime;
+		
+		mainLog.print("Optimisitic value iteration took " + totalIters + " iterations ");
+		mainLog.print("(Gauss-seidel VI was called " + iters + " times) ");
+		mainLog.println("and " + timer / 1000 + " seconds");
+		
 		ModelCheckerResult res = new ModelCheckerResult();
 		res.soln = u;
 		for(int s=0; s<n; s++) {
 			res.soln[s] += v[s];
 			res.soln[s] /= 2;
 		}
+		res.numIters = totalIters;
 		
 		return res;
 	}
@@ -1383,10 +1399,13 @@ public class DTMCModelChecker extends ProbModelChecker
 		int i, n;
 		double initVal;
 		long timer;
-
+		
+		boolean sound = linEqMethod == LinEqMethod.SOUND;
+		boolean optimistic = linEqMethod == LinEqMethod.OPTIMISTIC;
+		
 		// Start value iteration
 		timer = System.currentTimeMillis();
-		String description = (topological ? "topological, " : "" ) + "with " + iterationMethod.getDescriptionShort();
+		String description = sound ? "Sound" : optimistic ? "Optimistic" : (topological ? "topological, " : "" ) + "with " + iterationMethod.getDescriptionShort();
 		mainLog.println("Starting value iteration (" + description + ")...");
 
 		ExportIterations iterationsExport = null;
@@ -1401,7 +1420,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		// Initialise solution vectors. Use (where available) the following in order of preference:
 		// (1) exact answer, if already known; (2) 1.0/0.0 if in yes/no; (3) passed in initial value; (4) initVal
 		// where initVal is 0.0 or 1.0, depending on whether we converge from below/above. 
-		initVal = (valIterDir == ValIterDir.BELOW) ? 0.0 : 1.0;
+		initVal = (sound || optimistic || valIterDir == ValIterDir.BELOW) ? 0.0 : 1.0;
 		if (init != null) {
 			if (known != null) {
 				for (i = 0; i < n; i++)
@@ -1424,14 +1443,22 @@ public class DTMCModelChecker extends ProbModelChecker
 		if (known != null)
 			unknown.andNot(known);
 
-		IterationMethod.IterationValIter iterationReachProbs = iterationMethod.forMvMult(dtmc);
-		iterationReachProbs.init(init);
-
 		if (iterationsExport != null)
 			iterationsExport.exportVector(init, 0);
 
 		IntSet unknownStates = IntSet.asIntSet(unknown);
 
+		if(sound) {
+			return doSoundValueIteration(dtmc, yes, no, unknownStates, init, timer);
+		}
+		
+		if(optimistic) {
+			return doOptimisticValueIteration(dtmc, yes, unknownStates, init, timer);
+		}
+		
+		IterationMethod.IterationValIter iterationReachProbs = iterationMethod.forMvMult(dtmc);
+		iterationReachProbs.init(init);
+		
 		if (topological) {
 			// Compute SCCInfo, including trivial SCCs in the subgraph obtained when only considering
 			// states in unknown
