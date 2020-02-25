@@ -700,35 +700,6 @@ public class DTMCModelChecker extends ProbModelChecker
 
 		boolean termCritAbsolute = termCrit == TermCrit.ABSOLUTE;
 		
-		BitSet unknown = new BitSet();
-		unknown.set(0,n);
-		unknown.andNot(yes);
-		unknown.andNot(no);
-		if(known != null)
-			unknown.andNot(known);
-		
-		IntSet unknownStates = IntSet.asIntSet(unknown);
-		
-		/*
-		if (linEqMethod == LinEqMethod.SOUND) {
-			mainLog.println("Running sound value iteration on DTMC");
-			res = doSoundValueIteration(dtmc, yes, no, unknownStates, init);
-			timer = System.currentTimeMillis() - timer;
-			res.timeTaken = timer;
-			mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
-			return res;
-		}
-		
-		if (linEqMethod == LinEqMethod.OPTIMISTIC) {
-			mainLog.println("Running optimistic value iteration on DTMC");
-			res = doOptimisticValueIteration(dtmc, yes, unknownStates, init);
-			timer = System.currentTimeMillis() - timer;
-			res.timeTaken = timer;
-			mainLog.println("Probabilistic reachability took " + timer / 1000.0 + " seconds.");
-			return res;
-		}
-		*/
-		
 		if(linEqMethod == LinEqMethod.LOWER_UPPER) {
 			mainLog.println("Lower-upper decomposition of DTMC");
 			res = doLowerUpper(dtmc, yes, no, known, init);
@@ -911,7 +882,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		return iters;
 	}
 	
-	protected ModelCheckerResult doOptimisticValueIteration(DTMC dtmc, BitSet yes, IntSet unknownStates, double[] init, long startTime) {
+	protected ModelCheckerResult doOptimisticValueIteration(DTMC dtmc, BitSet yes, BitSet no, IntSet unknownStates, double[] init, long startTime) throws PrismException{
 		double error = termCritParam;
 		int n = dtmc.getNumStates();
 		double v[];
@@ -934,18 +905,39 @@ public class DTMCModelChecker extends ProbModelChecker
 		
 		int iters = 0;
 		int totalIters = 0;
+		OfInt stateIter;
 		
 		boolean done = false;
 		while(!done) {
 			iters++;
-			totalIters += gaussSeidelWithError(dtmc, yes, unknownStates, error, v, u);
+			// old approach
+			//totalIters += gaussSeidelWithError(dtmc, yes, unknownStates, error, v, u);
+			
+			// new approach (implemention is still slow, but far fewer iterations)
+			linEqMethod = LinEqMethod.GAUSS_SEIDEL;
+			double tempEpsilon = termCritParam;
+			termCritParam = error;
+			ModelCheckerResult tempRes = computeReachProbsGaussSeidel(dtmc, no, yes, v, null, false);
+			termCritParam = tempEpsilon;
+			totalIters += tempRes.numIters;
+			
+			mainLog.println("Call to Gauss Seidel took: " +  tempRes.timeTaken);
+			
+			v = tempRes.soln;
+			
+			stateIter = unknownStates.iterator();
+			while(stateIter.hasNext()) {
+				int s = stateIter.nextInt();
+				u[s] = v[s] * (1 + termCritParam);
+			}
+			
 			while(true) {
 				error = 0;
 				boolean anyUnknown = false;		
 				boolean up = true, down = true, cross = false;
 				boolean inEps = true;
 				
-				OfInt stateIter = unknownStates.iterator();
+				stateIter = unknownStates.iterator();
 				while(stateIter.hasNext()) {
 					int s = stateIter.nextInt();
 					anyUnknown = true;
@@ -1012,6 +1004,8 @@ public class DTMCModelChecker extends ProbModelChecker
 	
 	protected ModelCheckerResult doLowerUpper(DTMC dtmc, BitSet yes, BitSet no, BitSet known, double[] init) throws PrismException{
 
+		long timer = System.currentTimeMillis();
+		
 		// Ensure that prob0 and prob1 states have been calculated
 		if (!(precomp && prob0 && prob1)) {
 			throw new PrismNotSupportedException("Precomputations (Prob0 & Prob1) must be enabled for Lower-Upper");
@@ -1023,7 +1017,7 @@ public class DTMCModelChecker extends ProbModelChecker
 			double[][] b = new double[n][1];
 			
 			// TODO: Can optimise if we work from the DoubleMatrix
-			//       from the beginning
+			//       from the beginning (maybe)
 			for(int i=0; i<n; i++)
 				for(int j=0; j<n; j++)
 					a[i][j] = 0;
@@ -1054,14 +1048,18 @@ public class DTMCModelChecker extends ProbModelChecker
 			DoubleFactory2D f    = DoubleFactory2D.sparse;
 			DoubleMatrix2D  A    = f.make(a);
 			DoubleMatrix2D  B    = f.make(b);
+			
 			LUDecomposition lu   = new LUDecomposition(A);
 			DoubleMatrix2D  soln = lu.solve(B);
+			
+			timer = System.currentTimeMillis() - timer;
 			
 			ModelCheckerResult res = new ModelCheckerResult();
 			res.soln = new double[n];
 			for(int i = 0; i<n; i++) {
 				res.soln[i] = soln.get(i, 0);
 			}
+			res.timeTaken = timer;
 			return res;
 		
 		} catch (OutOfMemoryError e) {
@@ -1453,7 +1451,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		}
 		
 		if(optimistic) {
-			return doOptimisticValueIteration(dtmc, yes, unknownStates, init, timer);
+			return doOptimisticValueIteration(dtmc, yes, no, unknownStates, init, timer);
 		}
 		
 		IterationMethod.IterationValIter iterationReachProbs = iterationMethod.forMvMult(dtmc);
