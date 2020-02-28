@@ -803,6 +803,8 @@ public class DTMCModelChecker extends ProbModelChecker
 				
 				double sumX = 0;
 				double sumY = 0;
+				
+				/*
 				Iterator<Map.Entry<Integer, Double>> iter = dtmc.getTransitionsIterator(s);
 				while(iter.hasNext()) {
 					Map.Entry<Integer, Double> e = iter.next();
@@ -810,6 +812,15 @@ public class DTMCModelChecker extends ProbModelChecker
 					int    t = e.getKey();
 					sumX += p * x[t]; // f(x)[s]  = sum ( P(s,t) * x[t] ) for all s in S?
 					sumY += p * y[t]; // h(y)[s]  = sum ( P(s,t) * y[t] ) for all s in S?
+				}
+				*/
+				boolean jacobi = true;
+				if (jacobi) {
+					sumX = dtmc.mvMultJacSingle(s, x);
+					sumY = dtmc.mvMultJacSingle(s, y);
+				}else {
+					sumX = dtmc.mvMultSingle(s, x);
+					sumY = dtmc.mvMultSingle(s, y);
 				}
 				
 				//if(! hasInitialStates || dtmc.isInitialState(s))
@@ -904,38 +915,38 @@ public class DTMCModelChecker extends ProbModelChecker
 		}
 		
 		int iters = 0;
-		int totalIters = 0;
+		int gaussIters = 0;
+		int verifIters = 0;
 		OfInt stateIter;
 		
 		boolean done = false;
 		while(!done) {
 			iters++;
-			// old approach
-			//totalIters += gaussSeidelWithError(dtmc, yes, unknownStates, error, v, u);
-			
-			// new approach (implemention is still slow, but far fewer iterations)
+			// old approach (can be improved with Jacobi-style multiplications)
+			//gaussIters += gaussSeidelWithError(dtmc, yes, unknownStates, error, v, u);
+
 			linEqMethod = LinEqMethod.GAUSS_SEIDEL;
 			double tempEpsilon = termCritParam;
 			termCritParam = error;
 			ModelCheckerResult tempRes = computeReachProbsGaussSeidel(dtmc, no, yes, v, null, false);
 			termCritParam = tempEpsilon;
-			totalIters += tempRes.numIters;
-			
-			mainLog.println("Call to Gauss Seidel took: " +  tempRes.timeTaken);
+			gaussIters += tempRes.numIters;
 			
 			v = tempRes.soln;
-			
 			stateIter = unknownStates.iterator();
 			while(stateIter.hasNext()) {
 				int s = stateIter.nextInt();
 				u[s] = v[s] * (1 + termCritParam);
 			}
 			
-			while(true) {
+			while(true) { 
+				verifIters++;
 				error = 0;
 				boolean anyUnknown = false;		
 				boolean up = true, down = true, cross = false;
 				boolean inEps = true;
+				
+				long statesTimer = System.currentTimeMillis();
 				
 				stateIter = unknownStates.iterator();
 				while(stateIter.hasNext()) {
@@ -943,25 +954,30 @@ public class DTMCModelChecker extends ProbModelChecker
 					anyUnknown = true;
 					double vnew = 0.0;
 					double unew = 0.0;
-					for(iter = dtmc.getTransitionsIterator(s); iter.hasNext(); ) {
-						e = iter.next();
-						double p = e.getValue();
-						int    t = e.getKey();
-						vnew += p * v[t];
-						unew += p * u[t];
-					}
+				
+					// mvMultJacSingle(int s, double vect[])
+					vnew = dtmc.mvMultJacSingle(s, v); // dtmc.mvMultSingle(s, v);
+					unew = dtmc.mvMultJacSingle(s, u); // dtmc.mvMultSingle(s, u);
+
 					if (vnew > 0)
 						error = Double.max(error, (vnew - v[s]));
 					if (unew <= u[s])
 						up = false;
-					if (unew > u[s])
+					if (unew > u[s]) {
+						//mainLog.println("not Down! " + u[s] + "-->" + unew);
 						down = false;
+					}
 					if (unew < vnew)
 						cross = true;
 					v[s] = vnew;
 					u[s] = unew;
 					inEps &= (u[s] - v[s]) <= 2*termCritParam * v[s];
 				}
+				
+				statesTimer = System.currentTimeMillis() - statesTimer;
+				//mainLog.println("To iterate over states in inner \n loop took " + statesTimer/1000 + " seconds");
+				
+				// is easier way to do this
 				if(!anyUnknown) {
 					done = true;
 					break;
@@ -975,6 +991,9 @@ public class DTMCModelChecker extends ProbModelChecker
 					u = temp;
 				}
 				
+				//mainLog.println("Down : " + down);
+				//mainLog.println("inEps : " + inEps);
+				
 				if (up || cross)
 					break;
 				if (down && inEps) {
@@ -987,9 +1006,11 @@ public class DTMCModelChecker extends ProbModelChecker
 		
 		long timer = System.currentTimeMillis() - startTime;
 		
-		mainLog.print("Optimisitic value iteration took " + totalIters + " iterations ");
-		mainLog.print("(Gauss-seidel VI was called " + iters + " times) ");
+		mainLog.print("Optimisitic value iteration took " + (gaussIters + verifIters) + " iterations ");
 		mainLog.println("and " + timer / 1000 + " seconds");
+		mainLog.print("Gauss-seidel VI was called " + iters + " times, ");
+		mainLog.println("for a total of " + gaussIters + " iterations.");
+		mainLog.println("Verification phase had " + verifIters + " total iters." );
 		
 		ModelCheckerResult res = new ModelCheckerResult();
 		res.soln = u;
@@ -997,7 +1018,8 @@ public class DTMCModelChecker extends ProbModelChecker
 			res.soln[s] += v[s];
 			res.soln[s] /= 2;
 		}
-		res.numIters = totalIters;
+		res.numIters = (gaussIters + verifIters);
+		res.timeTaken = timer / 1000;
 		
 		return res;
 	}
