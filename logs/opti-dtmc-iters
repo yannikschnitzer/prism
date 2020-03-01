@@ -1,0 +1,126 @@
+opti-dtmc-logs/brp.pm.const.N=16,MAX=2.fixdl.p1.pctl.ex.op.log:Optimisitic value iteration took 82 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=16,MAX=2.fixdl.p1.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 72 iterations.
+opti-dtmc-logs/brp.pm.const.N=16,MAX=2.fixdl.p2.pctl.ex.op.log:Optimisitic value iteration took 135 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=16,MAX=2.fixdl.p2.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 72 iterations.
+opti-dtmc-logs/brp.pm.const.N=16,MAX=2.fixdl.p4.pctl.ex.op.log:Optimisitic value iteration took 7 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=16,MAX=2.fixdl.p4.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 6 iterations.
+opti-dtmc-logs/brp.pm.const.N=16,MAX=3.fixdl.p1.pctl.ex.op.log:Optimisitic value iteration took 83 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=16,MAX=3.fixdl.p1.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 10 iterations.
+opti-dtmc-logs/brp.pm.const.N=16,MAX=3.fixdl.p2.pctl.ex.op.log:Optimisitic value iteration took 90 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=16,MAX=3.fixdl.p2.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 8 iterations.
+opti-dtmc-logs/brp.pm.const.N=16,MAX=3.fixdl.p4.pctl.ex.op.log:Optimisitic value iteration took 7 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=16,MAX=3.fixdl.p4.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 5 iterations.
+opti-dtmc-logs/brp.pm.const.N=16,MAX=4.fixdl.p1.pctl.ex.op.log:Optimisitic value iteration took 85 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=16,MAX=4.fixdl.p1.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 10 iterations.
+opti-dtmc-logs/brp.pm.const.N=16,MAX=4.fixdl.p2.pctl.ex.op.log:Optimisitic value iteration took 93 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=16,MAX=4.fixdl.p2.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 8 iterations.
+opti-dtmc-logs/brp.pm.const.N=16,MAX=4.fixdl.p4.pctl.ex.op.log:Optimisitic value iteration took 8 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=16,MAX=4.fixdl.p4.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 5 iterations.
+opti-dtmc-logs/brp.pm.const.N=16,MAX=5.fixdl.p1.pctl.ex.op.log:Optimisitic value iteration took 87 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=16,MAX=5.fixdl.p1.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 10 iterations.
+opti-dtmc-logs/brp.pm.const.N=16,MAX=5.fixdl.p2.pctl.ex.op.log:Optimisitic value iteration took 96 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=16,MAX=5.fixdl.p2.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 8 iterations.
+opti-dtmc-logs/brp.pm.const.N=16,MAX=5.fixdl.p4.pctl.ex.op.log:Optimisitic value iteration took 9 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=16,MAX=5.fixdl.p4.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 5 iterations.
+opti-dtmc-logs/brp.pm.const.N=32,MAX=2.fixdl.p1.pctl.ex.op.log:Optimisitic value iteration took 148 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=32,MAX=2.fixdl.p1.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 137 iterations.
+opti-dtmc-logs/brp.pm.const.N=32,MAX=2.fixdl.p2.pctl.ex.op.log:Optimisitic value iteration took 264 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=32,MAX=2.fixdl.p2.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 137 iterations.
+opti-dtmc-logs/brp.pm.const.N=32,MAX=2.fixdl.p4.pctl.ex.op.log:Optimisitic value iteration took 7 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=32,MAX=2.fixdl.p4.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 6 iterations.
+opti-dtmc-logs/brp.pm.const.N=32,MAX=3.fixdl.p1.pctl.ex.op.log:Optimisitic value iteration took 155 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=32,MAX=3.fixdl.p1.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 10 iterations.
+opti-dtmc-logs/brp.pm.const.N=32,MAX=3.fixdl.p2.pctl.ex.op.log:Optimisitic value iteration took 164 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=32,MAX=3.fixdl.p2.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 8 iterations.
+opti-dtmc-logs/brp.pm.const.N=32,MAX=3.fixdl.p4.pctl.ex.op.log:Optimisitic value iteration took 7 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=32,MAX=3.fixdl.p4.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 5 iterations.
+opti-dtmc-logs/brp.pm.const.N=32,MAX=4.fixdl.p1.pctl.ex.op.log:Optimisitic value iteration took 157 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=32,MAX=4.fixdl.p1.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 10 iterations.
+opti-dtmc-logs/brp.pm.const.N=32,MAX=4.fixdl.p2.pctl.ex.op.log:Optimisitic value iteration took 166 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=32,MAX=4.fixdl.p2.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 8 iterations.
+opti-dtmc-logs/brp.pm.const.N=32,MAX=4.fixdl.p4.pctl.ex.op.log:Optimisitic value iteration took 8 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=32,MAX=4.fixdl.p4.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 5 iterations.
+opti-dtmc-logs/brp.pm.const.N=32,MAX=5.fixdl.p1.pctl.ex.op.log:Optimisitic value iteration took 159 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=32,MAX=5.fixdl.p1.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 10 iterations.
+opti-dtmc-logs/brp.pm.const.N=32,MAX=5.fixdl.p2.pctl.ex.op.log:Optimisitic value iteration took 167 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=32,MAX=5.fixdl.p2.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 8 iterations.
+opti-dtmc-logs/brp.pm.const.N=32,MAX=5.fixdl.p4.pctl.ex.op.log:Optimisitic value iteration took 9 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=32,MAX=5.fixdl.p4.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 5 iterations.
+opti-dtmc-logs/brp.pm.const.N=64,MAX=2.fixdl.p1.pctl.ex.op.log:Optimisitic value iteration took 280 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=64,MAX=2.fixdl.p1.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 267 iterations.
+opti-dtmc-logs/brp.pm.const.N=64,MAX=2.fixdl.p2.pctl.ex.op.log:Optimisitic value iteration took 454 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=64,MAX=2.fixdl.p2.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 267 iterations.
+opti-dtmc-logs/brp.pm.const.N=64,MAX=2.fixdl.p4.pctl.ex.op.log:Optimisitic value iteration took 7 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=64,MAX=2.fixdl.p4.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 6 iterations.
+opti-dtmc-logs/brp.pm.const.N=64,MAX=3.fixdl.p1.pctl.ex.op.log:Optimisitic value iteration took 295 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=64,MAX=3.fixdl.p1.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 10 iterations.
+opti-dtmc-logs/brp.pm.const.N=64,MAX=3.fixdl.p2.pctl.ex.op.log:Optimisitic value iteration took 300 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=64,MAX=3.fixdl.p2.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 8 iterations.
+opti-dtmc-logs/brp.pm.const.N=64,MAX=3.fixdl.p4.pctl.ex.op.log:Optimisitic value iteration took 7 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=64,MAX=3.fixdl.p4.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 5 iterations.
+opti-dtmc-logs/brp.pm.const.N=64,MAX=4.fixdl.p1.pctl.ex.op.log:Optimisitic value iteration took 296 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=64,MAX=4.fixdl.p1.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 10 iterations.
+opti-dtmc-logs/brp.pm.const.N=64,MAX=4.fixdl.p2.pctl.ex.op.log:Optimisitic value iteration took 299 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=64,MAX=4.fixdl.p2.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 8 iterations.
+opti-dtmc-logs/brp.pm.const.N=64,MAX=4.fixdl.p4.pctl.ex.op.log:Optimisitic value iteration took 8 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=64,MAX=4.fixdl.p4.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 5 iterations.
+opti-dtmc-logs/brp.pm.const.N=64,MAX=5.fixdl.p1.pctl.ex.op.log:Optimisitic value iteration took 298 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=64,MAX=5.fixdl.p1.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 10 iterations.
+opti-dtmc-logs/brp.pm.const.N=64,MAX=5.fixdl.p2.pctl.ex.op.log:Optimisitic value iteration took 301 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=64,MAX=5.fixdl.p2.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 8 iterations.
+opti-dtmc-logs/brp.pm.const.N=64,MAX=5.fixdl.p4.pctl.ex.op.log:Optimisitic value iteration took 9 iterations and 0 seconds
+opti-dtmc-logs/brp.pm.const.N=64,MAX=5.fixdl.p4.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 5 iterations.
+opti-dtmc-logs/crowds.pm.const.TotalRuns=3,CrowdSize=10.fixdl.positive.pctl.fixdl.ex.op.log:Optimisitic value iteration took 68 iterations and 0 seconds
+opti-dtmc-logs/crowds.pm.const.TotalRuns=3,CrowdSize=10.fixdl.positive.pctl.fixdl.ex.op.log:Gauss-seidel VI was called 2 times, for a total of 44 iterations.
+opti-dtmc-logs/crowds.pm.const.TotalRuns=3,CrowdSize=15.fixdl.positive.pctl.fixdl.ex.op.log:Optimisitic value iteration took 68 iterations and 0 seconds
+opti-dtmc-logs/crowds.pm.const.TotalRuns=3,CrowdSize=15.fixdl.positive.pctl.fixdl.ex.op.log:Gauss-seidel VI was called 2 times, for a total of 43 iterations.
+opti-dtmc-logs/crowds.pm.const.TotalRuns=3,CrowdSize=20.fixdl.positive.pctl.fixdl.ex.op.log:Optimisitic value iteration took 71 iterations and 0 seconds
+opti-dtmc-logs/crowds.pm.const.TotalRuns=3,CrowdSize=20.fixdl.positive.pctl.fixdl.ex.op.log:Gauss-seidel VI was called 2 times, for a total of 42 iterations.
+opti-dtmc-logs/crowds.pm.const.TotalRuns=3,CrowdSize=5.fixdl.positive.pctl.fixdl.ex.op.log:Optimisitic value iteration took 130 iterations and 0 seconds
+opti-dtmc-logs/crowds.pm.const.TotalRuns=3,CrowdSize=5.fixdl.positive.pctl.fixdl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 45 iterations.
+opti-dtmc-logs/crowds.pm.const.TotalRuns=4,CrowdSize=10.fixdl.positive.pctl.fixdl.ex.op.log:Optimisitic value iteration took 83 iterations and 0 seconds
+opti-dtmc-logs/crowds.pm.const.TotalRuns=4,CrowdSize=10.fixdl.positive.pctl.fixdl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 52 iterations.
+opti-dtmc-logs/crowds.pm.const.TotalRuns=4,CrowdSize=15.fixdl.positive.pctl.fixdl.ex.op.log:Optimisitic value iteration took 83 iterations and 0 seconds
+opti-dtmc-logs/crowds.pm.const.TotalRuns=4,CrowdSize=15.fixdl.positive.pctl.fixdl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 51 iterations.
+opti-dtmc-logs/crowds.pm.const.TotalRuns=4,CrowdSize=20.fixdl.positive.pctl.fixdl.ex.op.log:Optimisitic value iteration took 80 iterations and 0 seconds
+opti-dtmc-logs/crowds.pm.const.TotalRuns=4,CrowdSize=20.fixdl.positive.pctl.fixdl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 51 iterations.
+opti-dtmc-logs/crowds.pm.const.TotalRuns=4,CrowdSize=5.fixdl.positive.pctl.fixdl.ex.op.log:Optimisitic value iteration took 81 iterations and 0 seconds
+opti-dtmc-logs/crowds.pm.const.TotalRuns=4,CrowdSize=5.fixdl.positive.pctl.fixdl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 54 iterations.
+opti-dtmc-logs/crowds.pm.const.TotalRuns=5,CrowdSize=10.fixdl.positive.pctl.fixdl.ex.op.log:Optimisitic value iteration took 81 iterations and 0 seconds
+opti-dtmc-logs/crowds.pm.const.TotalRuns=5,CrowdSize=10.fixdl.positive.pctl.fixdl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 61 iterations.
+opti-dtmc-logs/crowds.pm.const.TotalRuns=5,CrowdSize=15.fixdl.positive.pctl.fixdl.ex.op.log:Optimisitic value iteration took 80 iterations and 0 seconds
+opti-dtmc-logs/crowds.pm.const.TotalRuns=5,CrowdSize=15.fixdl.positive.pctl.fixdl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 60 iterations.
+opti-dtmc-logs/crowds.pm.const.TotalRuns=5,CrowdSize=5.fixdl.positive.pctl.fixdl.ex.op.log:Optimisitic value iteration took 83 iterations and 0 seconds
+opti-dtmc-logs/crowds.pm.const.TotalRuns=5,CrowdSize=5.fixdl.positive.pctl.fixdl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 63 iterations.
+opti-dtmc-logs/crowds.pm.const.TotalRuns=6,CrowdSize=10.fixdl.positive.pctl.fixdl.ex.op.log:Optimisitic value iteration took 89 iterations and 0 seconds
+opti-dtmc-logs/crowds.pm.const.TotalRuns=6,CrowdSize=10.fixdl.positive.pctl.fixdl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 69 iterations.
+opti-dtmc-logs/crowds.pm.const.TotalRuns=6,CrowdSize=5.fixdl.positive.pctl.fixdl.ex.op.log:Optimisitic value iteration took 91 iterations and 0 seconds
+opti-dtmc-logs/crowds.pm.const.TotalRuns=6,CrowdSize=5.fixdl.positive.pctl.fixdl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 72 iterations.
+opti-dtmc-logs/egl.pm.const.N=5,L=2.unfairA.pctl.m.ex.op.log:Optimisitic value iteration took 12 iterations and 0 seconds
+opti-dtmc-logs/egl.pm.const.N=5,L=2.unfairA.pctl.m.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 11 iterations.
+opti-dtmc-logs/egl.pm.const.N=5,L=2.unfairB.pctl.m.ex.op.log:Optimisitic value iteration took 12 iterations and 0 seconds
+opti-dtmc-logs/egl.pm.const.N=5,L=2.unfairB.pctl.m.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 11 iterations.
+opti-dtmc-logs/egl.pm.const.N=5,L=4.unfairA.pctl.m.ex.op.log:Optimisitic value iteration took 12 iterations and 0 seconds
+opti-dtmc-logs/egl.pm.const.N=5,L=4.unfairA.pctl.m.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 11 iterations.
+opti-dtmc-logs/egl.pm.const.N=5,L=4.unfairB.pctl.m.ex.op.log:Optimisitic value iteration took 12 iterations and 0 seconds
+opti-dtmc-logs/egl.pm.const.N=5,L=4.unfairB.pctl.m.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 11 iterations.
+opti-dtmc-logs/egl.pm.const.N=5,L=6.unfairA.pctl.m.ex.op.log:Optimisitic value iteration took 12 iterations and 0 seconds
+opti-dtmc-logs/egl.pm.const.N=5,L=6.unfairA.pctl.m.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 11 iterations.
+opti-dtmc-logs/egl.pm.const.N=5,L=6.unfairB.pctl.m.ex.op.log:Optimisitic value iteration took 12 iterations and 0 seconds
+opti-dtmc-logs/egl.pm.const.N=5,L=6.unfairB.pctl.m.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 11 iterations.
+opti-dtmc-logs/egl.pm.const.N=5,L=8.unfairA.pctl.m.ex.op.log:Optimisitic value iteration took 12 iterations and 0 seconds
+opti-dtmc-logs/egl.pm.const.N=5,L=8.unfairA.pctl.m.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 11 iterations.
+opti-dtmc-logs/egl.pm.const.N=5,L=8.unfairB.pctl.m.ex.op.log:Optimisitic value iteration took 12 iterations and 0 seconds
+opti-dtmc-logs/egl.pm.const.N=5,L=8.unfairB.pctl.m.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 11 iterations.
+opti-dtmc-logs/nand.pm.const.N=20,K=1.reliable.pctl.ex.op.log:Optimisitic value iteration took 439 iterations and 0 seconds
+opti-dtmc-logs/nand.pm.const.N=20,K=1.reliable.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 241 iterations.
+opti-dtmc-logs/nand.pm.const.N=20,K=2.reliable.pctl.ex.op.log:Optimisitic value iteration took 715 iterations and 1 seconds
+opti-dtmc-logs/nand.pm.const.N=20,K=2.reliable.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 401 iterations.
+opti-dtmc-logs/nand.pm.const.N=20,K=3.reliable.pctl.ex.op.log:Optimisitic value iteration took 992 iterations and 2 seconds
+opti-dtmc-logs/nand.pm.const.N=20,K=3.reliable.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 561 iterations.
+opti-dtmc-logs/nand.pm.const.N=20,K=4.reliable.pctl.ex.op.log:Optimisitic value iteration took 1299 iterations and 3 seconds
+opti-dtmc-logs/nand.pm.const.N=20,K=4.reliable.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 721 iterations.
+opti-dtmc-logs/nand.pm.const.N=40,K=1.reliable.pctl.ex.op.log:Optimisitic value iteration took 938 iterations and 6 seconds
+opti-dtmc-logs/nand.pm.const.N=40,K=1.reliable.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 481 iterations.
+opti-dtmc-logs/nand.pm.const.N=40,K=2.reliable.pctl.ex.op.log:Optimisitic value iteration took 1568 iterations and 29 seconds
+opti-dtmc-logs/nand.pm.const.N=40,K=2.reliable.pctl.ex.op.log:Gauss-seidel VI was called 1 times, for a total of 801 iterations.
