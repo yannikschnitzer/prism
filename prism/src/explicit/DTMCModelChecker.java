@@ -789,9 +789,11 @@ public class DTMCModelChecker extends ProbModelChecker
 		
 		int iters = 0;
 		
-		while(true) {
+		boolean done = false;
+		//while(true){
+		while(!done) {
 			iters++;
-			boolean done = true;
+			done = true;
 			boolean changeBounds = true; 			// all s ∈ S? (y[s] < 1)
 			double cand; 							// x[s] / (1 - y[s])
 			double qmin = Double.POSITIVE_INFINITY; // min s ∈ S? (x[s] / (1 - y[s]))
@@ -800,20 +802,9 @@ public class DTMCModelChecker extends ProbModelChecker
 			OfInt stateIter = unknownStates.iterator();
 			while(stateIter.hasNext()) {
 				int s = stateIter.nextInt();
+				double sumX;
+				double sumY;
 				
-				double sumX = 0;
-				double sumY = 0;
-				
-				/*
-				Iterator<Map.Entry<Integer, Double>> iter = dtmc.getTransitionsIterator(s);
-				while(iter.hasNext()) {
-					Map.Entry<Integer, Double> e = iter.next();
-					double p = e.getValue();
-					int    t = e.getKey();
-					sumX += p * x[t]; // f(x)[s]  = sum ( P(s,t) * x[t] ) for all s in S?
-					sumY += p * y[t]; // h(y)[s]  = sum ( P(s,t) * y[t] ) for all s in S?
-				}
-				*/
 				boolean jacobi = true;
 				if (jacobi) {
 					sumX = dtmc.mvMultJacSingle(s, x);
@@ -823,14 +814,13 @@ public class DTMCModelChecker extends ProbModelChecker
 					sumY = dtmc.mvMultSingle(s, y);
 				}
 				
-				//if(! hasInitialStates || dtmc.isInitialState(s))
-				done &= sumX - x[s] < eps; //prism-tests/bugfixes/jltlbug2.nm prism-tests/bugfixes/jltlbug2.nm.props
+				// TODO: Work out if this is implementation error!!
+				// this check is needed to pass one test case
+				// (does one extra iteration)
+				// done &= sumX - x[s] < eps; //prism-tests/bugfixes/jltlbug2.nm prism-tests/bugfixes/jltlbug2.nm.props
 				
 				x[s] = sumX;
 				y[s] = sumY;
-				
-				//if(! hasInitialStates || dtmc.isInitialState(s))
-				done &= y[s] * (u - l) < 2 * eps;
 				
 				changeBounds &= y[s] < 1.0;
 				if(changeBounds) {
@@ -842,12 +832,19 @@ public class DTMCModelChecker extends ProbModelChecker
 			done &= l != Double.NEGATIVE_INFINITY;
 			done &= u != Double.POSITIVE_INFINITY;
 			
-			if(done) break;
+			// if(done) break;
 		
 			if(changeBounds) {
 				l = Double.max(l , qmin);
 				u = Double.min(u , qmax);
 			}
+			
+			stateIter = unknownStates.iterator();
+			while(stateIter.hasNext()) {
+				int s = stateIter.nextInt();
+				done &= y[s] * (u - l) < 2 * eps;
+			}
+			
 		}
 		
 		long timer = System.currentTimeMillis() - startTime;
@@ -866,8 +863,8 @@ public class DTMCModelChecker extends ProbModelChecker
 		return res;
 	}
 	
-	protected int gaussSeidelWithError(DTMC dtmc, BitSet yes, IntSet unknownStates, double error, double v[], double u[]) {
-		//mainLog.println("Starting Gauss-Seidel with error: " + error);
+	// reword to use Jacobi method
+	protected int gaussSeidelWithError(DTMC dtmc, BitSet yes, IntSet unknownStates, double error, double v[]) {
 		int iters = 0;
 		boolean done = false;
 		while(!done) {
@@ -876,18 +873,9 @@ public class DTMCModelChecker extends ProbModelChecker
 			OfInt stateIter = unknownStates.iterator();
 			while(stateIter.hasNext()) {
 				int s = stateIter.nextInt();
-				double sum = 0;
-				Iterator<Entry<Integer,Double>> iter = dtmc.getTransitionsIterator(s);
-				while(iter.hasNext()) {
-					Entry<Integer,Double> e = iter.next();
-					int    t = e.getKey();
-					double p = e.getValue();
-					sum += p * v[t];
-				}
-				done &= sum - v[s] <= error;
-				v[s] = sum;
-				// u[s] = v[s] * (1 + error) for all s ∈ S?
-				u[s] = Double.min(1 , v[s] * (1 + termCritParam) );
+				double vnew = dtmc.mvMultJacSingle(s,v);
+				done &= vnew - v[s] <= error;
+				v[s] = vnew;
 			}
 		}
 		return iters;
@@ -922,21 +910,12 @@ public class DTMCModelChecker extends ProbModelChecker
 		boolean done = false;
 		while(!done) {
 			iters++;
-			// old approach (can be improved with Jacobi-style multiplications)
-			//gaussIters += gaussSeidelWithError(dtmc, yes, unknownStates, error, v, u);
+			gaussIters += gaussSeidelWithError(dtmc, yes, unknownStates, error, v);
 
-			linEqMethod = LinEqMethod.GAUSS_SEIDEL;
-			double tempEpsilon = termCritParam;
-			termCritParam = error;
-			ModelCheckerResult tempRes = computeReachProbsGaussSeidel(dtmc, no, yes, v, null, false);
-			termCritParam = tempEpsilon;
-			gaussIters += tempRes.numIters;
-			
-			v = tempRes.soln;
 			stateIter = unknownStates.iterator();
 			while(stateIter.hasNext()) {
 				int s = stateIter.nextInt();
-				u[s] = v[s] * (1 + termCritParam);
+				u[s] = Double.min(v[s] * (1 + termCritParam), 1);
 			}
 			
 			while(true) { 
@@ -945,8 +924,6 @@ public class DTMCModelChecker extends ProbModelChecker
 				boolean anyUnknown = false;		
 				boolean up = true, down = true, cross = false;
 				boolean inEps = true;
-				
-				long statesTimer = System.currentTimeMillis();
 				
 				stateIter = unknownStates.iterator();
 				while(stateIter.hasNext()) {
@@ -960,11 +937,10 @@ public class DTMCModelChecker extends ProbModelChecker
 					unew = dtmc.mvMultJacSingle(s, u); // dtmc.mvMultSingle(s, u);
 
 					if (vnew > 0)
-						error = Double.max(error, (vnew - v[s]));
+						error = Double.max(error, (vnew - v[s]) / vnew);
 					if (unew <= u[s])
 						up = false;
 					if (unew > u[s]) {
-						//mainLog.println("not Down! " + u[s] + "-->" + unew);
 						down = false;
 					}
 					if (unew < vnew)
@@ -973,9 +949,6 @@ public class DTMCModelChecker extends ProbModelChecker
 					u[s] = unew;
 					inEps &= (u[s] - v[s]) <= 2*termCritParam * v[s];
 				}
-				
-				statesTimer = System.currentTimeMillis() - statesTimer;
-				//mainLog.println("To iterate over states in inner \n loop took " + statesTimer/1000 + " seconds");
 				
 				// is easier way to do this
 				if(!anyUnknown) {
@@ -991,9 +964,6 @@ public class DTMCModelChecker extends ProbModelChecker
 					u = temp;
 				}
 				
-				//mainLog.println("Down : " + down);
-				//mainLog.println("inEps : " + inEps);
-				
 				if (up || cross)
 					break;
 				if (down && inEps) {
@@ -1001,7 +971,7 @@ public class DTMCModelChecker extends ProbModelChecker
 					break;
 				}
 			}
-			error = error / 2;
+			error = error / 2; // can alter this and see performance
 		}
 		
 		long timer = System.currentTimeMillis() - startTime;

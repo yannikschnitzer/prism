@@ -1058,6 +1058,7 @@ public class MDPModelChecker extends ProbModelChecker
 			double qmin = Double.POSITIVE_INFINITY; // min s ∈ S? (x[s] / (1 - y[s]))
 			double qmax = Double.NEGATIVE_INFINITY; // max s ∈ S? (x[s] / (1 - y[s]))
 			
+			//mainLog.println("Iteration: " + iters);
 			PrimitiveIterator.OfInt stateIter = unknownStates.iterator();
 			while(stateIter.hasNext()) {
 				int s = stateIter.nextInt();			
@@ -1140,7 +1141,7 @@ public class MDPModelChecker extends ProbModelChecker
 		return res;
 	}
 	
-	protected int gaussSeidelWithError(MDP mdp, BitSet yes, IntSet unknownStates, boolean min, double error, double v[], double u[], int strat[]) {
+	protected int gaussSeidelWithError(MDP mdp, BitSet yes, IntSet unknownStates, boolean min, double error, double v[], int strat[]) {
 		// mainLog.println("Starting Gauss-Seidel with error: " + error);
 		int iters = 0;
 		boolean done = false;
@@ -1150,27 +1151,9 @@ public class MDPModelChecker extends ProbModelChecker
 			PrimitiveIterator.OfInt stateIter = unknownStates.iterator();
 			while(stateIter.hasNext()) {
 				int s = stateIter.nextInt();
-				double candidate = min ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
-				for(int i=0; i<mdp.getNumChoices(s); i++) {
-					double sum = 0;
-					Iterator<Entry<Integer,Double>> iter = mdp.getTransitionsIterator(s, i);
-					while(iter.hasNext()) {
-						Entry<Integer,Double> e = iter.next();
-						int    t = e.getKey();
-						double p = e.getValue();
-						sum += p * v[t];
-					}
-					// candidate = min ? Double.min(candidate,sum) : Double.max(candidate,sum);
-					if(min ? sum < candidate : sum > candidate) {
-						candidate = sum;
-						if (strat != null) {
-							strat[s] = i;
-						}
-					}
-				}
-			done = candidate - v[s] > error ? false : done;
-			v[s] = candidate;
-			u[s] = v[s] * (1 + termCritParam); // u[s] = v[s] * (1 + error) for all s ∈ S?
+				double vnew = mdp.mvMultJacMinMaxSingle(s, v, min, strat);
+				done &= vnew - v[s] > error ? false : done;
+				v[s] = vnew;
 			}
 		}
 		return iters;
@@ -1186,6 +1169,7 @@ public class MDPModelChecker extends ProbModelChecker
 		
 		Iterator<Entry<Integer,Double>> iter;
 		Entry<Integer,Double> e;
+		PrimitiveIterator.OfInt stateIter;
 		
 		if(init != null) {
 			v = init;
@@ -1199,41 +1183,38 @@ public class MDPModelChecker extends ProbModelChecker
 			}
 		}	
 		int iters = 0;
-		int totalIters = 0; // for inner loop
+		int gaussIters = 0;
+		int verifIters = 0;
+		
 		boolean done = false;
 		while(!done) {
 			iters++;
-			// perform Gauss-Seidel Value Iteration to give v and u
-			totalIters += gaussSeidelWithError(mdp, yes, unknownStates, min, error, v, u, strat);
+			gaussIters += gaussSeidelWithError(mdp, yes, unknownStates, min, error, v, strat);
+			stateIter = unknownStates.iterator();
+			while(stateIter.hasNext()) {
+				int s = stateIter.nextInt();
+				u[s] = Double.min(v[s] * (1 + termCritParam) , 1);
+			}
+			
 			while(true) {
+				verifIters++;
 				error = 0;
 				boolean anyUnknown = false;	
 				boolean up = true, down = true, cross = false;
 				boolean inEps = true;
 				// foreach s ∈ S?
-				PrimitiveIterator.OfInt stateIter = unknownStates.iterator();
+				stateIter = unknownStates.iterator();
 				while(stateIter.hasNext()) {
 					int s = stateIter.nextInt();
 					anyUnknown = true;
-					double vnew = min ? 1 : 0;
-					double unew = min ? 1 : 0;
-					for(int i = 0 ; i < mdp.getNumChoices(s); i++) {
-						double vcand = 0.0;
-						double ucand = 0.0;
-						for(iter = mdp.getTransitionsIterator(s, i); iter.hasNext(); ) {
-							e = iter.next();
-							double p = e.getValue();
-							int    t = e.getKey();
-							vcand += p * v[t];
-							ucand += p * u[t];
-						}
-						vnew = min ? Double.min(vnew, vcand) : Double.max(vnew, vcand);
-						unew = min ? Double.min(unew, ucand) : Double.max(unew, ucand);
-					}
+					double vnew = mdp.mvMultJacMinMaxSingle(s, v, min, strat); // can probably safely hand this strat
+					double unew = mdp.mvMultJacMinMaxSingle(s, u, min, null);
+					
 					if (vnew > 0) {
-						// TODO: Different from psuedo-code. Consider.
-						error = Double.min(error, (vnew - v[s]) / vnew);
-						// error = Double.max(error, (vnew - v[s]) / vnew);
+						// relative-error convergence
+						error = Double.max(error, (vnew - v[s]) / vnew);
+						// TODO: Also try absolute convergence
+						// error = Double.max(error, vnew - v[s]);
 					}
 					// if unew == u[s] then we run into termination trouble
 					if(unew <= u[s]) // if(unew < u[s])
@@ -1275,9 +1256,11 @@ public class MDPModelChecker extends ProbModelChecker
 		
 		long timer = System.currentTimeMillis() - startTime;
 		
-		mainLog.print("Optimisitic value iteration took " + totalIters + " iterations ");
-		mainLog.print("(Gauss-seidel VI was called " + iters + " times) ");
+		mainLog.print("Optimisitic value iteration took " + (gaussIters + verifIters) + " iterations ");
 		mainLog.println("and " + timer / 1000 + " seconds");
+		mainLog.print("Gauss-seidel VI was called " + iters + " times, ");
+		mainLog.println("for a total of " + gaussIters + " iterations.");
+		mainLog.println("Verification phase had " + verifIters + " total iters." );
 		
 		ModelCheckerResult res = new ModelCheckerResult();
 		res.soln = u;
@@ -1285,8 +1268,8 @@ public class MDPModelChecker extends ProbModelChecker
 			res.soln[s] += v[s];
 			res.soln[s] /= 2;
 		}
-		res.numIters = totalIters;
-		res.timeTaken = timer;
+		res.numIters = gaussIters + verifIters;
+		res.timeTaken = timer / 1000;
 		return res;
 	}
 	
@@ -1353,6 +1336,7 @@ public class MDPModelChecker extends ProbModelChecker
 			// (example: bin/ngprism ../prism-tests/pmc/lec13and14mdp.nm ../prism-tests/pmc/lec13and14mdp.nm.props -ex -lu -testall)
 			
 			try {
+				//ModelCheckerResult res = mcDTMC.doLowerUpper(dtmc, yes, dtmcNo, null, null);
 				ModelCheckerResult res = mcDTMC.doLowerUpper(dtmc, yes, dtmcNo, null, null);
 				soln = res.soln;
 			} catch (PrismNotSupportedException e) {
