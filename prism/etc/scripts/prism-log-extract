@@ -1,0 +1,127 @@
+#!/usr/bin/env python
+
+import os,sys,re
+from optparse import OptionParser
+
+#==================================================================================================
+# Global variables
+#==================================================================================================
+
+# Details of all the fields that can be extracted from logs
+all_fields_details = [\
+    {'name': 'log_dir', 'type': 'string'}, \
+    {'name': 'log_file', 'type': 'string'}, \
+    {'name': 'model_file', 'type': 'file', 'regexp': 'Parsing model file "(.+)"...'}, \
+    {'name': 'model_consts', 'type': 'string', 'regexp': 'Model constants: (.+)'}, \
+    {'name': 'states', 'regexp': 'States: *(.+) \((.+) initial\)'}, \
+    {'name': 'time_constr', 'regexp': 'Time for model construction: *(.+) sec'}, \
+    {'name': 'prop_file', 'type': 'file', 'regexp': 'Parsing properties file "(.+)"...'}, \
+    {'name': 'iters_check', 'regexp': 'took ([^ \n]+) iterations', 'match': 'last'}, \
+    {'name': 'time_check', 'regexp': 'Time for model checking: *(.+) sec'}, \
+    {'name': 'result', 'regexp': '^Result.*: ([^( \n]+)'}, \
+]
+
+# Names of all fields
+all_fields = list(map(lambda x: x['name'], all_fields_details))
+
+#==================================================================================================
+# Utility functions
+#==================================================================================================
+
+# Returns a sorted list of files / directories in dir
+def sorted_list_dir(dir):
+    list = os.listdir(dir);
+    list.sort()
+    return list
+
+def get_field_details(field):
+    return next(filter(lambda x: x['name'] == field, all_fields_details))
+
+def grep_for_info(file, fields):
+    if os.path.isdir(file):
+        return grep_for_info_dir(file, fields)
+    else:
+        return grep_for_info_file(file, fields)
+
+def grep_for_info_dir(dir, fields):
+    infos = []
+    for file in [file for file in sorted_list_dir(dir) if not file in [".","..",".svn"]]:
+        infos += grep_for_info(os.path.join(dir, file), fields)
+    return infos
+
+def grep_for_info_file(logFile, fields):
+    info = {}
+    for field in fields:
+        info[field] = ''
+    if 'log_dir' in fields:
+        info['log_dir'] = os.path.basename(os.path.dirname(logFile))
+    if 'log_file' in fields:
+        info['log_file'] = os.path.basename(logFile)
+    # Regexps
+    for line in open(logFile, 'r').readlines():
+        for field in fields:
+            field_details = get_field_details(field)
+            if 'regexp' in field_details and (info[field] == '' or ('match' in field_details and field_details['match'] == 'last')):
+                regexp = field_details['regexp']
+                m = re.search(regexp, line)
+                if not m is None:
+                    info[field] = m.group(1)
+    
+    for field in info.keys():
+        field_details = get_field_details(field)
+        if 'type' in field_details and field_details['type'] == 'file':
+            info[field] = os.path.basename(info[field])
+        if 'type' in field_details and field_details['type'] in ['string', 'file']:
+            info[field] = '"' + info[field] + '"'
+    if (info['model_file']):
+        return [info]
+    else:
+        return []
+
+def print_info(info, fields):
+    values = []
+    for field in fields:
+        values.append(info[field])
+    print(','.join(values))
+
+
+#==================================================================================================
+# Main program
+#==================================================================================================
+
+parser = OptionParser(usage="usage: %prog [options] args")
+(options, args) = parser.parse_args()
+
+if len(args) < 1:
+    parser.print_help()
+    sys.exit(1)
+
+for file in args:
+    fields = all_fields
+    infos = grep_for_info(file, fields)
+
+    group_by = 'log_dir'
+    group_vals = set(map(lambda x: x[group_by], infos))
+    
+    keys = ['model_file', 'model_consts', 'prop_file']
+#     bla = list(info[key]) for key in keys if k in info
+    
+    keys_vals = sorted(set(map(lambda info: '.'.join([info[key] for key in keys if key in info]), infos)))
+    
+    fields_new = []
+    for group_val in group_vals:
+        group_val_trim = group_val.replace('"', '')
+        fields_new.extend([group_val_trim+':'+field for field in fields])
+        
+    infos_new = []
+    for keys_val in keys_vals:
+        info_new = {}
+        for group_val in group_vals:
+            group_val_trim = group_val.replace('"', '')
+            for info in filter(lambda info: group_val == info[group_by] and keys_val == '.'.join([info[key] for key in keys if key in info]), infos):
+                info_new.update({group_val_trim+':'+field : val for field, val in info.items()})
+        infos_new.append(info_new)
+        
+    print(','.join(fields_new))
+    for info in infos_new:
+        print_info(info, fields_new)
