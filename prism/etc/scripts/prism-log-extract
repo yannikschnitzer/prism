@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 # The prism-log-extract script extracts and collates info from a
-# collection of PRISM logs.
+# collection of PRISM log files.
 
 # The basic usage is "prism-log-extract <targets>" where <targets>
 # is one or more log files or directories containing log files.
-# The default behaviour is extract all known fields for all logs
+# The default behaviour is to extract all known fields from all logs
 # and then print the resulting table of values in CSV format.
 
 # Run "prism-log-extract --help" for details of further options.
@@ -58,12 +58,15 @@ def sorted_list_dir(dir):
 # Functions
 #==================================================================================================
 
+# Takes a list of field names, including "meta-fields" (e.g. 'model'
+# is shorthand for 'model_file','model_consts') and expands the meta-fields
 def expand_meta_fields(fields):
     fields_expanded = []
     for field in fields:
         fields_expanded.extend(meta_fields[field] if field in meta_fields else [field])
     return fields_expanded
 
+# Get the details of a field
 def get_field_details(field):
     return next(filter(lambda x: x['name'] == field, all_fields_details))
 
@@ -123,6 +126,7 @@ def grep_for_info_file(logFile, fields):
     else:
         return []
 
+# Print info from a log, i.e. a list of fields, comma-separated
 def print_info(info, fields):
     values = []
     for field in fields:
@@ -243,4 +247,3 @@ if group_by:
 print(','.join(fields))
 for info in infos:
     print_info(info, fields)
-
