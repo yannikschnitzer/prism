@@ -41,9 +41,13 @@ import parser.type.TypeBool;
 import parser.type.TypeDouble;
 import parser.type.TypeInt;
 import parser.type.TypeVoid;
+import prism.Accuracy.AccuracyLevel;
+import prism.Accuracy.AccuracyType;
 
 public class ResultTesting
 {
+	private static final Accuracy DEFAULT_TESTING_ACCURACY = new Accuracy(AccuracyLevel.BOUNDED, 1e-5, AccuracyType.RELATIVE);
+	
 	/**
 	 * Tests a result (specified as a Result object) against the expected result,
 	 * given by a string extracted from a RESULT: specification.
@@ -304,8 +308,18 @@ public class ResultTesting
 		}
 		// Normal case: check result is in expected value overlap
 		else {
-			if (!PrismUtils.doublesAreCloseRel(doubleExp, doubleRes, 1e-5)) {
-				throw new PrismException("Wrong result (expected " + strExpected + ", got " + doubleRes + ")");
+			// Use accuracy info where possible
+			// If it is missing, or only estimated, use default check (1e-5 relative error) instead
+			Accuracy accuracy;
+			if (resultObj.getAccuracy() == null || resultObj.getAccuracy().getLevel() == AccuracyLevel.ESTIMATED_BOUNDED) {
+				accuracy = DEFAULT_TESTING_ACCURACY;
+			} else {
+				accuracy = resultObj.getAccuracy();
+			}
+			double resLow = accuracy.getResultLowerBound(doubleRes);
+			double resHigh = accuracy.getResultUpperBound(doubleRes);
+			if (!(resLow <= doubleExp && doubleExp <= resHigh)) {
+				throw new PrismException("Wrong result (expected " + strExpected + ", abs err = " + Math.abs(doubleRes - doubleExp) + " > " + accuracy.getAbsoluteErrorBound(doubleRes) + ")");
 			}
 		}
 	}
@@ -326,8 +340,10 @@ public class ResultTesting
 		}
 		double doubleRes = ((Double) result).doubleValue();
 		// Check intervals for result and expected value overlap
-		double resLow = doubleRes * (1.0 - 1e-5);
-		double resHigh = doubleRes * (1.0 + 1e-5);
+		Accuracy accuracyLow = resultObj.getAccuracy() == null ? DEFAULT_TESTING_ACCURACY : resultObj.getAccuracy();
+		double resLow = accuracyLow.getResultLowerBound(doubleRes);
+		Accuracy accuracyHigh = resultObj.getAccuracy() == null ? DEFAULT_TESTING_ACCURACY : resultObj.getAccuracy();
+		double resHigh = accuracyHigh.getResultUpperBound(doubleRes);
 		if (!(resLow <= expHigh && expLow <= resHigh)) {
 			throw new PrismException("Wrong result (expected " + strExpected + ", got " + doubleRes + ")");
 		}

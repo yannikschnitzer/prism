@@ -65,6 +65,7 @@ import parser.type.TypeDouble;
 import parser.type.TypeInt;
 import parser.visitor.ASTTraverseModify;
 import parser.visitor.ReplaceLabels;
+import prism.Accuracy;
 import prism.Filter;
 import prism.ModelInfo;
 import prism.ModelType;
@@ -568,7 +569,7 @@ public class StateModelChecker extends PrismComponent
 		resultString = "Result";
 		if (!("Result".equals(expr.getResultName())))
 			resultString += " (" + expr.getResultName().toLowerCase() + ")";
-		resultString += ": " + result.getResultString();
+		resultString += ": " + result.getResultAndAccuracy();
 		mainLog.print("\n" + resultString + "\n");
 
 		// Clean up
@@ -1005,6 +1006,7 @@ public class StateModelChecker extends PrismComponent
 		boolean b = false;
 		String resultExpl = null;
 		Object resObj = null;
+		Accuracy resAcc = null; 
 		switch (op) {
 		case PRINT:
 		case PRINTALL:
@@ -1195,6 +1197,7 @@ public class StateModelChecker extends PrismComponent
 			// Find first (only) value
 			// Store as object/vector
 			resObj = vals.firstFromBitSet(bsFilter);
+			resAcc = vals.accuracy;
 			resVals = new StateValues(expr.getType(), resObj, model);
 			// Create explanation of result and print some details to log
 			resultExpl = "Value in ";
@@ -1226,6 +1229,7 @@ public class StateModelChecker extends PrismComponent
 
 		// Store result
 		result.setResult(resObj);
+		result.setAccuracy(resAcc);
 		// Set result explanation (if none or disabled, clear)
 		if (expr.getExplanationEnabled() && resultExpl != null) {
 			result.setExplanation(resultExpl.toLowerCase());

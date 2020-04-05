@@ -156,6 +156,7 @@ public abstract class Product<M extends Model> implements ModelTransformation<M,
 	{
 		// the resulting state values have one value per state in the original model
 		StateValues result = new StateValues(sv.type, getOriginalModel().getNumStates());
+		result.setAccuracy(sv.getAccuracy());
 
 		// iterate over all the initial states in the product
 		for (Integer productState : productModel.getInitialStates()) {
