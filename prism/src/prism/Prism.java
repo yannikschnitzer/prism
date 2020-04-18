@@ -3216,8 +3216,6 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	public Result modelCheckSimulator(PropertiesFile propertiesFile, Expression expr, Values definedPFConstants, State initialState, long maxPathLength,
 			SimulationMethod simMethod) throws PrismException
 	{
-		Object res = null;
-
 		// Print info
 		mainLog.printSeparator();
 		mainLog.println("\nSimulating: " + expr);
@@ -3235,9 +3233,9 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 
 		// Do simulation
 		loadModelIntoSimulator();
-		res = getSimulator().modelCheckSingleProperty(propertiesFile, expr, initialState, maxPathLength, simMethod);
+		Result res = getSimulator().modelCheckSingleProperty(propertiesFile, expr, initialState, maxPathLength, simMethod);
 
-		return new Result(res);
+		return res;
 	}
 
 	/**
@@ -3257,8 +3255,6 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	public Result[] modelCheckSimulatorSimultaneously(PropertiesFile propertiesFile, List<Expression> exprs, Values definedPFConstants, State initialState,
 			long maxPathLength, SimulationMethod simMethod) throws PrismException
 	{
-		Object[] res = null;
-
 		// Print info
 		mainLog.printSeparator();
 		mainLog.print("\nSimulating");
@@ -3285,11 +3281,8 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 
 		// Do simulation
 		loadModelIntoSimulator();
-		res = getSimulator().modelCheckMultipleProperties(propertiesFile, exprs, initialState, maxPathLength, simMethod);
+		Result[] resArray = getSimulator().modelCheckMultipleProperties(propertiesFile, exprs, initialState, maxPathLength, simMethod);
 
-		Result[] resArray = new Result[res.length];
-		for (int i = 0; i < res.length; i++)
-			resArray[i] = new Result(res[i]);
 		return resArray;
 	}
 
