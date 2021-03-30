@@ -37,22 +37,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Vector;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+
+import acceptance.AcceptanceReach;
+import automata.DA;
+
 import java.util.Iterator;
 import cern.colt.Arrays;
-
+import common.StopWatch;
 import explicit.graphviz.Decoration;
 import explicit.graphviz.Decorator;
 import explicit.rewards.MDPRewards;
 import explicit.rewards.Rewards;
 import explicit.rewards.StateRewardsSimple;
 import explicit.rewards.WeightedSumMDPRewards;
+import parser.VarList;
+import parser.ast.Declaration;
+import parser.ast.DeclarationIntUnbounded;
+import parser.ast.Expression;
 import prism.Accuracy;
 import prism.AccuracyFactory;
 import prism.Pair;
+import prism.Prism;
 import prism.PrismComponent;
 import prism.PrismException;
+import prism.PrismFileLog;
 import prism.PrismNotSupportedException;
 import prism.PrismUtils;
 //mport solver.BeliefPoint;
@@ -118,6 +129,102 @@ public class POMDPModelChecker extends ProbModelChecker
 	{
 		super(parent);
 	}
+
+	// Model checking functions
+	
+	protected StateValues checkProbPathFormulaCosafeLTL(Model model, Expression expr, boolean qual, MinMax minMax, BitSet statesOfInterest) throws PrismException
+	{
+		// For LTL model checking routines
+		LTLModelChecker mcLtl = new LTLModelChecker(this);
+
+		// Model check maximal state formulas and construct DFA
+		Vector<BitSet> labelBS = new Vector<BitSet>();
+		DA<BitSet, AcceptanceReach> da = mcLtl.constructDFAForCosafetyProbLTL(this, model, expr, labelBS);
+
+		StopWatch timer = new StopWatch(getLog());
+		mainLog.println("\nConstructing " + model.getModelType() + "-" + da.getAutomataType() + " product...");
+		timer.start(model.getModelType() + "-" + da.getAutomataType() + " product");
+		LTLModelChecker.LTLProduct<POMDP> product = mcLtl.constructProductModel(da, (POMDP)model, labelBS, statesOfInterest);
+		timer.stop("product has " + product.getProductModel().infoString());
+
+		// Output product, if required
+		if (getExportProductTrans()) {
+				mainLog.println("\nExporting product transition matrix to file \"" + getExportProductTransFilename() + "\"...");
+				product.getProductModel().exportToPrismExplicitTra(getExportProductTransFilename());
+		}
+		if (getExportProductStates()) {
+			mainLog.println("\nExporting product state space to file \"" + getExportProductStatesFilename() + "\"...");
+			PrismFileLog out = new PrismFileLog(getExportProductStatesFilename());
+			VarList newVarList = (VarList) modulesFile.createVarList().clone();
+			String daVar = "_da";
+			while (newVarList.getIndex(daVar) != -1) {
+				daVar = "_" + daVar;
+			}
+			newVarList.addVar(0, new Declaration(daVar, new DeclarationIntUnbounded()), 1, null);
+			product.getProductModel().exportStates(Prism.EXPORT_PLAIN, newVarList, out);
+			out.close();
+		}
+		// Find accepting states + compute reachability rewards
+		BitSet acc = ((AcceptanceReach)product.getAcceptance()).getGoalStates();
+		BitSet productStatesOfInterest = product.liftFromModel(statesOfInterest);
+		mainLog.println("\nComputing reachability probabilities...");
+		POMDPModelChecker mcProduct = new POMDPModelChecker(this);
+		mcProduct.inheritSettings(this);
+		product.getProductModel().exportToDotFile(new PrismFileLog("prod.dot"), acc, true);
+		ModelCheckerResult res = mcProduct.computeReachProbs((POMDP)product.getProductModel(), null, acc, minMax.isMin(), productStatesOfInterest);
+		StateValues probsProduct = StateValues.createFromDoubleArrayResult(res, product.getProductModel());
+
+		// Output vector over product, if required
+		if (getExportProductVector()) {
+				mainLog.println("\nExporting product solution vector matrix to file \"" + getExportProductVectorFilename() + "\"...");
+				PrismFileLog out = new PrismFileLog(getExportProductVectorFilename());
+				probsProduct.print(out, false, false, false, false);
+				out.close();
+		}
+
+		// Mapping probabilities in the original model
+		StateValues probs = product.projectToOriginalModel(probsProduct);
+		probsProduct.clear();
+
+		return probs;
+	}
+	
+	/**
+	 * Compute rewards for a co-safe LTL reward operator.
+	 */
+	protected StateValues checkRewardCoSafeLTL(Model model, Rewards modelRewards, Expression expr, MinMax minMax, BitSet statesOfInterest) throws PrismException
+	{
+		// Build product of POMDP and DFA for the LTL formula, convert rewards and do any required exports
+		LTLModelChecker mcLtl = new LTLModelChecker(this);
+		LTLModelChecker.LTLProduct<POMDP> product = mcLtl.constructDFAProductForCosafetyReward(this, (POMDP) model, expr, statesOfInterest);
+		MDPRewards productRewards = ((MDPRewards) modelRewards).liftFromModel(product);
+		doProductExports(product);
+
+		// Find accepting states + compute reachability rewards
+		BitSet acc = ((AcceptanceReach)product.getAcceptance()).getGoalStates();
+
+		mainLog.println("\nComputing reachability rewards...");
+		POMDPModelChecker mcProduct = new POMDPModelChecker(this);
+		mcProduct.inheritSettings(this);
+		ModelCheckerResult res = mcProduct.computeReachRewards((POMDP)product.getProductModel(), productRewards, acc, minMax.isMin(), null);
+		StateValues rewardsProduct = StateValues.createFromDoubleArrayResult(res, product.getProductModel());
+
+		// Output vector over product, if required
+		if (getExportProductVector()) {
+				mainLog.println("\nExporting product solution vector matrix to file \"" + getExportProductVectorFilename() + "\"...");
+				PrismFileLog out = new PrismFileLog(getExportProductVectorFilename());
+				rewardsProduct.print(out, false, false, false, false);
+				out.close();
+		}
+
+		// Mapping rewards in the original model
+		StateValues rewards = product.projectToOriginalModel(rewardsProduct);
+		rewardsProduct.clear();
+
+		return rewards;
+	}
+	
+	// Numerical computation functions
 
 	/**
 	 * Compute reachability/until probabilities.

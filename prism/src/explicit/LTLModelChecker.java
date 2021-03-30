@@ -539,6 +539,12 @@ public class LTLModelChecker extends PrismComponent
 			prodModel = mdpProd;
 			break;
 		}
+		case POMDP: {
+			POMDPSimple pomdpProd = new POMDPSimple();
+			pomdpProd.setVarList(newVarList);
+			prodModel = pomdpProd;
+			break;
+		}
 		case STPG: {
 			STPGExplicit stpgProd = new STPGExplicit();
 			stpgProd.setVarList(newVarList);
@@ -617,6 +623,7 @@ public class LTLModelChecker extends PrismComponent
 					iter = ((DTMC) model).getTransitionsIterator(s_1);
 					break;
 				case MDP:
+				case POMDP:
 					iter = ((MDP) model).getTransitionsIterator(s_1, j);
 					break;
 				case STPG:
@@ -664,6 +671,7 @@ public class LTLModelChecker extends PrismComponent
 						((DTMCSimple) prodModel).setProbability(map[s_1 * daSize + q_1], map[s_2 * daSize + q_2], prob);
 						break;
 					case MDP:
+					case POMDP:
 					case STPG:
 						prodDistr.set(map[s_2 * daSize + q_2], prob);
 						break;
@@ -673,6 +681,7 @@ public class LTLModelChecker extends PrismComponent
 				}
 				switch (modelType) {
 				case MDP:
+				case POMDP:
 					((MDPSimple) prodModel).addActionLabelledChoice(map[s_1 * daSize + q_1], prodDistr, ((MDP) model).getAction(s_1, j));
 					break;
 				case STPG:
@@ -681,6 +690,14 @@ public class LTLModelChecker extends PrismComponent
 				default:
 					break;
 				}
+			}
+			
+			// For partially observable models, transfer observation info
+			// (do it after transitions are added, since observation actions are checked)
+			if (modelType == ModelType.POMDP) {
+				State o = ((POMDP) model).getObservationAsState(s_1);
+				State u = ((POMDP) model).getUnobservationAsState(s_1);
+				((POMDPSimple) prodModel).setObservation(map[s_1 * daSize + q_1], o, u, null);
 			}
 		}
 
