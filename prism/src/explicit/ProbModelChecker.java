@@ -912,7 +912,7 @@ public class ProbModelChecker extends NonProbModelChecker
 		Rewards rewards = constructRewards(model, r);
 
 		// Compute rewards
-		StateValues rews = checkRewardFormula(model, rewards, expr.getExpression(), minMax, statesOfInterest);
+		StateValues rews = checkRewardFormula(model, rewards, expr.getExpression(), expr.getModifier(), minMax, statesOfInterest);
 
 		// Print out rewards
 		if (getVerbosity() > 5) {
@@ -961,7 +961,7 @@ public class ProbModelChecker extends NonProbModelChecker
 	/**
 	 * Compute rewards for the contents of an R operator.
 	 */
-	protected StateValues checkRewardFormula(Model model, Rewards modelRewards, Expression expr, MinMax minMax, BitSet statesOfInterest) throws PrismException
+	protected StateValues checkRewardFormula(Model model, Rewards modelRewards, Expression expr, String modifier, MinMax minMax, BitSet statesOfInterest) throws PrismException
 	{
 		StateValues rewards = null;
 
@@ -985,7 +985,7 @@ public class ProbModelChecker extends NonProbModelChecker
 				throw new PrismNotSupportedException("Explicit engine does not yet handle the " + exprTemp.getOperatorSymbol() + " reward operator");
 			}
 		} else if (expr.getType() instanceof TypePathBool || expr.getType() instanceof TypeBool) {
-			rewards = checkRewardPathFormula(model, modelRewards, expr, minMax, statesOfInterest);
+			rewards = checkRewardPathFormula(model, modelRewards, expr, modifier, minMax, statesOfInterest);
 		}
 
 		if (rewards == null)
@@ -1132,10 +1132,14 @@ public class ProbModelChecker extends NonProbModelChecker
 	/**
 	 * Compute rewards for a path formula in a reward operator.
 	 */
-	protected StateValues checkRewardPathFormula(Model model, Rewards modelRewards, Expression expr, MinMax minMax, BitSet statesOfInterest) throws PrismException
+	protected StateValues checkRewardPathFormula(Model model, Rewards modelRewards, Expression expr, String modifier, MinMax minMax, BitSet statesOfInterest) throws PrismException
 	{
 		if (Expression.isReach(expr)) {
-			return checkRewardReach(model, modelRewards, (ExpressionTemporal) expr, minMax, statesOfInterest);
+			if (modifier != null && modifier.equals("cvar")) {
+				return checkRewardReachCvar(model, modelRewards, (ExpressionTemporal) expr, minMax, statesOfInterest);
+			} else {
+				return checkRewardReach(model, modelRewards, (ExpressionTemporal) expr, minMax, statesOfInterest);
+			}
 		}
 		else if (Expression.isCoSafeLTLSyntactic(expr, true)) {
 			return checkRewardCoSafeLTL(model, modelRewards, expr, minMax, statesOfInterest);
@@ -1173,6 +1177,33 @@ public class ProbModelChecker extends NonProbModelChecker
 			break;
 		case STPG:
 			res = ((STPGModelChecker) this).computeReachRewards((STPG) model, (STPGRewards) modelRewards, target, minMax.isMin1(), minMax.isMin2());
+			break;
+		default:
+			throw new PrismNotSupportedException("Explicit engine does not yet handle the " + expr.getOperatorSymbol() + " reward operator for " + model.getModelType()
+					+ "s");
+		}
+		result.setStrategy(res.strat);
+		return StateValues.createFromDoubleArrayResult(res, model);
+	}
+
+	/**
+	 * Compute rewards for a reachability reward operator.
+	 */
+	protected StateValues checkRewardReachCvar(Model model, Rewards modelRewards, ExpressionTemporal expr, MinMax minMax, BitSet statesOfInterest) throws PrismException
+	{
+		// No time bounds allowed
+		if (expr.hasBounds()) {
+			throw new PrismNotSupportedException("R operator cannot contain a bounded F operator: " + expr);
+		}
+		
+		// Model check the operand for all states
+		BitSet target = checkExpression(model, expr.getOperand2(), null).getBitSet();
+
+		// Compute/return the rewards
+		ModelCheckerResult res = null;
+		switch (model.getModelType()) {
+		case MDP:
+			res = ((MDPModelChecker) this).computeReachRewardsCvar((MDP) model, (MDPRewards) modelRewards, target, minMax.isMin());
 			break;
 		default:
 			throw new PrismNotSupportedException("Explicit engine does not yet handle the " + expr.getOperatorSymbol() + " reward operator for " + model.getModelType()

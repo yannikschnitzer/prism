@@ -153,7 +153,7 @@ public class PropertiesSemanticCheck extends SemanticCheck
 	public void visitPost(ExpressionReward e) throws PrismLangException
 	{
 		if (e.getModifier() != null) {
-			throw new PrismLangException("Modifier \"" + e.getModifier() + "\" not supported for R operator");
+//			throw new PrismLangException("Modifier \"" + e.getModifier() + "\" not supported for R operator");
 		}
 		if (e.getRewardStructIndex() != null) {
 			if (e.getRewardStructIndex() instanceof Expression) {

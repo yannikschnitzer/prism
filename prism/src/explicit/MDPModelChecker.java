@@ -2582,6 +2582,94 @@ public class MDPModelChecker extends ProbModelChecker
 	}
 
 	/**
+	 * Compute expected reachability rewards.
+	 * @param mdp The MDP
+	 * @param mdpRewards The rewards
+	 * @param target Target states
+	 * @param min Min or max rewards (true=min, false=max)
+	 */
+	public ModelCheckerResult computeReachRewardsCvar(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException
+	{
+		// Start expected reachability
+		long timer = System.currentTimeMillis();
+		mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
+
+		// Check for deadlocks in non-target state (because breaks e.g. prob1)
+		mdp.checkForDeadlocks(target);
+
+		// Store num states
+		int n = mdp.getNumStates();
+		
+		// Precomputation (not optional)
+		long timerProb1 = System.currentTimeMillis();
+		BitSet inf = prob1(mdp, null, target, !min, null);
+		inf.flip(0, n);
+		timerProb1 = System.currentTimeMillis() - timerProb1;
+
+		// Print results of precomputation
+		int numTarget = target.cardinality();
+		int numInf = inf.cardinality();
+		mainLog.println("target=" + numTarget + ", inf=" + numInf + ", rest=" + (n - (numTarget + numInf)));
+		
+		// Start value iteration
+		timer = System.currentTimeMillis();
+		String description = (min ? "min" : "max");
+		mainLog.println("Starting value iteration (" + description + ")...");
+
+		// Create/initialise solution vector(s)
+		double soln[] = new double[n];
+		for (int i = 0; i < n; i++) {
+			soln[i] = target.get(i) ? 0.0 : inf.get(i) ? Double.POSITIVE_INFINITY : 0.0;
+		}
+		double soln2[] = new double[n];
+
+		// Determine set of states actually need to compute values for
+		BitSet unknown = new BitSet();
+		unknown.set(0, n);
+		unknown.andNot(target);
+		unknown.andNot(inf);
+		IntSet unknownStates = IntSet.asIntSet(unknown);
+
+		// Start iterations
+		int iters = 0;
+		boolean done = false;
+		while (!done && iters < maxIters) {
+			iters++;
+			// Matrix-vector multiply and min/max ops
+			PrimitiveIterator.OfInt states = unknownStates.iterator();
+			while (states.hasNext()) {
+				final int i = states.nextInt();
+				soln2[i] = mdp.mvMultRewMinMaxSingle(i, soln, mdpRewards, min, null);
+			}
+			// Check termination
+			done = PrismUtils.doublesAreClose(soln, soln2, termCritParam, termCrit == TermCrit.RELATIVE);
+			// Swap vectors for next iter
+			double tmpsoln[] = soln;
+			soln = soln2;
+			soln2 = tmpsoln;
+		}
+
+		// Finished value iteration
+		timer = System.currentTimeMillis() - timer;
+		if (verbosity >= 1) {
+			mainLog.print("Value iteration (" + (min ? "min" : "max") + ")");
+			mainLog.println(" took " + iters + " iterations and " + timer / 1000.0 + " seconds.");
+		}
+
+		// Non-convergence is an error (usually)
+		if (!done && errorOnNonConverge) {
+			String msg = "Iterative method did not converge within " + iters + " iterations.";
+			msg += "\nConsider using a different numerical method or increasing the maximum number of iterations";
+			throw new PrismException(msg);
+		}
+
+		// Store results
+		ModelCheckerResult res = new ModelCheckerResult();
+		res.soln = soln;
+		return res;
+	}
+
+	/**
 	 * Construct strategy information for min/max expected reachability.
 	 * (More precisely, list of indices of choices resulting in min/max.)
 	 * (Note: indices are guaranteed to be sorted in ascending order.)
