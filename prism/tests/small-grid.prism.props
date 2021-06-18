@@ -1,0 +1,5 @@
+// RESULT: ?
+Rmin=? [ F s=3 ];
+
+// RESULT: ?
+R(cvar)min=? [ F s=3 ];
