@@ -2638,8 +2638,24 @@ public class MDPModelChecker extends ProbModelChecker
 			// Matrix-vector multiply and min/max ops
 			PrimitiveIterator.OfInt states = unknownStates.iterator();
 			while (states.hasNext()) {
-				final int i = states.nextInt();
-				soln2[i] = mdp.mvMultRewMinMaxSingle(i, soln, mdpRewards, min, null);
+				final int s = states.nextInt();
+				//soln2[s] = mdp.mvMultRewMinMaxSingle(s, soln, mdpRewards, min, null);
+				double minmax = 0;
+				boolean first = true;
+				for (int choice = 0, numChoices = mdp.getNumChoices(s); choice < numChoices; choice++) {
+					double d = mdpRewards.getStateReward(s);
+					d += mdpRewards.getTransitionReward(s, choice);
+					for (Iterator<Entry<Integer, Double>> it = mdp.getTransitionsIterator(s, choice); it.hasNext(); ) {
+						Entry<Integer, Double> e = it.next();
+						d += e.getValue() * soln[e.getKey()];
+					}
+					// Check whether we have exceeded min/max so far
+					if (first || (min && d < minmax) || (!min && d > minmax)) {
+						minmax = d;
+					}
+					first = false;
+				}
+				soln2[s] = minmax;
 			}
 			// Check termination
 			done = PrismUtils.doublesAreClose(soln, soln2, termCritParam, termCrit == TermCrit.RELATIVE);
