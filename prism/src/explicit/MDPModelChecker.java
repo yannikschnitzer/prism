@@ -26,13 +26,9 @@
 
 package explicit;
 
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.text.DecimalFormat;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.PrimitiveIterator;
 
 import acceptance.AcceptanceReach;
 import acceptance.AcceptanceType;
@@ -47,6 +43,8 @@ import explicit.rewards.MCRewards;
 import explicit.rewards.MCRewardsFromMDPRewards;
 import explicit.rewards.MDPRewards;
 import explicit.rewards.Rewards;
+import lpsolve.LpSolve;
+import lpsolve.LpSolveException;
 import parser.ast.Expression;
 import prism.AccuracyFactory;
 import prism.OptionsIntervalIteration;
@@ -60,6 +58,9 @@ import prism.PrismNotSupportedException;
 import prism.PrismSettings;
 import prism.PrismUtils;
 import strat.MDStrategyArray;
+
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 /**
  * Explicit-state model checker for Markov decision processes (MDPs).
@@ -1515,7 +1516,7 @@ public class MDPModelChecker extends ProbModelChecker
 					}
 
 					if (!allRemain) { // action in the set X
-						q = Math.max(q, probRemain);
+						q = max(q, probRemain);
 					}
 				}
 
@@ -1531,10 +1532,10 @@ public class MDPModelChecker extends ProbModelChecker
 			for (int ch = 0; ch < mdp.getNumChoices(s); ch++) {
 				for (Iterator<Entry<Integer, Double>> it = mdp.getTransitionsIterator(s, ch); it.hasNext(); ) {
 					Entry<Integer, Double> t = it.next();
-					p = Math.min(p, t.getValue());
+					p = min(p, t.getValue());
 
 					double rew = mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, ch);
-					maxRew = Math.max(maxRew, rew);
+					maxRew = max(maxRew, rew);
 				}
 			}
 			maxRews[s] = maxRew;
@@ -1622,7 +1623,7 @@ public class MDPModelChecker extends ProbModelChecker
 						Entry<Integer, Double> t = it.next();
 						if (statesForSCC.get(t.getKey())) {
 							probRemain += t.getValue();
-							p = Math.min(p, t.getValue());
+							p = min(p, t.getValue());
 							hasSelfloop = true;
 						} else {
 							allRemain = false;
@@ -1630,7 +1631,7 @@ public class MDPModelChecker extends ProbModelChecker
 					}
 
 					if (!allRemain) { // action in the set Xt
-						q = Math.max(q, probRemain);
+						q = max(q, probRemain);
 					}
 				}
 
@@ -1649,7 +1650,7 @@ public class MDPModelChecker extends ProbModelChecker
 			double maxRew = 0;
 			for (int ch = 0; ch < mdp.getNumChoices(s); ch++) {
 				double rew = mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, ch);
-				maxRew = Math.max(maxRew, rew);
+				maxRew = max(maxRew, rew);
 			}
 			maxRews[s] = maxRew;
 		}
@@ -1774,7 +1775,7 @@ public class MDPModelChecker extends ProbModelChecker
 			double maxRew = 0;
 			for (int ch = 0; ch < mdp.getNumChoices(s); ch++) {
 				double rew = mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, ch);
-				maxRew = Math.max(maxRew, rew);
+				maxRew = max(maxRew, rew);
 			}
 			maxRews[s] = maxRew;
 		}
@@ -2610,18 +2611,29 @@ public class MDPModelChecker extends ProbModelChecker
 		int numTarget = target.cardinality();
 		int numInf = inf.cardinality();
 		mainLog.println("target=" + numTarget + ", inf=" + numInf + ", rest=" + (n - (numTarget + numInf)));
-		
+
+
 		// Start value iteration
 		timer = System.currentTimeMillis();
-		String description = (min ? "min" : "max");
-		mainLog.println("Starting value iteration (" + description + ")...");
+		//String description = (min ? "min" : "max");
+		//mainLog.println("Starting CVAR computation (" + description + ")...");
+
+		// Set up CVAR variables
+		int N = 5;
+		int iterations = 10;
+		double gamma = 1;
+		double delta = (double) mdp.getConstantValues().getValueOf("delta");
+		double[] Y = linspace(0,1,N); // TODO make this based on parameters.
+		mainLog.println("Y :"+Arrays.toString(Y));
 
 		// Create/initialise solution vector(s)
-		double soln[] = new double[n];
-		for (int i = 0; i < n; i++) {
-			soln[i] = target.get(i) ? 0.0 : inf.get(i) ? Double.POSITIVE_INFINITY : 0.0;
+		double[][] soln = new double[N][n]; // number of states by number of Y values
+		for (int i = 0; i < N; i++) {
+			for (int j = 0; j < n; j++) {
+				soln[i][j] = target.get(j) ? 0.0 : mdpRewards.getStateReward(j);
+			}
 		}
-		double soln2[] = new double[n];
+		double[][] soln2 = new double[N][n];
 
 		// Determine set of states actually need to compute values for
 		BitSet unknown = new BitSet();
@@ -2630,59 +2642,249 @@ public class MDPModelChecker extends ProbModelChecker
 		unknown.andNot(inf);
 		IntSet unknownStates = IntSet.asIntSet(unknown);
 
+		double val =0;
+		double max_val =0;
+		double min_v;
+		double max_val0 = 0;
 		// Start iterations
-		int iters = 0;
-		boolean done = false;
-		while (!done && iters < maxIters) {
-			iters++;
-			// Matrix-vector multiply and min/max ops
+		for (int iters = 0; iters < iterations; iters++)
+		{
+			for (int el = 0; el < soln2.length; el++) // copy to temp value soln2
+			{
+				soln2[el] = Arrays.copyOf(soln[el], soln[el].length) ;
+			}
+
 			PrimitiveIterator.OfInt states = unknownStates.iterator();
 			while (states.hasNext()) {
 				final int s = states.nextInt();
-				//soln2[s] = mdp.mvMultRewMinMaxSingle(s, soln, mdpRewards, min, null);
-				double minmax = 0;
-				boolean first = true;
-				for (int choice = 0, numChoices = mdp.getNumChoices(s); choice < numChoices; choice++) {
-					double d = mdpRewards.getStateReward(s);
-					d += mdpRewards.getTransitionReward(s, choice);
-					for (Iterator<Entry<Integer, Double>> it = mdp.getTransitionsIterator(s, choice); it.hasNext(); ) {
-						Entry<Integer, Double> e = it.next();
-						d += e.getValue() * soln[e.getKey()];
+				for (int y=0; y < Y.length; y++)
+				{
+					min_v = Float.POSITIVE_INFINITY;
+					//mainLog.println("y=" +y);
+
+					for (int choice = 0, numChoices = mdp.getNumChoices(s); choice < numChoices; choice++) // aka action
+					{
+						max_val =0; double temp = 0; max_val0 = 0;
+						for (int i = 0; i < N-1; i++) // compute cvar for regions
+						{
+							val = computeCvar(soln2, Y[y], Y, i, s, choice, mdp, mdp.getNumTransitions(s, choice), delta);
+							if (val > max_val)
+							{
+								max_val=val;
+							}
+						}
+
+
+//						Calculate value at risk instead
+//						if (y==0){
+//							Iterator<Entry<Integer, Double>> it =  mdp.getTransitionsIterator(s, choice);
+//							while(it.hasNext()){
+//								Entry<Integer, Double> j  = it.next();
+//								if (soln2[y][j.getKey()] > max_val0)
+//								{
+//									max_val0 = soln2[y][j.getKey()];
+//								}
+//
+//							}
+//							max_val = max_val0;
+//						}
+
+						temp = mdpRewards.getStateReward(s) + gamma * max_val;
+						mainLog.println("State:"+s+" choice:"+choice+" Max val:"+max_val + " temp:"+temp+" min_v:"+min_v);
+						if (temp < min_v){
+							min_v = temp;
+						}
+
 					}
-					// Check whether we have exceeded min/max so far
-					if (first || (min && d < minmax) || (!min && d > minmax)) {
-						minmax = d;
-					}
-					first = false;
+
+					soln2[y][s] = min_v;
 				}
-				soln2[s] = minmax;
 			}
-			// Check termination
-			done = PrismUtils.doublesAreClose(soln, soln2, termCritParam, termCrit == TermCrit.RELATIVE);
-			// Swap vectors for next iter
-			double tmpsoln[] = soln;
-			soln = soln2;
-			soln2 = tmpsoln;
+
+			mainLog.println("V at "+iters);
+			double [] temp = new double [n];
+			for (int el = 0; el < soln.length; el++) // copy  temp value soln2 back to soln -> corresponds to Value table
+			{
+				soln[el] = Arrays.copyOf(soln2[el], soln2[el].length) ;
+				temp = Arrays.copyOf(soln2[el], soln2[el].length) ;
+				DecimalFormat df = new DecimalFormat("0.000");
+				mainLog.print("[");
+				Arrays.stream(temp).forEach(e -> mainLog.print(df.format(e) + ", " ));
+				mainLog.print("]\n");
+//				mainLog.println(temp);
+			}
+
 		}
 
-		// Finished value iteration
+
+		// Finished CVAR
 		timer = System.currentTimeMillis() - timer;
 		if (verbosity >= 1) {
-			mainLog.print("Value iteration (" + (min ? "min" : "max") + ")");
-			mainLog.println(" took " + iters + " iterations and " + timer / 1000.0 + " seconds.");
-		}
-
-		// Non-convergence is an error (usually)
-		if (!done && errorOnNonConverge) {
-			String msg = "Iterative method did not converge within " + iters + " iterations.";
-			msg += "\nConsider using a different numerical method or increasing the maximum number of iterations";
-			throw new PrismException(msg);
+			mainLog.print("CVAR (" + (min ? "min" : "max") + ")");
+			mainLog.println(" ran " + iterations + " iterations and " + timer / 1000.0 + " seconds.");
 		}
 
 		// Store results
 		ModelCheckerResult res = new ModelCheckerResult();
-		res.soln = soln;
+		res.soln = soln[N-1]; // FIXME make it based on y parameter
 		return res;
+	}
+
+	private double computeCvar (double [][] V, double y, double [] Y, int i, int s, int choice, MDP mdp, int num_trans, double delta) throws PrismException {
+		double [] c = new double[num_trans];
+		double [][] bnd = new double [2][num_trans]; // bnd[0][:] upper bounds, bnd[1][:] lower bounds
+		HashMap<Integer, Integer> indexmap = new HashMap<>(); // Map index in original array to index in coefficient array c
+
+		Iterator<Entry<Integer, Double>> it =  mdp.getTransitionsIterator(s, choice);
+		int index = 0;
+		while(it.hasNext()){
+			Entry<Integer, Double> j = it.next();
+			//mainLog.print("-J"+j.getKey()+"v"+j.getValue());
+			indexmap.put(j.getKey(), index);
+			index ++;
+			if (y == 0){
+				c[indexmap.get(j.getKey())] = j.getValue() * V [0][j.getKey()];
+			}
+			else {
+				bnd[0][indexmap.get(j.getKey())] = min(Y[i+1] / y, 1/y);
+				bnd[1][indexmap.get(j.getKey())] = max(Y[i]/ y, 0);
+				double top = Y[i+1] * V[i+1][j.getKey()] - Y[i] * V[i][j.getKey()];
+				double bottom = Y[i+1] - Y[i];
+				c[indexmap.get(j.getKey())] = (j.getValue()) * (top/bottom);
+			}
+		}
+		mainLog.print("c: "); mainLog.print(c); mainLog.print(" bnd: [");mainLog.print(bnd[0]);mainLog.print(bnd[1]); mainLog.println("]");
+		double res = computeCvarLP(c, mdp, s, choice, y, bnd, indexmap);
+
+		// reset the iterator
+		it =  mdp.getTransitionsIterator(s, choice);
+
+		double sum = res;
+
+		while(it.hasNext()){
+			Entry<Integer, Double> j = it.next();
+			//mainLog.print("-J"+j.getKey()+"v"+j.getValue());
+
+			if (y != 0) {
+				double top = Y[i+1] * V[i+1][j.getKey()] - Y[i] * V[i][j.getKey()];
+				double bottom = Y[i+1] - Y[i];
+				sum += - Y[i] / y * j.getValue() * (top / bottom) + j.getValue() * Y[i] / y * V[i][j.getKey()];
+			}
+		}
+
+		return sum;
+
+	}
+
+
+	// TODO add documentation
+	private double computeCvarLP(double [] c, MDP mdp, int s, int choice, double alpha, double[][] bounds, HashMap<Integer,Integer> indexmap) throws PrismException {
+
+		boolean min=false;
+
+		Iterator<Entry<Integer, Double>> it = mdp.getTransitionsIterator(s, choice);
+
+		//mainLog.println("Starting linear programming (" + (min ? "min" : "max") + ")...");
+		//lpsolve.LpSolve solver = lpsolve.LpSolve.makeLp(0,dim + 2);
+		// Create a problem with 4 variables and 0 constraints
+		LpSolve solver = null;
+		double [] sol = new double[c.length];
+		double result = 0.0;
+		int[] colno = new int[c.length];
+		double[] row = new double[c.length];
+		try {
+
+			solver = LpSolve.makeLp(0, c.length);
+			solver.setVerbose(lpsolve.LpSolve.CRITICAL);
+			solver.setMaxim();
+			solver.setAddRowmode(true);
+
+			// add constraints
+			for (int j=0; j< c.length; j++ ){
+				Entry<Integer, Double> k = it.next();
+				colno[j] = j+1;
+				row[j] = k.getValue();
+			}
+			solver.addConstraintex(c.length, row, colno, LpSolve.EQ, 1.0); // sum P(x)chi(x) = 1
+
+			if (alpha != 0) // add bounds
+			{
+				for (int j=0; j<c.length; j++){
+					solver.setUpbo( colno[j], bounds[0][j]);
+					solver.setLowbo(colno[j], bounds[1][j]);
+				}
+
+			}
+
+			// set objective function
+			solver.setObjFnex(c.length, c, colno);
+
+			solver.setAddRowmode(false);
+
+			// sanity check
+			//solver.printLp();
+
+			// solve the problem
+			int lpRes = solver.solve();
+			if (lpRes == lpsolve.LpSolve.OPTIMAL) {
+				sol = solver.getPtrVariables();
+				mainLog.print("sol:"); mainLog.println(sol);
+				result = solver.getObjective();
+				// print solution
+				//System.out.println("Value of objective function: " + solver.getObjective());
+			} else {
+
+//				mainLog.println("Error solving LP" + (lpRes == lpsolve.LpSolve.INFEASIBLE ? " (infeasible)" : ""));
+			}
+
+			// Clean up
+			solver.deleteLp();
+
+		} catch (LpSolveException e) {
+//			e.printStackTrace();
+			//mainLog.println("LP solve NOT working");
+			throw new PrismException("LP solve error");
+		}
+
+		return result;
+
+	}
+
+	/**
+	 * generates n linearly spaced points between a and b
+	 * @param a min value
+	 * @param b max value
+	 * @param n number of points
+	 * @return an array of linearly spaced points
+	 */
+	public static double [] linspace(double a, double b, int n)
+	{
+		double [] y= new double[n];
+		double dy = (b-a)/(n-1);
+		for (int i=0; i<n; i++){
+			y[i] = a+(dy*i);
+		}
+		return y;
+	}
+
+	/**
+	 * generates n logarithmically-spaced points between d1 and d2 using the
+	 * provided base.
+	 *
+	 * @param d1 The min value
+	 * @param d2 The max value
+	 * @param n The number of points to generated
+	 * @param base the logarithmic base to use
+	 * @return an array of lineraly space points.
+	 */
+	public static strictfp double[] logspace(double d1, double d2, int n, double base) {
+		double[] y = new double[n];
+		double[] p = linspace(d1, d2, n);
+		for(int i = 0; i < y.length - 1; i++) {
+			y[i] = Math.pow(base, p[i]);
+		}
+		y[y.length - 1] = Math.pow(base, d2);
+		return y;
 	}
 
 	/**

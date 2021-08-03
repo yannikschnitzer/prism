@@ -9,14 +9,14 @@ module M
 	[east] s=0 -> 1-delta : (s'=1) + delta : (s'=2);
 	[south] s=0 -> 1-delta : (s'=2) + delta : (s'=1);
 
-	[west] s=1 -> 1-delta : (s'=0) + delta : (s'=3);
-	[south] s=1 -> 1-delta : (s'=3) + delta : (s'=0);
+	[west] s=1 -> 1-delta : (s'=3) + delta : (s'=3);
+	[south] s=1 -> 1-delta : (s'=3) + delta : (s'=3);
 
 	[east] s=2 -> 1-delta : (s'=3) + delta : (s'=0);
 	[north] s=2 -> 1-delta : (s'=0) + delta : (s'=3);
 
-	[west] s=3 -> 1-delta : (s'=2) + delta : (s'=1);
-	[north] s=3 -> 1-delta : (s'=1) + delta : (s'=2);
+	[west] s=3 -> 1-delta : (s'=3) + delta : (s'=3);
+	[north] s=3 -> 1-delta : (s'=3) + delta : (s'=3);
 
 endmodule
 
