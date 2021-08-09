@@ -2622,8 +2622,10 @@ public class MDPModelChecker extends ProbModelChecker
 		int N = 5;
 		int iterations = 10;
 		double gamma = 1;
+		double theta = 2.067;
+		double epsilon = 0.1;
 		double delta = (double) mdp.getConstantValues().getValueOf("delta");
-		double[] Y = linspace(0,1,N); // TODO make this based on parameters.
+		double[] Y = logspace(N, theta, epsilon); // TODO make this based on parameters.
 		mainLog.println("Y :"+Arrays.toString(Y));
 
 		// Create/initialise solution vector(s)
@@ -2690,7 +2692,7 @@ public class MDPModelChecker extends ProbModelChecker
 //						}
 
 						temp = mdpRewards.getStateReward(s) + gamma * max_val;
-						mainLog.println("State:"+s+" choice:"+choice+" Max val:"+max_val + " temp:"+temp+" min_v:"+min_v);
+						mainLog.println("y:"+y+" State:"+s+" choice:"+choice+" Max val:"+max_val + " temp:"+temp+" min_v:"+min_v);
 						if (temp < min_v){
 							min_v = temp;
 						}
@@ -2753,7 +2755,7 @@ public class MDPModelChecker extends ProbModelChecker
 				c[indexmap.get(j.getKey())] = (j.getValue()) * (top/bottom);
 			}
 		}
-		mainLog.print("c: "); mainLog.print(c); mainLog.print(" bnd: [");mainLog.print(bnd[0]);mainLog.print(bnd[1]); mainLog.println("]");
+		mainLog.print("i:"+i+" c: "); mainLog.print(c); mainLog.print(" bnd: [");mainLog.print(bnd[0]);mainLog.print(bnd[1]); mainLog.println("]");
 		double res = computeCvarLP(c, mdp, s, choice, y, bnd, indexmap);
 
 		// reset the iterator
@@ -2828,7 +2830,7 @@ public class MDPModelChecker extends ProbModelChecker
 			int lpRes = solver.solve();
 			if (lpRes == lpsolve.LpSolve.OPTIMAL) {
 				sol = solver.getPtrVariables();
-				mainLog.print("sol:"); mainLog.println(sol);
+				mainLog.print("obj: "+solver.getObjective()+" sol:"); mainLog.println(sol);
 				result = solver.getObjective();
 				// print solution
 				//System.out.println("Value of objective function: " + solver.getObjective());
@@ -2875,15 +2877,18 @@ public class MDPModelChecker extends ProbModelChecker
 	 * @param d2 The max value
 	 * @param n The number of points to generated
 	 * @param base the logarithmic base to use
-	 * @return an array of lineraly space points.
+	 * @return an array of linearly space points.
 	 */
-	public static strictfp double[] logspace(double d1, double d2, int n, double base) {
+	public strictfp double[] logspace( int n, double theta, double epsilon) {
 		double[] y = new double[n];
-		double[] p = linspace(d1, d2, n);
-		for(int i = 0; i < y.length - 1; i++) {
-			y[i] = Math.pow(base, p[i]);
+		y[n-1] = 1;
+		for(int i = n-2; i > 0; i--) {
+			mainLog.print(" exp:", (n-1)-i);
+			y[i] = 1/(Math.pow(theta, (n-1)-i));
 		}
-		y[y.length - 1] = Math.pow(base, d2);
+
+		y[0] = 0;
+
 		return y;
 	}
 
