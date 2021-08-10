@@ -2625,10 +2625,12 @@ public class MDPModelChecker extends ProbModelChecker
 		double theta = 2.067;
 		double epsilon = 0.1;
 		double delta = (double) mdp.getConstantValues().getValueOf("delta");
-		double[] Y = logspace(N, theta, epsilon); // TODO make this based on parameters.
-		mainLog.println("Y :"+Arrays.toString(Y));
+		Vector<ArrayList<Double>> Y = initialize(N, theta, n); // initialization based on parameters.
+		mainLog.println("Y :"+Y.get(0));
 
 		// Create/initialise solution vector(s)
+		// TODO change solution vector to be vector of doubles. will have to change structure.
+		// tODO different size for each state.
 		double[][] soln = new double[N][n]; // number of states by number of Y values
 		for (int i = 0; i < N; i++) {
 			for (int j = 0; j < n; j++) {
@@ -2648,6 +2650,7 @@ public class MDPModelChecker extends ProbModelChecker
 		double max_val =0;
 		double min_v;
 		double max_val0 = 0;
+		Double [] y_s= new Double[N];
 		// Start iterations
 		for (int iters = 0; iters < iterations; iters++)
 		{
@@ -2659,48 +2662,31 @@ public class MDPModelChecker extends ProbModelChecker
 			PrimitiveIterator.OfInt states = unknownStates.iterator();
 			while (states.hasNext()) {
 				final int s = states.nextInt();
-				for (int y=0; y < Y.length; y++)
+				y_s = Y.get(s).toArray(y_s);
+				for (int y=0; y < y_s.length; y++)
 				{
 					min_v = Float.POSITIVE_INFINITY;
-					//mainLog.println("y=" +y);
 
 					for (int choice = 0, numChoices = mdp.getNumChoices(s); choice < numChoices; choice++) // aka action
 					{
 						max_val =0; double temp = 0; max_val0 = 0;
 						for (int i = 0; i < N-1; i++) // compute cvar for regions
 						{
-							val = computeCvar(soln2, Y[y], Y, i, s, choice, mdp, mdp.getNumTransitions(s, choice), delta);
-							if (val > max_val)
-							{
-								max_val=val;
-							}
+							val = computeCvar(soln2, y_s[y], y_s, i, s, choice, mdp, mdp.getNumTransitions(s, choice), delta);
+							max_val=max(val,max_val);
 						}
-
-
-//						Calculate value at risk instead
-//						if (y==0){
-//							Iterator<Entry<Integer, Double>> it =  mdp.getTransitionsIterator(s, choice);
-//							while(it.hasNext()){
-//								Entry<Integer, Double> j  = it.next();
-//								if (soln2[y][j.getKey()] > max_val0)
-//								{
-//									max_val0 = soln2[y][j.getKey()];
-//								}
-//
-//							}
-//							max_val = max_val0;
-//						}
 
 						temp = mdpRewards.getStateReward(s) + gamma * max_val;
 						mainLog.println("y:"+y+" State:"+s+" choice:"+choice+" Max val:"+max_val + " temp:"+temp+" min_v:"+min_v);
-						if (temp < min_v){
-							min_v = temp;
-						}
+						min_v = min(temp, min_v);
 
 					}
 
 					soln2[y][s] = min_v;
+					// make sure to add to Y.get(s)
 				}
+				// FIXME add part to check for condition in theorem 7
+
 			}
 
 			mainLog.println("V at "+iters);
@@ -2732,7 +2718,7 @@ public class MDPModelChecker extends ProbModelChecker
 		return res;
 	}
 
-	private double computeCvar (double [][] V, double y, double [] Y, int i, int s, int choice, MDP mdp, int num_trans, double delta) throws PrismException {
+	private double computeCvar (double [][] V, Double y, Double[] Y, int i, int s, int choice, MDP mdp, int num_trans, double delta) throws PrismException {
 		double [] c = new double[num_trans];
 		double [][] bnd = new double [2][num_trans]; // bnd[0][:] upper bounds, bnd[1][:] lower bounds
 		HashMap<Integer, Integer> indexmap = new HashMap<>(); // Map index in original array to index in coefficient array c
@@ -2815,12 +2801,10 @@ public class MDPModelChecker extends ProbModelChecker
 					solver.setUpbo( colno[j], bounds[0][j]);
 					solver.setLowbo(colno[j], bounds[1][j]);
 				}
-
 			}
 
 			// set objective function
 			solver.setObjFnex(c.length, c, colno);
-
 			solver.setAddRowmode(false);
 
 			// sanity check
@@ -2835,7 +2819,6 @@ public class MDPModelChecker extends ProbModelChecker
 				// print solution
 				//System.out.println("Value of objective function: " + solver.getObjective());
 			} else {
-
 //				mainLog.println("Error solving LP" + (lpRes == lpsolve.LpSolve.INFEASIBLE ? " (infeasible)" : ""));
 			}
 
@@ -2873,13 +2856,11 @@ public class MDPModelChecker extends ProbModelChecker
 	 * generates n logarithmically-spaced points between d1 and d2 using the
 	 * provided base.
 	 *
-	 * @param d1 The min value
-	 * @param d2 The max value
 	 * @param n The number of points to generated
-	 * @param base the logarithmic base to use
+	 * @param theta the logarithmic base to use
 	 * @return an array of linearly space points.
 	 */
-	public strictfp double[] logspace( int n, double theta, double epsilon) {
+	public strictfp double[] logspace( int n, double theta) {
 		double[] y = new double[n];
 		y[n-1] = 1;
 		for(int i = n-2; i > 0; i--) {
@@ -2888,6 +2869,32 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 
 		y[0] = 0;
+
+		return y;
+	}
+
+	/**
+	 * generates n logarithmically-spaced points between d1 and d2 using the
+	 * provided base.
+	 *
+	 * @param n the number of regions
+	 * @param theta the base for the logarithmically spaced series
+	 * @param numStates number of states in the mdp
+	 * @return an array of n logarithmically spaced points for each state of the mdp
+	 */
+	public Vector<ArrayList<Double>> initialize( int n, double theta, int numStates) {
+		Vector<ArrayList<Double>> y = new Vector<ArrayList<Double>>(numStates);
+		ArrayList<Double> temp = new ArrayList<>();
+		temp.add(0.0);
+		for (int i = n - 2; i > 0; i--) {
+			// mainLog.print(" exp:", (n - 1) - i);
+			temp.add( 1 / (Math.pow(theta, (n - 1) - i)));
+		}
+		temp.add(1.0);
+		Collections.sort(temp);
+		for (int j=0; j<numStates; j++) {
+			y.add(new ArrayList<Double>(temp));
+		}
 
 		return y;
 	}
