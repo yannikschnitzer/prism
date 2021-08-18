@@ -26,7 +26,10 @@
 
 package explicit;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -2650,11 +2653,11 @@ public class MDPModelChecker extends ProbModelChecker
 		double max_val =0;
 		double min_v;
 		double max_val0 = 0;
-		Double [] y_s= new Double[N];
+
 		// Start iterations
 		for (int iters = 0; iters < iterations; iters++)
 		{
-			soln2 = new Vector<>(n);
+			soln2 = new Vector<>();
 			// copy to temp value soln2
 			for (Vector<Double> doubles : soln) {
 				soln2.add(new Vector<>(doubles));
@@ -2663,38 +2666,40 @@ public class MDPModelChecker extends ProbModelChecker
 			PrimitiveIterator.OfInt states = unknownStates.iterator();
 			while (states.hasNext()) {
 				final int s = states.nextInt();
-				y_s = Y.get(s).toArray(y_s);
-				for (int y=0; y < y_s.length; y++)
+				Vector<Double>  y_s = Y.get(s);
+				for (int y=0; y < y_s.size(); y++)
 				{
 					min_v = Float.POSITIVE_INFINITY;
-
+					double temp = 0;
 					for (int choice = 0, numChoices = mdp.getNumChoices(s); choice < numChoices; choice++) // aka action
 					{
-						max_val =0; double temp = 0; max_val0 = 0;
-						for (int i = 0; i < N-1; i++) // compute cvar for regions
-						{
-							val = computeCvar(soln2, y_s[y], y_s, i, s, choice, mdp, mdp.getNumTransitions(s, choice), delta);
-							max_val=max(val,max_val);
+						Iterator<Entry<Integer, Double>> it =  mdp.getTransitionsIterator(s, choice); // get the iterator over next states
+						Vector<Vector<Double>> y_x = new Vector<>();
+						while(it.hasNext()) {
+							Entry<Integer, Double> j = it.next();
+							Vector<Double> temp_y = Y.get(j.getKey());
+							y_x.add(temp_y);
 						}
-
-						temp = mdpRewards.getStateReward(s) + gamma * max_val;
-						mainLog.println("y:"+y+" State:"+s+" choice:"+choice+" Max val:"+max_val + " temp:"+temp+" min_v:"+min_v);
+						// split over regions in computeCVAR
+						val = computeCvar(soln2, y_s.get(y), y_x, s, choice, mdp, mdp.getNumTransitions(s, choice), delta);
+						temp = mdpRewards.getStateReward(s) + gamma * val;
 						min_v = min(temp, min_v);
+						mainLog.println("y:"+y+" State:"+s+" Max val:"+val + " temp:"+temp+" min_v:"+min_v);
 
 					}
-
 					soln2.get(s).set(y, min_v);
-
-					// FIXME add part to check for condition in theorem 7
-					// make sure to add to Y.get(s)
-					if (min_v - soln2.get(s).get(y) >= -epsilon){
-						Vector<Double> temp = adapt(Y.get(s), y, soln2.get(s), theta, epsilon);
-						soln2.get(s).addAll(temp);
-						Collections.sort(soln2.get(s));
-					}
 				}
 
-
+				// FIXME check if there is a more efficient way to do this
+				// make sure to add to Y.get(s)
+				if (soln2.get(s).get(1) - soln2.get(s).get(0) >= -epsilon){
+					Vector<Double> temp = adapt(Y.get(s), 1, soln2.get(s), theta, epsilon);
+					Y.get(s).addAll(temp);
+					Collections.sort(Y.get(s));
+					for (int i =0; i<temp.size(); ++i) {
+						soln2.get(s).add(1, soln2.get(s).get(0)); // add corresponding extra slots for V[s][:]
+					}
+				}
 			}
 
 			mainLog.println("V at "+iters);
@@ -2706,9 +2711,7 @@ public class MDPModelChecker extends ProbModelChecker
 				(doubles).forEach(e -> mainLog.print(df.format(e) + ", " ));
 				mainLog.print("]\n");
 			}
-
 		}
-
 
 		// Finished CVAR
 		timer = System.currentTimeMillis() - timer;
@@ -2719,31 +2722,42 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Store results
 		ModelCheckerResult res = new ModelCheckerResult();
-
 		res.soln = new double[3]; // FIXME make it based on y parameter and iterate over columns to get result
 		return res;
 	}
 
-	// TODO this going to infinite loop check why.
-	private Vector<Double> adapt(Vector<Double> y, int y2, Vector<Double> V, double theta, double epsilon)
+	// TODO add documentation
+	private Vector<Double> adapt(Vector<Double> Y, int y2, Vector<Double> V, double theta, double epsilon)
 	{
-		Vector<Double> temp = new Vector<>(y);
+		Vector<Double> temp = new Vector<>(Y);
 		Vector<Double> new_val = new Vector<>();
-		Double y2_prime = epsilon*y2/abs(V.get(y2)-V.get(0));
-		temp.add(y2_prime);
-		new_val.add(y2_prime);
-		Collections.sort(temp);
+		Double y2_prime;
+		if (abs(V.get(y2)-V.get(0)) ==0) {
+			y2_prime=epsilon*Y.get(y2);
+		} else{
+			y2_prime = epsilon*Y.get(y2)/abs(V.get(y2)-V.get(0));
+		}
+		BigDecimal bd1 = new BigDecimal(y2_prime).setScale(3, RoundingMode.HALF_UP);
+		if (bd1.doubleValue() >= 0.01) {
+			temp.add(bd1.doubleValue());
+			new_val.add(bd1.doubleValue());
+			Collections.sort(temp);
+		}
 
 		boolean done ;
 
 		do {
 			done = true;
-			for (int i=0; i<temp.size()-1; ++i) {
-				if (log(theta) < log(temp.get(i + 1)) - log(temp.get(i))) {
-					done = false;
-					temp.add(temp.get(i)*theta);
-					new_val.add(temp.get(i)*theta);
-					Collections.sort(temp);
+			for (int i=1; i<temp.size()-1; ++i) {
+				if ((log(theta) < log(temp.get(i + 1)) - log(temp.get(i)))&& temp.get(i)*theta>=0.01 ) {
+
+					BigDecimal bd = new BigDecimal(temp.get(i)*theta).setScale(3, RoundingMode.HALF_UP);
+					if (!temp.contains(bd.doubleValue())) {
+						done = false;
+						temp.add(bd.doubleValue());
+						new_val.add(bd.doubleValue());
+						Collections.sort(temp);
+					}
 				}
 			}
 
@@ -2752,50 +2766,79 @@ public class MDPModelChecker extends ProbModelChecker
 		return new_val;
 	}
 
-	private double computeCvar (Vector<Vector<Double>> V, Double y, Double[] Y, int i, int s, int choice, MDP mdp, int num_trans, double delta) throws PrismException {
+	private double computeCvar (Vector<Vector<Double>> V, Double y, Vector<Vector<Double>> Y, int s, int choice, MDP mdp, int num_trans, double delta) throws PrismException {
 		double [] c = new double[num_trans];
 		double [][] bnd = new double [2][num_trans]; // bnd[0][:] upper bounds, bnd[1][:] lower bounds
 		HashMap<Integer, Integer> indexmap = new HashMap<>(); // Map index in original array to index in coefficient array c
+		HashMap<Integer, Integer> imap = new HashMap<>(); // map state to max i val
 
 		Iterator<Entry<Integer, Double>> it =  mdp.getTransitionsIterator(s, choice);
 		int index = 0;
+		double sum;
+		double max_val=0;
+//		double temp =0;
+
 		while(it.hasNext()){
 			Entry<Integer, Double> j = it.next();
 			//mainLog.print("-J"+j.getKey()+"v"+j.getValue());
 			indexmap.put(j.getKey(), index);
-			index ++;
-			if (y == 0){
+
+			if (y == 0){ // dont need to do regions for y=0
 				c[indexmap.get(j.getKey())] = j.getValue() * V.get(j.getKey()).get(0);
 			}
 			else {
-				bnd[0][indexmap.get(j.getKey())] = min(Y[i+1] / y, 1/y);
-				bnd[1][indexmap.get(j.getKey())] = max(Y[i]/ y, 0);
-				double top = Y[i+1] * V.get(j.getKey()).get(i+1) - Y[i] * V.get(j.getKey()).get(i);
-				double bottom = Y[i+1] - Y[i];
-				c[indexmap.get(j.getKey())] = (j.getValue()) * (top/bottom);
+				// FIXME check notebook loop over x' and Y(x') at the same time.
+				max_val=-1;
+				// find max regions for each x'
+				for (int i=0; i<Y.get(index).size()-1; i++) {
+					double top = Y.get(index).get(i + 1) * V.get(j.getKey()).get(i + 1) - Y.get(index).get(i) * V.get(j.getKey()).get(i);
+					double bottom = Y.get(index).get(i + 1) - Y.get(index).get(i);
+
+					sum = (j.getValue()) * (top / bottom) - Y.get(index).get(i) / y * j.getValue() * (top / bottom)
+							+ j.getValue() * Y.get(index).get(i) / y * V.get(j.getKey()).get(i);
+					if (sum > max_val){
+						max_val = sum;
+						// save index of max region
+						if (imap.containsKey(j.getKey())) {
+							imap.replace(j.getKey(), i);
+						}else{
+							imap.put(j.getKey(), i);
+						}
+					}
+				}
+				double maxtop= Y.get(index).get(imap.get(j.getKey()) + 1) * V.get(j.getKey()).get(imap.get(j.getKey()) + 1)
+						- Y.get(index).get(imap.get(j.getKey())) * V.get(j.getKey()).get(imap.get(j.getKey()));
+				double maxbottom =Y.get(index).get(imap.get(j.getKey()) + 1) - Y.get(index).get(imap.get(j.getKey()));
+				c[indexmap.get(j.getKey())] = (j.getValue()) * (maxtop / maxbottom);
+				bnd[0][indexmap.get(j.getKey())] = min(Y.get(index).get(imap.get(j.getKey()) + 1) / y, 1 / y);
+				bnd[1][indexmap.get(j.getKey())] = max(Y.get(index).get(imap.get(j.getKey())) / y, 0);
 			}
+
+			index ++;
 		}
-		mainLog.print("i:"+i+" c: "); mainLog.print(c); mainLog.print(" bnd: [");mainLog.print(bnd[0]);mainLog.print(bnd[1]); mainLog.println("]");
+
+		it =  mdp.getTransitionsIterator(s, choice);
+		mainLog.print(" c: "); mainLog.print(c); mainLog.print(" bnd: [");mainLog.print(bnd[0]);mainLog.print(bnd[1]); mainLog.println("]");
+
 		double res = computeCvarLP(c, mdp, s, choice, y, bnd, indexmap);
 
-		// reset the iterator
-		it =  mdp.getTransitionsIterator(s, choice);
-
-		double sum = res;
-
+		sum = res;
+		index = 0;
 		while(it.hasNext()){
 			Entry<Integer, Double> j = it.next();
 			//mainLog.print("-J"+j.getKey()+"v"+j.getValue());
 
 			if (y != 0) {
-				double top = Y[i+1] * V.get(j.getKey()).get(i+1) - Y[i] * V.get(j.getKey()).get(i);
-				double bottom = Y[i+1] - Y[i];
-				sum += - Y[i] / y * j.getValue() * (top / bottom) + j.getValue() * Y[i] / y * V.get(j.getKey()).get(i);
+				double top = Y.get(index).get(imap.get(j.getKey()) + 1) * V.get(j.getKey()).get(imap.get(j.getKey()) + 1)
+						- Y.get(index).get(imap.get(j.getKey())) * V.get(j.getKey()).get(imap.get(j.getKey()));
+				double bottom = Y.get(index).get(imap.get(j.getKey()) + 1) - Y.get(index).get(imap.get(j.getKey()));
+				sum += - Y.get(index).get(imap.get(j.getKey())) / y * j.getValue() * (top / bottom)
+						+ j.getValue() * Y.get(index).get(imap.get(j.getKey())) / y * V.get(j.getKey()).get(imap.get(j.getKey()));
 			}
+			index++;
 		}
 
 		return sum;
-
 	}
 
 
@@ -2803,11 +2846,7 @@ public class MDPModelChecker extends ProbModelChecker
 	private double computeCvarLP(double [] c, MDP mdp, int s, int choice, double alpha, double[][] bounds, HashMap<Integer,Integer> indexmap) throws PrismException {
 
 		boolean min=false;
-
 		Iterator<Entry<Integer, Double>> it = mdp.getTransitionsIterator(s, choice);
-
-		//mainLog.println("Starting linear programming (" + (min ? "min" : "max") + ")...");
-		//lpsolve.LpSolve solver = lpsolve.LpSolve.makeLp(0,dim + 2);
 		// Create a problem with 4 variables and 0 constraints
 		LpSolve solver = null;
 		double [] sol = new double[c.length];
@@ -2855,7 +2894,6 @@ public class MDPModelChecker extends ProbModelChecker
 			} else {
 //				mainLog.println("Error solving LP" + (lpRes == lpsolve.LpSolve.INFEASIBLE ? " (infeasible)" : ""));
 			}
-
 			// Clean up
 			solver.deleteLp();
 
@@ -2866,7 +2904,6 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 
 		return result;
-
 	}
 
 	/**
@@ -2901,9 +2938,7 @@ public class MDPModelChecker extends ProbModelChecker
 			mainLog.print(" exp:", (n-1)-i);
 			y[i] = 1/(Math.pow(theta, (n-1)-i));
 		}
-
 		y[0] = 0;
-
 		return y;
 	}
 
@@ -2920,9 +2955,11 @@ public class MDPModelChecker extends ProbModelChecker
 		Vector<Vector<Double>> y = new Vector<Vector<Double>>(numStates);
 		Vector<Double> temp = new Vector<>();
 		temp.add(0.0);
+
 		for (int i = n - 2; i > 0; i--) {
 			// mainLog.print(" exp:", (n - 1) - i);
-			temp.add( 1 / (Math.pow(theta, (n - 1) - i)));
+			BigDecimal bd = new BigDecimal(1 / (Math.pow(theta, (n - 1) - i))).setScale(3, RoundingMode.HALF_UP);
+			temp.add(bd.doubleValue());
 		}
 		temp.add(1.0);
 		Collections.sort(temp);
