@@ -2627,12 +2627,11 @@ public class MDPModelChecker extends ProbModelChecker
 		double theta = 2.067;
 		double epsilon = 0.1;
 		double delta = (double) mdp.getConstantValues().getValueOf("delta");
-		Vector<Vector<Double>> Y = initialize(N, theta, n); // initialization based on parameters.
+		Vector<Double> Y = initialize(N, theta, n); // initialization based on parameters.
 		mainLog.println("Y :"+Y.get(0));
 
 		// Create/initialise solution vector(s)
 		// TODO change solution vector to be vector of doubles. will have to change structure.
-		// tODO different size for each state.
 		Vector<Vector<Double>> soln = new Vector<>(n); // number of states by number of Y values
 		for (int i = 0; i < n; i++) {
 			soln.add(new Vector<>(n));
@@ -2666,22 +2665,15 @@ public class MDPModelChecker extends ProbModelChecker
 			PrimitiveIterator.OfInt states = unknownStates.iterator();
 			while (states.hasNext()) {
 				final int s = states.nextInt();
-				Vector<Double>  y_s = Y.get(s);
-				for (int y=0; y < y_s.size(); y++)
+				for (int y=0; y < Y.size(); y++)
 				{
 					min_v = Float.POSITIVE_INFINITY;
 					double temp = 0;
 					for (int choice = 0, numChoices = mdp.getNumChoices(s); choice < numChoices; choice++) // aka action
 					{
 						Iterator<Entry<Integer, Double>> it =  mdp.getTransitionsIterator(s, choice); // get the iterator over next states
-						Vector<Vector<Double>> y_x = new Vector<>();
-						while(it.hasNext()) {
-							Entry<Integer, Double> j = it.next();
-							Vector<Double> temp_y = Y.get(j.getKey());
-							y_x.add(temp_y);
-						}
 						// split over regions in computeCVAR
-						val = computeCvar(soln2, y_s.get(y), y_x, s, choice, mdp, mdp.getNumTransitions(s, choice), delta);
+						val = computeCvar(soln2, Y.get(y), Y, s, choice, mdp, mdp.getNumTransitions(s, choice), delta);
 						temp = mdpRewards.getStateReward(s) + gamma * val;
 						min_v = min(temp, min_v);
 						mainLog.println("y:"+y+" State:"+s+" Max val:"+val + " temp:"+temp+" min_v:"+min_v);
@@ -2690,16 +2682,6 @@ public class MDPModelChecker extends ProbModelChecker
 					soln2.get(s).set(y, min_v);
 				}
 
-				// FIXME check if there is a more efficient way to do this
-				// make sure to add to Y.get(s)
-				if (soln2.get(s).get(1) - soln2.get(s).get(0) >= -epsilon){
-					Vector<Double> temp = adapt(Y.get(s), 1, soln2.get(s), theta, epsilon);
-					Y.get(s).addAll(temp);
-					Collections.sort(Y.get(s));
-					for (int i =0; i<temp.size(); ++i) {
-						soln2.get(s).add(1, soln2.get(s).get(0)); // add corresponding extra slots for V[s][:]
-					}
-				}
 			}
 
 			mainLog.println("V at "+iters);
@@ -2718,6 +2700,10 @@ public class MDPModelChecker extends ProbModelChecker
 		if (verbosity >= 1) {
 			mainLog.print("CVAR (" + (min ? "min" : "max") + ")");
 			mainLog.println(" ran " + iterations + " iterations and " + timer / 1000.0 + " seconds.");
+			// print Y
+			mainLog.println("Printing Y:");
+			mainLog.println(Y.toString());
+
 		}
 
 		// Store results
@@ -2726,47 +2712,7 @@ public class MDPModelChecker extends ProbModelChecker
 		return res;
 	}
 
-	// TODO add documentation
-	private Vector<Double> adapt(Vector<Double> Y, int y2, Vector<Double> V, double theta, double epsilon)
-	{
-		Vector<Double> temp = new Vector<>(Y);
-		Vector<Double> new_val = new Vector<>();
-		Double y2_prime;
-		if (abs(V.get(y2)-V.get(0)) ==0) {
-			y2_prime=epsilon*Y.get(y2);
-		} else{
-			y2_prime = epsilon*Y.get(y2)/abs(V.get(y2)-V.get(0));
-		}
-		BigDecimal bd1 = new BigDecimal(y2_prime).setScale(3, RoundingMode.HALF_UP);
-		if (bd1.doubleValue() >= 0.01) {
-			temp.add(bd1.doubleValue());
-			new_val.add(bd1.doubleValue());
-			Collections.sort(temp);
-		}
-
-		boolean done ;
-
-		do {
-			done = true;
-			for (int i=1; i<temp.size()-1; ++i) {
-				if ((log(theta) < log(temp.get(i + 1)) - log(temp.get(i)))&& temp.get(i)*theta>=0.01 ) {
-
-					BigDecimal bd = new BigDecimal(temp.get(i)*theta).setScale(3, RoundingMode.HALF_UP);
-					if (!temp.contains(bd.doubleValue())) {
-						done = false;
-						temp.add(bd.doubleValue());
-						new_val.add(bd.doubleValue());
-						Collections.sort(temp);
-					}
-				}
-			}
-
-		}while(!done);
-
-		return new_val;
-	}
-
-	private double computeCvar (Vector<Vector<Double>> V, Double y, Vector<Vector<Double>> Y, int s, int choice, MDP mdp, int num_trans, double delta) throws PrismException {
+	private double computeCvar (Vector<Vector<Double>> V, Double y, Vector<Double> Y, int s, int choice, MDP mdp, int num_trans, double delta) throws PrismException {
 		double [] c = new double[num_trans];
 		double [][] bnd = new double [2][num_trans]; // bnd[0][:] upper bounds, bnd[1][:] lower bounds
 		HashMap<Integer, Integer> indexmap = new HashMap<>(); // Map index in original array to index in coefficient array c
@@ -2790,12 +2736,11 @@ public class MDPModelChecker extends ProbModelChecker
 				// FIXME check notebook loop over x' and Y(x') at the same time.
 				max_val=-1;
 				// find max regions for each x'
-				for (int i=0; i<Y.get(index).size()-1; i++) {
-					double top = Y.get(index).get(i + 1) * V.get(j.getKey()).get(i + 1) - Y.get(index).get(i) * V.get(j.getKey()).get(i);
-					double bottom = Y.get(index).get(i + 1) - Y.get(index).get(i);
+				for (int i=0; i<Y.size()-1; i++) {
+					double top = Y.get(i + 1) * V.get(j.getKey()).get(i + 1) - Y.get(i) * V.get(j.getKey()).get(i);
+					double bottom = Y.get(i + 1) - Y.get(i);
 
-					sum = (j.getValue()) * (top / bottom) - Y.get(index).get(i) / y * j.getValue() * (top / bottom)
-							+ j.getValue() * Y.get(index).get(i) / y * V.get(j.getKey()).get(i);
+					sum = (j.getValue()) * (top / bottom) ;
 					if (sum > max_val){
 						max_val = sum;
 						// save index of max region
@@ -2806,12 +2751,12 @@ public class MDPModelChecker extends ProbModelChecker
 						}
 					}
 				}
-				double maxtop= Y.get(index).get(imap.get(j.getKey()) + 1) * V.get(j.getKey()).get(imap.get(j.getKey()) + 1)
-						- Y.get(index).get(imap.get(j.getKey())) * V.get(j.getKey()).get(imap.get(j.getKey()));
-				double maxbottom =Y.get(index).get(imap.get(j.getKey()) + 1) - Y.get(index).get(imap.get(j.getKey()));
+				double maxtop= Y.get(imap.get(j.getKey()) + 1) * V.get(j.getKey()).get(imap.get(j.getKey()) + 1)
+						- Y.get(imap.get(j.getKey())) * V.get(j.getKey()).get(imap.get(j.getKey()));
+				double maxbottom =Y.get(imap.get(j.getKey()) + 1) - Y.get(imap.get(j.getKey()));
 				c[indexmap.get(j.getKey())] = (j.getValue()) * (maxtop / maxbottom);
-				bnd[0][indexmap.get(j.getKey())] = min(Y.get(index).get(imap.get(j.getKey()) + 1) / y, 1 / y);
-				bnd[1][indexmap.get(j.getKey())] = max(Y.get(index).get(imap.get(j.getKey())) / y, 0);
+				bnd[0][indexmap.get(j.getKey())] = min(Y.get(imap.get(j.getKey()) + 1) / y, 1 / y);
+				bnd[1][indexmap.get(j.getKey())] = max(Y.get(imap.get(j.getKey())) / y, 0);
 			}
 
 			index ++;
@@ -2823,19 +2768,17 @@ public class MDPModelChecker extends ProbModelChecker
 		double res = computeCvarLP(c, mdp, s, choice, y, bnd, indexmap);
 
 		sum = res;
-		index = 0;
 		while(it.hasNext()){
 			Entry<Integer, Double> j = it.next();
 			//mainLog.print("-J"+j.getKey()+"v"+j.getValue());
 
 			if (y != 0) {
-				double top = Y.get(index).get(imap.get(j.getKey()) + 1) * V.get(j.getKey()).get(imap.get(j.getKey()) + 1)
-						- Y.get(index).get(imap.get(j.getKey())) * V.get(j.getKey()).get(imap.get(j.getKey()));
-				double bottom = Y.get(index).get(imap.get(j.getKey()) + 1) - Y.get(index).get(imap.get(j.getKey()));
-				sum += - Y.get(index).get(imap.get(j.getKey())) / y * j.getValue() * (top / bottom)
-						+ j.getValue() * Y.get(index).get(imap.get(j.getKey())) / y * V.get(j.getKey()).get(imap.get(j.getKey()));
+				double top = Y.get(imap.get(j.getKey()) + 1) * V.get(j.getKey()).get(imap.get(j.getKey()) + 1)
+						- Y.get(imap.get(j.getKey())) * V.get(j.getKey()).get(imap.get(j.getKey()));
+				double bottom = Y.get(imap.get(j.getKey()) + 1) - Y.get(imap.get(j.getKey()));
+				sum += - Y.get(imap.get(j.getKey())) / y * j.getValue() * (top / bottom)
+						+ j.getValue() * Y.get(imap.get(j.getKey())) / y * V.get(j.getKey()).get(imap.get(j.getKey()));
 			}
-			index++;
 		}
 
 		return sum;
@@ -2951,9 +2894,8 @@ public class MDPModelChecker extends ProbModelChecker
 	 * @param numStates number of states in the mdp
 	 * @return an array of n logarithmically spaced points for each state of the mdp
 	 */
-	public Vector<Vector<Double>> initialize( int n, double theta, int numStates) {
-		Vector<Vector<Double>> y = new Vector<Vector<Double>>(numStates);
-		Vector<Double> temp = new Vector<>();
+	public Vector<Double> initialize( int n, double theta, int numStates) {
+		Vector<Double> temp = new Vector<>(n);
 		temp.add(0.0);
 
 		for (int i = n - 2; i > 0; i--) {
@@ -2963,11 +2905,8 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 		temp.add(1.0);
 		Collections.sort(temp);
-		for (int j=0; j<numStates; j++) {
-			y.add(new Vector<Double>(temp));
-		}
 
-		return y;
+		return temp;
 	}
 
 	/**
