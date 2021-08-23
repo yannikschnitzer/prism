@@ -2671,12 +2671,11 @@ public class MDPModelChecker extends ProbModelChecker
 					double temp = 0;
 					for (int choice = 0, numChoices = mdp.getNumChoices(s); choice < numChoices; choice++) // aka action
 					{
-						Iterator<Entry<Integer, Double>> it =  mdp.getTransitionsIterator(s, choice); // get the iterator over next states
 						// split over regions in computeCVAR
-						val = computeCvar(soln2, Y.get(y), Y, s, choice, mdp, mdp.getNumTransitions(s, choice), delta);
+						val = computeCvar(soln2, y, Y, s, choice, mdp, mdp.getNumTransitions(s, choice), delta);
 						temp = mdpRewards.getStateReward(s) + gamma * val;
 						min_v = min(temp, min_v);
-						mainLog.println("y:"+y+" State:"+s+" Max val:"+val + " temp:"+temp+" min_v:"+min_v);
+						mainLog.println("y:"+Y.get(y)+" State:"+s+" Max val:"+val + " temp:"+temp+" min_v:"+min_v);
 
 					}
 					soln2.get(s).set(y, min_v);
@@ -2712,7 +2711,7 @@ public class MDPModelChecker extends ProbModelChecker
 		return res;
 	}
 
-	private double computeCvar (Vector<Vector<Double>> V, Double y, Vector<Double> Y, int s, int choice, MDP mdp, int num_trans, double delta) throws PrismException {
+	private double computeCvar (Vector<Vector<Double>> V, int y, Vector<Double> Y, int s, int choice, MDP mdp, int num_trans, double delta) throws PrismException {
 		double [] c = new double[num_trans];
 		double [][] bnd = new double [2][num_trans]; // bnd[0][:] upper bounds, bnd[1][:] lower bounds
 		HashMap<Integer, Integer> indexmap = new HashMap<>(); // Map index in original array to index in coefficient array c
@@ -2755,8 +2754,8 @@ public class MDPModelChecker extends ProbModelChecker
 						- Y.get(imap.get(j.getKey())) * V.get(j.getKey()).get(imap.get(j.getKey()));
 				double maxbottom =Y.get(imap.get(j.getKey()) + 1) - Y.get(imap.get(j.getKey()));
 				c[indexmap.get(j.getKey())] = (j.getValue()) * (maxtop / maxbottom);
-				bnd[0][indexmap.get(j.getKey())] = min(Y.get(imap.get(j.getKey()) + 1) / y, 1 / y);
-				bnd[1][indexmap.get(j.getKey())] = max(Y.get(imap.get(j.getKey())) / y, 0);
+				bnd[0][indexmap.get(j.getKey())] = min(Y.get(imap.get(j.getKey()) + 1) / Y.get(y), 1 / Y.get(y));
+				bnd[1][indexmap.get(j.getKey())] = max(Y.get(imap.get(j.getKey())) / Y.get(y), 0);
 			}
 
 			index ++;
@@ -2765,7 +2764,7 @@ public class MDPModelChecker extends ProbModelChecker
 		it =  mdp.getTransitionsIterator(s, choice);
 		mainLog.print(" c: "); mainLog.print(c); mainLog.print(" bnd: [");mainLog.print(bnd[0]);mainLog.print(bnd[1]); mainLog.println("]");
 
-		double res = computeCvarLP(c, mdp, s, choice, y, bnd, indexmap);
+		double res = computeCvarLP(c, mdp, s, choice, Y.get(y), bnd, indexmap);
 
 		sum = res;
 		while(it.hasNext()){
@@ -2776,8 +2775,8 @@ public class MDPModelChecker extends ProbModelChecker
 				double top = Y.get(imap.get(j.getKey()) + 1) * V.get(j.getKey()).get(imap.get(j.getKey()) + 1)
 						- Y.get(imap.get(j.getKey())) * V.get(j.getKey()).get(imap.get(j.getKey()));
 				double bottom = Y.get(imap.get(j.getKey()) + 1) - Y.get(imap.get(j.getKey()));
-				sum += - Y.get(imap.get(j.getKey())) / y * j.getValue() * (top / bottom)
-						+ j.getValue() * Y.get(imap.get(j.getKey())) / y * V.get(j.getKey()).get(imap.get(j.getKey()));
+				sum += - Y.get(imap.get(j.getKey())) / Y.get(y) * j.getValue() * (top / bottom)
+						+ j.getValue() * Y.get(imap.get(j.getKey())) / Y.get(y) * V.get(j.getKey()).get(imap.get(j.getKey()));
 			}
 		}
 
@@ -2835,7 +2834,7 @@ public class MDPModelChecker extends ProbModelChecker
 				// print solution
 				//System.out.println("Value of objective function: " + solver.getObjective());
 			} else {
-//				mainLog.println("Error solving LP" + (lpRes == lpsolve.LpSolve.INFEASIBLE ? " (infeasible)" : ""));
+				mainLog.println("Error solving LP" + (lpRes == lpsolve.LpSolve.INFEASIBLE ? " (infeasible)" : ""));
 			}
 			// Clean up
 			solver.deleteLp();
