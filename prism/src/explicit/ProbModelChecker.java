@@ -1492,6 +1492,21 @@ public class ProbModelChecker extends NonProbModelChecker
 		return StateValues.createFromSingleValue(TypeDouble.getInstance(), 0.0, model);
     }
     
+    enum ParetoMethod { OLS, RANDOM };
+    
+    protected StateValues checkExpressionParetoMultiObjMDP(Model model, List<ExpressionReward> objs, BitSet statesOfInterest) throws PrismException
+    {
+    	ParetoMethod paretoMethod = ParetoMethod.OLS;
+    	switch (paretoMethod) {
+    	case OLS:
+    		return checkExpressionParetoMultiObjMDPWithOLS(model, objs, statesOfInterest);
+    	case RANDOM:
+    		return checkExpressionParetoMultiObjMDPWithRandomSampling(model, objs, statesOfInterest);
+    	default:
+    		throw new PrismException("Unknown Pareto generation method " + paretoMethod);
+    	}
+    }
+    
     /* Multi-objective MDP solver
      * This algorithm is based on "Linear Support for Multi-Objective Coordination Graphs" by Roijers et al.
 	 * The part of code for computing new weights in OLS algorithm is modified based the following git hub repo
@@ -1499,10 +1514,10 @@ public class ProbModelChecker extends NonProbModelChecker
 	 * @param model the model of POMDP
      * */
     
-    protected StateValues checkExpressionParetoMultiObjMDP(Model model, List<ExpressionReward> objs, BitSet statesOfInterest) throws PrismException{
+    protected StateValues checkExpressionParetoMultiObjMDPWithOLS(Model model, List<ExpressionReward> objs, BitSet statesOfInterest) throws PrismException
+    {
 		// Dummy return value
     	double threshold = 0.00001;
-		HashSet<List<Double>> paretoCurve = new HashSet<>();
 		ArrayList<ArrayList<Double>> partial_CCS = new ArrayList<ArrayList<Double>>();
 		ArrayList<ArrayList<Double>> partial_CCS_weights = new ArrayList<ArrayList<Double>>();
 		ArrayList<ArrayList<Double>> w_v_checked = new ArrayList<ArrayList<Double>>();
@@ -1513,61 +1528,6 @@ public class ProbModelChecker extends NonProbModelChecker
 		HashMap <ArrayList<Double>, ArrayList<ArrayList<Double> >> value_to_corner = new HashMap < ArrayList<Double>, ArrayList<ArrayList<Double>>> ();
 		priority_queue =  initialQueue(objs,  corner_to_value, model);
 
-		// Random sampling:
-		ArrayList<ArrayList<Double>> w_v_checked_rs = new ArrayList<ArrayList<Double>>();
-		double rs =1;
-		if (rs>0){
-			if (objs.size() == 3) {
-				for (int i =0;i<11;i++){
-					double w1 = ((double) i )*0.1;
-					for (int j=0; j<11; j++){
-						double w2= ((double) j )*0.1;
-						if (w1+w2<=1){
-							double w3= 1-w1-w2;
-							ArrayList<Double> weights = new ArrayList<>();
-							weights.add(w1);
-							weights.add(w2);
-							weights.add(w3);
-							StateValues sv = checkExpressionWeightedMultiObj(model, weights, objs, statesOfInterest);
-							ArrayList<Double> point = (ArrayList<Double>) sv.getValue(model.getFirstInitialState());
-							mainLog.println("weights: "+Arrays.toString(weights.toArray()));
-							mainLog.println("Points: "+Arrays.toString(point.toArray()));
-							paretoCurve.add(point);
-							if((!containsWithError(w_v_checked_rs,point,1E-06)) || true){
-								w_v_checked_rs.add(weights);
-								w_v_checked_rs.add(point);
-							}
-							mainLog.println("\nPareto curve: " + paretoCurve);
-							mainLog.println("w_v_checked: "+Arrays.toString(w_v_checked_rs.toArray()));
-						}
-					}
-				}		
-				mainLog.println("\n finishing Pareto curve: " + paretoCurve);
-				mainLog.println("finishing w_v_checked: "+Arrays.toString(w_v_checked_rs.toArray()));
-				//return StateValues.createFromSingleValue(TypeDouble.getInstance(), 0.0, model);
-			}
-			if (objs.size() == 2) {		
-				//HashSet<List<Double>> paretoCurve = new HashSet<>();
-				int numPoints = 10;
-				for (int i = 0; i <= numPoints; i++) {
-					double w1 = ((double) i) / numPoints;
-					double w2 = 1.0 - w1;
-					ArrayList<Double> weights = new ArrayList<>();
-					weights.add(w1);
-					weights.add(w2);
-
-					StateValues sv = checkExpressionWeightedMultiObj(model, weights, objs, statesOfInterest);
-					ArrayList<Double> point = (ArrayList<Double>) sv.getValue(model.getFirstInitialState());
-
-					w_v_checked_rs.add(weights);
-					w_v_checked_rs.add(point);
-					paretoCurve.add(point);
-					mainLog.println(w1 + ":" + w2 + " = " + point);
-				}
-				mainLog.println("\nPareto curve: " + paretoCurve);
-			}
-		}
-	 	
 		mainLog.println("****************************************************");
 
 		while(priority_queue.size()>0){
@@ -1960,13 +1920,88 @@ public class ProbModelChecker extends NonProbModelChecker
 		for (int iprint=0; iprint<partial_CCS.size();iprint++){
 			mainLog.print(Arrays.toString(partial_CCS_weights.get(iprint).toArray())+"\n");
 		}
-		mainLog.println("#Parecto Curve points: "+partial_CCS.size()+"\n");
+		mainLog.println("#Pareto Curve points: "+partial_CCS.size()+"\n");
 		for (int iprint=0; iprint<partial_CCS.size();iprint++){
 			mainLog.print(Arrays.toString(partial_CCS.get(iprint).toArray())+"\n");
 		}
 		//mainLog.println("scalarized values OLS:"+values_OLS.size());
 		//mainLog.println(values_OLS);
-		
+				
+		// Return Pareto curve as Point list
+		List<Point> points = new ArrayList<>();
+		for (ArrayList<Double> paretoPoint : partial_CCS) {
+			Point point = new Point(paretoPoint.size());
+			for (int dim = 0; dim < paretoPoint.size(); dim++) {
+				point.setCoord(dim, paretoPoint.get(dim));
+			}
+			points.add(point);
+		}
+		Object array[] = new Object[model.getNumStates()];
+		array[model.getFirstInitialState()] = points;
+		return StateValues.createFromObjectArray(TypeDouble.getInstance(), array, model);
+    }
+    
+    
+    protected StateValues checkExpressionParetoMultiObjMDPWithRandomSampling(Model model, List<ExpressionReward> objs, BitSet statesOfInterest) throws PrismException
+    {
+		// Dummy return value
+		HashSet<List<Double>> paretoCurve = new HashSet<>();
+
+		// Random sampling:
+		ArrayList<ArrayList<Double>> w_v_checked_rs = new ArrayList<ArrayList<Double>>();
+		double rs =1;
+		if (rs>0){
+			if (objs.size() == 3) {
+				for (int i =0;i<11;i++){
+					double w1 = ((double) i )*0.1;
+					for (int j=0; j<11; j++){
+						double w2= ((double) j )*0.1;
+						if (w1+w2<=1){
+							double w3= 1-w1-w2;
+							ArrayList<Double> weights = new ArrayList<>();
+							weights.add(w1);
+							weights.add(w2);
+							weights.add(w3);
+							StateValues sv = checkExpressionWeightedMultiObj(model, weights, objs, statesOfInterest);
+							ArrayList<Double> point = (ArrayList<Double>) sv.getValue(model.getFirstInitialState());
+							mainLog.println("weights: "+Arrays.toString(weights.toArray()));
+							mainLog.println("Points: "+Arrays.toString(point.toArray()));
+							paretoCurve.add(point);
+							if((!containsWithError(w_v_checked_rs,point,1E-06)) || true){
+								w_v_checked_rs.add(weights);
+								w_v_checked_rs.add(point);
+							}
+							mainLog.println("\nPareto curve: " + paretoCurve);
+							mainLog.println("w_v_checked: "+Arrays.toString(w_v_checked_rs.toArray()));
+						}
+					}
+				}		
+				mainLog.println("\n finishing Pareto curve: " + paretoCurve);
+				mainLog.println("finishing w_v_checked: "+Arrays.toString(w_v_checked_rs.toArray()));
+				//return StateValues.createFromSingleValue(TypeDouble.getInstance(), 0.0, model);
+			}
+			if (objs.size() == 2) {		
+				//HashSet<List<Double>> paretoCurve = new HashSet<>();
+				int numPoints = 10;
+				for (int i = 0; i <= numPoints; i++) {
+					double w1 = ((double) i) / numPoints;
+					double w2 = 1.0 - w1;
+					ArrayList<Double> weights = new ArrayList<>();
+					weights.add(w1);
+					weights.add(w2);
+
+					StateValues sv = checkExpressionWeightedMultiObj(model, weights, objs, statesOfInterest);
+					ArrayList<Double> point = (ArrayList<Double>) sv.getValue(model.getFirstInitialState());
+
+					w_v_checked_rs.add(weights);
+					w_v_checked_rs.add(point);
+					paretoCurve.add(point);
+					mainLog.println(w1 + ":" + w2 + " = " + point);
+				}
+				mainLog.println("\nPareto curve: " + paretoCurve);
+			}
+		}
+	 	
 		mainLog.println("*********************ParetoCurve by iterating [w1 w2] Random Sampling*******************************");
 		
 		mainLog.println("\nPareto curve: " +paretoCurve.size()+"\n"+ paretoCurve);
@@ -1996,9 +2031,10 @@ public class ProbModelChecker extends NonProbModelChecker
 		// Return Pareto curve as Point list
 		List<Point> points = new ArrayList<>();
 		for (ArrayList<Double> paretoPoint : paretoCurveCompact) {
-			Point point = new Point(2);
-			point.setCoord(0, paretoPoint.get(0));
-			point.setCoord(1, paretoPoint.get(1));
+			Point point = new Point(paretoPoint.size());
+			for (int dim = 0; dim < paretoPoint.size(); dim++) {
+				point.setCoord(dim, paretoPoint.get(dim));
+			}
 			points.add(point);
 		}
 		Object array[] = new Object[model.getNumStates()];
