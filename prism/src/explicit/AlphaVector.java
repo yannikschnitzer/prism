@@ -1,3 +1,7 @@
+/*This file is adopted from https://github.com/AlgTUDelft/SolvePOMDP
+ * See the original ReadMe below
+ * */
+
 /*******************************************************************************
  * SolvePOMDP
  * Copyright (C) 2017 Erwin Walraven
@@ -250,6 +254,7 @@ public class AlphaVector {
 		return false;
 	}
 	
+	
 	/**
 	 * Returns true iff entries in other vectors are identical
 	 * @param otherVector vector to compare with
@@ -419,11 +424,9 @@ public class AlphaVector {
 	 */
 	private static boolean lexGreater(AlphaVector v1, AlphaVector v2) {
 		assert v1.size() == v2.size();
-		
 		for(int i=0; i<v1.size(); i++) {
 			double v1Entry = v1.getEntry(i);
 			double v2Entry = v2.getEntry(i);
-			
 			if(v1Entry != v2Entry) {
 				if(v1Entry > v2Entry) {
 					return true;
@@ -433,10 +436,32 @@ public class AlphaVector {
 				}
 			}
 		}
-		
 		return false;
 	}
-	
+	public static boolean contains (ArrayList<AlphaVector> A, ArrayList<AlphaVector> B) {
+		for (int i =0; i< B.size(); i++) {
+			AlphaVector b = B.get(i);
+			boolean bInA = false;
+			for (int j =0; j<A.size(); j++){
+				if (b.equals(A.get(j))) {
+					bInA= true;
+				}
+			}
+			if (!bInA) {
+				return false;
+			}
+		}
+		return true;
+	}
+	public static boolean setContainsVector (ArrayList<AlphaVector> A, AlphaVector b) {
+		boolean bInA = false;
+		for (int j =0; j<A.size();j++) {
+			if (b.equals(A.get(j))) {
+				bInA = true;
+			}
+		}
+		return bInA;
+	}
 	/**
 	 * Get index of the best vector in U at belief point b
 	 * @param b belief b
@@ -444,16 +469,12 @@ public class AlphaVector {
 	 * @return index of the best vector in U at b
 	 */
 	public static int getBestVectorIndex(double[] b, ArrayList<AlphaVector> U) {
-		
-
 			double max = Double.NEGATIVE_INFINITY;
 			int wIndex = -1;
 			AlphaVector w = null;
-			
 			for(int i=0; i<U.size(); i++) {
 				AlphaVector u = U.get(i);
 				double product = u.getDotProduct(b);
-				
 				if(product > max) {
 					wIndex = i;
 					w = u;
@@ -465,7 +486,6 @@ public class AlphaVector {
 				}
 			}
 			return wIndex;
-
 		
 	}
 	
