@@ -122,6 +122,7 @@ public class PrismSettings implements Observer
 	public static final	String PRISM_MULTI_MAX_POINTS				= "prism.multiMaxIters";
 	public static final	String PRISM_PARETO_EPSILON					= "prism.paretoEpsilon";
 	public static final	String PRISM_EXPORT_PARETO_FILENAME			= "prism.exportParetoFileName";
+	public static final	String PRISM_WEIGHTS_STRING					= "prism.weightsString";
 	
 	public static final String PRISM_LTL2DA_TOOL					= "prism.ltl2daTool";
 	public static final String PRISM_LTL2DA_SYNTAX					= "prism.ltl2daSyntax";
@@ -308,6 +309,8 @@ public class PrismSettings implements Observer
 																			"Determines to what precision the Pareto curve will be approximated." },
 			{ STRING_TYPE,		PRISM_EXPORT_PARETO_FILENAME,			"Pareto curve export filename",			"4.0.3",			"",															"0,",																						
 																			"If non-empty, any Pareto curve generated will be exported to this file." },
+			{ STRING_TYPE,		PRISM_WEIGHTS_STRING,					"-weights string",			"4.7",			"",															"0,",																						
+																			"" },
 			// OUTPUT OPTIONS:
 			{ BOOLEAN_TYPE,		PRISM_VERBOSE,							"Verbose output",						"2.1",		new Boolean(false),															"",																							
 																			"Display verbose output to log." },
@@ -1332,6 +1335,13 @@ public class PrismSettings implements Observer
 		else if (sw.equals("exportpareto")) {
 			if (i < args.length - 1) {
 				set(PRISM_EXPORT_PARETO_FILENAME, args[++i]);
+			} else {
+				throw new PrismException("No file specified for -" + sw + " switch");
+			}
+		}
+		else if (sw.equals("weights")) {
+			if (i < args.length - 1) {
+				set(PRISM_WEIGHTS_STRING, args[++i]);
 			} else {
 				throw new PrismException("No file specified for -" + sw + " switch");
 			}

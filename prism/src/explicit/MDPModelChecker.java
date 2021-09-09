@@ -3508,6 +3508,9 @@ public class MDPModelChecker extends ProbModelChecker
 			mainLog.println("-> " + s);
 		}
 		
+		String weightsString = getSettings().getString(PrismSettings.PRISM_WEIGHTS_STRING);
+		mainLog.println("Weights: " + weightsString);
+		
 		throw new PrismException("Not implemented yet");
 	}
 	
