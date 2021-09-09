@@ -641,26 +641,41 @@ public class ProbModelChecker extends NonProbModelChecker
 	 */
 	protected StateValues checkExpressionWeightedMultiObj(Model model, List<Double> weights, List<ExpressionReward> objs, BitSet statesOfInterest) throws PrismException
 	{
-		// Build rewards
-		// And recompute weights, negating if needed 
-		//mainLog.println("Building reward structure...");
+		// Build rewards, and get min/max info
 		int numRewards = weights.size();
 		List<Double> weightsNew = new ArrayList<>();
 		List<MDPRewards> mdpRewardsList = new ArrayList<>();
+		List<MinMax> minMaxList = new ArrayList<>();
 		for (int i = 0; i < numRewards; i++) {
 			int r = objs.get(i).getRewardStructIndexByIndexObject(rewardGen, constantValues);
 			mdpRewardsList.add((MDPRewards) constructRewards(model, r));
-			if (objs.get(i).getRelopBoundInfo(constantValues).getMinMax(model.getModelType(), false).isMin()) {
-				weightsNew.add(-1.0 * weights.get(i));
-			} else {
-				weightsNew.add(weights.get(i));
-			}
+			minMaxList.add(objs.get(i).getRelopBoundInfo(constantValues).getMinMax(model.getModelType(), false));
 		}
 		
 		// Model check the target
 		// TODO: Check all targets are the same for all R props
 		ExpressionTemporal exprTemp = (ExpressionTemporal) objs.get(0).getExpression();
 		BitSet target = checkExpression(model, exprTemp.getOperand2(), null).getBitSet();
+		
+		return checkExpressionWeightedMultiObj(model, weights, mdpRewardsList, target, minMaxList, statesOfInterest);
+	}
+	
+	/**
+	 * Model check a weighted sum multi-objective property and return the values for the statesOfInterest.
+	 * * @param statesOfInterest the states of interest, see checkExpression()
+	 */
+	protected StateValues checkExpressionWeightedMultiObj(Model model, List<Double> weights, List<MDPRewards> mdpRewardsList, BitSet target, List<MinMax> minMaxList, BitSet statesOfInterest) throws PrismException
+	{
+		// Recompute weights, negating if needed 
+		int numRewards = weights.size();
+		List<Double> weightsNew = new ArrayList<>();
+		for (int i = 0; i < numRewards; i++) {
+			if (minMaxList.get(i).isMin()) {
+				weightsNew.add(-1.0 * weights.get(i));
+			} else {
+				weightsNew.add(weights.get(i));
+			}
+		}
 		
 		// Compute/return the rewards
 		ModelCheckerResult res = null;
@@ -672,8 +687,7 @@ public class ProbModelChecker extends NonProbModelChecker
 			res = ((POMDPModelChecker) this).computeMultiReachRewards((POMDP) model, weightsNew, mdpRewardsList, target, false, statesOfInterest);
 			break;
 		default:
-			throw new PrismNotSupportedException("Explicit engine does not yet handle the " + exprTemp.getOperatorSymbol() + " reward operator for " + model.getModelType()
-					+ "s");
+			throw new PrismNotSupportedException("Explicit engine does not yet compute weighted multi-objective values for " + model.getModelType() + "s");
 		}
 		result.setStrategy(res.strat);
 		return StateValues.createFromObjectArray(TypeDouble.getInstance(), res.solnObj, model);
@@ -700,13 +714,28 @@ public class ProbModelChecker extends NonProbModelChecker
 	 */
     protected StateValues checkExpressionParetoMultiObjMDP(Model model, List<ExpressionReward> objs, BitSet statesOfInterest) throws PrismException
     {
+		// Build rewards, and get min/max info
+		List<MDPRewards> mdpRewardsList = new ArrayList<>();
+		List<MinMax> minMaxList = new ArrayList<>();
+    	for (ExpressionReward exprReward : objs) {
+			int r = exprReward.getRewardStructIndexByIndexObject(rewardGen, constantValues);
+			mdpRewardsList.add((MDPRewards) constructRewards(model, r));
+    		OpRelOpBound opInfo = exprReward.getRelopBoundInfo(constantValues);
+			minMaxList.add(opInfo.getMinMax(model.getModelType(), false));
+		}
+		
+		// Model check the target
+		// TODO: Check all targets are the same for all R props
+		ExpressionTemporal exprTemp = (ExpressionTemporal) objs.get(0).getExpression();
+		BitSet target = checkExpression(model, exprTemp.getOperand2(), null).getBitSet();
+		
 		MultiObjModelChecker mc = new MultiObjModelChecker(this);
     	ParetoMethod paretoMethod = ParetoMethod.OLS;
     	switch (paretoMethod) {
     	case OLS:
-    		return mc.checkExpressionParetoMultiObjMDPWithOLS(model, objs, statesOfInterest);
+    		return mc.checkExpressionParetoMultiObjMDPWithOLS(model, mdpRewardsList, target, minMaxList, statesOfInterest);
     	case RANDOM:
-    		return mc.checkExpressionParetoMultiObjMDPWithRandomSampling(model, objs, statesOfInterest);
+    		return mc.checkExpressionParetoMultiObjMDPWithRandomSampling(model, mdpRewardsList, target, minMaxList, statesOfInterest);
     	default:
     		throw new PrismException("Unknown Pareto generation method " + paretoMethod);
     	}
@@ -755,18 +784,18 @@ public class ProbModelChecker extends NonProbModelChecker
 		unknownObs.andNot(targetObs);
 		unknownObs.andNot(infObs);
 		
-    	// Build rewards
-		// And recompute weights, negating if needed 
-		//mainLog.println("Building reward structure...");
-		int numRewards = objs.size();
+		// Build rewards, and get min/max info
 		List<MDPRewards> mdpRewardsList = new ArrayList<>();
-		for (int i = 0; i < numRewards; i++) {
-			int r = objs.get(i).getRewardStructIndexByIndexObject(rewardGen, constantValues);
+		List<MinMax> minMaxList = new ArrayList<>();
+    	for (ExpressionReward exprReward : objs) {
+			int r = exprReward.getRewardStructIndexByIndexObject(rewardGen, constantValues);
 			mdpRewardsList.add((MDPRewards) constructRewards(model, r));
+    		OpRelOpBound opInfo = exprReward.getRelopBoundInfo(constantValues);
+			minMaxList.add(opInfo.getMinMax(model.getModelType(), false));
 		}
-
+		
 		MultiObjModelChecker mc = new MultiObjModelChecker(this);
-		return mc.checkExpressionParetoMultiObjPOMDP((POMDP) model, objs, target, mdpRewardsList, statesOfInterest);
+		return mc.checkExpressionParetoMultiObjPOMDP((POMDP) model, mdpRewardsList, target, minMaxList, statesOfInterest);
 		
     }
     

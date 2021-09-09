@@ -8,13 +8,10 @@ import java.util.HashSet;
 import java.util.List;
 
 import explicit.rewards.MDPRewards;
-import parser.ast.ExpressionReward;
-import parser.ast.ExpressionTemporal;
 import parser.type.TypeDouble;
 import prism.Point;
 import prism.PrismComponent;
 import prism.PrismException;
-import prism.PrismNotSupportedException;
 
 public class MultiObjModelChecker extends PrismComponent
 {
@@ -36,8 +33,10 @@ public class MultiObjModelChecker extends PrismComponent
 	 * @param model the model of POMDP
      * */
     
-    protected StateValues checkExpressionParetoMultiObjMDPWithOLS(Model model, List<ExpressionReward> objs, BitSet statesOfInterest) throws PrismException
+    protected StateValues checkExpressionParetoMultiObjMDPWithOLS(Model model, List<MDPRewards> mdpRewardsList, BitSet target, List<MinMax> minMaxList, BitSet statesOfInterest) throws PrismException
     {
+    	int numObjs = minMaxList.size();
+    	
 		// Dummy return value
     	double threshold = 0.00001;
 		ArrayList<ArrayList<Double>> partial_CCS = new ArrayList<ArrayList<Double>>();
@@ -48,7 +47,7 @@ public class MultiObjModelChecker extends PrismComponent
 		ArrayList<ArrayList<Double>> priority_queue = new ArrayList<ArrayList<Double>>();
 		HashMap <ArrayList<Double>, ArrayList<ArrayList<Double> >> corner_to_value = new HashMap < ArrayList<Double>, ArrayList<ArrayList<Double>>> ();
 		HashMap <ArrayList<Double>, ArrayList<ArrayList<Double> >> value_to_corner = new HashMap < ArrayList<Double>, ArrayList<ArrayList<Double>>> ();
-		priority_queue =  initialQueue(objs,  corner_to_value, model);
+		priority_queue =  initialQueue(minMaxList, corner_to_value, model);
 
 		mainLog.println("****************************************************");
 
@@ -90,7 +89,7 @@ public class MultiObjModelChecker extends PrismComponent
 			mainLog.println("Pop weight with top priority: "+Arrays.toString(w_pop.toArray()));
 			mainLog.println("Current Q (weight, priority)  After pop"+Arrays.toString(priority_queue.toArray()));
 			
-			StateValues sv = mc.checkExpressionWeightedMultiObj(model, w_pop, objs, statesOfInterest);
+			StateValues sv = mc.checkExpressionWeightedMultiObj(model, w_pop, mdpRewardsList, target, minMaxList, statesOfInterest);
 			ArrayList<Double> u = (ArrayList<Double>) sv.getValue(model.getFirstInitialState());
 			mainLog.println("Value vector: "+u);
 			
@@ -131,8 +130,8 @@ public class MultiObjModelChecker extends PrismComponent
 				else {
 
 					mainLog.println("elsess");
-					double original_value = innerProduct(adjustWeight(w_pop,objs, model), u);
-					double other_prod = innerProduct(adjustWeight(w_pop,objs,model), corner_to_value.get(w_pop).get(corner_to_value.get(w_pop).size()-1));
+					double original_value = innerProduct(adjustWeight(w_pop,minMaxList, model), u);
+					double other_prod = innerProduct(adjustWeight(w_pop,minMaxList,model), corner_to_value.get(w_pop).get(corner_to_value.get(w_pop).size()-1));
 					if ((original_value - other_prod)>1E-08){
 
 						//remove from value dict
@@ -162,7 +161,7 @@ public class MultiObjModelChecker extends PrismComponent
 							if (corner_to_value.containsKey(weight)){
 								existing_value_vectors = (ArrayList<ArrayList<Double>>) corner_to_value.get(weight).clone();
 								ArrayList<Double> existing_value_vector = existing_value_vectors.get(existing_value_vectors.size()-1);
-								double scalarized_value = innerProduct(existing_value_vector, adjustWeight(weight,objs,model));
+								double scalarized_value = innerProduct(existing_value_vector, adjustWeight(weight,minMaxList,model));
 								if (original_value>scalarized_value){
 									for (int i_evv=0; i_evv<existing_value_vectors.size(); i_evv++){
 										existing_value_vector = existing_value_vectors.get(i_evv);
@@ -233,15 +232,15 @@ public class MultiObjModelChecker extends PrismComponent
 						old_value_vectors = new ArrayList<ArrayList<Double>>  ();
 
 						for (int i_obs=0; i_obs<obsolete_list.size();i_obs++){
-							double bestValue = innerProduct(adjustWeight((ArrayList<Double>) obsolete_list.get(i_obs), objs, model), partial_CCS.get(0));
+							double bestValue = innerProduct(adjustWeight((ArrayList<Double>) obsolete_list.get(i_obs), minMaxList, model), partial_CCS.get(0));
 							for (int j_partialCSS=0; j_partialCSS < partial_CCS.size(); j_partialCSS++){
-								if (innerProduct(adjustWeight((ArrayList<Double>) obsolete_list.get(i_obs), objs, model), partial_CCS.get(j_partialCSS))>bestValue){
-									bestValue = innerProduct(adjustWeight((ArrayList<Double>) obsolete_list.get(i_obs), objs, model), partial_CCS.get(j_partialCSS));
+								if (innerProduct(adjustWeight((ArrayList<Double>) obsolete_list.get(i_obs), minMaxList, model), partial_CCS.get(j_partialCSS))>bestValue){
+									bestValue = innerProduct(adjustWeight((ArrayList<Double>) obsolete_list.get(i_obs), minMaxList, model), partial_CCS.get(j_partialCSS));
 								}
 							}
 							for (int j_partialCSS=0; j_partialCSS < partial_CCS.size(); j_partialCSS++){
-								if (Math.abs(innerProduct(adjustWeight((ArrayList<Double>) obsolete_list.get(i_obs), objs, model), partial_CCS.get(j_partialCSS))-bestValue)<1E-06){
-									if (old_value_vectors.size()<objs.size()){ //if Vs(w) contians fewer than dvalue vecotrs
+								if (Math.abs(innerProduct(adjustWeight((ArrayList<Double>) obsolete_list.get(i_obs), minMaxList, model), partial_CCS.get(j_partialCSS))-bestValue)<1E-06){
+									if (old_value_vectors.size()<numObjs){ //if Vs(w) contians fewer than dvalue vecotrs
 										old_value_vectors.add((ArrayList<Double>) partial_CCS.get(j_partialCSS).clone());
 									}
 								}
@@ -264,14 +263,14 @@ public class MultiObjModelChecker extends PrismComponent
 						ArrayList<Double> tpp= new ArrayList<Double>();
 						tpp.add(1.0);
 						tpp.add(1.0);
-						for (int i_ojs=0; i_ojs<objs.size()-1;i_ojs++){
+						for (int i_ojs=0; i_ojs<numObjs-1;i_ojs++){
 							subset.add(tpp);
 						}
 
 						ArrayList<ArrayList<ArrayList<Double>>> subsets = new ArrayList<ArrayList<ArrayList<Double>>>(); //all combination
 						
 						mainLog.println("old_value_vectors size"+old_value_vectors.size());
-						combinations2(old_value_vectors, objs.size()-1, 0, subset, subsets);
+						combinations2(old_value_vectors, numObjs-1, 0, subset, subsets);
 
 						mainLog.println("allsubsets: total number of combinations"+Arrays.toString(subsets.toArray())+subsets.size());
 						
@@ -283,7 +282,7 @@ public class MultiObjModelChecker extends PrismComponent
 							ArrayList<ArrayList<Double>> oneCombination =(ArrayList<ArrayList<Double>> ) subsets.get(i_subset).clone();
 							for (int j=0; j<oneCombination.size(); j++){
 								augumented_vector = (ArrayList<Double>) oneCombination.get(j).clone();
-								if (augumented_vector.size()==objs.size()){
+								if (augumented_vector.size()==numObjs){
 									hCCS.add((ArrayList<Double>) augumented_vector.clone());
 									augumented_vector.add(-1.0);
 									A.add(augumented_vector);
@@ -299,7 +298,7 @@ public class MultiObjModelChecker extends PrismComponent
 
 							//simplex constraint
 							ArrayList<Double> bound = new ArrayList<Double>();
-							for (int i=0; i<objs.size();i++) {
+							for (int i=0; i<numObjs;i++) {
 								bound.add(1.0);
 							}
 							bound.add(0.0);
@@ -357,7 +356,7 @@ public class MultiObjModelChecker extends PrismComponent
 							countNewWeights++;
 							mainLog.println(countNewWeights+"Number of New weights generated by :"+Arrays.toString(u.toArray()));
 							mainLog.println("w_new"+Arrays.toString(w_new.toArray()));
-							if (countNewWeights>objs.size())
+							if (countNewWeights>numObjs)
 								mainLog.println("More new weights than expected");
 
 							//////// this is for rounding
@@ -386,8 +385,8 @@ public class MultiObjModelChecker extends PrismComponent
 
 							mainLog.println("computing priority = "+hCCS.size());
 							
-							double VCCS = maxValueLP(objs, model, w_new, partial_CCS , partial_CCS_weights, u, w_pop );
-							double Vsw = innerProduct(u, adjustWeight(w_new, objs, model));
+							double VCCS = maxValueLP(minMaxList, model, w_new, partial_CCS , partial_CCS_weights, u, w_pop );
+							double Vsw = innerProduct(u, adjustWeight(w_new, minMaxList, model));
 							priority = Math.abs((VCCS-Vsw)/(VCCS));
 							
 							
@@ -463,8 +462,10 @@ public class MultiObjModelChecker extends PrismComponent
 		return StateValues.createFromObjectArray(TypeDouble.getInstance(), array, model);
     }
     
-    protected StateValues checkExpressionParetoMultiObjMDPWithRandomSampling(Model model, List<ExpressionReward> objs, BitSet statesOfInterest) throws PrismException
+    protected StateValues checkExpressionParetoMultiObjMDPWithRandomSampling(Model model, List<MDPRewards> mdpRewardsList, BitSet target, List<MinMax> minMaxList, BitSet statesOfInterest) throws PrismException
     {
+    	int numObjs = minMaxList.size();
+    	
 		// Dummy return value
 		HashSet<List<Double>> paretoCurve = new HashSet<>();
 
@@ -472,7 +473,7 @@ public class MultiObjModelChecker extends PrismComponent
 		ArrayList<ArrayList<Double>> w_v_checked_rs = new ArrayList<ArrayList<Double>>();
 		double rs =1;
 		if (rs>0){
-			if (objs.size() == 3) {
+			if (numObjs == 3) {
 				for (int i =0;i<11;i++){
 					double w1 = ((double) i )*0.1;
 					for (int j=0; j<11; j++){
@@ -483,7 +484,7 @@ public class MultiObjModelChecker extends PrismComponent
 							weights.add(w1);
 							weights.add(w2);
 							weights.add(w3);
-							StateValues sv = mc.checkExpressionWeightedMultiObj(model, weights, objs, statesOfInterest);
+							StateValues sv = mc.checkExpressionWeightedMultiObj(model, weights, mdpRewardsList, target, minMaxList, statesOfInterest);
 							ArrayList<Double> point = (ArrayList<Double>) sv.getValue(model.getFirstInitialState());
 							mainLog.println("weights: "+Arrays.toString(weights.toArray()));
 							mainLog.println("Points: "+Arrays.toString(point.toArray()));
@@ -501,7 +502,7 @@ public class MultiObjModelChecker extends PrismComponent
 				mainLog.println("finishing w_v_checked: "+Arrays.toString(w_v_checked_rs.toArray()));
 				//return StateValues.createFromSingleValue(TypeDouble.getInstance(), 0.0, model);
 			}
-			if (objs.size() == 2) {		
+			if (numObjs == 2) {		
 				//HashSet<List<Double>> paretoCurve = new HashSet<>();
 				int numPoints = 10;
 				for (int i = 0; i <= numPoints; i++) {
@@ -511,7 +512,7 @@ public class MultiObjModelChecker extends PrismComponent
 					weights.add(w1);
 					weights.add(w2);
 
-					StateValues sv = mc.checkExpressionWeightedMultiObj(model, weights, objs, statesOfInterest);
+					StateValues sv = mc.checkExpressionWeightedMultiObj(model, weights, mdpRewardsList, target, minMaxList, statesOfInterest);
 					ArrayList<Double> point = (ArrayList<Double>) sv.getValue(model.getFirstInitialState());
 
 					w_v_checked_rs.add(weights);
@@ -563,14 +564,16 @@ public class MultiObjModelChecker extends PrismComponent
 		return StateValues.createFromObjectArray(TypeDouble.getInstance(), array, model);
     }
     
-    protected StateValues checkExpressionParetoMultiObjPOMDP(POMDP pomdp, List<ExpressionReward> objs, BitSet target, List<MDPRewards> mdpRewardsList, BitSet statesOfInterest) throws PrismException
+    protected StateValues checkExpressionParetoMultiObjPOMDP(POMDP pomdp, List<MDPRewards> mdpRewardsList, BitSet target, List<MinMax> minMaxList, BitSet statesOfInterest) throws PrismException
     {
+    	int numObjs = minMaxList.size();
+    	
 		int nStates = pomdp.getNumStates();
 		int numUnobs = pomdp.getNumUnobservations();
 		ArrayList<Object> allActions = ((POMDPModelChecker) mc).getAllActions(pomdp);
 		int nActions = allActions.size();
 		
-		int numRewards = objs.size();
+		int numRewards = mdpRewardsList.size();
 		
     	HashSet<List<Double>> paretoCurve = new HashSet<>();
 		ArrayList<ArrayList<Double>> partial_CCS = new ArrayList<ArrayList<Double>>();
@@ -587,7 +590,7 @@ public class MultiObjModelChecker extends PrismComponent
 		//Line 3 
 		ArrayList<ArrayList<Double>> priority_queue = new ArrayList<ArrayList<Double>>();
 		//Line 4
-		priority_queue= initialQueue(objs, corner_to_value, pomdp);
+		priority_queue= initialQueue(minMaxList, corner_to_value, pomdp);
 		
 		//line 5
 		ArrayList<AlphaMatrix> A_all = new ArrayList<AlphaMatrix> ();
@@ -613,10 +616,10 @@ public class MultiObjModelChecker extends PrismComponent
 		immediateRewards =((POMDPModelChecker) mc).copyAlphaMatrixSet(immediateRewards);
 		A_all =((POMDPModelChecker) mc).copyAlphaMatrixSet(A_all);
 		/*for (int a=0; a<allActions.size();a++) { 
-			double [][] matrix = new double [nStates][objs.size()];
+			double [][] matrix = new double [nStates][numObjs];
 			double Rmin =0.1;
 			for (int i=0; i<nStates; i++) {
-				for (int j=0; j<objs.size(); j++) {
+				for (int j=0; j<numObjs; j++) {
 					matrix[i][j] = Rmin;
 				}
 			}
@@ -671,7 +674,7 @@ public class MultiObjModelChecker extends PrismComponent
 			double [][] matrix = bestAlphaMatrix.getMatrix();
 			double [] belief0 = b0.toDistributionOverStates(pomdp);
 			ArrayList<Double> Vb0 = new ArrayList<Double> ();
-			for (int j=0; j<objs.size(); j++) {
+			for (int j=0; j<numObjs; j++) {
 				double value = 0;
 				for (int i=0; i<belief0.length; i++) {
 					value += belief0[i] * matrix[i][j];
@@ -716,8 +719,8 @@ public class MultiObjModelChecker extends PrismComponent
 				}
 				else {
 					mainLog.println("elsess");
-					double original_value = innerProduct(adjustWeight(w_pop,objs, pomdp), u);
-					double other_prod = innerProduct(adjustWeight(w_pop,objs,pomdp), corner_to_value.get(w_pop).get(corner_to_value.get(w_pop).size()-1));
+					double original_value = innerProduct(adjustWeight(w_pop,minMaxList, pomdp), u);
+					double other_prod = innerProduct(adjustWeight(w_pop,minMaxList,pomdp), corner_to_value.get(w_pop).get(corner_to_value.get(w_pop).size()-1));
 					if ((original_value - other_prod)>1E-08){
 
 						//remove from value dict
@@ -747,7 +750,7 @@ public class MultiObjModelChecker extends PrismComponent
 							if (corner_to_value.containsKey(weight)){
 								existing_value_vectors = (ArrayList<ArrayList<Double>>) corner_to_value.get(weight).clone();
 								ArrayList<Double> existing_value_vector = existing_value_vectors.get(existing_value_vectors.size()-1);
-								double scalarized_value = innerProduct(existing_value_vector, adjustWeight(weight,objs,pomdp));
+								double scalarized_value = innerProduct(existing_value_vector, adjustWeight(weight,minMaxList,pomdp));
 								if (original_value>scalarized_value){
 									for (int i_evv=0; i_evv<existing_value_vectors.size(); i_evv++){
 										existing_value_vector = existing_value_vectors.get(i_evv);
@@ -816,15 +819,15 @@ public class MultiObjModelChecker extends PrismComponent
 						old_value_vectors = new ArrayList<ArrayList<Double>>  ();
 
 						for (int i_obs=0; i_obs<obsolete_list.size();i_obs++){
-							double bestValue = innerProduct(adjustWeight((ArrayList<Double>) obsolete_list.get(i_obs), objs, pomdp), partial_CCS.get(0));
+							double bestValue = innerProduct(adjustWeight((ArrayList<Double>) obsolete_list.get(i_obs), minMaxList, pomdp), partial_CCS.get(0));
 							for (int j_partialCSS=0; j_partialCSS < partial_CCS.size(); j_partialCSS++){
-								if (innerProduct(adjustWeight((ArrayList<Double>) obsolete_list.get(i_obs), objs, pomdp), partial_CCS.get(j_partialCSS))>bestValue){
-									bestValue = innerProduct(adjustWeight((ArrayList<Double>) obsolete_list.get(i_obs), objs, pomdp), partial_CCS.get(j_partialCSS));
+								if (innerProduct(adjustWeight((ArrayList<Double>) obsolete_list.get(i_obs), minMaxList, pomdp), partial_CCS.get(j_partialCSS))>bestValue){
+									bestValue = innerProduct(adjustWeight((ArrayList<Double>) obsolete_list.get(i_obs), minMaxList, pomdp), partial_CCS.get(j_partialCSS));
 								}
 							}
 							for (int j_partialCSS=0; j_partialCSS < partial_CCS.size(); j_partialCSS++){
-								if (Math.abs(innerProduct(adjustWeight((ArrayList<Double>) obsolete_list.get(i_obs), objs, pomdp), partial_CCS.get(j_partialCSS))-bestValue)<1E-06){
-									if (old_value_vectors.size()<objs.size()){ //if Vs(w) contians fewer than dvalue vecotrs
+								if (Math.abs(innerProduct(adjustWeight((ArrayList<Double>) obsolete_list.get(i_obs), minMaxList, pomdp), partial_CCS.get(j_partialCSS))-bestValue)<1E-06){
+									if (old_value_vectors.size()<numObjs){ //if Vs(w) contians fewer than dvalue vecotrs
 										old_value_vectors.add((ArrayList<Double>) partial_CCS.get(j_partialCSS).clone());
 									}
 								}
@@ -846,13 +849,13 @@ public class MultiObjModelChecker extends PrismComponent
 						ArrayList<Double> tpp= new ArrayList<Double>();
 						tpp.add(1.0);
 						tpp.add(1.0);
-						for (int i_ojs=0; i_ojs<objs.size()-1;i_ojs++){
+						for (int i_ojs=0; i_ojs<numObjs-1;i_ojs++){
 							subset.add(tpp);
 						}
 
 						ArrayList<ArrayList<ArrayList<Double>>> subsets = new ArrayList<ArrayList<ArrayList<Double>>>(); //all combination
 						mainLog.println("old_value_vectors size"+old_value_vectors.size());
-						combinations2(old_value_vectors, objs.size()-1, 0, subset, subsets);
+						combinations2(old_value_vectors, numObjs-1, 0, subset, subsets);
 						mainLog.println("allsubsets: total number of combinations"+Arrays.toString(subsets.toArray())+subsets.size());
 						
 						for(int i_subset=0; i_subset<subsets.size();i_subset++){
@@ -863,7 +866,7 @@ public class MultiObjModelChecker extends PrismComponent
 							ArrayList<ArrayList<Double>> oneCombination =(ArrayList<ArrayList<Double>> ) subsets.get(i_subset).clone();
 							for (int j=0; j<oneCombination.size(); j++){
 								augumented_vector = (ArrayList<Double>) oneCombination.get(j).clone();
-								if (augumented_vector.size()==objs.size()){
+								if (augumented_vector.size()==numObjs){
 									hCCS.add((ArrayList<Double>) augumented_vector.clone());
 									augumented_vector.add(-1.0);
 									A.add(augumented_vector);
@@ -879,7 +882,7 @@ public class MultiObjModelChecker extends PrismComponent
 
 							//simplex constraint
 							ArrayList<Double> bound = new ArrayList<Double>();
-							for (int i=0; i<objs.size();i++) {
+							for (int i=0; i<numObjs;i++) {
 								bound.add(1.0);
 							}
 							bound.add(0.0);
@@ -935,7 +938,7 @@ public class MultiObjModelChecker extends PrismComponent
 							countNewWeights++;
 							mainLog.println(countNewWeights+"Number of New weights generated by :"+Arrays.toString(u.toArray()));
 							mainLog.println("w_new"+Arrays.toString(w_new.toArray()));
-							if (countNewWeights>objs.size())
+							if (countNewWeights>numObjs)
 								mainLog.println("More new weights than expected");
 
 							//////// this is for rounding
@@ -960,8 +963,8 @@ public class MultiObjModelChecker extends PrismComponent
 							// Add to priority queue
 							double priority=1.0;
 
-							double VCCS = maxValueLP(objs, pomdp, w_new, partial_CCS , partial_CCS_weights, u, w_pop );
-							double Vsw = innerProduct(u, adjustWeight(w_new, objs, pomdp));
+							double VCCS = maxValueLP(minMaxList, pomdp, w_new, partial_CCS , partial_CCS_weights, u, w_pop );
+							double Vsw = innerProduct(u, adjustWeight(w_new, minMaxList, pomdp));
 							priority = Math.abs((VCCS-Vsw)/(VCCS));
 							mainLog.println("computing priority = "+priority);
 
@@ -1119,7 +1122,7 @@ public class MultiObjModelChecker extends PrismComponent
 		/* Jacobi
 		ArrayList<Double> x = new ArrayList<Double>();
 		ArrayList<Double> x_old = new ArrayList<Double>();
-		for (int i=0; i<objs.size(); i++) {
+		for (int i=0; i<numObjs; i++) {
 			x.add(1.0);
 			x_old.add(1.5);
 		}
@@ -1130,10 +1133,10 @@ public class MultiObjModelChecker extends PrismComponent
 			for (int i=0;i<x.size();i++) {
 				x_old.set(i, x.get(i));
 			}
-			for (int i_objective=0; i_objective<objs.size()+1; i_objective++) {
+			for (int i_objective=0; i_objective<numObjs+1; i_objective++) {
 				double tp = 0;
 				mainLog.println("----");
-				for (int j_objective=0; j_objective<objs.size()+1; j_objective++) {
+				for (int j_objective=0; j_objective<numObjs+1; j_objective++) {
 					if (i_objective!=j_objective) {
 						//tp += a_ij * xk_j;
 						tp += A.get(i_objective).get(j_objective)* x_old.get(j_objective);
@@ -1159,7 +1162,7 @@ public class MultiObjModelChecker extends PrismComponent
 		return false;
 	}
 
-//	combinations2(old_value_vectors, objs.size()-1, 0, subset, subsets);
+//	combinations2(old_value_vectors, numObjs-1, 0, subset, subsets);
 
 
     public void combinations2(ArrayList<ArrayList<Double>> arr, int len, int startPosition, ArrayList<ArrayList<Double>> result,  ArrayList<ArrayList<ArrayList<Double>>> subsets ){
@@ -1206,13 +1209,13 @@ public class MultiObjModelChecker extends PrismComponent
     	return result;
     }
 
-    public ArrayList<Double> adjustWeight(ArrayList<Double> weights, List<ExpressionReward> objs, Model model)throws PrismException
+    public ArrayList<Double> adjustWeight(ArrayList<Double> weights, List<MinMax> minMaxList, Model model)throws PrismException
     {
     	// this function is to convert weigths for 'min' to 'max'
     	ArrayList<Double> weights_adjust_min_max = new ArrayList<Double>();
 
-	    for (int i_weight=0;i_weight<objs.size();i_weight++){
-			if (objs.get(i_weight).getRelopBoundInfo(mc.getConstantValues()).getMinMax(model.getModelType(), false).isMin()){
+	    for (int i_weight=0;i_weight<minMaxList.size();i_weight++){
+			if (minMaxList.get(i_weight).isMin()){
 				weights_adjust_min_max.add(-1.0*((double) weights.get(i_weight)));
 			}
 			else{
@@ -1232,23 +1235,23 @@ public class MultiObjModelChecker extends PrismComponent
      * @param u, the newly computed payoff vector (see Line 8 Algorithm 1 )
      * @param w_pop, the newly popped weight (see Line 7 Algorithm 1) 
      * */
-    public double  maxValueLP(List<ExpressionReward> objs, Model model,  ArrayList<Double> w_new, ArrayList<ArrayList<Double>> partial_CCS , ArrayList<ArrayList<Double>> partial_CCS_weights, ArrayList<Double> u, ArrayList<Double> w_pop ) throws PrismException 
+    public double  maxValueLP(List<MinMax> minMaxList, Model model, ArrayList<Double> w_new, ArrayList<ArrayList<Double>> partial_CCS , ArrayList<ArrayList<Double>> partial_CCS_weights, ArrayList<Double> u, ArrayList<Double> w_pop ) throws PrismException 
     {
     	double value = 1;
     	try {
     		lpsolve.LpSolve solver = lpsolve.LpSolve.makeLp(0, w_new.size());
-        	double[] objFun = adjustWeight( w_new,objs, model).stream().mapToDouble(Double::doubleValue).toArray();
+        	double[] objFun = adjustWeight( w_new,minMaxList, model).stream().mapToDouble(Double::doubleValue).toArray();
         	solver.strSetObjFn(Arrays.toString(objFun).replace("[", "").replace("]", "").replace(",", ""));
 			solver.setVerbose(lpsolve.LpSolve.CRITICAL);
 
     		solver.setMaxim();
     		for (int i=0; i<partial_CCS_weights.size(); i++) {
-    			double [] w = adjustWeight( partial_CCS_weights.get(i),objs, model).stream().mapToDouble(Double::doubleValue).toArray();
-    			double v = innerProduct(adjustWeight( partial_CCS_weights.get(i),objs, model), partial_CCS.get(i));
+    			double [] w = adjustWeight( partial_CCS_weights.get(i),minMaxList, model).stream().mapToDouble(Double::doubleValue).toArray();
+    			double v = innerProduct(adjustWeight( partial_CCS_weights.get(i),minMaxList, model), partial_CCS.get(i));
         		solver.strAddConstraint(Arrays.toString(w).replace("[", "").replace("]", "").replace(",", ""), lpsolve.LpSolve.LE , v);
     		}
-    		double [] w = adjustWeight(w_pop,objs, model).stream().mapToDouble(Double::doubleValue).toArray();
-    		double v = innerProduct(u, adjustWeight(w_pop,objs, model));
+    		double [] w = adjustWeight(w_pop,minMaxList, model).stream().mapToDouble(Double::doubleValue).toArray();
+    		double v = innerProduct(u, adjustWeight(w_pop,minMaxList, model));
     		solver.strAddConstraint(Arrays.toString(w).replace("[", "").replace("]", "").replace(",", ""), lpsolve.LpSolve.LE , v);
             solver.solve();
             value =  solver.getObjective();
@@ -1285,28 +1288,28 @@ public class MultiObjModelChecker extends PrismComponent
 		}
 		return w_pop;
     }
-    public ArrayList<ArrayList<Double>> initialQueue(List<ExpressionReward> objs,  HashMap corner_to_value, Model model)throws PrismException
+    public ArrayList<ArrayList<Double>> initialQueue(List<MinMax> minMaxList, HashMap corner_to_value, Model model)throws PrismException
     {
     	ArrayList<ArrayList<Double>> priority_queue = new ArrayList<ArrayList<Double>> ();
     	// create initial value vector for the exterme corner point
     	ArrayList<Double> initial_value_vector_weight = new ArrayList<Double>();
-    	for (int i=0; i<objs.size();i++){
+    	for (int i=0; i<minMaxList.size();i++){
 			initial_value_vector_weight.add(-1.0);
     	}
     	
     	// initial value vector is adjust for "min, max"
     	// if (max max max) add (-inf, -inf, -inf)
-    	initial_value_vector_weight = adjustWeight(initial_value_vector_weight, objs, model);
+    	initial_value_vector_weight = adjustWeight(initial_value_vector_weight, minMaxList, model);
     	ArrayList<Double> initial_value_vector = new ArrayList<Double>();
-    	for (int i=0; i<objs.size();i++){
+    	for (int i=0; i<minMaxList.size();i++){
 			initial_value_vector.add(((double) initial_value_vector_weight.get(i)) * (Double.POSITIVE_INFINITY) );
     	}
     	ArrayList<ArrayList<Double>> initial_value_vector_sets = new ArrayList<ArrayList<Double>> ();
     	initial_value_vector_sets.add(initial_value_vector);
     	//add extreme points in the queue
-		for (int i =0; i<objs.size(); i++) {
+		for (int i =0; i<minMaxList.size(); i++) {
 			ArrayList<Double> w = new ArrayList<Double>();
-			for (int j =0; j<objs.size(); j++) {
+			for (int j =0; j<minMaxList.size(); j++) {
 				w.add(0.0);
 			}
 			w.set(i, 1.0); //Extremum
