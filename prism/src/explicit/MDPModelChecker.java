@@ -3498,6 +3498,16 @@ public class MDPModelChecker extends ProbModelChecker
 	 */
 	public ModelCheckerResult computeMultiStrategyMultiObj(MDP mdp, List<MDPRewards> mdpRewardsList, List<MinMax> minMaxList) throws PrismException
 	{
+		// Obtain and print predecessors
+		PredecessorRelation pre = mdp.getPredecessorRelation(this, false);
+		int n = mdp.getNumStates();
+		for (int s = 0; s < n; s++) {
+			for (int t : pre.getPre(s)) { 
+				mainLog.print(t + " ");
+			}
+			mainLog.println("-> " + s);
+		}
+		
 		throw new PrismException("Not implemented yet");
 	}
 	
