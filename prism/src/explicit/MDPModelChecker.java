@@ -3488,6 +3488,20 @@ public class MDPModelChecker extends ProbModelChecker
 	}
 	
 	/**
+	 * Compute a multi-strategy for...
+	 * @param mdp: The MDP
+	 * @param mdpRewards The rewards
+	 * @param target Target states
+	 * @param inf States for which reward is infinite
+	 * @param min: Min or max probabilities (true=min, false=max)
+	 * @param strat Storage for (memoryless) strategy choice indices (ignored if null)
+	 */
+	public ModelCheckerResult computeMultiStrategyMultiObj(MDP mdp, List<MDPRewards> mdpRewardsList, List<MinMax> minMaxList) throws PrismException
+	{
+		throw new PrismException("Not implemented yet");
+	}
+	
+	/**
 	 * Restrict a (memoryless) strategy for an MDP, stored as an integer array of choice indices,
 	 * to the states of the MDP that are reachable under that strategy.  
 	 * @param mdp The MDP

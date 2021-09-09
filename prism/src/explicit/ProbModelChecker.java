@@ -565,11 +565,15 @@ public class ProbModelChecker extends NonProbModelChecker
 		}
 
 		// Pass onto relevant method:
+		List<Expression> exprs = expr.getOperands();
 		// Multi-strategy
 		if ("multi".equals(expr.getModifier())) {
-			return checkExpressionMultiStrategy(model, expr, forAll, coalition, statesOfInterest);
+			if (exprs.size() == 1 && exprs.get(0) instanceof ExpressionReward) {
+				return checkExpressionMultiStrategy(model, expr, forAll, coalition, statesOfInterest);
+			} else {
+				return checkExpressionMultiStrategyMultiObj(model, expr, forAll, coalition, statesOfInterest);
+			}
 		}
-		List<Expression> exprs = expr.getOperands();
 		// P operator
 		if (exprs.size() == 1 && exprs.get(0) instanceof ExpressionProb) {
 			return checkExpressionProb(model, (ExpressionProb) exprs.get(0), forAll, coalition, statesOfInterest);
@@ -2065,6 +2069,10 @@ public class ProbModelChecker extends NonProbModelChecker
 	 */
 	protected StateValues checkExpressionMultiStrategy(Model model, ExpressionStrategy expr, boolean forAll, Coalition coalition, BitSet statesOfInterest) throws PrismException
 	{
+		// Only support MDPs
+		if (model.getModelType() != ModelType.MDP) {
+			throw new PrismNotSupportedException("Multi-strategy synthesis not supported for " + model.getModelType() + "s");
+		}
 		// Only support "exists" (<<>>) currently
 		if (forAll) {
 			throw new PrismException("Multi-strategies not supported for " + expr.getOperatorString());
@@ -2092,12 +2100,59 @@ public class ProbModelChecker extends NonProbModelChecker
 		mainLog.println("Building reward structure...");
 		Rewards modelRewards = constructRewards(model, r);
 		
+		ModelCheckerResult res = ((MDPModelChecker) this).computeMultiStrategy((MDP) model, (MDPRewards) modelRewards, opInfo.getBound());
+		
+		result.setStrategy(res.strat);
+		return StateValues.createFromDoubleArrayResult(res, model);
+	}
+	
+	/**
+	 * Model check a <<>> operator requesting a multi-strategy with multiple objectives
+ 	 * @param statesOfInterest the states of interest, see checkExpression()
+	 */
+	protected StateValues checkExpressionMultiStrategyMultiObj(Model model, ExpressionStrategy expr, boolean forAll, Coalition coalition, BitSet statesOfInterest) throws PrismException
+	{
 		// Only support MDPs
 		if (model.getModelType() != ModelType.MDP) {
 			throw new PrismNotSupportedException("Multi-strategy synthesis not supported for " + model.getModelType() + "s");
 		}
+		// Only support "exists" (<<>>) currently
+		if (forAll) {
+			throw new PrismException("Multi-strategies not supported for " + expr.getOperatorString());
+		}
+		// Only support R[C] currently
+		for (Expression exprSub : expr.getOperands()) {
+			if (!(exprSub instanceof ExpressionReward)) {
+				throw new PrismException("Multi-strategy synthesis only supports R[C] properties currently");
+			}
+			ExpressionReward exprRew = (ExpressionReward) exprSub;
+			if (!(exprRew.getExpression() instanceof ExpressionTemporal)) {
+				throw new PrismException("Multi-strategy synthesis only supports R[C] properties currently");
+			}
+			ExpressionTemporal exprTemp = (ExpressionTemporal) exprRew.getExpression();
+			if (!(exprTemp.getOperator() == ExpressionTemporal.R_C) && !exprTemp.hasBounds()) {
+				throw new PrismException("Multi-strategy synthesis only supports R[C] properties currently");
+			}
+		}
 		
-		ModelCheckerResult res = ((MDPModelChecker) this).computeMultiStrategy((MDP) model, (MDPRewards) modelRewards, opInfo.getBound());
+		// Get info from R operators
+		List<MinMax> minMaxList = new ArrayList<>(); 
+		for (Expression exprSub : expr.getOperands()) {
+			ExpressionReward exprRew = (ExpressionReward) exprSub;
+			OpRelOpBound opInfo = exprRew.getRelopBoundInfo(constantValues);
+			minMaxList.add(opInfo.getMinMax(model.getModelType(), false));
+		}
+		
+		// Build rewards
+		List<MDPRewards> mdpRewardsList = new ArrayList<>(); 
+		for (Expression exprSub : expr.getOperands()) {
+			ExpressionReward exprRew = (ExpressionReward) exprSub;
+			int r = exprRew.getRewardStructIndexByIndexObject(rewardGen, constantValues);
+			mainLog.println("Building reward structure...");
+			mdpRewardsList.add((MDPRewards) constructRewards(model, r));
+		}
+		
+		ModelCheckerResult res = ((MDPModelChecker) this).computeMultiStrategyMultiObj((MDP) model, mdpRewardsList, minMaxList);
 		
 		result.setStrategy(res.strat);
 		return StateValues.createFromDoubleArrayResult(res, model);
