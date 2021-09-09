@@ -1,3 +1,7 @@
+/*This file is modified based files from https://github.com/AlgTUDelft/SolvePOMDP
+ * See the original ReadMe below
+ * */
+
 /*******************************************************************************
  * SolvePOMDP
  * Copyright (C) 2017 Erwin Walraven
