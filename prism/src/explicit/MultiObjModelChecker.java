@@ -567,10 +567,10 @@ public class MultiObjModelChecker extends PrismComponent
     
     protected StateValues checkExpressionParetoMultiObjPOMDP(POMDP pomdp, List<MDPRewards> mdpRewardsList, BitSet target, List<MinMax> minMaxList, BitSet statesOfInterest) throws PrismException
     {
-    	mainLog.println("Random sampling***********");
-    	checkExpressionParetoMultiObjMDPWithRandomSampling( pomdp,  mdpRewardsList, target, minMaxList, statesOfInterest);
-    	mainLog.println("Random sampling***********");
-		long startTime = System.currentTimeMillis();
+    	//mainLog.println("Random sampling***********");
+//    	checkExpressionParetoMultiObjMDPWithRandomSampling( pomdp,  mdpRewardsList, target, minMaxList, statesOfInterest);
+    	//mainLog.println("Random sampling***********");
+    	long startTime = System.currentTimeMillis();
 
     	int numObjs = minMaxList.size();
 		int nStates = pomdp.getNumStates();
@@ -769,7 +769,7 @@ public class MultiObjModelChecker extends PrismComponent
 			//line 10 
 			double eta = 1E-5;
 
-			ArrayList<AlphaMatrix> Aw = ((POMDPModelChecker) mc).solveScalarizedPOMDP(Ar, belief_set, w_pop_array, eta, pomdp, immediateRewards, V, endState,startTime);
+			ArrayList<AlphaMatrix> Aw = ((POMDPModelChecker) mc).solveScalarizedPOMDP(Ar, belief_set, w_pop_array, eta, pomdp, immediateRewards, endState,startTime);
 
 			//Line 11
 			Belief b0=pomdp.getInitialBelief();

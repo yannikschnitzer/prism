@@ -634,7 +634,7 @@ public class POMDPModelChecker extends ProbModelChecker
 				 mainLog.println("No new vectors");
 				 //break;
 			 }
-			// if (checkConverven (V, Vnext, B, ValueFunctionTolerance)) {
+			// if (checkConverge (V, Vnext, B, ValueFunctionTolerance)) {
 			//	 break;
 			 //}
 				 
@@ -665,7 +665,7 @@ public class POMDPModelChecker extends ProbModelChecker
 			double TimeLimit = 7200; //1000 seconds
 			//mainLog.println("dd"+(differences.get(differences.size()-1)< ValueFunctionTolerance));
 			//mainLog.println("dd"+(differences.get(differences.size()-2)< ValueFunctionTolerance));
-			if( checkConverven(differences, ValueFunctionTolerance ) ) {
+			if( checkConverge(differences, ValueFunctionTolerance ) ) {
 				mainLog.println("converge with tolerance"+ValueFunctionTolerance);
 				break;
 			}
@@ -1267,7 +1267,7 @@ public class POMDPModelChecker extends ProbModelChecker
 		return bestAlpha;
 	}
 	*/
-	public boolean checkConverven (ArrayList<AlphaVector>V, ArrayList<AlphaVector> Vnext, ArrayList<Belief>B, double ValueFunctionTolerance) {
+	public boolean checkConverge (ArrayList<AlphaVector>V, ArrayList<AlphaVector> Vnext, ArrayList<Belief>B, double ValueFunctionTolerance) {
 		boolean done = true;
 		for (int i=0; i<Vnext.size(); i++) {
 			if (!V.contains(Vnext.get(i))) {
@@ -1276,7 +1276,7 @@ public class POMDPModelChecker extends ProbModelChecker
 		}
 		return done;
 	}
-	public boolean checkConverven (ArrayList<Double > diff, double tol){
+	public boolean checkConverge (ArrayList<Double > diff, double tol){
 		int size = diff.size();
 		if (size>=4) {
 			if ((diff.get(size-1)<tol)&(diff.get(size-2)<tol) &(diff.get(size-3)<tol) &(diff.get(size-4)<tol)  ) {
@@ -1559,18 +1559,18 @@ public class POMDPModelChecker extends ProbModelChecker
 		}
 		return gkao;
 	}
-	/* OLS-compliant Perseus algorithm
+	/* OLS-compliant Perseus algorithm 
 	 * See Algorithm 2 in "Point-Based Planning for Multi-Objective POMDPs"
+	 * It is an alternative implementation of solveScalarizedPOMDP
 	 * Modification on how to choose belief 
 	 * @param A, A set of AlphaMatrix to begin back up
 	 * @param B, A set of belief points based on random sampling
 	 * @param weights, weights over objectives
 	 * @param eta, threshold for termination
 	 * @param pomdp, POMDP model
-	 * @param V....
 	 * @param endState, one of the the end State, used in cache GKAO
 	 * */
-	public ArrayList<AlphaMatrix> solveScalarizedPOMDPALreadyGood(ArrayList<AlphaMatrix> A, ArrayList<Belief> B, double [] weights, double eta, POMDP pomdp, ArrayList<AlphaMatrix> immediateRewards, ArrayList<AlphaMatrix> V, int endState, long startTime)
+	public ArrayList<AlphaMatrix> solveScalarizedPOMDPAlternative(ArrayList<AlphaMatrix> A, ArrayList<Belief> B, double [] weights, double eta, POMDP pomdp, ArrayList<AlphaMatrix> immediateRewards,  int endState, long startTime)
 	{
 		mainLog.println("calling solve scalarized POMDP");
 		//mainLog.println("Weights="+Arrays.toString(weights));
@@ -1606,7 +1606,7 @@ public class POMDPModelChecker extends ProbModelChecker
 			double elapsed = (System.currentTimeMillis() - startTime) * 0.001;
 			double expectedValue = Math.abs(AlphaMatrix.getMaxValue(pomdp.getInitialBelief(), A, weights, pomdp));
 			mainLog.println("iteration="+count+" dif="+diff+" value="+expectedValue+" time elapsed ="+elapsed );
-			if (checkConverven(differences,eta)) {
+			if (checkConverge(differences,eta)) {
 				mainLog.println("converge with tolerance"+eta);
 				break;
 			}
@@ -1669,7 +1669,21 @@ public class POMDPModelChecker extends ProbModelChecker
 		
 		return Aprime;
 	}
-	public ArrayList<AlphaMatrix> solveScalarizedPOMDP(ArrayList<AlphaMatrix> A, ArrayList<Belief> B, double [] weights, double eta, POMDP pomdp, ArrayList<AlphaMatrix> immediateRewards, ArrayList<AlphaMatrix> V, int endState, long startTime)
+	
+	/* OLS-compliant Perseus algorithm 
+	 * See Algorithm 2 in "Point-Based Planning for Multi-Objective POMDPs"
+	 * It is an alternative implementation of solveScalarizedPOMDP
+	 * Modification on how to choose belief 
+	 * @param A, A set of AlphaMatrix to begin back up
+	 * @param B, A set of belief points based on random sampling
+	 * @param weights, weights over objectives
+	 * @param eta, threshold for termination
+	 * @param pomdp, POMDP model
+	 * @param V....
+	 * @param endState, one of the the end State, used in cache GKAO
+	 * */
+	
+	public ArrayList<AlphaMatrix> solveScalarizedPOMDP(ArrayList<AlphaMatrix> A, ArrayList<Belief> B, double [] weights, double eta, POMDP pomdp, ArrayList<AlphaMatrix> immediateRewards, int endState, long startTime)
 	{
 		mainLog.println("calling solve scalarized POMDP");
 		//mainLog.println("Weights="+Arrays.toString(weights));
