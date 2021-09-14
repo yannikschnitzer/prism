@@ -12,6 +12,7 @@ import parser.type.TypeDouble;
 import prism.Point;
 import prism.PrismComponent;
 import prism.PrismException;
+import prism.PrismNotSupportedException;
 
 public class MultiObjModelChecker extends PrismComponent
 {
@@ -566,10 +567,61 @@ public class MultiObjModelChecker extends PrismComponent
     
     protected StateValues checkExpressionParetoMultiObjPOMDP(POMDP pomdp, List<MDPRewards> mdpRewardsList, BitSet target, List<MinMax> minMaxList, BitSet statesOfInterest) throws PrismException
     {
+    	mainLog.println("Random sampling***********");
+    	checkExpressionParetoMultiObjMDPWithRandomSampling( pomdp,  mdpRewardsList, target, minMaxList, statesOfInterest);
+    	mainLog.println("Random sampling***********");
+		long startTime = System.currentTimeMillis();
+
     	int numObjs = minMaxList.size();
-    	
 		int nStates = pomdp.getNumStates();
 		int numUnobs = pomdp.getNumUnobservations();
+		
+		
+		BitSet targetObs = ((POMDPModelChecker) mc).getObservationsMatchingStates(pomdp, target);
+		// Check we are only computing for a single state (and use initial state if unspecified)
+		if (statesOfInterest == null) {
+			statesOfInterest = new BitSet();
+			statesOfInterest.set(pomdp.getFirstInitialState());
+		} else if (statesOfInterest.cardinality() > 1) {
+			throw new PrismNotSupportedException("POMDPs can only be solved from a single start state");
+		}	
+		
+		if (targetObs == null) {
+			throw new PrismException("Target for expected reachability is not observable");
+		}
+		// Find _some_ of the states with infinite reward
+		// (those from which *every* MDP strategy has prob<1 of reaching the target,
+		// and therefore so does every POMDP strategy)
+		MDPModelChecker mcProb1 = new MDPModelChecker(this);
+		BitSet inf = mcProb1.prob1(pomdp, null, target, false, null);
+		inf.flip(0, pomdp.getNumStates());
+		// Find observations for which all states are known to have inf reward
+		BitSet infObs = ((POMDPModelChecker) mc).getObservationsCoveredByStates(pomdp, inf);
+		//mainLog.println("target obs=" + targetObs.cardinality() + ", inf obs=" + infObs.cardinality());
+		
+		// Determine set of observations actually need to perform computation for
+		// eg. if obs=1 & unknownObs(obs)=true -> obs=1 needs computation
+		// eg. if obs=2 & unknownObs(obs)=false -> obs=1 does not need computation
+		BitSet unknownObs = new BitSet();
+		unknownObs.set(0, pomdp.getNumObservations());
+		unknownObs.andNot(targetObs);
+		unknownObs.andNot(infObs);
+		ArrayList<Integer> endStates = new ArrayList<Integer>();
+		for (int i=0; i<nStates;i++) {
+			if (!unknownObs.get(pomdp.getObservation(i))) {
+				mainLog.println("end state="+i+"Obs="+pomdp.getObservation(i));
+				endStates.add(i);
+			}
+		}
+		
+		int endState = -1;
+		for (int i=0; i<nStates;i++) {
+			if (!unknownObs.get(pomdp.getObservation(i))) {
+				endState=i;
+				break;
+			}
+		}
+		
 		ArrayList<Object> allActions = ((POMDPModelChecker) mc).getAllActions(pomdp);
 		int nActions = allActions.size();
 		
@@ -596,6 +648,28 @@ public class MultiObjModelChecker extends PrismComponent
 		ArrayList<AlphaMatrix> A_all = new ArrayList<AlphaMatrix> ();
 		ArrayList<AlphaMatrix> immediateRewards = new ArrayList<AlphaMatrix>();
 		ArrayList<AlphaMatrix> V= new ArrayList<AlphaMatrix>();
+		
+		//immediate reward vector
+		ArrayList<Double> Rmin = new ArrayList<Double>();
+		for(int obj=0; obj<numRewards; obj++) {
+			Rmin.add(Double.POSITIVE_INFINITY);
+		}
+		for (int a=0; a<nActions; a++) {
+			Object action = allActions.get(a);
+			for (int s=0; s<nStates; s++) {
+				for(int obj=0; obj<numRewards; obj++) {
+					if (pomdp.getAvailableActions(s).contains(action)) {
+						int choice = pomdp.getChoiceByAction(s, action);
+						double immediateReward =  mdpRewardsList.get(obj).getTransitionReward(s,choice) + mdpRewardsList.get(obj).getStateReward(s);
+						immediateReward *= minMaxList.get(obj).isMin() ? -1 :1;
+						if (immediateReward < Rmin.get(obj)) {
+							Rmin.set(obj, immediateReward);
+						}
+					}
+				}
+			}
+		}
+
 		for (int a =0; a<nActions; a++) {
 			double [][]matrix = new double [nStates][numRewards];
 			Object action = allActions.get(a);
@@ -603,16 +677,38 @@ public class MultiObjModelChecker extends PrismComponent
 				for (int obj=0; obj<numRewards; obj++) {
 					if (pomdp.getAvailableActions(s).contains(action)) {
 						int choice = pomdp.getChoiceByAction(s, action);
-						matrix [s][obj] =  mdpRewardsList.get(obj).getTransitionReward(s,choice) + mdpRewardsList.get(obj).getStateReward(s);
+						double immediateReward =  mdpRewardsList.get(obj).getTransitionReward(s,choice) + mdpRewardsList.get(obj).getStateReward(s);
+						immediateReward *= minMaxList.get(obj).isMin() ? -1 :1;
+						matrix [s][obj] =  immediateReward;
+					}
+					else {
+						matrix [s][obj] = Rmin.get(obj)*10;
+					}
+					if (endStates.contains(s)) {
+						matrix [s][obj] = 0 ;
 					}
 				}
 			}
 			AlphaMatrix am = new AlphaMatrix(matrix);
 			am.setAction(a);
 			immediateRewards.add(am);
-			V.add(am);
-			A_all.add(am);
+			//V.add(am);
+			//A_all.add(am);
 		}
+		
+		// initial vector 
+		double [][]matrixInit = new double [nStates][numRewards];
+		for (int s=0; s<nStates; s++) {
+			for (int obj=0; obj<numRewards; obj++) {
+				matrixInit [s][obj] = Rmin.get(obj)*10*100;
+			}
+		}
+		AlphaMatrix amInit  = new AlphaMatrix(matrixInit);
+		amInit .setAction(0);
+		V.add(amInit );
+		A_all.add(amInit);
+		
+		
 		immediateRewards =((POMDPModelChecker) mc).copyAlphaMatrixSet(immediateRewards);
 		A_all =((POMDPModelChecker) mc).copyAlphaMatrixSet(A_all);
 		/*for (int a=0; a<allActions.size();a++) { 
@@ -632,8 +728,16 @@ public class MultiObjModelChecker extends PrismComponent
 		mainLog.println("immediate reward");
 		for (int i=0; i<immediateRewards.size(); i++){
 			AlphaMatrix am= immediateRewards.get(i);
+			mainLog.println(allActions.get(am.getAction()));
 			mainLog.println(am);
 		}
+		
+		mainLog.println("initial vector");
+		for (int i=0; i<A_all.size(); i++){
+			AlphaMatrix am= A_all.get(i);
+			mainLog.println(am);
+		}
+		
 		ArrayList<Belief> belief_set = ((POMDPModelChecker) mc).randomExploreBeliefs(pomdp, target, statesOfInterest);
 		mainLog.println("Belie set size= "+belief_set.size());
 		while(priority_queue.size()>0){
@@ -644,6 +748,7 @@ public class MultiObjModelChecker extends PrismComponent
 			for (int w=0; w<w_pop.size(); w++) {
 				w_pop_array[w] = (double) w_pop.get(w);
 			}
+			mainLog.println("Current weight "+Arrays.toString(w_pop_array));
 			
 			mainLog.println("Current Q (weight, priority) After Pop"+Arrays.toString(priority_queue.toArray()));
 			
@@ -664,7 +769,7 @@ public class MultiObjModelChecker extends PrismComponent
 			//line 10 
 			double eta = 1E-5;
 
-			ArrayList<AlphaMatrix> Aw = ((POMDPModelChecker) mc).solveScalarizedPOMDP(Ar, belief_set, w_pop_array, eta, pomdp, immediateRewards, V);
+			ArrayList<AlphaMatrix> Aw = ((POMDPModelChecker) mc).solveScalarizedPOMDP(Ar, belief_set, w_pop_array, eta, pomdp, immediateRewards, V, endState,startTime);
 
 			//Line 11
 			Belief b0=pomdp.getInitialBelief();
@@ -690,7 +795,11 @@ public class MultiObjModelChecker extends PrismComponent
 			int countNewWeights = 0; //number of weights generated by u
 
 			//Line 13 TO CHecker
-			ArrayList<Double> u = Vb0;
+			ArrayList<Double> u = new ArrayList<Double> ();
+			for (int i=0; i<Vb0.size(); i++) {
+				u.add(Math.abs(Vb0.get(i)));
+			}
+			mainLog.println("u="+u);
 			w_v_checked.add((ArrayList<Double>) w_pop.clone());
 			weights_checked.add((ArrayList<Double>) w_pop.clone());
 			w_v_checked.add((ArrayList<Double>) u.clone());
@@ -1000,9 +1109,9 @@ public class MultiObjModelChecker extends PrismComponent
 			else {
 				mainLog.println("Vector already in the partial CCS");
 			}
-			
 		}
-		
+		double elapsed = (System.currentTimeMillis() - startTime) * 0.001;
+		mainLog.println("total time elapsed = " + elapsed);
 		mainLog.println("ALl weights checked:"+ weights_checked.size());
 		HashSet values_OLS = new HashSet();
 
@@ -1314,7 +1423,9 @@ public class MultiObjModelChecker extends PrismComponent
 			}
 			w.set(i, 1.0); //Extremum
 			corner_to_value.put((ArrayList<Double>) w.clone(), initial_value_vector_sets); // create a map from extrema to value vector
-			w.add(Double.POSITIVE_INFINITY); //Add extrema with infinite priority
+			double priority = minMaxList.get(i).isMin()? 1E6:1E5; // give min higher priority
+			w.add(priority); //Add extrema with infinite priority
+			
 			priority_queue.add((ArrayList<Double>) w.clone());
 		}
 

@@ -120,35 +120,44 @@ public class AlphaMatrix {
 		
 		return newAlphaMatrix;
 	}
-	
 	//get the value of MOMDP: v= belief *AlhpaMatrix * weights
-	public double value (Belief b, double [] weights, POMDP pomdp) {
-		ArrayList <Object> allActions = new ArrayList<Object> ();
-		for (int s =0; s<pomdp.getNumStates();s++) {
-			List <Object> availableActionsForState = pomdp.getAvailableActions(s);
-
-			for (Object a: availableActionsForState) {
-				if (!allActions.contains(a) & a!= null) {
-					allActions.add(a);
-				}
-			}
-		}
-		
-		ArrayList <Object> availableActionsForBelief = new ArrayList<Object> ();
-		for (int s =0; s<pomdp.getNumStates();s++) {
-			if ((b.toDistributionOverStates(pomdp)[s])>0){
+	public double valueMatchAction (Belief b, double [] weights, POMDP pomdp) {
+			ArrayList <Object> allActions = new ArrayList<Object> ();
+			for (int s =0; s<pomdp.getNumStates();s++) {
 				List <Object> availableActionsForState = pomdp.getAvailableActions(s);
+
 				for (Object a: availableActionsForState) {
-					if (!availableActionsForBelief.contains(a)) {
-						availableActionsForBelief.add(a);
+					if (!allActions.contains(a) & a!= null) {
+						allActions.add(a);
 					}
 				}
 			}
+			ArrayList <Object> availableActionsForBelief = new ArrayList<Object> ();
+			for (int s =0; s<pomdp.getNumStates();s++) {
+				if ((b.toDistributionOverStates(pomdp)[s])>0){
+					List <Object> availableActionsForState = pomdp.getAvailableActions(s);
+					for (Object a: availableActionsForState) {
+						if (!availableActionsForBelief.contains(a)) {
+							availableActionsForBelief.add(a);
+						}
+					}
+				}
+			}
+			if (!availableActionsForBelief.contains(allActions.get(action))) {
+				return Double.NEGATIVE_INFINITY;
+			}
+			double [] belief = b.toDistributionOverStates(pomdp);
+			double value = 0.0;
+			for (int i=0; i<belief.length; i++) {
+				for (int j=0; j< weights.length; j++) {
+					value += belief[i] * matrix[i][j] * weights[j];
+				}
+			}
+			return value;
 		}
-		if (!availableActionsForBelief.contains(allActions.get(action))) {
-			return Double.NEGATIVE_INFINITY;
-		}
-		
+	
+	//get the value of MOMDP: v= belief *AlhpaMatrix * weights
+	public double value (Belief b, double [] weights, POMDP pomdp) {
 		double [] belief = b.toDistributionOverStates(pomdp);
 		double value = 0.0;
 		for (int i=0; i<belief.length; i++) {
@@ -188,14 +197,23 @@ public class AlphaMatrix {
 	public static int getMaxValueIndex (Belief belief, ArrayList<AlphaMatrix> U, double weights[], POMDP pomdp) {
 		double max = Double.NEGATIVE_INFINITY;
 		int index =-1;
+		ArrayList<Integer> candiateMax= new ArrayList<Integer>();
 		for (int i=0; i<U.size(); i++) {
 			AlphaMatrix u = U.get(i);
 			double value = u.value(belief, weights, pomdp);
 			if (value > max) {
 				max = value;
-				index =i;
+				index = i;
+				candiateMax= new ArrayList<Integer>();
+			}
+			if (value==max) {
+				candiateMax.add(i);
 			}
 		}
+		Random rnd = new Random();
+		int ind = rnd.nextInt(candiateMax.size());
+		 index = candiateMax.get(ind);
+		
 		return index;
 	}
 	
