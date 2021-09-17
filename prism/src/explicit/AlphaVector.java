@@ -31,7 +31,6 @@ public class AlphaVector {
 	private int originU;
 	private int originW;
 	private int action = -1;             // the action associated with this vector
-	
 	// attributes used for construction of policy graph
 	private int index = -1;              // index of the vector that was used to create the backprojection
 	private int obs = -1;                // observation that was used to create this backprojection
