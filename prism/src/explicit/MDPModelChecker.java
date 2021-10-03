@@ -29,7 +29,6 @@ package explicit;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -2617,91 +2616,100 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Start value iteration
 		timer = System.currentTimeMillis();
-		//String description = (min ? "min" : "max");
-		//mainLog.println("Starting CVAR computation (" + description + ")...");
 
 		// Set up CVAR variables
-		int N = 5;
-		int iterations = 10;
+		int atoms = 21;
+		int iterations = 2;
 		double gamma = 1;
-		double theta = 2.067;
-		double epsilon = 0.1;
+		double v_max = 20;
+		double v_min = 0;
+
+		int nactions = mdp.getMaxNumChoices();
 		double delta = (double) mdp.getConstantValues().getValueOf("delta");
-		Vector<Double> Y = initialize(N, theta, n); // initialization based on parameters.
-		mainLog.println("Y :"+Y.get(0));
-
-		// Create/initialise solution vector(s)
-		// TODO change solution vector to be vector of doubles. will have to change structure.
-		Vector<Vector<Double>> soln = new Vector<>(n); // number of states by number of Y values
-		for (int i = 0; i < n; i++) {
-			soln.add(new Vector<>(n));
-			for (int j = 0; j < N; j++) {
-				soln.get(i).add(target.get(i) ? 0.0 : mdpRewards.getStateReward(i));
-			}
-		}
-		Vector<Vector<Double>> soln2 = new Vector<>(n);
-
 		// Determine set of states actually need to compute values for
 		BitSet unknown = new BitSet();
 		unknown.set(0, n);
 		unknown.andNot(target);
 		unknown.andNot(inf);
 		IntSet unknownStates = IntSet.asIntSet(unknown);
+		int numS = unknownStates.cardinality();
 
-		double val =0;
-		double max_val =0;
+		// initialize z
+		DistributionalBellman operator = new DistributionalBellman(atoms, v_min, v_max, n, mainLog);
+
+		mainLog.println(operator.getZ());
+
+		operator.initialize_p(n); // initialization based on parameters.
+		mainLog.println(operator.p[0]);
+
+		// Create/initialise solution vector(s)
+		double[][] temp_p;
 		double min_v;
-		double max_val0 = 0;
 
-		// Start iterations
+
+		// Start iterations - number of episodes
 		for (int iters = 0; iters < iterations; iters++)
 		{
-			soln2 = new Vector<>();
+			temp_p = new double[n][atoms];
 			// copy to temp value soln2
-			for (Vector<Double> doubles : soln) {
-				soln2.add(new Vector<>(doubles));
+			for (int k=0; k<n; k++) {
+				temp_p[k] = Arrays.copyOf(operator.p[k], operator.p[k].length);
 			}
 
 			PrimitiveIterator.OfInt states = unknownStates.iterator();
 			while (states.hasNext()) {
 				final int s = states.nextInt();
-				for (int y=0; y < Y.size(); y++)
-				{
-					min_v = Float.POSITIVE_INFINITY;
-					double temp = 0;
-					for (int choice = 0, numChoices = mdp.getNumChoices(s); choice < numChoices; choice++) // aka action
-					{
-						// split over regions in computeCVAR
-						val = computeCvar(soln2, y, Y, s, choice, mdp, mdp.getNumTransitions(s, choice), delta);
-						temp = mdpRewards.getStateReward(s) + gamma * val;
-						min_v = min(temp, min_v);
-						mainLog.println("y:"+Y.get(y)+" State:"+s+" Max val:"+val + " temp:"+temp+" min_v:"+min_v);
+//				Arrays.fill(save_v, Float.POSITIVE_INFINITY);
+				mainLog.println("\n--------- state:"+s+"------------");
+				int numChoices = mdp.getNumChoices(s);
+				double[][] save_p = new double[numChoices][atoms];
+				double [] save_v = new double[numChoices];
+				Arrays.fill(save_v, Float.POSITIVE_INFINITY);
 
-					}
-					soln2.get(s).set(y, min_v);
+				for (int choice = 0; choice < numChoices; choice++){ // aka action
+					mainLog.println("a:"+ choice);
+					double [] temp2p ; double [] m ;
+
+					Iterator<Entry<Integer, Double>>it = mdp.getTransitionsIterator(s,choice);
+
+					temp2p = operator.update_probabilities(it);
+					m = operator.update_support(gamma, mdpRewards.getStateReward(s), temp2p);
+					save_v[choice] = operator.getValue(m);
+					save_p[choice] = Arrays.copyOf(m, m.length);
 				}
 
+				int min_i = 0;
+				min_v = Float.POSITIVE_INFINITY;
+				for (int i =0; i<numChoices; i++) {
+					if (save_v[i] < min_v){ min_i = i; min_v = save_v[i];}
+				}
+				temp_p[s] = Arrays.copyOf(save_p[min_i], save_p[min_i].length);
 			}
 
-			mainLog.println("V at "+iters);
-			soln = new Vector<>(soln2);
-			for (Vector<Double> doubles: soln2) // copy  temp value soln2 back to soln -> corresponds to Value table
+			states = unknownStates.iterator();
+			while (states.hasNext()) {
+				final int s = states.nextInt();
+				operator.update_p(temp_p[s], s);
+			}
+
+			mainLog.println("\nV at "+(iters+1));
+
+			for (double [] doubles: temp_p) // copy  temp value soln2 back to soln -> corresponds to Value table
 			{
 				DecimalFormat df = new DecimalFormat("0.000");
 				mainLog.print("[");
-				(doubles).forEach(e -> mainLog.print(df.format(e) + ", " ));
+				Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", " ));
 				mainLog.print("]\n");
 			}
 		}
+
+		// TODO compute CvaR and print
 
 		// Finished CVAR
 		timer = System.currentTimeMillis() - timer;
 		if (verbosity >= 1) {
 			mainLog.print("CVAR (" + (min ? "min" : "max") + ")");
 			mainLog.println(" ran " + iterations + " iterations and " + timer / 1000.0 + " seconds.");
-			// print Y
-			mainLog.println("Printing Y:");
-			mainLog.println(Y.toString());
 
 		}
 
@@ -2711,199 +2719,25 @@ public class MDPModelChecker extends ProbModelChecker
 		return res;
 	}
 
-	private double computeCvar (Vector<Vector<Double>> V, int y, Vector<Double> Y, int s, int choice, MDP mdp, int num_trans, double delta) throws PrismException {
-		double [] c = new double[num_trans];
-		double [][] bnd = new double [2][num_trans]; // bnd[0][:] upper bounds, bnd[1][:] lower bounds
-		HashMap<Integer, Integer> indexmap = new HashMap<>(); // Map index in original array to index in coefficient array c
-		HashMap<Integer, Integer> imap = new HashMap<>(); // map state to max i val
-
-		Iterator<Entry<Integer, Double>> it =  mdp.getTransitionsIterator(s, choice);
-		int index = 0;
-		double sum;
-		double max_val=0;
-//		double temp =0;
-
-		while(it.hasNext()){
-			Entry<Integer, Double> j = it.next();
-			//mainLog.print("-J"+j.getKey()+"v"+j.getValue());
-			indexmap.put(j.getKey(), index);
-
-			if (y == 0){ // dont need to do regions for y=0
-				c[indexmap.get(j.getKey())] = j.getValue() * V.get(j.getKey()).get(0);
-			}
-			else {
-				// FIXME check notebook loop over x' and Y(x') at the same time.
-				max_val=-1;
-				// find max regions for each x'
-				for (int i=0; i<Y.size()-1; i++) {
-					double top = Y.get(i + 1) * V.get(j.getKey()).get(i + 1) - Y.get(i) * V.get(j.getKey()).get(i);
-					double bottom = Y.get(i + 1) - Y.get(i);
-
-					sum = (j.getValue()) * (top / bottom) ;
-					if (sum > max_val){
-						max_val = sum;
-						// save index of max region
-						if (imap.containsKey(j.getKey())) {
-							imap.replace(j.getKey(), i);
-						}else{
-							imap.put(j.getKey(), i);
-						}
-					}
-				}
-				double maxtop= Y.get(imap.get(j.getKey()) + 1) * V.get(j.getKey()).get(imap.get(j.getKey()) + 1)
-						- Y.get(imap.get(j.getKey())) * V.get(j.getKey()).get(imap.get(j.getKey()));
-				double maxbottom =Y.get(imap.get(j.getKey()) + 1) - Y.get(imap.get(j.getKey()));
-				c[indexmap.get(j.getKey())] = (j.getValue()) * (maxtop / maxbottom);
-				bnd[0][indexmap.get(j.getKey())] = min(Y.get(imap.get(j.getKey()) + 1) / Y.get(y), 1 / Y.get(y));
-				bnd[1][indexmap.get(j.getKey())] = max(Y.get(imap.get(j.getKey())) / Y.get(y), 0);
-			}
-
-			index ++;
-		}
-
-		it =  mdp.getTransitionsIterator(s, choice);
-		mainLog.print(" c: "); mainLog.print(c); mainLog.print(" bnd: [");mainLog.print(bnd[0]);mainLog.print(bnd[1]); mainLog.println("]");
-
-		double res = computeCvarLP(c, mdp, s, choice, Y.get(y), bnd, indexmap);
-
-		sum = res;
-		while(it.hasNext()){
-			Entry<Integer, Double> j = it.next();
-			//mainLog.print("-J"+j.getKey()+"v"+j.getValue());
-
-			if (y != 0) {
-				double top = Y.get(imap.get(j.getKey()) + 1) * V.get(j.getKey()).get(imap.get(j.getKey()) + 1)
-						- Y.get(imap.get(j.getKey())) * V.get(j.getKey()).get(imap.get(j.getKey()));
-				double bottom = Y.get(imap.get(j.getKey()) + 1) - Y.get(imap.get(j.getKey()));
-				sum += - Y.get(imap.get(j.getKey())) / Y.get(y) * j.getValue() * (top / bottom)
-						+ j.getValue() * Y.get(imap.get(j.getKey())) / Y.get(y) * V.get(j.getKey()).get(imap.get(j.getKey()));
-			}
-		}
-
-		return sum;
-	}
-
-
-	// TODO add documentation
-	private double computeCvarLP(double [] c, MDP mdp, int s, int choice, double alpha, double[][] bounds, HashMap<Integer,Integer> indexmap) throws PrismException {
-
-		boolean min=false;
-		Iterator<Entry<Integer, Double>> it = mdp.getTransitionsIterator(s, choice);
-		// Create a problem with 4 variables and 0 constraints
-		LpSolve solver = null;
-		double [] sol = new double[c.length];
-		double result = 0.0;
-		int[] colno = new int[c.length];
-		double[] row = new double[c.length];
-		try {
-
-			solver = LpSolve.makeLp(0, c.length);
-			solver.setVerbose(lpsolve.LpSolve.CRITICAL);
-			solver.setMaxim();
-			solver.setAddRowmode(true);
-
-			// add constraints
-			for (int j=0; j< c.length; j++ ){
-				Entry<Integer, Double> k = it.next();
-				colno[j] = j+1;
-				row[j] = k.getValue();
-			}
-			solver.addConstraintex(c.length, row, colno, LpSolve.EQ, 1.0); // sum P(x)chi(x) = 1
-
-			if (alpha != 0) // add bounds
-			{
-				for (int j=0; j<c.length; j++){
-					solver.setUpbo( colno[j], bounds[0][j]);
-					solver.setLowbo(colno[j], bounds[1][j]);
-				}
-			}
-
-			// set objective function
-			solver.setObjFnex(c.length, c, colno);
-			solver.setAddRowmode(false);
-
-			// sanity check
-			//solver.printLp();
-
-			// solve the problem
-			int lpRes = solver.solve();
-			if (lpRes == lpsolve.LpSolve.OPTIMAL) {
-				sol = solver.getPtrVariables();
-				mainLog.print("obj: "+solver.getObjective()+" sol:"); mainLog.println(sol);
-				result = solver.getObjective();
-				// print solution
-				//System.out.println("Value of objective function: " + solver.getObjective());
-			} else {
-				mainLog.println("Error solving LP" + (lpRes == lpsolve.LpSolve.INFEASIBLE ? " (infeasible)" : ""));
-			}
-			// Clean up
-			solver.deleteLp();
-
-		} catch (LpSolveException e) {
-//			e.printStackTrace();
-			//mainLog.println("LP solve NOT working");
-			throw new PrismException("LP solve error");
-		}
-
-		return result;
-	}
-
-	/**
-	 * generates n linearly spaced points between a and b
-	 * @param a min value
-	 * @param b max value
-	 * @param n number of points
-	 * @return an array of linearly spaced points
-	 */
-	public static double [] linspace(double a, double b, int n)
-	{
-		double [] y= new double[n];
-		double dy = (b-a)/(n-1);
-		for (int i=0; i<n; i++){
-			y[i] = a+(dy*i);
-		}
-		return y;
-	}
 
 	/**
 	 * generates n logarithmically-spaced points between d1 and d2 using the
 	 * provided base.
 	 *
-	 * @param n The number of points to generated
-	 * @param theta the logarithmic base to use
-	 * @return an array of linearly space points.
+	 * @param atoms the number of supports
+	 * @param numStates the number of MDP states
+	 * @return p size of p -> states * actions * number of supports
 	 */
-	public strictfp double[] logspace( int n, double theta) {
-		double[] y = new double[n];
-		y[n-1] = 1;
-		for(int i = n-2; i > 0; i--) {
-			mainLog.print(" exp:", (n-1)-i);
-			y[i] = 1/(Math.pow(theta, (n-1)-i));
-		}
-		y[0] = 0;
-		return y;
-	}
 
-	/**
-	 * generates n logarithmically-spaced points between d1 and d2 using the
-	 * provided base.
-	 *
-	 * @param n the number of regions
-	 * @param theta the base for the logarithmically spaced series
-	 * @param numStates number of states in the mdp
-	 * @return an array of n logarithmically spaced points for each state of the mdp
-	 */
-	public Vector<Double> initialize( int n, double theta, int numStates) {
-		Vector<Double> temp = new Vector<>(n);
-		temp.add(0.0);
+	public double[][] initialize_p_noa( int atoms,  int numStates) {
 
-		for (int i = n - 2; i > 0; i--) {
-			// mainLog.print(" exp:", (n - 1) - i);
-			BigDecimal bd = new BigDecimal(1 / (Math.pow(theta, (n - 1) - i))).setScale(3, RoundingMode.HALF_UP);
-			temp.add(bd.doubleValue());
+		double [][] temp = new double[numStates][atoms];
+		double [] temp2 = new double[atoms];
+		temp2[0] =1.0;
+		for (int i = 0; i < numStates; i++) {
+
+			temp[i]= Arrays.copyOf(temp2, temp2.length);
 		}
-		temp.add(1.0);
-		Collections.sort(temp);
 
 		return temp;
 	}
