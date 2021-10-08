@@ -2619,7 +2619,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Set up CVAR variables
 		int atoms = 21;
-		int iterations = 2;
+		int iterations = 5;
 		double gamma = 1;
 		double v_max = 20;
 		double v_min = 0;
@@ -2702,13 +2702,19 @@ public class MDPModelChecker extends ProbModelChecker
 				mainLog.print("]\n");
 			}
 		}
+		mainLog.print('\n');
+		double temp = 0.0;
+		for (int i =0; i<n; i++){
+			temp = operator.getValueCvar(operator.p[i], 0.3);
+			mainLog.print(" i:"+ i+ " cvar:"+ temp);
+		}
 
 		// TODO compute CvaR and print
 
 		// Finished CVAR
 		timer = System.currentTimeMillis() - timer;
 		if (verbosity >= 1) {
-			mainLog.print("CVAR (" + (min ? "min" : "max") + ")");
+			mainLog.print("\nCVAR (" + (min ? "min" : "max") + ")");
 			mainLog.println(" ran " + iterations + " iterations and " + timer / 1000.0 + " seconds.");
 
 		}

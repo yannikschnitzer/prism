@@ -14,6 +14,7 @@ public class DistributionalBellman {
     int nactions = 4;
     double v_min ;
     double v_max ;
+    double alpha=1;
     int numStates;
     prism.PrismLog mainLog;
 
@@ -49,6 +50,10 @@ public class DistributionalBellman {
         this.p = new double [numStates][atoms];
     }
 
+    public void setAlpha(double a){
+        alpha=a;
+    }
+
     public double [] getZ()
     {
         return this.z;
@@ -71,12 +76,20 @@ public class DistributionalBellman {
         while (trans_it.hasNext()) {
 
             Map.Entry<Integer, Double> e = trans_it.next();
-            for (int j=0; j<atoms; j++) {
+
+            for (int j = 0; j < atoms; j++) {
                 sum_p[j] += e.getValue() * p[e.getKey()][j];
             }
 
         }
         return sum_p;
+    }
+
+    // TODO update probabilities using CVAR?
+    public double update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it, boolean expected_mean) {
+
+        return 0.0;
+
     }
 
     public double [] update_support(double gamma, double state_reward, double []sum_p){
@@ -114,6 +127,26 @@ public class DistributionalBellman {
             sum+= z[j] * temp[j];
         }
         return sum;
+    }
+
+    public double getValueCvar(double [] probs, double lim){
+        double res =0.0;
+        double sum_p =0.0;
+        double denom = 0.0;
+        for (int i=atoms-1; i>=0; i--){
+            if (sum_p < lim){
+                if(sum_p+ probs[i] < lim){
+                    sum_p += probs[i];
+                    res += (1/lim) * probs[i] * z[i];
+                } else{
+                    denom = lim - sum_p;
+                    sum_p += denom;
+                    res += (1/lim) *denom*z[i];
+                }
+            }
+        }
+
+        return res;
     }
 
     public double [][] getP ()
