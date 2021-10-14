@@ -370,6 +370,13 @@ public class MultiObjModelChecker extends PrismComponent
 			//A_all.add(am);
 		}
 		
+		//
+		
+		//double[] we = {1, 0};
+		//((POMDPModelChecker) mc).computeReachRewardsRTBSS(immediateRewards, we, pomdp,  target,  statesOfInterest);
+		//
+		
+		
 		// initial vector 
 		double [][]matrixInit = new double [nStates][numRewards];
 		for (int s=0; s<nStates; s++) {
@@ -444,7 +451,7 @@ public class MultiObjModelChecker extends PrismComponent
 			//line 10 
 			double eta = 1E-5;
 
-			ArrayList<AlphaMatrix> Aw = ((POMDPModelChecker) mc).solveScalarizedPOMDP(Ar, belief_set, w_pop_array, eta, pomdp, immediateRewards, endState,startTime);
+			ArrayList<AlphaMatrix> Aw = ((POMDPModelChecker) mc).computeMultiReachRewardPerseus(Ar, belief_set, w_pop_array, eta, pomdp, immediateRewards, endState,startTime);
 
 			//Line 11
 			Belief b0=pomdp.getInitialBelief();

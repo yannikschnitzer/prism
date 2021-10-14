@@ -1231,7 +1231,7 @@ public class POMDPModelChecker extends ProbModelChecker
 	 * @param endState, one of the the end State, used in cache GKAO
 	 * */
 	
-	public ArrayList<AlphaMatrix> solveScalarizedPOMDP(ArrayList<AlphaMatrix> A, ArrayList<Belief> B, double [] weights, double eta, POMDP pomdp, ArrayList<AlphaMatrix> immediateRewards, int endState, long startTime)
+	public ArrayList<AlphaMatrix> computeMultiReachRewardPerseus(ArrayList<AlphaMatrix> A, ArrayList<Belief> B, double [] weights, double eta, POMDP pomdp, ArrayList<AlphaMatrix> immediateRewards, int endState, long startTime)
 	{
 		mainLog.println("calling solve scalarized POMDP");
 		//mainLog.println("Weights="+Arrays.toString(weights));
@@ -1361,6 +1361,77 @@ public class POMDPModelChecker extends ProbModelChecker
 		}
 		return Aprime;
 	}
+	
+	
+	public ModelCheckerResult computeReachRewardsRTBSS(ArrayList<AlphaMatrix> immediate_reward, double[] weights,  POMDP pomdp, BitSet target,  BitSet statesOfInterest) throws PrismException
+	{ 
+		mainLog.println("start RTBSS");
+		Belief b = pomdp.getInitialBelief();
+		int d = 2;
+		RTBSS(immediate_reward, weights, b,d, pomdp,  target,  statesOfInterest);
+		
+		return null;
+	}
+	public double RTBSS(ArrayList<AlphaMatrix> immediate_reward, double[] weights, Belief b, int d, POMDP pomdp, BitSet target,  BitSet statesOfInterest) throws PrismException
+	{
+		int bestAction = -1;
+		if (d==0) {
+			//return U(b)
+			double reward = Double.NEGATIVE_INFINITY;
+			for (int a=0; a<immediate_reward.size(); a++) {
+				double value = immediate_reward.get(a).value(b, weights, pomdp);
+				if (value>reward)
+					reward = value;
+			}
+			return reward;
+		}
+		
+		ArrayList<Integer> actionList = new ArrayList<Integer> ();
+		actionList.add(0);
+		ArrayList<Double> valueList = new ArrayList<Double>();
+		valueList.add(immediate_reward.get(0).value(b, weights, pomdp));
+		for (int a=1; a<immediate_reward.size(); a++) {
+			double value = immediate_reward.get(a).value(b, weights, pomdp);
+			int insertIndex = -1;
+			for (int i=0; i<valueList.size(); i++) {
+				if (value<valueList.get(i)) {
+					insertIndex = i;
+					break;
+				}
+				insertIndex =i;
+			}
+			actionList.add(insertIndex, a);
+		}
+		
+		double max = Double.NEGATIVE_INFINITY;
+		
+		int Rmax= 3;
+		for (int a : actionList) {
+			int choice = a; ////////////////////////////////////
+			double curReward = immediate_reward.get(a).value(b, weights, pomdp);
+			double heuristic = 0;
+			for (int i=1; i<d+1; i++) {
+				heuristic = Math.pow(0.9, i) * Rmax;
+			}
+			double uBound = curReward+heuristic;
+			if (uBound>max) {
+				int nObservations = pomdp.getNumObservations();
+				for (int o=0; o<nObservations; o++) {
+					Belief b_next = pomdp.getBeliefAfterChoiceAndObservation(b, choice, o);
+					curReward += 0.9 * pomdp.getObservationProbAfterChoice(b, choice, o)* RTBSS(immediate_reward, weights, b_next, d-1, pomdp,  target,  statesOfInterest);
+				}
+				if (curReward > max) {
+					max = curReward;
+					if (d==3) {
+						bestAction = a;
+					}
+				}
+			}
+		}
+		return max;
+	}
+	
+	
 	public ModelCheckerResult computeReachRewards(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest) throws PrismException
 	{
 		mainLog.println("TESSsSSSSSsssSSSSST");
