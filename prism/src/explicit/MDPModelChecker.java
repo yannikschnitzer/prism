@@ -2613,34 +2613,32 @@ public class MDPModelChecker extends ProbModelChecker
 		int numInf = inf.cardinality();
 		mainLog.println("target=" + numTarget + ", inf=" + numInf + ", rest=" + (n - (numTarget + numInf)));
 
-
 		// Start value iteration
 		timer = System.currentTimeMillis();
 
 		// Set up CVAR variables
 		int atoms = 21;
-		int iterations = 5;
+		int iterations = 20;
 		double gamma = 1;
 		double v_max = 20;
 		double v_min = 0;
 
 		int nactions = mdp.getMaxNumChoices();
-		double delta = (double) mdp.getConstantValues().getValueOf("delta");
+
 		// Determine set of states actually need to compute values for
 		BitSet unknown = new BitSet();
 		unknown.set(0, n);
 		unknown.andNot(target);
 		unknown.andNot(inf);
 		IntSet unknownStates = IntSet.asIntSet(unknown);
-		int numS = unknownStates.cardinality();
+//		int numS = unknownStates.cardinality();
 
 		// initialize z
 		DistributionalBellman operator = new DistributionalBellman(atoms, v_min, v_max, n, mainLog);
 
-		mainLog.println(operator.getZ());
-
+		//mainLog.println(operator.getZ());
 		operator.initialize_p(n); // initialization based on parameters.
-		mainLog.println(operator.p[0]);
+//		mainLog.println(operator.p[0]);
 
 		// Create/initialise solution vector(s)
 		double[][] temp_p;
@@ -2659,22 +2657,24 @@ public class MDPModelChecker extends ProbModelChecker
 			PrimitiveIterator.OfInt states = unknownStates.iterator();
 			while (states.hasNext()) {
 				final int s = states.nextInt();
-//				Arrays.fill(save_v, Float.POSITIVE_INFINITY);
-				mainLog.println("\n--------- state:"+s+"------------");
+//				mainLog.println("\n--------- state:"+s+"------------");
 				int numChoices = mdp.getNumChoices(s);
 				double[][] save_p = new double[numChoices][atoms];
 				double [] save_v = new double[numChoices];
 				Arrays.fill(save_v, Float.POSITIVE_INFINITY);
 
 				for (int choice = 0; choice < numChoices; choice++){ // aka action
-					mainLog.println("a:"+ choice);
+//					mainLog.println("a:"+ choice);
 					double [] temp2p ; double [] m ;
 
 					Iterator<Entry<Integer, Double>>it = mdp.getTransitionsIterator(s,choice);
-
 					temp2p = operator.update_probabilities(it);
-					m = operator.update_support(gamma, mdpRewards.getStateReward(s), temp2p);
-					save_v[choice] = operator.getValue(m);
+					if (mdpRewards.hasTransitionRewards()) {
+						m = operator.update_support(gamma, mdpRewards.getTransitionReward(s, choice), temp2p);
+					} else {
+						m = operator.update_support(gamma, mdpRewards.getStateReward(s), temp2p);
+					}
+					save_v[choice] = operator.getValue(m); // TODO convert to getValueCvar
 					save_p[choice] = Arrays.copyOf(m, m.length);
 				}
 
@@ -2684,6 +2684,7 @@ public class MDPModelChecker extends ProbModelChecker
 					if (save_v[i] < min_v){ min_i = i; min_v = save_v[i];}
 				}
 				temp_p[s] = Arrays.copyOf(save_p[min_i], save_p[min_i].length);
+				if (iters == iterations -1){mainLog.println("state: "+ s+" best action: "+mdp.getAction(s,min_i));}
 			}
 
 			states = unknownStates.iterator();
@@ -2692,36 +2693,43 @@ public class MDPModelChecker extends ProbModelChecker
 				operator.update_p(temp_p[s], s);
 			}
 
-			mainLog.println("\nV at "+(iters+1));
+			if (iters == iterations -1) {
+				mainLog.println("\nV at " + (iters + 1));
 
-			for (double [] doubles: temp_p) // copy  temp value soln2 back to soln -> corresponds to Value table
-			{
-				DecimalFormat df = new DecimalFormat("0.000");
-				mainLog.print("[");
-				Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", " ));
-				mainLog.print("]\n");
+				for (double[] doubles : temp_p) // copy  temp value soln2 back to soln -> corresponds to Value table
+				{
+					DecimalFormat df = new DecimalFormat("0.000");
+					mainLog.print("[");
+					Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
+					mainLog.print("]\n");
+				}
 			}
 		}
-		mainLog.print('\n');
-		double temp = 0.0;
+		mainLog.print("CVAR: "+ 0.3 +" \n[");
+		double [] temp = new double [n];
 		for (int i =0; i<n; i++){
-			temp = operator.getValueCvar(operator.p[i], 0.3);
-			mainLog.print(" i:"+ i+ " cvar:"+ temp);
+			temp[i] = operator.getValueCvar(operator.p[i], 0.3);
+			mainLog.print( temp[i]+", \n");
 		}
-
-		// TODO compute CvaR and print
+		mainLog.println("]");
+//
+		// Expected value
+		mainLog.println("\n expected value");
+		for (int i =0; i<n; i++){
+			mainLog.print(" i:"+ i+ " value:"+operator.getValue(operator.p[i])+"\n");
+		}
 
 		// Finished CVAR
 		timer = System.currentTimeMillis() - timer;
 		if (verbosity >= 1) {
 			mainLog.print("\nCVAR (" + (min ? "min" : "max") + ")");
 			mainLog.println(" ran " + iterations + " iterations and " + timer / 1000.0 + " seconds.");
-
+//			mainLog.println(temp);
 		}
 
 		// Store results
 		ModelCheckerResult res = new ModelCheckerResult();
-		res.soln = new double[3]; // FIXME make it based on y parameter and iterate over columns to get result
+		res.soln = Arrays.copyOf(temp, temp.length); // FIXME make it based on y parameter and iterate over columns to get result
 		return res;
 	}
 

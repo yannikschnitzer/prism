@@ -86,7 +86,7 @@ public class DistributionalBellman {
     }
 
     // TODO update probabilities using CVAR?
-    public double update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it, boolean expected_mean) {
+    public double update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it, boolean cvar) {
 
         return 0.0;
 
@@ -108,9 +108,9 @@ public class DistributionalBellman {
                 m[l] += sum_p[j];
             }
 
-            if (sum_p[j] >0){
-                mainLog.println("b:"+b+ " j:"+j+" pj:"+sum_p[j]+" l:"+l+" u:"+ u+" lr:"+m[l]+" ur:"+m[u]);
-            }
+//            if (sum_p[j] >0){
+//                mainLog.println("b:"+b+ " j:"+j+" pj:"+sum_p[j]+" l:"+l+" u:"+ u+" lr:"+m[l]+" ur:"+m[u]);
+//            }
         }
 
         return m;
