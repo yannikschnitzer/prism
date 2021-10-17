@@ -16,16 +16,16 @@ module robot
 
 	// at each time step the agent can move to any of its four neighboring states, except in the obstacle or terminal states
 	// actions along the grid borders are limited
-	[east] r<N & c<N & !((r=2 & c=2) | (r=2 & c=4) | (r=N & c=N)) -> p:(r'=r+1) + (1-p): (c'=c+1);
-	[south] r<N & c<N & !((r=2 & c=2) | (r=2 & c=4) | (r=N & c=N)) -> (1-p):(r'=r+1) + p: (c'=c+1);
-	[west] r>1 & c>1 & !((r=2 & c=2) | (r=2 & c=4) | (r=N & c=N)) -> p:(r'=r-1) + (1-p): (c'=c-1);
-	[north] r>1 & c>1 & !((r=2 & c=2) | (r=2 & c=4) | (r=N & c=N)) -> (1-p):(r'=r-1) + p: (c'=c-1);
+	[east] (c<N | c=N) & !((r=2 & c=2) | (r=2 & c=4) | (r=N & c=N)) -> p:(r'=min(r+1, N)) + (1-p): (c'=min(c+1, N));
+	[south] (r<N | r=N) & !((r=2 & c=2) | (r=2 & c=4) | (r=N & c=N)) -> (1-p):(r'=min(r+1, N)) + p: (c'=min(c+1, N));
+	[west]  (c<1 | c=1) & !((r=2 & c=2) | (r=2 & c=4) | (r=N & c=N)) -> p:(r'=max(r-1, 1)) + (1-p): (c'=max(c-1, 1));
+	[north] (r=1 | r>1) & !((r=2 & c=2) | (r=2 & c=4) | (r=N & c=N)) -> (1-p):(r'=max(r-1, 1)) + p: (c'=max(c-1, 1));
 
 	// corner cases
-	[east] r=N & c=1  -> p:(r'=r-1) + (1-p): (c'=c+1);
-	[south] r=1 & c=N -> (1-p):(r'=r+1) + p: (c'=c-1);
-	[west] r=1 & c=N  -> p:(r'=r+1) + (1-p): (c'=c-1);
-	[north] r=N & c=1 -> (1-p):(r'=r-1) + p: (c'=c+1);
+	//[east] r=N & c=1  -> p:(r'=r-1) + (1-p): (c'=c+1);
+	//[south] r=1 & c=N -> (1-p):(r'=r+1) + p: (c'=c-1);
+	//[west] r=1 & c=N  -> p:(r'=r+1) + (1-p): (c'=c-1);
+	//[north] r=N & c=1 -> (1-p):(r'=r-1) + p: (c'=c+1);
 
 	// terminal state self-loop to avoid deadlock
 	[] r=N & c=N -> true;

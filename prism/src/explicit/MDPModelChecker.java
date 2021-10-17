@@ -2617,10 +2617,10 @@ public class MDPModelChecker extends ProbModelChecker
 		timer = System.currentTimeMillis();
 
 		// Set up CVAR variables
-		int atoms = 21;
+		int atoms = 51;
 		int iterations = 20;
 		double gamma = 1;
-		double v_max = 20;
+		double v_max = 50;
 		double v_min = 0;
 
 		int nactions = mdp.getMaxNumChoices();
