@@ -2642,6 +2642,8 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Create/initialise solution vector(s)
 		double[][] temp_p;
+		double [][] action_val = new double[n][nactions];
+		Object [] policy = new Object[n];
 		double min_v;
 
 
@@ -2660,8 +2662,7 @@ public class MDPModelChecker extends ProbModelChecker
 //				mainLog.println("\n--------- state:"+s+"------------");
 				int numChoices = mdp.getNumChoices(s);
 				double[][] save_p = new double[numChoices][atoms];
-				double [] save_v = new double[numChoices];
-				Arrays.fill(save_v, Float.POSITIVE_INFINITY);
+				Arrays.fill(action_val[s], Float.POSITIVE_INFINITY);
 
 				for (int choice = 0; choice < numChoices; choice++){ // aka action
 //					mainLog.println("a:"+ choice);
@@ -2674,17 +2675,16 @@ public class MDPModelChecker extends ProbModelChecker
 					} else {
 						m = operator.update_support(gamma, mdpRewards.getStateReward(s), temp2p);
 					}
-					save_v[choice] = operator.getValue(m); // TODO convert to getValueCvar
+					action_val[s][choice] = operator.getValue(m); // TODO convert to getValueCvar
 					save_p[choice] = Arrays.copyOf(m, m.length);
 				}
 
 				int min_i = 0;
 				min_v = Float.POSITIVE_INFINITY;
 				for (int i =0; i<numChoices; i++) {
-					if (save_v[i] < min_v){ min_i = i; min_v = save_v[i];}
+					if (action_val[s][i] < min_v){ min_i = i; min_v = action_val[s][i]; policy[s] = mdp.getAction(s, i);}
 				}
 				temp_p[s] = Arrays.copyOf(save_p[min_i], save_p[min_i].length);
-				if (iters == iterations -1){mainLog.println("state: "+ s+" best action: "+mdp.getAction(s,min_i));}
 			}
 
 			states = unknownStates.iterator();
@@ -2714,10 +2714,15 @@ public class MDPModelChecker extends ProbModelChecker
 		mainLog.println("]");
 //
 		// Expected value
-		mainLog.println("\n expected value");
+		mainLog.println("\nExpected value");
 		for (int i =0; i<n; i++){
 			mainLog.print(" i:"+ i+ " value:"+operator.getValue(operator.p[i])+"\n");
 		}
+
+		// Policy
+		mainLog.println("\nPolicy");
+		//Arrays.toString(policy);
+		mainLog.println(Arrays.toString(policy));
 
 		// Finished CVAR
 		timer = System.currentTimeMillis() - timer;
