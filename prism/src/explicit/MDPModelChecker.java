@@ -2016,6 +2016,7 @@ public class MDPModelChecker extends ProbModelChecker
 		int n, numTarget, numInf;
 		long timer, timerProb1;
 		int strat[] = null;
+		Object [] strat_name = null;
 		// Local copy of setting
 		MDPSolnMethod mdpSolnMethod = this.mdpSolnMethod;
 
@@ -2158,6 +2159,12 @@ public class MDPModelChecker extends ProbModelChecker
 		// Store strategy
 		if (genStrat) {
 			res.strat = new MDStrategyArray(mdp, strat);
+			strat_name = new Object[n];
+			for (int i = 0; i < n; i++) {
+				strat_name[i] = mdp.getAction(i, strat[i]);
+			}
+			printToFile(strat_name, res.soln, "prism/tests/gridmap/"+"strat_"+n+".dot", n);
+
 		}
 		// Export adversary
 		if (exportAdv) {
@@ -2618,7 +2625,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Set up CVAR variables
 		int atoms = 51;
-		int iterations = 20;
+		int iterations = 200;
 		double gamma = 1;
 		double v_max = 50;
 		double v_min = 0;
@@ -2643,6 +2650,11 @@ public class MDPModelChecker extends ProbModelChecker
 		// Create/initialise solution vector(s)
 		double[][] temp_p;
 		double [][] action_val = new double[n][nactions];
+
+		// for printing different cvar levels
+		double [] alphas = {0.01, 0.05, 0.1, 0.2, 0.3, 0.5, 1.0};
+		double [][][] action_cvar = new double[alphas.length][n][nactions];
+
 		Object [] policy = new Object[n];
 		double min_v;
 
@@ -2676,6 +2688,10 @@ public class MDPModelChecker extends ProbModelChecker
 						m = operator.update_support(gamma, mdpRewards.getStateReward(s), temp2p);
 					}
 					action_val[s][choice] = operator.getValue(m); // TODO convert to getValueCvar
+					for (int j = 0; j<alphas.length; j++){
+						action_cvar[j][s][choice] = operator.getValueCvar(m, alphas[j]);
+					}
+
 					save_p[choice] = Arrays.copyOf(m, m.length);
 				}
 
@@ -2712,6 +2728,12 @@ public class MDPModelChecker extends ProbModelChecker
 			mainLog.print( temp[i]+", \n");
 		}
 		mainLog.println("]");
+
+		// Print to file
+		boolean print= true;
+		if (print) {
+			printToFile(policy, action_cvar, alphas, "gridmap/cvar_out_"+n+".out", n);
+		}
 //
 		// Expected value
 		mainLog.println("\nExpected value");
@@ -2735,7 +2757,49 @@ public class MDPModelChecker extends ProbModelChecker
 		// Store results
 		ModelCheckerResult res = new ModelCheckerResult();
 		res.soln = Arrays.copyOf(temp, temp.length); // FIXME make it based on y parameter and iterate over columns to get result
+		res.numIters = iterations;
+		res.timeTaken = timer / 1000.0;
 		return res;
+	}
+
+	public void printToFile(Object [] policy, double [] value, String filename, int n)
+	{
+		mainLog.println("\nExporting solution to file \"" + filename + "\"...");
+		PrismFileLog out = new PrismFileLog(filename);
+		out.println("States");
+		out.println(n);
+		out.println("Policy");
+		out.println(Arrays.toString(policy));
+		out.println("Alpha values");
+		out.println(0);
+
+		DecimalFormat df = new DecimalFormat("0.000");
+		Arrays.stream(value).forEach(e -> out.print(df.format(e) + ","));
+
+	}
+	public void printToFile(Object [] policy, double [][][] action_cvar, double [] alphas, String filename, int n)
+	{
+		mainLog.println("\nExporting solution to file \"" + filename + "\"...");
+		PrismFileLog out = new PrismFileLog("prism/tests/"+filename);
+		out.println("States");
+		out.println(n);
+		out.println("Policy");
+		out.println(Arrays.toString(policy));
+
+		out.println("Alpha values");
+		out.println(alphas);
+
+		for (int i =0; i<alphas.length; i++)
+		{
+			for (double[] doubles : action_cvar[i]) // copy  temp value soln2 back to soln -> corresponds to Value table
+			{
+				DecimalFormat df = new DecimalFormat("0.000");
+				Arrays.stream(doubles).forEach(e -> out.print(df.format(e) + ","));
+				mainLog.print("\n");
+			}
+		}
+
+		out.close();
 	}
 
 
