@@ -2721,10 +2721,10 @@ public class MDPModelChecker extends ProbModelChecker
 				}
 			}
 		}
-		mainLog.print("CVAR: "+ 0.3 +" \n[");
+		mainLog.print("CVAR: "+ 1.0 +" \n[");
 		double [] temp = new double [n];
 		for (int i =0; i<n; i++){
-			temp[i] = operator.getValueCvar(operator.p[i], 0.3);
+			temp[i] = operator.getValueCvar(operator.p[i], 1.0);
 			mainLog.print( temp[i]+", \n");
 		}
 		mainLog.println("]");
@@ -2732,7 +2732,7 @@ public class MDPModelChecker extends ProbModelChecker
 		// Print to file
 		boolean print= true;
 		if (print) {
-			printToFile(policy, action_cvar, alphas, "gridmap/cvar_out_"+n+".out", n);
+			printToFile(policy, action_cvar, alphas, "gridmap/cvar_out_"+n+".out", n, mdp.getMaxNumChoices());
 		}
 //
 		// Expected value
@@ -2777,7 +2777,7 @@ public class MDPModelChecker extends ProbModelChecker
 		Arrays.stream(value).forEach(e -> out.print(df.format(e) + ","));
 
 	}
-	public void printToFile(Object [] policy, double [][][] action_cvar, double [] alphas, String filename, int n)
+	public void printToFile(Object [] policy, double [][][] action_cvar, double [] alphas, String filename, int n, int maxchoices)
 	{
 		mainLog.println("\nExporting solution to file \"" + filename + "\"...");
 		PrismFileLog out = new PrismFileLog("prism/tests/"+filename);
@@ -2789,16 +2789,21 @@ public class MDPModelChecker extends ProbModelChecker
 		out.println("Alpha values");
 		out.println(alphas);
 
+		out.println("Max number of actions");
+		out.println(maxchoices);
+
 		for (int i =0; i<alphas.length; i++)
 		{
 			for (double[] doubles : action_cvar[i]) // copy  temp value soln2 back to soln -> corresponds to Value table
 			{
 				DecimalFormat df = new DecimalFormat("0.000");
 				Arrays.stream(doubles).forEach(e -> out.print(df.format(e) + ","));
-				mainLog.print("\n");
+
 			}
+			out.print("\n");
 		}
 
+		out.print("\n");
 		out.close();
 	}
 
