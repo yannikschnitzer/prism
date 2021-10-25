@@ -2652,7 +2652,7 @@ public class MDPModelChecker extends ProbModelChecker
 		double [][] action_val = new double[n][nactions];
 
 		// for printing different cvar levels
-		double alpha = 1.0;
+		double alpha = 0.05;
 		double [][] action_cvar = new double[n][nactions];
 
 		Object [] policy = new Object[n];
