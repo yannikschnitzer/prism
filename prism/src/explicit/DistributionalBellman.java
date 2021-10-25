@@ -85,13 +85,6 @@ public class DistributionalBellman {
         return sum_p;
     }
 
-    // TODO update probabilities using CVAR?
-    public double update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it, boolean cvar) {
-
-        return 0.0;
-
-    }
-
     public double [] update_support(double gamma, double state_reward, double []sum_p){
 
         double [] m = new double [atoms];
