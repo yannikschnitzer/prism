@@ -61,7 +61,7 @@ def write_gridmap(N, obs, p):
             else:
                 f.write(f'(r={r[i]+1} & c={c[i]+1}) | ')
                 str+=f'(r={r[i]+1} & c={c[i]+1}) | '
-        f.write(f'-> (r\'=N) & (c\'=N);\n')
+        f.write(f'-> true;\n')
 
         f.write(f'\n\t// transitions\n')
         f.write(f'\t[east] (c<N | c=N) & !(')

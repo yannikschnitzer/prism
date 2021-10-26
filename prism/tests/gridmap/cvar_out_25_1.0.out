@@ -2,7 +2,7 @@ States
 25
 Policy
 [east, south, obstacle, east, south, east, east, east, north, south, obstacle, south, north, obstacle, south, east, east, east, east, south, obstacle, north, obstacle, east, null]
-Alpha values
+Alpha value
 1.0
 Max number of actions
 4

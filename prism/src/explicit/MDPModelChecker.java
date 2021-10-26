@@ -2625,7 +2625,8 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Set up CVAR variables
 		int atoms = 51;
-		int iterations = 200;
+		int iterations = maxIters;
+		double error_thresh = 0.0001;
 		double gamma = 1;
 		double v_max = 50;
 		double v_min = 0;
@@ -2642,25 +2643,22 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// initialize z
 		DistributionalBellman operator = new DistributionalBellman(atoms, v_min, v_max, n, mainLog);
-
-		//mainLog.println(operator.getZ());
 		operator.initialize_p(n); // initialization based on parameters.
-//		mainLog.println(operator.p[0]);
 
 		// Create/initialise solution vector(s)
 		double[][] temp_p;
 		double [][] action_val = new double[n][nactions];
 
 		// for printing different cvar levels
-		double alpha = 0.05;
+		double alpha = 1;
 		double [][] action_cvar = new double[n][nactions];
-
 		Object [] policy = new Object[n];
 		double min_v;
-
+		double max_dist = Float.POSITIVE_INFINITY;
+		int iters = 0;
 
 		// Start iterations - number of episodes
-		for (int iters = 0; iters < iterations; iters++)
+		for (iters = 0; (iters < iterations) ; iters++)
 		{
 			temp_p = new double[n][atoms];
 			// copy to temp value soln2
@@ -2671,13 +2669,11 @@ public class MDPModelChecker extends ProbModelChecker
 			PrimitiveIterator.OfInt states = unknownStates.iterator();
 			while (states.hasNext()) {
 				final int s = states.nextInt();
-//				mainLog.println("\n--------- state:"+s+"------------");
 				int numChoices = mdp.getNumChoices(s);
 				double[][] save_p = new double[numChoices][atoms];
 				Arrays.fill(action_val[s], Float.POSITIVE_INFINITY);
 
 				for (int choice = 0; choice < numChoices; choice++){ // aka action
-//					mainLog.println("a:"+ choice);
 					double [] temp2p ; double [] m ;
 
 					Iterator<Entry<Integer, Double>>it = mdp.getTransitionsIterator(s,choice);
@@ -2689,8 +2685,6 @@ public class MDPModelChecker extends ProbModelChecker
 					}
 					action_val[s][choice] = operator.getValueCvar(m, alpha);
 					action_cvar[s][choice] = operator.getValueCvar(m, alpha);
-
-
 					save_p[choice] = Arrays.copyOf(m, m.length);
 				}
 
@@ -2703,12 +2697,16 @@ public class MDPModelChecker extends ProbModelChecker
 			}
 
 			states = unknownStates.iterator();
+			max_dist = 0.0;
 			while (states.hasNext()) {
 				final int s = states.nextInt();
+				max_dist = max(max_dist, operator.getW(temp_p[s], s));
 				operator.update_p(temp_p[s], s);
 			}
 
-			if (iters == iterations -1) {
+//			mainLog.println("Max Wp :"+(max_dist - error_thresh) + " at iter:"+iters);
+
+			if ((max_dist < error_thresh)) {
 				mainLog.println("\nV at " + (iters + 1));
 
 				for (double[] doubles : temp_p) // copy  temp value soln2 back to soln -> corresponds to Value table
@@ -2718,28 +2716,23 @@ public class MDPModelChecker extends ProbModelChecker
 					Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
 					mainLog.print("]\n");
 				}
+				break;
 			}
 		}
-		mainLog.print("CVAR: "+ 1.0 +" \n[");
+//		mainLog.print("CVAR: "+ 1.0 +" \n[");
 		double [] temp = new double [n];
 		for (int i =0; i<n; i++){
 			temp[i] = operator.getValueCvar(operator.p[i], 1.0);
-			mainLog.print( temp[i]+", \n");
+//			mainLog.print( temp[i]+", \n");
 		}
-		mainLog.println("]");
+//		mainLog.println("]");
 
 		// Print to file
 		boolean print= true;
 		if (print) {
 			printToFile(policy, action_cvar, alpha, "gridmap/cvar_out_"+n+"_"+alpha+".out", n, mdp.getMaxNumChoices());
-
 		}
 //
-		// Expected value
-		mainLog.println("\nExpected value");
-		for (int i =0; i<n; i++){
-			mainLog.print(" i:"+ i+ " value:"+operator.getValue(operator.p[i])+"\n");
-		}
 
 		// Policy
 		mainLog.println("\nPolicy");
@@ -2750,7 +2743,7 @@ public class MDPModelChecker extends ProbModelChecker
 		timer = System.currentTimeMillis() - timer;
 		if (verbosity >= 1) {
 			mainLog.print("\nCVAR (" + (min ? "min" : "max") + ")");
-			mainLog.println(" ran " + iterations + " iterations and " + timer / 1000.0 + " seconds.");
+			mainLog.println(" ran " + iters + " iterations and " + timer / 1000.0 + " seconds.");
 //			mainLog.println(temp);
 		}
 

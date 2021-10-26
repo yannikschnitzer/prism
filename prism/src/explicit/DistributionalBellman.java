@@ -142,6 +142,28 @@ public class DistributionalBellman {
         return res;
     }
 
+    // Wp with p=2
+    public double getW(double [] dist1, double [] dist2)
+    {
+        double sum = 0;
+        for (int i =0; i<atoms-1; i++)
+        {
+            sum+= (z[i+1] - z[i]) * pow((dist1[i] - dist2[i]), 2);
+        }
+        return sqrt(sum);
+    }
+
+    // Wp with p=2
+    public double getW(double [] dist1, int state)
+    {
+        double sum = 0;
+        for (int i =0; i<atoms-1; i++)
+        {
+            sum+= (z[i+1] - z[i]) * pow((dist1[i] - p[state][i]), 2);
+        }
+        return sqrt(sum);
+    }
+
     public double [][] getP ()
     {
         return p;
