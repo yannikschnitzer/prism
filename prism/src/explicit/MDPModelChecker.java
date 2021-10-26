@@ -2625,8 +2625,9 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Set up CVAR variables
 		int atoms = 51;
-		int iterations = maxIters;
-		double error_thresh = 0.0001;
+		int iterations = 150;
+		double error_thresh = 1.2;
+		double error_thresh_cvar = 2;
 		double gamma = 1;
 		double v_max = 50;
 		double v_min = 0;
@@ -2650,11 +2651,12 @@ public class MDPModelChecker extends ProbModelChecker
 		double [][] action_val = new double[n][nactions];
 
 		// for printing different cvar levels
-		double alpha = 1;
+		double alpha = 1.0;
 		double [][] action_cvar = new double[n][nactions];
 		Object [] policy = new Object[n];
 		double min_v;
 		double max_dist = Float.POSITIVE_INFINITY;
+		double max_cvar_dist ;
 		int iters = 0;
 
 		// Start iterations - number of episodes
@@ -2698,15 +2700,21 @@ public class MDPModelChecker extends ProbModelChecker
 
 			states = unknownStates.iterator();
 			max_dist = 0.0;
+			max_cvar_dist = 0.0;
 			while (states.hasNext()) {
 				final int s = states.nextInt();
 				max_dist = max(max_dist, operator.getW(temp_p[s], s));
+				max_cvar_dist = max(max_cvar_dist,
+						abs(operator.getValueCvar(temp_p[s], alpha) - operator.getValueCvar(operator.p[s], alpha)));
 				operator.update_p(temp_p[s], s);
 			}
 
-//			mainLog.println("Max Wp :"+(max_dist - error_thresh) + " at iter:"+iters);
+			if((max_dist > error_thresh)&(iters > 50)){mainLog.println("Max Wp dist :"+(max_dist) + " dist:"+(max_cvar_dist)+" at iter:"+iters);;}
 
-			if ((max_dist < error_thresh)) {
+
+//			mainLog.println("Max Wp dist :"+(max_dist - error_thresh) + " dist:"+(max_cvar_dist- error_thresh)+" at iter:"+iters);
+//			max_dist < error_thresh
+			if ((max_cvar_dist < error_thresh_cvar) & (max_dist <error_thresh)&(iters>20)) {
 				mainLog.println("\nV at " + (iters + 1));
 
 				for (double[] doubles : temp_p) // copy  temp value soln2 back to soln -> corresponds to Value table

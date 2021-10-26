@@ -1,0 +1,31 @@
+mdp
+const int N=30; // N*N grid map
+const double p=0.1; // with probability p, a move to a neighboring state state occurs due to seeing and control noise
+
+module robot
+	//define robot position
+	r:[1..N] init 1; //grid row
+	c:[1..N] init 1; //grid column
+
+	// go to the terminal state when hitting an obstacle
+	[obstacle] (r=28 & c=23) | (r=27 & c=5) | (r=24 & c=26) | (r=24 & c=16) | (r=9 & c=4) | (r=26 & c=9) | (r=27 & c=10) | (r=1 & c=8) | (r=7 & c=2) | (r=16 & c=16) | (r=6 & c=9) | (r=13 & c=6) | (r=16 & c=4) | (r=23 & c=27) | (r=22 & c=13) | (r=9 & c=24) | (r=8 & c=2) | (r=30 & c=22) | (r=8 & c=24) | (r=10 & c=2) | (r=12 & c=27) | (r=24 & c=8) | (r=28 & c=4) | (r=14 & c=1) | (r=2 & c=15) | (r=27 & c=8) | (r=10 & c=15) | (r=5 & c=8) | (r=3 & c=18) | (r=10 & c=30)-> (r'=30) & (c'=1);
+
+	// transitions
+	[east] (c<N | c=N) & !((r=28 & c=23) | (r=27 & c=5) | (r=24 & c=26) | (r=24 & c=16) | (r=9 & c=4) | (r=26 & c=9) | (r=27 & c=10) | (r=1 & c=8) | (r=7 & c=2) | (r=16 & c=16) | (r=6 & c=9) | (r=13 & c=6) | (r=16 & c=4) | (r=23 & c=27) | (r=22 & c=13) | (r=9 & c=24) | (r=8 & c=2) | (r=30 & c=22) | (r=8 & c=24) | (r=10 & c=2) | (r=12 & c=27) | (r=24 & c=8) | (r=28 & c=4) | (r=14 & c=1) | (r=2 & c=15) | (r=27 & c=8) | (r=10 & c=15) | (r=5 & c=8) | (r=3 & c=18) | (r=10 & c=30))-> p:(r'=min(r+1, N)) + (1-p): (c'=min(c+1, N));
+	[south] (r<N | r=N) & !((r=28 & c=23) | (r=27 & c=5) | (r=24 & c=26) | (r=24 & c=16) | (r=9 & c=4) | (r=26 & c=9) | (r=27 & c=10) | (r=1 & c=8) | (r=7 & c=2) | (r=16 & c=16) | (r=6 & c=9) | (r=13 & c=6) | (r=16 & c=4) | (r=23 & c=27) | (r=22 & c=13) | (r=9 & c=24) | (r=8 & c=2) | (r=30 & c=22) | (r=8 & c=24) | (r=10 & c=2) | (r=12 & c=27) | (r=24 & c=8) | (r=28 & c=4) | (r=14 & c=1) | (r=2 & c=15) | (r=27 & c=8) | (r=10 & c=15) | (r=5 & c=8) | (r=3 & c=18) | (r=10 & c=30))-> (1-p):(r'=min(r+1, N)) + p: (c'=min(c+1, N));
+	[west]  (c<1 | c=1) & !((r=28 & c=23) | (r=27 & c=5) | (r=24 & c=26) | (r=24 & c=16) | (r=9 & c=4) | (r=26 & c=9) | (r=27 & c=10) | (r=1 & c=8) | (r=7 & c=2) | (r=16 & c=16) | (r=6 & c=9) | (r=13 & c=6) | (r=16 & c=4) | (r=23 & c=27) | (r=22 & c=13) | (r=9 & c=24) | (r=8 & c=2) | (r=30 & c=22) | (r=8 & c=24) | (r=10 & c=2) | (r=12 & c=27) | (r=24 & c=8) | (r=28 & c=4) | (r=14 & c=1) | (r=2 & c=15) | (r=27 & c=8) | (r=10 & c=15) | (r=5 & c=8) | (r=3 & c=18) | (r=10 & c=30))-> p:(r'=max(r-1, 1)) + (1-p): (c'=max(c-1, 1));
+	[north] (r=1 | r>1) & !((r=28 & c=23) | (r=27 & c=5) | (r=24 & c=26) | (r=24 & c=16) | (r=9 & c=4) | (r=26 & c=9) | (r=27 & c=10) | (r=1 & c=8) | (r=7 & c=2) | (r=16 & c=16) | (r=6 & c=9) | (r=13 & c=6) | (r=16 & c=4) | (r=23 & c=27) | (r=22 & c=13) | (r=9 & c=24) | (r=8 & c=2) | (r=30 & c=22) | (r=8 & c=24) | (r=10 & c=2) | (r=12 & c=27) | (r=24 & c=8) | (r=28 & c=4) | (r=14 & c=1) | (r=2 & c=15) | (r=27 & c=8) | (r=10 & c=15) | (r=5 & c=8) | (r=3 & c=18) | (r=10 & c=30))-> (1-p):(r'=max(r-1, 1)) + p: (c'=max(c-1, 1));
+
+	// terminal state self-loop to avoid deadlock
+	[] r=30 & c=1 -> true;
+endmodule
+
+label "goal" = r=30 & c=1;
+
+rewards
+	[east] true : 1;
+	[south] true : 1;
+	[west] true : 1;
+	[north] true : 1;
+	[obstacle] true : 40.0;
+endrewards

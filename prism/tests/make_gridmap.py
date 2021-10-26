@@ -15,16 +15,18 @@ def init_argparse() -> argparse.ArgumentParser:
     parser.add_argument('N', metavar='N', type=int, default=10, help='size of the gridmap')
     parser.add_argument('-o', "--obs", metavar='obs', type=int, action='store', default=5, help='number of obstacles must be less than N*N')
     parser.add_argument('-p', "--prob", metavar='p', type=float, action='store', default=0.1, help='probability for transition')
+    parser.add_argument('-c', "--cost", metavar='c', type=float, action='store', default=30, help='cost for obstacle')
 
     return parser
 
-def compute_obstacles(N, obs):
+def compute_obstacles(N, obs, goal):
 
     obstacles =[]
 
     while len(obstacles) < obs:
-        temp = random.randint(1,(N*N)-2)
-        if  (temp not in obstacles) :
+        temp = random.randint(1,(N*N)-1)
+        # print(temp, " -- ", goal[0]*(N-1)+goal[1])
+        if  (temp not in obstacles) and temp != goal[0]*(N-1)+goal[1] :
             obstacles.append(temp)
 
     r=[];c=[]
@@ -34,9 +36,13 @@ def compute_obstacles(N, obs):
 #         print(f'o:{o}, i:{int(o/N)}, j:{o%N}')
     return r,c
 
-def write_gridmap(N, obs, p):
+def write_gridmap(N, obs, p, goal=None, obs_cost=30):
 
-    r,c = compute_obstacles(N, obs)
+    if goal is None:
+        goal = [N, 1]
+
+    print(f"Printing with goal:{goal}..")
+    r,c = compute_obstacles(N, obs, goal)
 
     with open(f'gridmap/gridmap_{N}_{obs}.prism', 'w') as f:
         f.write('mdp\n')
@@ -61,7 +67,7 @@ def write_gridmap(N, obs, p):
             else:
                 f.write(f'(r={r[i]+1} & c={c[i]+1}) | ')
                 str+=f'(r={r[i]+1} & c={c[i]+1}) | '
-        f.write(f'-> true;\n')
+        f.write(f'-> (r\'={goal[0]}) & (c\'={goal[1]});\n')
 
         f.write(f'\n\t// transitions\n')
         f.write(f'\t[east] (c<N | c=N) & !(')
@@ -76,17 +82,17 @@ def write_gridmap(N, obs, p):
         f.write(f'\t[north] (r=1 | r>1) & !(')
         f.write(str); f.write(f')-> (1-p):(r\'=max(r-1, 1)) + p: (c\'=max(c-1, 1));\n')
 
-        f.write(f'\n\t// terminal state self-loop to avoid deadlock\n\t[] r=N & c=N -> true;\n')
+        f.write(f'\n\t// terminal state self-loop to avoid deadlock\n\t[] r={goal[0]} & c={goal[1]} -> true;\n')
 
         f.write(f'endmodule\n')
-        f.write(f'\nlabel "goal" = r=N & c=N;\n')
+        f.write(f'\nlabel "goal" = r={goal[0]} & c={goal[1]};\n')
         f.write(f'\nrewards\n')
 
         f.write(f'\t[east] true : 1;\n')
         f.write(f'\t[south] true : 1;\n')
         f.write(f'\t[west] true : 1;\n')
         f.write(f'\t[north] true : 1;\n')
-        f.write(f'\t[obstacle] true : 30;\n')
+        f.write(f'\t[obstacle] true : {obs_cost};\n')
         f.write(f'endrewards\n')
 
         f.close()
@@ -100,10 +106,12 @@ if __name__ == "__main__":
     parser = init_argparse()
     args = parser.parse_args()
 
+    goal = [args.N, 1]
+
     if args.obs >= (args.N*args.N):
         print(f' Too many obstacles {args.obs} for an {args.N}*{args.N} grid')
         sys.exit()
 
     print(vars(args))
-    write_gridmap(args.N, args.obs, args.prob)
+    write_gridmap(args.N, args.obs, args.prob, goal=goal, obs_cost=args.cost)
 

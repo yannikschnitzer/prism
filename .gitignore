@@ -36,3 +36,5 @@ prism/\.project
 # Eclipse project custom settings
 \.settings/
 prism/\.settings/
+/prism/tests/gridmap/.ipynb_checkpoints/
+/prims/tests/gridmap/*.out
