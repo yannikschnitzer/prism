@@ -3341,7 +3341,6 @@ public class MDPModelChecker extends ProbModelChecker
 		double soln[] = null;
 		
 		// Start solution
-		long timer = System.currentTimeMillis();
 		mainLog.println("Starting linear programming (" + (min ? "min" : "max") + ")...");
 		
 		// Store MDP info
@@ -3433,6 +3432,8 @@ public class MDPModelChecker extends ProbModelChecker
 					model.addConstr(expr, GRB.LESS_EQUAL, r + scale, "c" + counter++);
 				}
 			}
+
+			
 			// Solve MILP
 			//model.write("gurobi.lp");
 			model.optimize();
@@ -3554,12 +3555,12 @@ public class MDPModelChecker extends ProbModelChecker
 				}
 			}
 			chosenPoints.add(pointIndex);
-			mainLog.println("Preference weights " + weights + " -> Pareto point " + paretoPoints.get(pointIndex)); 	
+//			mainLog.println("Preference weights " + weights + " -> Pareto point " + paretoPoints.get(pointIndex)); 	
 			boolean sanity = false; 	// Sanity check
 			if (sanity) {
 				ModelCheckerResult res = computeMultiReachRewards(mdp, weights, mdpRewardsList, target, true, null);
 				List<Double> point = (List<Double>) res.solnObj[sInit];
-//				mainLog.println("Preference weights " + weights + " -> Pareto point (PRISM weighted)" + point); 	
+				mainLog.println("Preference weights " + weights + " -> Pareto point (PRISM weighted)" + point); 	
 			}	
 		}
 		
@@ -3585,13 +3586,11 @@ public class MDPModelChecker extends ProbModelChecker
 			}
 		}
 		
-  
 		// Computing multi-strategy via MILP	
 		boolean min = true;
 		double[] soln = null;	
 
 		// Start solution
-		long timer = System.currentTimeMillis();
 		mainLog.println("Starting linear programming (" + (min ? "min" : "max") + ")...");
 		
 		try {
@@ -3621,9 +3620,7 @@ public class MDPModelChecker extends ProbModelChecker
 					xuVars[i][s] = model.addVar(0.0, maxRew0.get(s) ? 0.0 : GRB.INFINITY, 0.0, GRB.CONTINUOUS, "x_r"+i+"_s"+s+"_upper");
 				}
 			}	
-
-
-			
+	
 			// Set up objective function
 			double scale = 1000.0;	
 			GRBLinExpr exprObj = new GRBLinExpr();
@@ -3733,10 +3730,17 @@ public class MDPModelChecker extends ProbModelChecker
 				expr2.addTerm(1.0, xuVars[i][sInit]);
 				model.addConstr(expr2, GRB.LESS_EQUAL, upperBounds[i], "c" + counter++);		
 			}
+			model.write("gurobi.lp");
 				
 			// Solve MILP
-			model.write("gurobi.lp");
+			mainLog.println("Solving MILP ...");
+			model.set(GRB.DoubleParam.TimeLimit, 3600.0);
+			
+			long startTime = System.currentTimeMillis();
 			model.optimize();
+			long endTime = System.currentTimeMillis();
+			double milpTimer = (endTime - startTime) / 1000.0;
+			
 			if (model.get(GRB.IntAttr.Status) == GRB.Status.INFEASIBLE) {
 //				model.computeIIS();
 //				System.out.println("\nThe following constraint(s) " + "cannot be satisfied:");
@@ -3750,31 +3754,66 @@ public class MDPModelChecker extends ProbModelChecker
 			if (model.get(GRB.IntAttr.Status) == GRB.Status.UNBOUNDED) {
 				throw new PrismException("Error solving LP: " + "unbounded");
 			}
+			if (model.get(GRB.IntAttr.Status) == GRB.Status.TIME_LIMIT) {
+				throw new PrismException("Error solving LP: " + "time out");
+			}
 			if (model.get(GRB.IntAttr.Status) != GRB.Status.OPTIMAL) {
 				throw new PrismException("Error solving LP: " + "non-optimal " + model.get(GRB.IntAttr.Status));
 			}
 
-			// saving results
+			// Saving results
+			mainLog.println("Printing solutions to gurobi.sol ...");
 			model.write("gurobi.sol");	
 			
+			// Dumb results 
 			soln = new double[stateNum];
 			for (int s = 0; s < stateNum; s++) {
 				soln[s] = xlVars[0][s].get(GRB.DoubleAttr.X);
 			}
 
-			// Print multi-strategy
-			mainLog.println("*********** Generated multi-strategy ************");
+			// Counting permissive states
+			int psNum = 0;
+			boolean printFlag = true;
+			if (stateNum > 50) { // Print multi-strategy when the model is small enough
+				printFlag = false;
+			}
+			if(printFlag) {
+				mainLog.println("*********** generated multi-strategy ************");
+			}
 			for (int s = 0; s < stateNum; s++) {
-				mainLog.print(s + ":");
+				if(printFlag) {
+					mainLog.print(s + ":");
+				}
+				int strategyChoices = 0;
 				int numChoices = mdp.getNumChoices(s);
 				for (int i = 0; i < numChoices; i++) {
 					if (yaVars[s][i].get(GRB.DoubleAttr.X) > 0) {
-						mainLog.print(" " + mdp.getAction(s, i));
+						strategyChoices++;
+						if(printFlag) {
+							mainLog.print(" " + mdp.getAction(s, i));
+						}
 					}
 				}
-				mainLog.println();
+				if (strategyChoices > 1) {
+					psNum++;
+				}
+				if(printFlag) {
+					mainLog.println();
+				}
 			}
-
+			
+			// Print model statistics
+			int bVarsNum = model.get(GRB.IntAttr.NumBinVars);
+			int rVarsNum = model.get(GRB.IntAttr.NumVars) - bVarsNum;
+			mainLog.println("*********** Model and MILP statistics ************");
+			mainLog.println("MDP states: " + stateNum);
+			mainLog.println("MDP transitions: " + mdp.getNumTransitions());
+			mainLog.println("MILP binary varibles: " + bVarsNum);
+			mainLog.println("MILP real varibles: " + rVarsNum);
+			mainLog.println("MILP constraints: " + model.get(GRB.IntAttr.NumConstrs));
+			mainLog.println("MILP solving time: " + milpTimer + " seconds");
+			mainLog.println("Multi-strategy permissive states: " + psNum);
+			mainLog.println("**************************************************");
 			
 			// Clean up
 			model.dispose();
