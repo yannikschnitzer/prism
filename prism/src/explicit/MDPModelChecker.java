@@ -35,6 +35,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.PrimitiveIterator;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import acceptance.AcceptanceReach;
 import acceptance.AcceptanceType;
@@ -68,6 +70,7 @@ import prism.Accuracy;
 import prism.Accuracy.AccuracyLevel;
 import prism.AccuracyFactory;
 import prism.OptionsIntervalIteration;
+import prism.Point;
 import prism.Prism;
 import prism.PrismComponent;
 import prism.PrismDevNullLog;
@@ -78,6 +81,7 @@ import prism.PrismNotSupportedException;
 import prism.PrismSettings;
 import prism.PrismUtils;
 import strat.MDStrategyArray;
+
 
 /**
  * Explicit-state model checker for Markov decision processes (MDPs).
@@ -3488,30 +3492,304 @@ public class MDPModelChecker extends ProbModelChecker
 	}
 	
 	/**
-	 * Compute a multi-strategy for...
+	 * Compute a multi-strategy for a multi-objective property with uncertain human preferences
 	 * @param mdp: The MDP
 	 * @param mdpRewards The rewards
-	 * @param target Target states
-	 * @param inf States for which reward is infinite
-	 * @param min: Min or max probabilities (true=min, false=max)
-	 * @param strat Storage for (memoryless) strategy choice indices (ignored if null)
 	 */
 	public ModelCheckerResult computeMultiStrategyMultiObj(MDP mdp, List<MDPRewards> mdpRewardsList, List<MinMax> minMaxList) throws PrismException
 	{
-		// Obtain and print predecessors
-		PredecessorRelation pre = mdp.getPredecessorRelation(this, false);
-		int n = mdp.getNumStates();
-		for (int s = 0; s < n; s++) {
-			for (int t : pre.getPre(s)) { 
-				mainLog.print(t + " ");
+		// Store MDP info
+		int stateNum = mdp.getNumStates();
+		int sInit = mdp.getFirstInitialState();
+		int objNum = minMaxList.size();
+		for(int i=0; i<objNum; i++) {
+			MinMax objType = minMaxList.get(i);
+			if(objType.isMax()) {
+				throw new PrismException("Max properties are not supported yet.");
 			}
-			mainLog.println("-> " + s);
+		}
+
+		// Parsing preference weights as a set of extreme points
+		// Format: ([obj1, obj2, ...],...,[obj1, obj2, ...])
+		ArrayList<ArrayList<Double>> prefWeights = new ArrayList<ArrayList<Double>>();	
+		String prefString = getSettings().getString(PrismSettings.PRISM_WEIGHTS_STRING);		
+		Pattern p = Pattern.compile("\\[(.*?)\\]");
+		Matcher m = p.matcher(prefString);
+		while (m.find()) {
+			ArrayList<Double> w = new ArrayList<Double>();
+			String s = m.group(1);
+			String[] sa = s.split(", ");
+			for(int i=0; i<sa.length;i++) {
+				double v = Double.parseDouble(sa[i]);
+				w.add(v);
+			}
+			prefWeights.add(w);
+		}
+		mainLog.println("Preferences: " + prefWeights);
+		
+		
+		// Computing objective bounds
+		BitSet target = rewTot0(mdp, mdpRewardsList.get(0), false);	
+		MultiObjModelChecker mc = new MultiObjModelChecker(this);
+		StateValues sv = mc.checkExpressionParetoMultiObjMDPWithOLS(mdp, mdpRewardsList, target, minMaxList, null);
+		ArrayList<Point> paretoPoints = (ArrayList<Point>) sv.getValue(sInit);
+		
+		// Step 1: find the corresponding Pareto point for each preference weight
+		ArrayList<Integer> chosenPoints = new ArrayList<Integer>();
+		Iterator iter = prefWeights.iterator();
+		while (iter.hasNext()) {
+			ArrayList<Double> weights = (ArrayList<Double>) iter.next();			
+			double rewardSum = Double.POSITIVE_INFINITY;
+			int pointIndex = -1;
+			for (int i=0; i<paretoPoints.size(); i++) { 
+				Point pp = paretoPoints.get(i);
+				double[] pv = pp.getCoords();	
+				double tmpSum = 0.0;	
+				for (int j=0; j<objNum; j++) { 
+						tmpSum += weights.get(j) * pv[j];
+				}
+				if (tmpSum < rewardSum) {
+					rewardSum = tmpSum;
+					pointIndex = i;
+				}
+			}
+			chosenPoints.add(pointIndex);
+			mainLog.println("Preference weights " + weights + " -> Pareto point " + paretoPoints.get(pointIndex)); 	
+			boolean sanity = false; 	// Sanity check
+			if (sanity) {
+				ModelCheckerResult res = computeMultiReachRewards(mdp, weights, mdpRewardsList, target, true, null);
+				List<Double> point = (List<Double>) res.solnObj[sInit];
+//				mainLog.println("Preference weights " + weights + " -> Pareto point (PRISM weighted)" + point); 	
+			}	
 		}
 		
-		String weightsString = getSettings().getString(PrismSettings.PRISM_WEIGHTS_STRING);
-		mainLog.println("Weights: " + weightsString);
+		// Step 2: determine the lower/upper bounds for each objective based on the set of chosen Pareto points
+		double[] lowerBounds = new double[objNum];
+		double[] upperBounds = new double[objNum];
+		for (int i=0; i<objNum; i++) {
+			lowerBounds[i] = Double.POSITIVE_INFINITY;
+			upperBounds[i] = Double.NEGATIVE_INFINITY;
+		}
+		Iterator itp = chosenPoints.iterator();
+		while (itp.hasNext()) {
+			int pIndex = (Integer) itp.next();
+			Point pp = paretoPoints.get(pIndex);
+			double[] pv = pp.getCoords();	
+			for (int i=0; i<objNum; i++) {
+				if (lowerBounds[i] > pv[i]) {
+					lowerBounds[i] = Math.floor(pv[i]);
+				}
+				if (upperBounds[i] < pv[i]) {
+					upperBounds[i] = Math.ceil(pv[i]);
+				}
+			}
+		}
 		
-		throw new PrismException("Not implemented yet");
+  
+		// Computing multi-strategy via MILP	
+		boolean min = true;
+		double[] soln = null;	
+
+		// Start solution
+		long timer = System.currentTimeMillis();
+		mainLog.println("Starting linear programming (" + (min ? "min" : "max") + ")...");
+		
+		try {
+			// Initialise MILP solver
+			GRBEnv env = new GRBEnv("gurobi.log");
+			env.set(GRB.IntParam.OutputFlag, 0);
+			GRBModel model = new GRBModel(env);
+			
+			// Set up MILP variables (binary)
+			GRBVar yaVars[][] = new GRBVar[stateNum][];
+			for (int s = 0; s < stateNum; s++) {
+				int nc = mdp.getNumChoices(s);
+				yaVars[s] = new GRBVar[nc];
+				for (int j = 0; j < nc; j++) {
+					Object a = mdp.getAction(s, j);
+					yaVars[s][j] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, "y_s"+s+"_"+a);
+				}
+			}
+			
+			// Set up MILP variables (real)
+			GRBVar xlVars[][] = new GRBVar[objNum][stateNum];
+			GRBVar xuVars[][] = new GRBVar[objNum][stateNum];
+			for (int i=0; i<objNum; i++) {		
+				BitSet maxRew0 = rewTot0(mdp, mdpRewardsList.get(i), false); // Find states where max expected total reward is 0 
+				for (int s=0; s<stateNum; s++) {
+					xlVars[i][s] = model.addVar(0.0, maxRew0.get(s) ? 0.0 : GRB.INFINITY, 0.0, GRB.CONTINUOUS, "x_r"+i+"_s"+s+"_lower");
+					xuVars[i][s] = model.addVar(0.0, maxRew0.get(s) ? 0.0 : GRB.INFINITY, 0.0, GRB.CONTINUOUS, "x_r"+i+"_s"+s+"_upper");
+				}
+			}	
+
+
+			
+			// Set up objective function
+			double scale = 1000.0;	
+			GRBLinExpr exprObj = new GRBLinExpr();
+			for (int i=0; i<objNum; i++) {
+				exprObj.addTerm(-1.0, xlVars[i][sInit]);
+				exprObj.addTerm(1.0, xuVars[i][sInit]);
+			}
+			for (int s = 0; s < stateNum; s++) {
+				int nc = mdp.getNumChoices(s);
+				for (int j = 0; j < nc; j++) {
+					exprObj.addTerm(-scale, yaVars[s][j]);
+					exprObj.addConstant(scale);
+				}
+			}
+			model.setObjective(exprObj, GRB.MINIMIZE);
+			
+			
+			// Add constraints
+			int counter = 0; // counting the number of constraints
+			GRBLinExpr expr1 = new GRBLinExpr();
+			GRBLinExpr expr2 = new GRBLinExpr();
+			
+			// constraints for incoming transitions 
+			PredecessorRelation pre = mdp.getPredecessorRelation(this, false);
+			for (int s = 0; s < stateNum; s++) {
+				expr1 = new GRBLinExpr();
+				expr2 = new GRBLinExpr();
+				int nc = mdp.getNumChoices(s);
+				for (int j = 0; j < nc; j++) {
+					expr1.addTerm(1.0, yaVars[s][j]);
+					expr2.addTerm(scale, yaVars[s][j]);
+				}
+				if (s == sInit) {
+					model.addConstr(expr1, GRB.LESS_EQUAL, scale, "c" + counter++);
+					model.addConstr(expr2, GRB.GREATER_EQUAL, 1.0, "c" + counter++);
+				}else {
+					// obtain predecessors
+					for (int t : pre.getPre(s)) { 
+						if (t!=s) {
+							nc = mdp.getNumChoices(t);
+							for (int k = 0; k < nc; k++) {
+								Iterator sit = mdp.getSuccessorsIterator(t, k);
+								while (sit.hasNext()) {
+									int q = (int) sit.next();
+									if (q == s) {
+										expr1.addTerm(-scale, yaVars[t][k]);
+										expr2.addTerm(-1.0, yaVars[t][k]);
+									}
+								}
+							}
+						}
+					}
+					model.addConstr(expr1, GRB.LESS_EQUAL, 0.0, "c" + counter++);
+					model.addConstr(expr2, GRB.GREATER_EQUAL, 0.0, "c" + counter++);	
+				}
+			}
+			
+			// constraints for transition relations and rewards
+			double row[] = new double[stateNum + 1];
+			int colno[] = new int[stateNum + 1];
+			for (int s = 0; s < stateNum; s++) {
+				int nc = mdp.getNumChoices(s);
+				for (int i = 0; i < nc; i++) {
+					
+					// obtain transition probabilities 
+					int count = 0;
+					row[count] = 1.0;
+					colno[count] = s + 1;
+					count++;
+					Iterator<Map.Entry<Integer, Double>> tranIter = mdp.getTransitionsIterator(s, i);
+					while (tranIter.hasNext()) {
+						Map.Entry<Integer, Double> e = tranIter.next();
+						int t = e.getKey();
+						double probValue = e.getValue();
+						if (t == s) {
+							row[0] -= probValue;
+						} else {
+							row[count] = -probValue;
+							colno[count] = t + 1;
+							count++;
+						}
+					}
+					
+					for (int j = 0; j < objNum; j++) {
+						double r = mdpRewardsList.get(j).getTransitionReward(s, i);
+						expr1 = new GRBLinExpr();
+						expr2 = new GRBLinExpr();
+						for (int k = 0; k < count; k++) {
+							expr1.addTerm(row[k], xlVars[j][colno[k] - 1]);
+							expr2.addTerm(row[k], xuVars[j][colno[k] - 1]);
+						}
+						expr1.addTerm(scale, yaVars[s][i]);
+						expr2.addTerm(-scale, yaVars[s][i]);
+						model.addConstr(expr1, GRB.LESS_EQUAL, r + scale, "c" + counter++);
+						model.addConstr(expr2, GRB.GREATER_EQUAL, r - scale, "c" + counter++);
+					}
+				}
+			}
+				
+			// constraints for objective bounds
+			for (int i = 0; i < objNum; i++) {
+				expr1 = new GRBLinExpr();
+				expr1.addTerm(1.0, xlVars[i][sInit]);
+				model.addConstr(expr1, GRB.GREATER_EQUAL, lowerBounds[i], "c" + counter++);
+
+				expr2 = new GRBLinExpr();
+				expr2.addTerm(1.0, xuVars[i][sInit]);
+				model.addConstr(expr2, GRB.LESS_EQUAL, upperBounds[i], "c" + counter++);		
+			}
+				
+			// Solve MILP
+			model.write("gurobi.lp");
+			model.optimize();
+			if (model.get(GRB.IntAttr.Status) == GRB.Status.INFEASIBLE) {
+//				model.computeIIS();
+//				System.out.println("\nThe following constraint(s) " + "cannot be satisfied:");
+//				for (GRBConstr c : model.getConstrs()) {
+//					if (c.get(GRB.IntAttr.IISConstr) == 1) {
+//						System.out.println(c.get(GRB.StringAttr.ConstrName));
+//					}
+//				}
+				throw new PrismException("Error solving LP: " + "infeasible");
+			}
+			if (model.get(GRB.IntAttr.Status) == GRB.Status.UNBOUNDED) {
+				throw new PrismException("Error solving LP: " + "unbounded");
+			}
+			if (model.get(GRB.IntAttr.Status) != GRB.Status.OPTIMAL) {
+				throw new PrismException("Error solving LP: " + "non-optimal " + model.get(GRB.IntAttr.Status));
+			}
+
+			// saving results
+			model.write("gurobi.sol");	
+			
+			soln = new double[stateNum];
+			for (int s = 0; s < stateNum; s++) {
+				soln[s] = xlVars[0][s].get(GRB.DoubleAttr.X);
+			}
+
+			// Print multi-strategy
+			mainLog.println("*********** Generated multi-strategy ************");
+			for (int s = 0; s < stateNum; s++) {
+				mainLog.print(s + ":");
+				int numChoices = mdp.getNumChoices(s);
+				for (int i = 0; i < numChoices; i++) {
+					if (yaVars[s][i].get(GRB.DoubleAttr.X) > 0) {
+						mainLog.print(" " + mdp.getAction(s, i));
+					}
+				}
+				mainLog.println();
+			}
+
+			
+			// Clean up
+			model.dispose();
+			env.dispose();
+			
+		}catch (GRBException e) {
+			throw new PrismException("Error solving LP: " +e.getMessage());
+		}
+		
+		// Return results
+		ModelCheckerResult res = new ModelCheckerResult();
+//		res.accuracy = AccuracyFactory.boundedNumericalIterations();
+		res.soln = soln;
+//		res.timeTaken = timer / 1000.0;
+		return res;
 	}
 	
 	/**
