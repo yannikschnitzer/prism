@@ -2626,11 +2626,14 @@ public class MDPModelChecker extends ProbModelChecker
 		// Set up CVAR variables
 		int atoms = 51;
 		int iterations = 150;
-		double error_thresh = 1.2;
+		double error_thresh = 0.01;
 		double error_thresh_cvar = 2;
 		double gamma = 1;
 		double v_max = 50;
 		double v_min = 0;
+		String method = "c51";
+		String c51 = "c51";
+		String qr = "qr";
 
 		int nactions = mdp.getMaxNumChoices();
 
@@ -2641,17 +2644,26 @@ public class MDPModelChecker extends ProbModelChecker
 		unknown.andNot(inf);
 		IntSet unknownStates = IntSet.asIntSet(unknown);
 //		int numS = unknownStates.cardinality();
+		DistributionalBellman operator;
 
-		// initialize z
-		DistributionalBellman operator = new DistributionalBellman(atoms, v_min, v_max, n, mainLog);
-		operator.initialize_p(n); // initialization based on parameters.
+		if (method.equals(c51)) {
+			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
+			operator.initialize(n); // initialization based on parameters.
+		} else if (method.equals(qr)){
+			operator = new DistributionalBellmanQR(atoms, v_min, v_max, n, mainLog);
+			operator.initialize(n); // initialization based on parameters.
+		}
+		else{
+			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
+			operator.initialize(n); // initialization based on parameters.
+		}
 
 		// Create/initialise solution vector(s)
 		double[][] temp_p;
 		double [][] action_val = new double[n][nactions];
 
 		// for printing different cvar levels
-		double alpha = 1.0;
+		double alpha = 0.1;
 		double [][] action_cvar = new double[n][nactions];
 		Object [] policy = new Object[n];
 		double min_v;
@@ -2665,7 +2677,7 @@ public class MDPModelChecker extends ProbModelChecker
 			temp_p = new double[n][atoms];
 			// copy to temp value soln2
 			for (int k=0; k<n; k++) {
-				temp_p[k] = Arrays.copyOf(operator.p[k], operator.p[k].length);
+				temp_p[k] = Arrays.copyOf(operator.getDist(k), operator.getDist(k).length);
 			}
 
 			PrimitiveIterator.OfInt states = unknownStates.iterator();
@@ -2685,7 +2697,7 @@ public class MDPModelChecker extends ProbModelChecker
 					} else {
 						m = operator.update_support(gamma, mdpRewards.getStateReward(s), temp2p);
 					}
-					action_val[s][choice] = operator.getValueCvar(m, alpha);
+					action_val[s][choice] = operator.getValue(m);
 					action_cvar[s][choice] = operator.getValueCvar(m, alpha);
 					save_p[choice] = Arrays.copyOf(m, m.length);
 				}
@@ -2705,11 +2717,11 @@ public class MDPModelChecker extends ProbModelChecker
 				final int s = states.nextInt();
 				max_dist = max(max_dist, operator.getW(temp_p[s], s));
 				max_cvar_dist = max(max_cvar_dist,
-						abs(operator.getValueCvar(temp_p[s], alpha) - operator.getValueCvar(operator.p[s], alpha)));
-				operator.update_p(temp_p[s], s);
+						abs(operator.getValueCvar(temp_p[s], alpha) - operator.getValueCvar(operator.getDist(s), alpha)));
+				operator.update(temp_p[s], s);
 			}
 
-			if((max_dist > error_thresh)&(iters > 50)){mainLog.println("Max Wp dist :"+(max_dist) + " dist:"+(max_cvar_dist)+" at iter:"+iters);;}
+			if((iters > 20)){mainLog.println("Max Wp dist :"+(max_dist) + " dist:"+(max_cvar_dist)+" at iter:"+iters);;}
 
 
 //			mainLog.println("Max Wp dist :"+(max_dist - error_thresh) + " dist:"+(max_cvar_dist- error_thresh)+" at iter:"+iters);
@@ -2730,7 +2742,7 @@ public class MDPModelChecker extends ProbModelChecker
 //		mainLog.print("CVAR: "+ 1.0 +" \n[");
 		double [] temp = new double [n];
 		for (int i =0; i<n; i++){
-			temp[i] = operator.getValueCvar(operator.p[i], 1.0);
+			temp[i] = operator.getValueCvar(operator.getDist(i), 1.0);
 //			mainLog.print( temp[i]+", \n");
 		}
 //		mainLog.println("]");
