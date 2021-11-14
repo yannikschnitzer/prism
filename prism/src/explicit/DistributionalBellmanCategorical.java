@@ -58,10 +58,6 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
         this.p = new double [numStates][atoms];
     }
 
-    public void setAlpha(double a){
-        alpha=a;
-    }
-
     public double [] getZ()
     {
         return this.z;
@@ -79,7 +75,7 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
     }
 
     // updates probabilities for 1 action
-    public double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it) {
+    public double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it, int numSuccessors) {
         double [] sum_p= new double[atoms];
         while (trans_it.hasNext()) {
 

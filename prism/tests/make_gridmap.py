@@ -76,7 +76,7 @@ def write_gridmap(N, obs, p, goal=None, obs_cost=30):
         f.write(f'\t[south] (r<N | r=N) & !(')
         f.write(str); f.write(f')-> (1-p):(r\'=min(r+1, N)) + p: (c\'=min(c+1, N));\n')
 
-        f.write(f'\t[west]  (c<1 | c=1) & !(')
+        f.write(f'\t[west]  (c>1 | c=1) & !(')
         f.write(str); f.write(f')-> p:(r\'=max(r-1, 1)) + (1-p): (c\'=max(c-1, 1));\n')
 
         f.write(f'\t[north] (r=1 | r>1) & !(')

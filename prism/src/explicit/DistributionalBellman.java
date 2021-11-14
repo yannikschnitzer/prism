@@ -6,7 +6,6 @@ import java.util.Map;
 abstract class DistributionalBellman {
 
     int atoms = 1;
-    double delta_z = 1;
     int nactions = 4;
     double v_min ;
     double v_max ;
@@ -16,7 +15,7 @@ abstract class DistributionalBellman {
 
     public void setAlpha(double a){ alpha=a;}
 
-    public abstract double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it);
+    public abstract double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it, int numSuccesors);
 
     public abstract double [] update_support(double gamma, double state_reward, double []sum_p);
 

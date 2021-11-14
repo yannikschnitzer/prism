@@ -2624,14 +2624,14 @@ public class MDPModelChecker extends ProbModelChecker
 		timer = System.currentTimeMillis();
 
 		// Set up CVAR variables
-		int atoms = 51;
+		int atoms;
 		int iterations = 150;
 		double error_thresh = 0.01;
 		double error_thresh_cvar = 2;
 		double gamma = 1;
 		double v_max = 50;
 		double v_min = 0;
-		String method = "c51";
+		String method = "qr";
 		String c51 = "c51";
 		String qr = "qr";
 
@@ -2647,13 +2647,16 @@ public class MDPModelChecker extends ProbModelChecker
 		DistributionalBellman operator;
 
 		if (method.equals(c51)) {
+			atoms = 51;
 			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
 		} else if (method.equals(qr)){
-			operator = new DistributionalBellmanQR(atoms, v_min, v_max, n, mainLog);
+			atoms = 10;
+			operator = new DistributionalBellmanQR(atoms, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
 		}
 		else{
+			atoms=51;
 			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
 		}
@@ -2663,10 +2666,11 @@ public class MDPModelChecker extends ProbModelChecker
 		double [][] action_val = new double[n][nactions];
 
 		// for printing different cvar levels
-		double alpha = 0.1;
+		double alpha = 1.0;
 		double [][] action_cvar = new double[n][nactions];
 		Object [] policy = new Object[n];
-		double min_v;
+		Object [] policy_cvar = new Object[n];
+		double min_v; double min_c;
 		double max_dist = Float.POSITIVE_INFINITY;
 		double max_cvar_dist ;
 		int iters = 0;
@@ -2686,12 +2690,13 @@ public class MDPModelChecker extends ProbModelChecker
 				int numChoices = mdp.getNumChoices(s);
 				double[][] save_p = new double[numChoices][atoms];
 				Arrays.fill(action_val[s], Float.POSITIVE_INFINITY);
+				Arrays.fill(action_cvar[s], Float.POSITIVE_INFINITY);
 
 				for (int choice = 0; choice < numChoices; choice++){ // aka action
 					double [] temp2p ; double [] m ;
 
 					Iterator<Entry<Integer, Double>>it = mdp.getTransitionsIterator(s,choice);
-					temp2p = operator.update_probabilities(it);
+					temp2p = operator.update_probabilities(it, mdp.getNumTransitions(s));
 					if (mdpRewards.hasTransitionRewards()) {
 						m = operator.update_support(gamma, mdpRewards.getTransitionReward(s, choice), temp2p);
 					} else {
@@ -2703,9 +2708,10 @@ public class MDPModelChecker extends ProbModelChecker
 				}
 
 				int min_i = 0;
-				min_v = Float.POSITIVE_INFINITY;
+				min_v = Float.POSITIVE_INFINITY; min_c = Float.POSITIVE_INFINITY;
 				for (int i =0; i<numChoices; i++) {
 					if (action_val[s][i] < min_v){ min_i = i; min_v = action_val[s][i]; policy[s] = mdp.getAction(s, i);}
+					if (action_cvar[s][i] < min_c){ min_c = action_cvar[s][i]; policy_cvar[s] = mdp.getAction(s, i);}
 				}
 				temp_p[s] = Arrays.copyOf(save_p[min_i], save_p[min_i].length);
 			}
@@ -2748,9 +2754,9 @@ public class MDPModelChecker extends ProbModelChecker
 //		mainLog.println("]");
 
 		// Print to file
-		boolean print= true;
+		boolean print= false;
 		if (print) {
-			printToFile(policy, action_cvar, alpha, "gridmap/cvar_out_"+n+"_"+alpha+".out", n, mdp.getMaxNumChoices());
+			printToFile(policy_cvar, action_cvar, alpha, "gridmap/cvar_out_"+n+"_"+alpha+".out", n, mdp.getMaxNumChoices());
 		}
 //
 
@@ -2808,8 +2814,9 @@ public class MDPModelChecker extends ProbModelChecker
 		for (double[] doubles : action_cvar) // copy  temp value soln2 back to soln -> corresponds to Value table
 		{
 			DecimalFormat df = new DecimalFormat("0.000");
-			Arrays.stream(doubles).forEach(e -> out.print(df.format(e) + ","));
-
+			Arrays.stream(doubles).forEach(e -> {
+				if (e==Float.POSITIVE_INFINITY) {out.print("0.000,");}
+			    else {out.print(df.format(e) + ",");}});
 		}
 
 		out.print("\n");
