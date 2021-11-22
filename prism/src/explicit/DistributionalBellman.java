@@ -15,9 +15,7 @@ abstract class DistributionalBellman {
 
     public void setAlpha(double a){ alpha=a;}
 
-    public abstract double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it, int numSuccesors);
-
-    public abstract double [] update_support(double gamma, double state_reward, double []sum_p);
+    public abstract double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, int numTransitions, double gamma, double state_reward);
 
     public abstract double getValue(double [] temp);
 

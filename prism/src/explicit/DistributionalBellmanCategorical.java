@@ -74,8 +74,15 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
         }
     }
 
+    public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, int numTransitions, double gamma, double state_reward)
+    {
+        double [] res = update_probabilities(trans_it);
+        res = update_support(gamma, state_reward, res);
+        return res;
+    }
+
     // updates probabilities for 1 action
-    public double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it, int numSuccessors) {
+    public double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it) {
         double [] sum_p= new double[atoms];
         while (trans_it.hasNext()) {
 

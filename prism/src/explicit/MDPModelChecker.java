@@ -2631,7 +2631,7 @@ public class MDPModelChecker extends ProbModelChecker
 		double gamma = 1;
 		double v_max = 50;
 		double v_min = 0;
-		String method = "qr";
+		String method = "c51";
 		String c51 = "c51";
 		String qr = "qr";
 
@@ -2651,7 +2651,7 @@ public class MDPModelChecker extends ProbModelChecker
 			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
 		} else if (method.equals(qr)){
-			atoms = 10;
+			atoms = 100;
 			operator = new DistributionalBellmanQR(atoms, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
 		}
@@ -2688,20 +2688,21 @@ public class MDPModelChecker extends ProbModelChecker
 			while (states.hasNext()) {
 				final int s = states.nextInt();
 				int numChoices = mdp.getNumChoices(s);
+				int numTransitions = 0;
 				double[][] save_p = new double[numChoices][atoms];
 				Arrays.fill(action_val[s], Float.POSITIVE_INFINITY);
 				Arrays.fill(action_cvar[s], Float.POSITIVE_INFINITY);
 
 				for (int choice = 0; choice < numChoices; choice++){ // aka action
-					double [] temp2p ; double [] m ;
-
+					double [] m ; numTransitions = mdp.getNumTransitions(s, choice);
 					Iterator<Entry<Integer, Double>>it = mdp.getTransitionsIterator(s,choice);
-					temp2p = operator.update_probabilities(it, mdp.getNumTransitions(s));
+
 					if (mdpRewards.hasTransitionRewards()) {
-						m = operator.update_support(gamma, mdpRewards.getTransitionReward(s, choice), temp2p);
+						m = operator.step(it, numTransitions, gamma, mdpRewards.getTransitionReward(s, choice));
 					} else {
-						m = operator.update_support(gamma, mdpRewards.getStateReward(s), temp2p);
+						m = operator.step(it, numTransitions, gamma, mdpRewards.getStateReward(s));
 					}
+
 					action_val[s][choice] = operator.getValue(m);
 					action_cvar[s][choice] = operator.getValueCvar(m, alpha);
 					save_p[choice] = Arrays.copyOf(m, m.length);

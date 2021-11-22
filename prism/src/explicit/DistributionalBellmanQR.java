@@ -1,16 +1,11 @@
 package explicit;
 
-import prism.Prism;
+import edu.jas.util.MapEntry;
 import prism.PrismLog;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 import static java.lang.Math.*;
-import static java.lang.Math.ceil;
 
 public class DistributionalBellmanQR extends DistributionalBellman {
 
@@ -21,8 +16,7 @@ public class DistributionalBellmanQR extends DistributionalBellman {
     int atoms = 1;
     double delta_p = 1;
     prism.PrismLog mainLog;
-    double [] tau;
-
+    double [] tau_hat;
 
     public DistributionalBellmanQR(int atoms, int n, PrismLog log)
     {
@@ -32,12 +26,12 @@ public class DistributionalBellmanQR extends DistributionalBellman {
         mainLog = log;
         this.delta_p = 1.0/atoms;
         this.p = new double[atoms];
-        this.tau = new double[atoms];
+        this.tau_hat = new double[atoms];
         z = new double[n][atoms];
 
-        for (int i = 1; i <= atoms; i++) {
-            this.tau[i-1] = ( (i) *this.delta_p);
-            this.p[i-1] =  delta_p;
+        for (int i = 0; i < atoms; i++) {
+            this.tau_hat[i] = ( (2*i +1)*delta_p/2.0);
+            this.p[i] =  delta_p;
         }
     }
 
@@ -94,45 +88,46 @@ public class DistributionalBellmanQR extends DistributionalBellman {
         return sqrt(sum);
     }
 
-    public double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it, int numSuccessors){
-        double [] sup = new double[atoms];
-        int sum =0;
-        double [] ind = new double[numSuccessors];
-        int [] next = new int[numSuccessors];
-        int i=0; double rem_p;
+    public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, int numTransitions, double gamma, double state_reward)
+    {
+
+        ArrayList<MapEntry<Double, Double>> multimap = new ArrayList<>();
+        double [] result;
+
+        // Update based on transition probabilities and support values
         while (trans_it.hasNext()) {
             Map.Entry<Integer, Double> e = trans_it.next();
-            double temp = new BigDecimal(e.getValue()/delta_p).setScale(2, RoundingMode.HALF_UP).doubleValue();
-            sum+= temp;
-            ind[i] = sum;
-            next[i] = e.getKey();
-            i+=1;
-        }
-        i=0;
-        for (int j = 0; j < atoms; j++) {
-            if (j+1 <= floor(ind[i])) {
-                sup[j] = z[next[i]][j];
-            } else {
-                rem_p=  ind[i] - floor(ind[i]);
-                if (rem_p > 0){
-                   sup[j] = rem_p * z[next[i]][j] + (1-rem_p) * z[next[i+1]][j];
-                }
-                else sup[j] = z[next[i+1]][j];
-                i+=1;
+            for (int j = 0; j < atoms; j++) {
+                multimap.add(new MapEntry<>(delta_p * e.getValue(), gamma*z[e.getKey()][j] + state_reward));
             }
         }
-        return sup;
+
+        // Sort the list using lambda expression
+        multimap.sort(Map.Entry.comparingByValue());
+
+        // Consolidate based on probability
+        result = consolidate(multimap.iterator());
+
+        return result;
     }
 
-    public double [] update_support(double gamma ,double state_reward,double[] sum_z) {
-        double [] m = new double [atoms];
+    public double[] consolidate(Iterator<MapEntry<Double, Double>> it){
+        double cum_p = 0.0;
+        int index =0;
+        Map.Entry<Double, Double> entry;
+        double [] result = new double[atoms];
 
-        for (int j =0; j<atoms; j++){
-            double temp = (state_reward+gamma*sum_z[j]);
-            m[j] += temp;
+        while(it.hasNext() & index < atoms)
+        {
+            entry = it.next();
+            cum_p += entry.getKey();
+            if(cum_p >= tau_hat[index]) {
+                result[index] = entry.getValue();
+                index += 1;
+            }
         }
 
-        return m;
+        return result;
     }
 
     public void update(double [] temp, int state){
@@ -151,6 +146,7 @@ public class DistributionalBellmanQR extends DistributionalBellman {
 
     @Override
     public void initialize(int n) {
+
     }
 
 }
