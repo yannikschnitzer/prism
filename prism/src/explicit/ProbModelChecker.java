@@ -1149,7 +1149,11 @@ public class ProbModelChecker extends NonProbModelChecker
 		ModelCheckerResult res = null;
 		switch (model.getModelType()) {
 		case DTMC:
-			res = ((DTMCModelChecker) this).computeReachRewards((DTMC) model, (MCRewards) modelRewards, target);
+			if (modifier != null && modifier.equals("dist")) {
+				res = ((DTMCModelChecker) this).computeReachRewardsDistr((DTMC) model, (MCRewards) modelRewards, target);
+			} else {
+				res = ((DTMCModelChecker) this).computeReachRewards((DTMC) model, (MCRewards) modelRewards, target);
+			}
 			break;
 		case CTMC:
 			res = ((CTMCModelChecker) this).computeReachRewards((CTMC) model, (MCRewards) modelRewards, target);
@@ -1172,7 +1176,11 @@ public class ProbModelChecker extends NonProbModelChecker
 					+ "s");
 		}
 		result.setStrategy(res.strat);
-		return StateValues.createFromDoubleArrayResult(res, model);
+		if (res.solnObj != null) {
+			return StateValues.createFromObjectArray(TypeDouble.getInstance(), res.solnObj, model);
+		} else {
+			return StateValues.createFromDoubleArrayResult(res, model);
+		}
 	}
 
 	/**

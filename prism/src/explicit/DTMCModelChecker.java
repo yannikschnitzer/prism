@@ -27,6 +27,9 @@
 package explicit;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
@@ -35,6 +38,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.PrimitiveIterator;
 import java.util.PrimitiveIterator.OfInt;
+import java.util.TreeMap;
 
 import acceptance.AcceptanceReach;
 import acceptance.AcceptanceType;
@@ -50,6 +54,7 @@ import parser.ast.Expression;
 import prism.AccuracyFactory;
 import prism.ModelType;
 import prism.OptionsIntervalIteration;
+import prism.Pair;
 import prism.Prism;
 import prism.PrismComponent;
 import prism.PrismException;
@@ -2595,6 +2600,92 @@ public class DTMCModelChecker extends ProbModelChecker
 		return res;
 	}
 
+	/**
+	 * Compute the full distribution for the reward accumulated until a target is reached.
+	 * @param dtmc The DTMC
+	 * @param mcRewards The rewards
+	 * @param target Target states
+	 */
+	public ModelCheckerResult computeReachRewardsDistr(DTMC dtmc, MCRewards mcRewards, BitSet target) throws PrismException
+	{
+		int T = 100;
+		List<Pair<Integer,Integer>> states = new ArrayList<>();
+		List <Double> probs = new ArrayList<>();
+		for (int s : dtmc.getInitialStates()) {
+			Pair<Integer,Integer> sr = new Pair<>(s, 0);
+			states.add(sr);
+			probs.add(1.0 / dtmc.getNumInitialStates());
+		}
+		
+		for (int t = 1; t <= T; t++) {
+			
+			List<Pair<Integer,Integer>> statesNew = new ArrayList<>();
+			List <Double> probsNew = new ArrayList<>();
+			int n = states.size();
+			for (int i = 0 ; i < n; i++) {
+				int s = states.get(i).first;
+				int r = states.get(i).second;
+				Iterator<Entry<Integer,Double>> iter = dtmc.getTransitionsIterator(s);
+				while (iter.hasNext()) {
+					Entry<Integer,Double> entry = iter.next();
+					double prob = probs.get(i) * entry.getValue();
+					int sNext = entry.getKey();
+					// TODO: check rewards are integers
+					int sr = target.get(s) ? 0 : (int) mcRewards.getStateReward(s);
+					Pair<Integer,Integer> srNext = new Pair<>(sNext, r + sr);
+					int j = statesNew.indexOf(srNext);
+					if (j != -1) {
+						probsNew.set(j, probsNew.get(j) + prob);
+					} else {
+						statesNew.add(srNext);
+						probsNew.add(prob);
+					}
+				}
+			}
+			states = statesNew;
+			probs = probsNew;
+		}
+		int n = states.size();
+//		mainLog.print("t=" + T + ":");
+//		for (int i = 0; i < n; i++) {
+//			mainLog.print(" " + states.get(i) + ":" + probs.get(i));
+//		}
+//		mainLog.println();
+		
+		TreeMap<Integer,Double> dist = new TreeMap<>();
+		n = states.size();
+		int rMax = -1;
+		for (int i = 0; i < n; i++) {
+			int r = states.get(i).second;
+			rMax = Math.max(rMax, r);
+			Double p = dist.get(r);
+			if (p == null) {
+				dist.put(r, probs.get(i));
+			} else {
+				dist.put(r, p + probs.get(i));
+			}
+		}
+		
+		try (PrintWriter pw = new PrintWriter(new File("distr.csv"))) {
+			pw.println("r,p");
+		for (int r = 0; r <= rMax; r++) {
+			Double p = dist.get(r);
+			p = (p == null) ? 0.0 : p;
+			pw.println(r + "," + p);
+		}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// Return results
+		Object solnObj[] = new Object[dtmc.getNumStates()];
+		solnObj[dtmc.getFirstInitialState()] = dist;
+		ModelCheckerResult res = new ModelCheckerResult();
+		res.solnObj = solnObj;
+		return res;
+	}
+	
 	/**
 	 * Simple test program.
 	 */
