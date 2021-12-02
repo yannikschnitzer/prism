@@ -14,7 +14,7 @@ def init_argparse() -> argparse.ArgumentParser:
     )
     parser.add_argument('N', metavar='N', type=int, default=10, help='size of the gridmap')
     parser.add_argument('-o', "--obs", metavar='obs', type=int, action='store', default=5, help='number of obstacles must be less than N*N')
-    parser.add_argument('-p', "--prob", metavar='p', type=float, action='store', default=0.1, help='probability for transition')
+    parser.add_argument('-p', "--prob", metavar='p', type=float, action='store', default=0.1, help='probability for failed transition')
     parser.add_argument('-c', "--cost", metavar='c', type=float, action='store', default=30, help='cost for obstacle')
 
     return parser
@@ -24,9 +24,9 @@ def compute_obstacles(N, obs, goal):
     obstacles =[]
 
     while len(obstacles) < obs:
-        temp = random.randint(1,(N*N)-1)
+        temp = random.randint(1,(N*N))
         # print(temp, " -- ", goal[0]*(N-1)+goal[1])
-        if  (temp not in obstacles) and temp != goal[0]*(N-1)+goal[1] :
+        if  (temp not in obstacles) and temp != (goal[0]-1)*(N)+(goal[1]-1) :
             obstacles.append(temp)
 
     r=[];c=[]

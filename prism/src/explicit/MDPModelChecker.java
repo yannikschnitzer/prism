@@ -2629,11 +2629,13 @@ public class MDPModelChecker extends ProbModelChecker
 		double error_thresh = 0.01;
 		double error_thresh_cvar = 2;
 		double gamma = 1;
-		double v_max = 50;
+		double v_max = 100;
 		double v_min = 0;
-		String method = "c51";
+		String method = "qr";
 		String c51 = "c51";
 		String qr = "qr";
+		// for printing different cvar levels
+		double alpha = 0.1;
 
 		int nactions = mdp.getMaxNumChoices();
 
@@ -2664,9 +2666,6 @@ public class MDPModelChecker extends ProbModelChecker
 		// Create/initialise solution vector(s)
 		double[][] temp_p;
 		double [][] action_val = new double[n][nactions];
-
-		// for printing different cvar levels
-		double alpha = 1.0;
 		double [][] action_cvar = new double[n][nactions];
 		Object [] policy = new Object[n];
 		Object [] policy_cvar = new Object[n];
@@ -2703,8 +2702,9 @@ public class MDPModelChecker extends ProbModelChecker
 						m = operator.step(it, numTransitions, gamma, mdpRewards.getStateReward(s));
 					}
 
-					action_val[s][choice] = operator.getValue(m);
-					action_cvar[s][choice] = operator.getValueCvar(m, alpha);
+					action_val[s][choice] = operator.getValueCvar(m, alpha);
+					// TODO cvar [s] not cvar[s][choice]
+					action_cvar[s][choice] = operator.getValueCvar(m, alpha); // TODO move this to after we compute dristibution
 					save_p[choice] = Arrays.copyOf(m, m.length);
 				}
 
@@ -2734,7 +2734,8 @@ public class MDPModelChecker extends ProbModelChecker
 //			mainLog.println("Max Wp dist :"+(max_dist - error_thresh) + " dist:"+(max_cvar_dist- error_thresh)+" at iter:"+iters);
 //			max_dist < error_thresh
 			if ((max_cvar_dist < error_thresh_cvar) & (max_dist <error_thresh)&(iters>20)) {
-				mainLog.println("\nV at " + (iters + 1));
+				mainLog.println("\nV at " + (iters + 1) + " with method "+method);
+
 
 				for (double[] doubles : temp_p) // copy  temp value soln2 back to soln -> corresponds to Value table
 				{
@@ -2755,9 +2756,9 @@ public class MDPModelChecker extends ProbModelChecker
 //		mainLog.println("]");
 
 		// Print to file
-		boolean print= false;
+		boolean print= true;
 		if (print) {
-			printToFile(policy_cvar, action_cvar, alpha, "gridmap/cvar_out_"+n+"_"+alpha+".out", n, mdp.getMaxNumChoices());
+			printToFile(policy_cvar, action_cvar, alpha, "gridmap/cvar_out_"+n+"_"+ method +"_"+alpha+".out", n, mdp.getMaxNumChoices());
 		}
 //
 
