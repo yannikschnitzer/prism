@@ -2634,9 +2634,8 @@ public class MDPModelChecker extends ProbModelChecker
 		double gamma = 1;
 		double v_max = 50;
 		double v_min = 0;
-		String method = "c51";
-		String c51 = "c51";
-		String qr = "qr";
+		String c51 = "C51";
+		String qr = "QR";
 
 		int nactions = mdp.getMaxNumChoices();
 
@@ -2649,11 +2648,12 @@ public class MDPModelChecker extends ProbModelChecker
 //		int numS = unknownStates.cardinality();
 		DistributionalBellman operator;
 
-		if (method.equals(c51)) {
+		
+		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
 			atoms = 51;
 			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
-		} else if (method.equals(qr)){
+		} else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
 			atoms = 100;
 			operator = new DistributionalBellmanQR(atoms, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
