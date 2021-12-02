@@ -45,6 +45,8 @@ import explicit.rewards.MCRewards;
 import explicit.rewards.MCRewardsFromMDPRewards;
 import explicit.rewards.MDPRewards;
 import explicit.rewards.Rewards;
+import explicit.rewards.StateRewards;
+import explicit.rewards.StateRewardsArray;
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 import parser.ast.Expression;
@@ -60,6 +62,7 @@ import prism.PrismLog;
 import prism.PrismNotSupportedException;
 import prism.PrismSettings;
 import prism.PrismUtils;
+import strat.MDStrategy;
 import strat.MDStrategyArray;
 
 import static java.lang.Math.*;
@@ -2670,6 +2673,7 @@ public class MDPModelChecker extends ProbModelChecker
 		double [][] action_cvar = new double[n][nactions];
 		Object [] policy = new Object[n];
 		Object [] policy_cvar = new Object[n];
+		int[] choices = new int[n];
 		double min_v; double min_c;
 		double max_dist = Float.POSITIVE_INFINITY;
 		double max_cvar_dist ;
@@ -2712,7 +2716,7 @@ public class MDPModelChecker extends ProbModelChecker
 				min_v = Float.POSITIVE_INFINITY; min_c = Float.POSITIVE_INFINITY;
 				for (int i =0; i<numChoices; i++) {
 					if (action_val[s][i] < min_v){ min_i = i; min_v = action_val[s][i]; policy[s] = mdp.getAction(s, i);}
-					if (action_cvar[s][i] < min_c){ min_c = action_cvar[s][i]; policy_cvar[s] = mdp.getAction(s, i);}
+					if (action_cvar[s][i] < min_c){ min_c = action_cvar[s][i]; policy_cvar[s] = mdp.getAction(s, i); choices[s] = i; }
 				}
 				temp_p[s] = Arrays.copyOf(save_p[min_i], save_p[min_i].length);
 			}
@@ -2766,6 +2770,17 @@ public class MDPModelChecker extends ProbModelChecker
 		//Arrays.toString(policy);
 		mainLog.println(Arrays.toString(policy));
 
+		// Compute distribution on induced DTMC
+		mainLog.println("Computing distribution on induced DTMC...");
+		MDStrategy strat = new MDStrategyArray(mdp, choices);
+		DTMC dtmc = new DTMCFromMDPAndMDStrategy(mdp, strat);
+		StateRewardsArray mcRewards = new StateRewardsArray(n);
+		for (int s = 0; s < n; s++) {
+			mcRewards.setStateReward(s, mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choices[s]));
+		}
+		DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
+		mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, target);
+		
 		// Finished CVAR
 		timer = System.currentTimeMillis() - timer;
 		if (verbosity >= 1) {
