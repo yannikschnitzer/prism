@@ -2634,7 +2634,8 @@ public class MDPModelChecker extends ProbModelChecker
 		double gamma = 1;
 		double v_max = 100;
 		double v_min = 0;
-		String method = "qr";
+		double alpha=0.2;
+
 		String c51 = "C51";
 		String qr = "QR";
 
@@ -2668,14 +2669,13 @@ public class MDPModelChecker extends ProbModelChecker
 		// Create/initialise solution vector(s)
 		double[][] temp_p;
 		double [][] action_val = new double[n][nactions];
-		double [][] action_cvar = new double[n][nactions];
+		double [] action_cvar = new double[n];
 		Object [] policy = new Object[n];
-		Object [] policy_cvar = new Object[n];
 		int[] choices = new int[n];
-		double min_v; double min_c;
-		double max_dist = Float.POSITIVE_INFINITY;
+		double min_v;
+		double max_dist ;
 		double max_cvar_dist ;
-		int iters = 0;
+		int iters;
 
 		// Start iterations - number of episodes
 		for (iters = 0; (iters < iterations) ; iters++)
@@ -2693,7 +2693,6 @@ public class MDPModelChecker extends ProbModelChecker
 				int numTransitions = 0;
 				double[][] save_p = new double[numChoices][atoms];
 				Arrays.fill(action_val[s], Float.POSITIVE_INFINITY);
-				Arrays.fill(action_cvar[s], Float.POSITIVE_INFINITY);
 
 				for (int choice = 0; choice < numChoices; choice++){ // aka action
 					double [] m ; numTransitions = mdp.getNumTransitions(s, choice);
@@ -2706,16 +2705,13 @@ public class MDPModelChecker extends ProbModelChecker
 					}
 
 					action_val[s][choice] = operator.getValueCvar(m, alpha);
-					// TODO cvar [s] not cvar[s][choice]
-					action_cvar[s][choice] = operator.getValueCvar(m, alpha); // TODO move this to after we compute dristibution
 					save_p[choice] = Arrays.copyOf(m, m.length);
 				}
 
 				int min_i = 0;
-				min_v = Float.POSITIVE_INFINITY; min_c = Float.POSITIVE_INFINITY;
+				min_v = Float.POSITIVE_INFINITY;
 				for (int i =0; i<numChoices; i++) {
-					if (action_val[s][i] < min_v){ min_i = i; min_v = action_val[s][i]; policy[s] = mdp.getAction(s, i);}
-					if (action_cvar[s][i] < min_c){ min_c = action_cvar[s][i]; policy_cvar[s] = mdp.getAction(s, i); choices[s] = i; }
+					if (action_val[s][i] < min_v){ min_i = i; min_v = action_val[s][i]; action_cvar[s]=min_v; policy[s] = mdp.getAction(s, i);choices[s] = i;}
 				}
 				temp_p[s] = Arrays.copyOf(save_p[min_i], save_p[min_i].length);
 			}
@@ -2723,6 +2719,7 @@ public class MDPModelChecker extends ProbModelChecker
 			states = unknownStates.iterator();
 			max_dist = 0.0;
 			max_cvar_dist = 0.0;
+			// TODO max metric dist instead of max cvar distance.
 			while (states.hasNext()) {
 				final int s = states.nextInt();
 				max_dist = max(max_dist, operator.getW(temp_p[s], s));
@@ -2735,10 +2732,9 @@ public class MDPModelChecker extends ProbModelChecker
 
 
 //			mainLog.println("Max Wp dist :"+(max_dist - error_thresh) + " dist:"+(max_cvar_dist- error_thresh)+" at iter:"+iters);
-//			max_dist < error_thresh
-			if ((max_cvar_dist < error_thresh_cvar) & (max_dist <error_thresh)&(iters>20)) {
-				mainLog.println("\nV at " + (iters + 1) + " with method "+method);
 
+			if ((max_cvar_dist < error_thresh_cvar) & (max_dist <error_thresh)&(iters>20)) {
+				mainLog.println("\nV at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
 
 				for (double[] doubles : temp_p) // copy  temp value soln2 back to soln -> corresponds to Value table
 				{
@@ -2750,20 +2746,13 @@ public class MDPModelChecker extends ProbModelChecker
 				break;
 			}
 		}
-//		mainLog.print("CVAR: "+ 1.0 +" \n[");
-		double [] temp = new double [n];
-		for (int i =0; i<n; i++){
-			temp[i] = operator.getValueCvar(operator.getDist(i), 1.0);
-//			mainLog.print( temp[i]+", \n");
-		}
-//		mainLog.println("]");
 
 		// Print to file
 		boolean print= true;
 		if (print) {
-			printToFile(policy_cvar, action_cvar, alpha, "gridmap/cvar_out_"+n+"_"+ method +"_"+alpha+".out", n, mdp.getMaxNumChoices());
+			printToFile(policy, action_val, alpha, "gridmap/cvar_out_"+n+"_"+ settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) +"_"+alpha+".out", n, mdp.getMaxNumChoices());
 		}
-//
+
 
 		// Policy
 		mainLog.println("\nPolicy");
@@ -2786,12 +2775,11 @@ public class MDPModelChecker extends ProbModelChecker
 		if (verbosity >= 1) {
 			mainLog.print("\nCVAR (" + (min ? "min" : "max") + ")");
 			mainLog.println(" ran " + iters + " iterations and " + timer / 1000.0 + " seconds.");
-//			mainLog.println(temp);
 		}
 
 		// Store results
 		ModelCheckerResult res = new ModelCheckerResult();
-		res.soln = Arrays.copyOf(temp, temp.length); // FIXME make it based on y parameter and iterate over columns to get result
+		res.soln = Arrays.copyOf(action_cvar, action_cvar.length); // FIXME make it based on y parameter and iterate over columns to get result
 		res.numIters = iterations;
 		res.timeTaken = timer / 1000.0;
 		return res;

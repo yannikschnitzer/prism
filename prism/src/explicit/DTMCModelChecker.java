@@ -2666,7 +2666,7 @@ public class DTMCModelChecker extends ProbModelChecker
 			}
 		}
 		
-		try (PrintWriter pw = new PrintWriter(new File("distr.csv"))) {
+		try (PrintWriter pw = new PrintWriter(new File("prism/distr.csv"))) {
 			pw.println("r,p");
 		for (int r = 0; r <= rMax; r++) {
 			Double p = dist.get(r);
