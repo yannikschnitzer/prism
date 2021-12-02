@@ -96,6 +96,7 @@ public class PrismSettings implements Observer
 	public static final	String PRISM_MAX_ITERS						= "prism.maxIters";//"prism.maxIterations";
 	public static final String PRISM_EXPORT_ITERATIONS				= "prism.exportIterations";
 	public static final	String PRISM_GRID_RESOLUTION				= "prism.gridResolution";
+	public static final String PRISM_DISTR_SOLN_METHOD				= "prism.distrSolnMethod";
 	
 	public static final	String PRISM_CUDD_MAX_MEM					= "prism.cuddMaxMem";
 	public static final	String PRISM_CUDD_EPSILON					= "prism.cuddEpsilon";
@@ -271,6 +272,8 @@ public class PrismSettings implements Observer
 																			"Export solution vectors for iteration algorithms to iterations.html"},
 			{ INTEGER_TYPE,		PRISM_GRID_RESOLUTION,					"Fixed grid resolution",			    "4.5",			new Integer(10),															"1,",																						
 																			"The resolution for the fixed grid approximation algorithm for POMDPs." },
+			{ CHOICE_TYPE,		PRISM_DISTR_SOLN_METHOD,				"Distributional solution method",				"4.7",			"C51",																"C51,QR",
+																			"Which method to use when solving for distributions." },
 			// MODEL CHECKING OPTIONS:
 			{ BOOLEAN_TYPE,		PRISM_PRECOMPUTATION,					"Use precomputation",					"2.1",			new Boolean(true),															"",																							
 																			"Whether to use model checking precomputation algorithms (Prob0, Prob1, etc.), where optional." },
@@ -1049,6 +1052,20 @@ public class PrismSettings implements Observer
 					set(PRISM_HEURISTIC, "Memory");
 				else
 					throw new PrismException("Unrecognised option for -" + sw + " switch (options are: none, speed, memory)");
+			} else {
+				throw new PrismException("No parameter specified for -" + sw + " switch");
+			}
+		}
+		// Distributional model checking methods
+		else if (sw.equals("distrmethod")) {
+			if (i < args.length - 1) {
+				s = args[++i];
+				if (s.equals("c51"))
+					set(PRISM_DISTR_SOLN_METHOD, "C51");
+				else if (s.equals("qr"))
+					set(PRISM_DISTR_SOLN_METHOD, "QR");
+				else
+					throw new PrismException("Unrecognised option for -" + sw + " switch (options are: c51, qr)");
 			} else {
 				throw new PrismException("No parameter specified for -" + sw + " switch");
 			}

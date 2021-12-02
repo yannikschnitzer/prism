@@ -611,16 +611,11 @@ public class ProbModelChecker extends NonProbModelChecker
 			probs.print(mainLog);
 		}
 
-		// For =? properties, just return values
-		if (opInfo.isNumeric()) {
-			return probs;
+		// For =? properties, just return values; otherwise compare against bound
+		if (!opInfo.isNumeric()) {
+			probs.applyPredicate(v -> opInfo.apply((double) v, probs.getAccuracy()));
 		}
-		// Otherwise, compare against bound to get set of satisfying states
-		else {
-			BitSet sol = probs.getBitSetFromInterval(opInfo.getRelOp(), opInfo.getBound());
-			probs.clear();
-			return StateValues.createFromBitSet(sol, model);
-		}
+		return probs;
 	}
 
 	/**
@@ -693,8 +688,7 @@ public class ProbModelChecker extends NonProbModelChecker
 
 		if (negated) {
 			// Subtract from 1 for negation
-			probs.timesConstant(-1.0);
-			probs.plusConstant(1.0);
+			probs.applyFunction(TypeDouble.getInstance(), v -> 1.0 - (double) v);
 		}
 
 		return probs;
@@ -912,7 +906,7 @@ public class ProbModelChecker extends NonProbModelChecker
 		Rewards rewards = constructRewards(model, r);
 
 		// Compute rewards
-		StateValues rews = checkRewardFormula(model, rewards, expr.getExpression(), expr.getModifier(), minMax, statesOfInterest);
+		StateValues rews = checkRewardFormula(model, rewards, expr.getExpression(), minMax, statesOfInterest, expr.getModifier());
 
 		// Print out rewards
 		if (getVerbosity() > 5) {
@@ -920,16 +914,11 @@ public class ProbModelChecker extends NonProbModelChecker
 			rews.print(mainLog);
 		}
 
-		// For =? properties, just return values
-		if (opInfo.isNumeric()) {
-			return rews;
+		// For =? properties, just return values; otherwise compare against bound
+		if (!opInfo.isNumeric()) {
+			rews.applyPredicate(v -> opInfo.apply((double) v, rews.getAccuracy()));
 		}
-		// Otherwise, compare against bound to get set of satisfying states
-		else {
-			BitSet sol = rews.getBitSetFromInterval(opInfo.getRelOp(), opInfo.getBound());
-			rews.clear();
-			return StateValues.createFromBitSet(sol, model);
-		}
+		return rews;
 	}
 
 	/**
@@ -961,7 +950,7 @@ public class ProbModelChecker extends NonProbModelChecker
 	/**
 	 * Compute rewards for the contents of an R operator.
 	 */
-	protected StateValues checkRewardFormula(Model model, Rewards modelRewards, Expression expr, String modifier, MinMax minMax, BitSet statesOfInterest) throws PrismException
+	protected StateValues checkRewardFormula(Model model, Rewards modelRewards, Expression expr, MinMax minMax, BitSet statesOfInterest, String modifier) throws PrismException
 	{
 		StateValues rewards = null;
 
@@ -985,7 +974,7 @@ public class ProbModelChecker extends NonProbModelChecker
 				throw new PrismNotSupportedException("Explicit engine does not yet handle the " + exprTemp.getOperatorSymbol() + " reward operator");
 			}
 		} else if (expr.getType() instanceof TypePathBool || expr.getType() instanceof TypeBool) {
-			rewards = checkRewardPathFormula(model, modelRewards, expr, modifier, minMax, statesOfInterest);
+			rewards = checkRewardPathFormula(model, modelRewards, expr, minMax, statesOfInterest, modifier);
 		}
 
 		if (rewards == null)
@@ -1054,7 +1043,7 @@ public class ProbModelChecker extends NonProbModelChecker
 		// Compute/return the rewards
 		// A trivial case: "C<=0" (prob is 1 in target states, 0 otherwise)
 		if (timeInt == 0 || timeDouble == 0) {
-			StateValues res = new StateValues(TypeDouble.getInstance(), model.getNumStates(), 0.0);
+			StateValues res = StateValues.createFromSingleValue(TypeDouble.getInstance(), 0.0, model);
 			res.setAccuracy(AccuracyFactory.doublesFromQualitative());
 			return res;
 		}
@@ -1132,14 +1121,10 @@ public class ProbModelChecker extends NonProbModelChecker
 	/**
 	 * Compute rewards for a path formula in a reward operator.
 	 */
-	protected StateValues checkRewardPathFormula(Model model, Rewards modelRewards, Expression expr, String modifier, MinMax minMax, BitSet statesOfInterest) throws PrismException
+	protected StateValues checkRewardPathFormula(Model model, Rewards modelRewards, Expression expr, MinMax minMax, BitSet statesOfInterest, String modifier) throws PrismException
 	{
 		if (Expression.isReach(expr)) {
-			if (modifier != null && modifier.equals("cvar")) {
-				return checkRewardReachCvar(model, modelRewards, (ExpressionTemporal) expr, minMax, statesOfInterest);
-			} else {
-				return checkRewardReach(model, modelRewards, (ExpressionTemporal) expr, minMax, statesOfInterest);
-			}
+			return checkRewardReach(model, modelRewards, (ExpressionTemporal) expr, minMax, statesOfInterest, modifier);
 		}
 		else if (Expression.isCoSafeLTLSyntactic(expr, true)) {
 			return checkRewardCoSafeLTL(model, modelRewards, expr, minMax, statesOfInterest);
@@ -1150,7 +1135,7 @@ public class ProbModelChecker extends NonProbModelChecker
 	/**
 	 * Compute rewards for a reachability reward operator.
 	 */
-	protected StateValues checkRewardReach(Model model, Rewards modelRewards, ExpressionTemporal expr, MinMax minMax, BitSet statesOfInterest) throws PrismException
+	protected StateValues checkRewardReach(Model model, Rewards modelRewards, ExpressionTemporal expr, MinMax minMax, BitSet statesOfInterest, String modifier) throws PrismException
 	{
 		// No time bounds allowed
 		if (expr.hasBounds()) {
@@ -1164,13 +1149,21 @@ public class ProbModelChecker extends NonProbModelChecker
 		ModelCheckerResult res = null;
 		switch (model.getModelType()) {
 		case DTMC:
-			res = ((DTMCModelChecker) this).computeReachRewards((DTMC) model, (MCRewards) modelRewards, target);
+			if (modifier != null && modifier.equals("dist")) {
+				res = ((DTMCModelChecker) this).computeReachRewardsDistr((DTMC) model, (MCRewards) modelRewards, target);
+			} else {
+				res = ((DTMCModelChecker) this).computeReachRewards((DTMC) model, (MCRewards) modelRewards, target);
+			}
 			break;
 		case CTMC:
 			res = ((CTMCModelChecker) this).computeReachRewards((CTMC) model, (MCRewards) modelRewards, target);
 			break;
 		case MDP:
-			res = ((MDPModelChecker) this).computeReachRewards((MDP) model, (MDPRewards) modelRewards, target, minMax.isMin());
+			if (modifier != null && modifier.equals("cvar")) {
+				res = ((MDPModelChecker) this).computeReachRewardsCvar((MDP) model, (MDPRewards) modelRewards, target, minMax.isMin());
+			} else {
+				res = ((MDPModelChecker) this).computeReachRewards((MDP) model, (MDPRewards) modelRewards, target, minMax.isMin());
+			}
 			break;
 		case POMDP:
 			res = ((POMDPModelChecker) this).computeReachRewards((POMDP) model, (MDPRewards) modelRewards, target, minMax.isMin(), statesOfInterest);
@@ -1183,34 +1176,11 @@ public class ProbModelChecker extends NonProbModelChecker
 					+ "s");
 		}
 		result.setStrategy(res.strat);
-		return StateValues.createFromDoubleArrayResult(res, model);
-	}
-
-	/**
-	 * Compute rewards for a reachability reward operator.
-	 */
-	protected StateValues checkRewardReachCvar(Model model, Rewards modelRewards, ExpressionTemporal expr, MinMax minMax, BitSet statesOfInterest) throws PrismException
-	{
-		// No time bounds allowed
-		if (expr.hasBounds()) {
-			throw new PrismNotSupportedException("R operator cannot contain a bounded F operator: " + expr);
+		if (res.solnObj != null) {
+			return StateValues.createFromObjectArray(TypeDouble.getInstance(), res.solnObj, model);
+		} else {
+			return StateValues.createFromDoubleArrayResult(res, model);
 		}
-		
-		// Model check the operand for all states
-		BitSet target = checkExpression(model, expr.getOperand2(), null).getBitSet();
-
-		// Compute/return the rewards
-		ModelCheckerResult res = null;
-		switch (model.getModelType()) {
-		case MDP:
-			res = ((MDPModelChecker) this).computeReachRewardsCvar((MDP) model, (MDPRewards) modelRewards, target, minMax.isMin());
-			break;
-		default:
-			throw new PrismNotSupportedException("Explicit engine does not yet handle the " + expr.getOperatorSymbol() + " reward operator for " + model.getModelType()
-					+ "s");
-		}
-		result.setStrategy(res.strat);
-		return StateValues.createFromDoubleArrayResult(res, model);
 	}
 
 	/**
@@ -1240,16 +1210,11 @@ public class ProbModelChecker extends NonProbModelChecker
 			probs.print(mainLog);
 		}
 
-		// For =? properties, just return values
-		if (opInfo.isNumeric()) {
-			return probs;
+		// For =? properties, just return values; otherwise compare against bound
+		if (!opInfo.isNumeric()) {
+			probs.applyPredicate(v -> opInfo.apply((double) v, probs.getAccuracy()));
 		}
-		// Otherwise, compare against bound to get set of satisfying states
-		else {
-			BitSet sol = probs.getBitSetFromInterval(opInfo.getRelOp(), opInfo.getBound());
-			probs.clear();
-			return StateValues.createFromBitSet(sol, model);
-		}
+		return probs;
 	}
 
 	/**
@@ -1283,10 +1248,7 @@ public class ProbModelChecker extends NonProbModelChecker
 
 		if (distFile != null) {
 			mainLog.println("\nImporting probability distribution from file \"" + distFile + "\"...");
-			// Build an empty vector 
-			dist = new StateValues(TypeDouble.getInstance(), model);
-			// Populate vector from file
-			dist.readFromFile(distFile);
+			dist = StateValues.createFromFile(TypeDouble.getInstance(), distFile, model);
 		}
 
 		return dist;
@@ -1299,17 +1261,14 @@ public class ProbModelChecker extends NonProbModelChecker
 	 */
 	public StateValues buildInitialDistribution(Model model) throws PrismException
 	{
-		StateValues dist = null;
-
-		// Build an empty vector 
-		dist = new StateValues(TypeDouble.getInstance(), model);
-		// Populate vector (equiprobable over initial states)
-		double d = 1.0 / model.getNumInitialStates();
-		for (int in : model.getInitialStates()) {
-			dist.setDoubleValue(in, d);
+		int numStates = model.getNumStates();
+		if (numStates == 1) {
+			int sInit = model.getFirstInitialState();
+			return StateValues.create(TypeDouble.getInstance(), s -> s == sInit ? 1.0 : 0.0, model);
+		} else {
+			double pInit = 1.0 / numStates;
+			return StateValues.create(TypeDouble.getInstance(), s -> model.isInitialState(s) ? pInit : 0.0, model);
 		}
-
-		return dist;
 	}
 	
 	/**
