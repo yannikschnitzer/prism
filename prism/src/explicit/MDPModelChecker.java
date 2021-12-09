@@ -2632,8 +2632,6 @@ public class MDPModelChecker extends ProbModelChecker
 		double error_thresh = 0.01;
 		double error_thresh_cvar = 2;
 		double gamma = 1;
-		double v_max = 100;
-		double v_min = 0;
 		double alpha=0.2;
 
 		String c51 = "C51";
@@ -2652,7 +2650,9 @@ public class MDPModelChecker extends ProbModelChecker
 
 
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
-			atoms = 51;
+			atoms = 101;
+			double v_max = 100;
+			double v_min = 0;
 			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
 		} else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
@@ -2662,6 +2662,8 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 		else{
 			atoms=51;
+			double v_max = 50;
+			double v_min = 0;
 			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
 		}
@@ -2748,7 +2750,7 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 
 		// Print to file
-		boolean print= true;
+		boolean print= false;
 		if (print) {
 			printToFile(policy, action_val, alpha, "gridmap/cvar_out_"+n+"_"+ settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) +"_"+alpha+".out", n, mdp.getMaxNumChoices());
 		}
