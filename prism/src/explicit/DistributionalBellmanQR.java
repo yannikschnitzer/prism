@@ -36,7 +36,7 @@ public class DistributionalBellmanQR extends DistributionalBellman {
     }
 
     @Override
-    public double getValue(double[] temp) {
+    public double getExpValue(double[] temp) {
         double sum =0;
         for (int j=0; j<atoms; j++)
         {
@@ -63,6 +63,39 @@ public class DistributionalBellmanQR extends DistributionalBellman {
                     res += (1/lim) *denom*p[i];
                 }
             }
+        }
+
+        return res;
+    }
+
+    @Override
+    public double getVar(double[] probs, double lim) {
+        double res =0.0;
+        double sum_p =0.0;
+        double [] temp = Arrays.copyOf(probs, probs.length);
+        Arrays.sort(temp);
+
+        for(int j=atoms-1; j>=0; j--){
+            if (sum_p < lim){
+                if(sum_p+ p[j] < lim){
+                    sum_p += p[j];
+                } else{
+                    res =temp[j];
+                }
+            }
+        }
+
+        return res;
+    }
+
+    @Override
+    public double getVariance(double[] probs) {
+        double mu = getExpValue(probs);
+        double res = 0.0;
+
+        for( int j = 0; j<atoms; j++)
+        {
+            res += (1.0 / atoms) * pow(((probs[j] * p[j]) - mu), 2);
         }
 
         return res;

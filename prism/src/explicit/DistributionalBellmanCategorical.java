@@ -130,8 +130,8 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
         return p;
     }
 
-
-    public double getValue(double [] temp){
+    @Override
+    public double getExpValue(double [] temp){
         double sum =0;
         for (int j=0; j<atoms; j++)
         {
@@ -140,6 +140,7 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
         return sum;
     }
 
+    @Override
     public double getValueCvar(double [] probs, double lim){
         double res =0.0;
         double sum_p =0.0;
@@ -155,6 +156,37 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
                     res += (1/lim) *denom*z[i];
                 }
             }
+        }
+
+        return res;
+    }
+
+    @Override
+    public double getVar(double [] probs, double lim){
+        double sum_p = 0.0;
+        double res = 0.0;
+        for(int j=atoms-1; j>=0; j--){
+            if (sum_p < lim){
+                if(sum_p + probs[j] < lim){
+                    sum_p += probs[j];
+                }
+                else{
+                    res = z[j];
+                }
+            }
+        }
+
+        return res;
+    }
+
+    @Override
+    public double getVariance(double[] probs) {
+        double mu = getExpValue(probs);
+        double res = 0.0;
+
+        for( int j = 0; j<atoms; j++)
+        {
+            res += (1.0 / atoms) * pow(((probs[j] * z[j]) - mu), 2);
         }
 
         return res;
