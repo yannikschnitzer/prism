@@ -2650,7 +2650,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
-			atoms = 101;
+			atoms = 51;
 			double v_max = 100;
 			double v_min = 0;
 			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
