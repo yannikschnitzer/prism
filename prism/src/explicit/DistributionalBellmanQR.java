@@ -60,7 +60,7 @@ public class DistributionalBellmanQR extends DistributionalBellman {
                 } else{
                     denom = lim - sum_p;
                     sum_p += denom;
-                    res += (1/lim) *denom*p[i];
+                    res += (1/lim) *denom*temp[i];
                 }
             }
         }
@@ -104,9 +104,9 @@ public class DistributionalBellmanQR extends DistributionalBellman {
     @Override
     public double getW(double[] dist1, double[] dist2) {
         double sum = 0;
-        for (int i =0; i<atoms-1; i++)
+        for (int i =0; i<atoms; i++)
         {
-            sum+= (p[i+1] - p[i]) * pow((dist1[i] - dist2[i]), 2);
+            sum+= pow((dist1[i]* p[i] - dist2[i]* p[i]),2) ;
         }
         return sqrt(sum);
     }
@@ -114,9 +114,9 @@ public class DistributionalBellmanQR extends DistributionalBellman {
     @Override
     public double getW(double[] dist1, int state) {
         double sum = 0;
-        for (int i =0; i<atoms-1; i++)
+        for (int i =0; i<atoms; i++)
         {
-            sum+= (p[i+1] - p[i]) * pow((dist1[i] - z[state][i]), 2);
+            sum+= pow((dist1[i]* p[i] - z[state][i]* p[i]),2);
         }
         return sqrt(sum);
     }

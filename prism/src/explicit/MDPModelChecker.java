@@ -2628,7 +2628,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Set up CVAR variables
 		int atoms;
-		int iterations = 450;
+		int iterations = 250;
 		double error_thresh = 0.01;
 		double error_thresh_cvar = 2;
 		double gamma = 1;
@@ -2721,17 +2721,20 @@ public class MDPModelChecker extends ProbModelChecker
 			states = unknownStates.iterator();
 			max_dist = 0.0;
 			max_cvar_dist = 0.0;
+			ArrayList<Integer> bad = new ArrayList<>();
 			// TODO max metric dist instead of max cvar distance.
 			while (states.hasNext()) {
 				final int s = states.nextInt();
-				max_dist = max(max_dist, operator.getW(temp_p[s], s));
+				double tempo = operator.getW(temp_p[s], s);
+				if(tempo > max_dist){bad.add(s);}
+				max_dist = max(max_dist, tempo);
+
 				max_cvar_dist = max(max_cvar_dist,
 						abs(operator.getValueCvar(temp_p[s], alpha) - operator.getValueCvar(operator.getDist(s), alpha)));
 				operator.update(temp_p[s], s);
 			}
 
 			if((iters > 20)){mainLog.println("Max Wp dist :"+(max_dist) + " dist:"+(max_cvar_dist)+" at iter:"+iters);;}
-
 
 //			mainLog.println("Max Wp dist :"+(max_dist - error_thresh) + " dist:"+(max_cvar_dist- error_thresh)+" at iter:"+iters);
 
