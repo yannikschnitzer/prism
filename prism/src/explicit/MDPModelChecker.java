@@ -2628,11 +2628,11 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Set up CVAR variables
 		int atoms;
-		int iterations = 150;
+		int iterations = 450;
 		double error_thresh = 0.01;
 		double error_thresh_cvar = 2;
 		double gamma = 1;
-		double alpha=0.2;
+		double alpha=0.7;
 
 		String c51 = "C51";
 		String qr = "QR";
@@ -2650,19 +2650,19 @@ public class MDPModelChecker extends ProbModelChecker
 
 
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
-			atoms = 51;
-			double v_max = 100;
+			atoms = 201;
+			double v_max = 400;
 			double v_min = 0;
 			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
 		} else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
-			atoms = 100;
+			atoms = 200;
 			operator = new DistributionalBellmanQR(atoms, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
 		}
 		else{
-			atoms=51;
-			double v_max = 50;
+			atoms=101;
+			double v_max = 100;
 			double v_min = 0;
 			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
@@ -2736,25 +2736,30 @@ public class MDPModelChecker extends ProbModelChecker
 //			mainLog.println("Max Wp dist :"+(max_dist - error_thresh) + " dist:"+(max_cvar_dist- error_thresh)+" at iter:"+iters);
 
 			if ((max_cvar_dist < error_thresh_cvar) & (max_dist <error_thresh)&(iters>20)) {
-				mainLog.println("\nV at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
-
-				for (double[] doubles : temp_p) // copy  temp value soln2 back to soln -> corresponds to Value table
-				{
-					DecimalFormat df = new DecimalFormat("0.000");
-					mainLog.print("[");
-					Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
-					mainLog.print("]\n");
-				}
+//				mainLog.println("\nV at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
+//
+//				for (double[] doubles : temp_p) // copy  temp value soln2 back to soln -> corresponds to Value table
+//				{
+//					DecimalFormat df = new DecimalFormat("0.000");
+//					mainLog.print("[");
+//					Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
+//					mainLog.print("]\n");
+//				}
 				break;
 			}
 		}
 
 		// Print to file
-		boolean print= false;
+		boolean print= true;
 		if (print) {
 			printToFile(policy, action_val, alpha, "gridmap/cvar_out_"+n+"_"+ settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) +"_"+alpha+".out", n, mdp.getMaxNumChoices());
 		}
 
+		mainLog.println("\nV[0] at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
+		DecimalFormat df = new DecimalFormat("0.000");
+		mainLog.print("[");
+		Arrays.stream(operator.getDist(0)).forEach(e -> mainLog.print(df.format(e) + ", "));
+		mainLog.print("]\n");
 
 		// Policy
 		mainLog.println("\nPolicy");
