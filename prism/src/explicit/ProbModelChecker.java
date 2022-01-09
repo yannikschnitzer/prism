@@ -700,8 +700,8 @@ public class ProbModelChecker extends NonProbModelChecker
 		MultiObjModelChecker mc = new MultiObjModelChecker(this);
 		switch (model.getModelType()) {
 		case POMDP:
-			return checkExpressionParetoMultiObjMDP(model, objs, statesOfInterest);// using OLS + Lovejoy's
-			//return checkExpressionParetoMultiObjPOMDP(model, objs, statesOfInterest); // using OLS + Perseus
+			//return checkExpressionParetoMultiObjMDP(model, objs, statesOfInterest);// using OLS + Lovejoy's
+			return checkExpressionParetoMultiObjPOMDP(model, objs, statesOfInterest); // using OLS + Perseus
 		case MDP:
 			return checkExpressionParetoMultiObjMDP(model, objs, statesOfInterest);
 		default:
@@ -800,64 +800,6 @@ public class ProbModelChecker extends NonProbModelChecker
 		
     }
     
-	/**
-	 * Model check a Pareto sum multi-objective property and return the values for the statesOfInterest.
-	 * This algorithm is based on "Point-Based Planning for Multi-Objective POMDPs" by Roijers et al.
-	 * The part of code for computing new weights in OLS algorithm is modified based the following git hub repo
-	 * https://github.com/Svalorzen/morl_guts/blob/master/gp_preference/pymodem/optimistic_linear_support.py
-	 * @param model the model of POMDP
-	 * @param objs the list of objectives
-	 * @param statesOfInterest the states of interest, see checkExpression()
-	 * @return StateValues
-	 */
-	protected StateValues checkExpressionParetoMultiObjPOMDP(Model model, List<ExpressionReward> objs, BitSet statesOfInterest) throws PrismException
-	{
-		POMDP pomdp = (POMDP) model;
-		ExpressionTemporal exprTemp = (ExpressionTemporal) objs.get(0).getExpression();
-		BitSet target = checkExpression(model, exprTemp.getOperand2(), null).getBitSet();
-		BitSet targetObs = ((POMDPModelChecker) this).getObservationsMatchingStates(pomdp, target);
-		// Check we are only computing for a single state (and use initial state if unspecified)
-		if (statesOfInterest == null) {
-			statesOfInterest = new BitSet();
-			statesOfInterest.set(pomdp.getFirstInitialState());
-		} else if (statesOfInterest.cardinality() > 1) {
-			throw new PrismNotSupportedException("POMDPs can only be solved from a single start state");
-		}	
-		if (targetObs == null) {
-			throw new PrismException("Target for expected reachability is not observable");
-		}
-		// Find _some_ of the states with infinite reward
-		// (those from which *every* MDP strategy has prob<1 of reaching the target,
-		// and therefore so does every POMDP strategy)
-		MDPModelChecker mcProb1 = new MDPModelChecker(this);
-		BitSet inf = mcProb1.prob1(pomdp, null, target, false, null);
-		inf.flip(0, pomdp.getNumStates());
-		// Find observations for which all states are known to have inf reward
-		BitSet infObs = ((POMDPModelChecker) this).getObservationsCoveredByStates(pomdp, inf);
-		//mainLog.println("target obs=" + targetObs.cardinality() + ", inf obs=" + infObs.cardinality());
-		// Determine set of observations actually need to perform computation for
-		// eg. if obs=1 & unknownObs(obs)=true -> obs=1 needs computation
-		// eg. if obs=2 & unknownObs(obs)=false -> obs=1 does not need computation
-		BitSet unknownObs = new BitSet();
-		unknownObs.set(0, pomdp.getNumObservations());
-		unknownObs.andNot(targetObs);
-		unknownObs.andNot(infObs);
-		
-		// Build rewards, and get min/max info
-		List<MDPRewards> mdpRewardsList = new ArrayList<>();
-		List<MinMax> minMaxList = new ArrayList<>();
-		for (ExpressionReward exprReward : objs) {
-			int r = exprReward.getRewardStructIndexByIndexObject(rewardGen, constantValues);
-			mdpRewardsList.add((MDPRewards) constructRewards(model, r));
-			OpRelOpBound opInfo = exprReward.getRelopBoundInfo(constantValues);
-			minMaxList.add(opInfo.getMinMax(model.getModelType(), false));
-		}
-		
-		MultiObjModelChecker mc = new MultiObjModelChecker(this);
-		return mc.checkExpressionParetoMultiObjPOMDP((POMDP) model, mdpRewardsList, target, minMaxList, statesOfInterest);
-		
-	}
-
 	/**
 	 * Model check a P operator expression and return the values for the statesOfInterest.
  	 * @param statesOfInterest the states of interest, see checkExpression()
