@@ -566,13 +566,13 @@ public class POMDPModelChecker extends ProbModelChecker
 		ArrayList<Integer> endStates = new ArrayList<Integer>();
 		for (int i=0; i<nStates;i++) {
 			if (!unknownObs.get(pomdp.getObservation(i))) {
-				mainLog.println("end state="+i+"Obs="+pomdp.getObservation(i));
+				//mainLog.println("end state="+i+"Obs="+pomdp.getObservation(i));
 				endStates.add(i);
 			}
 		}
 		
-		mainLog.println("get number of getNumObservations"+pomdp.getNumObservations());
-		mainLog.println("get number of getNumUnobservations"+pomdp.getNumUnobservations());
+		//mainLog.println("get number of getNumObservations"+pomdp.getNumObservations());
+		//mainLog.println("get number of getNumUnobservations"+pomdp.getNumUnobservations());
 		
 		//generate tony's file
 		boolean generateTony = false;
@@ -1541,9 +1541,9 @@ public class POMDPModelChecker extends ProbModelChecker
 	
 	public ModelCheckerResult computeReachRewards(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest) throws PrismException
 	{
-		mainLog.println("TESSsSSSSSsssSSSSST");
-		computeReachRewardsPerseus( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
-		mainLog.println("TESSsSSSSSsssSSSSST");
+		mainLog.println("Calling Perseus pomdp solver");
+		//computeReachRewardsPerseus( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
+		mainLog.println("End calling Perseus pomdp solver");
 		
 		ModelCheckerResult res = null;
 		long timer;

@@ -974,10 +974,22 @@ public class MultiObjModelChecker extends PrismComponent
 						ArrayList<Double> augumented_vector = new ArrayList<Double>();
 						ArrayList<Double> bound_from_w_obsolete = new ArrayList<Double>();
 						ArrayList<ArrayList<Double>> oneCombination = copyArrayListList( subsets.get(i_subset));
+						
 						for (int j=0; j<oneCombination.size(); j++){
 							augumented_vector = copyArrayList( oneCombination.get(j));
+							
 							if (augumented_vector.size()==numObjs){
+								
+								// if one object k is minimizing, then convert it to u[k] *= -1 
+								for (int k=0; k<numObjs; k++) {
+									if (minMaxList.get(k).isMin()) {
+										augumented_vector.set(k, -1* augumented_vector.get(k));
+										mainLog.println("convert "+ Arrays.toString(augumented_vector.toArray()));
+									}
+								}
+								
 								hCCS.add(copyArrayList(augumented_vector));
+								
 								augumented_vector.add(-1.0);
 								A.add(augumented_vector);
 							}
@@ -987,6 +999,14 @@ public class MultiObjModelChecker extends PrismComponent
 						}
 						hCCS.add(copyArrayList(u));
 						augumented_vector = copyArrayList(u);
+						
+						for (int k=0; k<numObjs; k++) {
+							if (minMaxList.get(k).isMin()) {
+								augumented_vector.set(k, -1* augumented_vector.get(k));
+								mainLog.println("convert "+ Arrays.toString(augumented_vector.toArray()));
+							}
+						}
+						
 						augumented_vector.add(-1.0);
 						A.add(copyArrayList(augumented_vector));
 
@@ -1018,14 +1038,14 @@ public class MultiObjModelChecker extends PrismComponent
 						ArrayList<Double> w_new = new ArrayList<Double>();
 						w_new = linSolver(A,b);
 						w_new.remove(w_new.size()-1);
-
+						
 						for (int i_bf=0; i_bf<bound_from_w_obsolete.size();i_bf++){
 							double insertIndex = (double) bound_from_w_obsolete.get(i_bf);
 							int insert = (int) insertIndex;
 							w_new.add(insert,0.0);
 						}
 						
-
+						mainLog.println("weights caculated: "+Arrays.toString(w_new.toArray()));
 						Boolean allPositive = true;
 						for (int iw=0; iw<w_new.size();iw++){
 							if ((double) w_new.get(iw)<0){
