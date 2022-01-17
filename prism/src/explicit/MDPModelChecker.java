@@ -148,7 +148,7 @@ public class MDPModelChecker extends ProbModelChecker
 		// Find accepting states + compute reachability rewards
 		BitSet acc = ((AcceptanceReach)product.getAcceptance()).getGoalStates();
 
-		mainLog.println("\nComputing reachability rewards...");
+		mainLog.println("\nComputing reachability rewards... (cosafe)");
 		MDPModelChecker mcProduct = new MDPModelChecker(this);
 		mcProduct.inheritSettings(this);
 		ModelCheckerResult res = mcProduct.computeReachRewards((MDP)product.getProductModel(), productRewards, acc, minMax.isMin());
@@ -2046,6 +2046,28 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Store num states
 		n = mdp.getNumStates();
+		
+		/*
+		mainLog.println("dddddddddddddddddddddddddddddddddddds");
+		for (int s=0; s<n;s++) {
+			mainLog.println("s"+s);
+			//for (int sPrime=0; sPrime<n;sPrime++) {
+			//	mainLog.println("sPrime"+sPrime);
+				List<Object> availableActions= mdp.getAvailableActions(s);
+				int Nav = availableActions.size();
+				if (Nav==0) {
+					mainLog.println("no avaiable action");
+				}
+				else {
+					for(int j=0; j<Nav; j++) {
+						mainLog.println(availableActions.get(j));
+					}
+				}
+				double tranP=0.0;
+
+			//}
+		}
+		*/
 		// Optimise by enlarging target set (if more info is available)
 		if (init != null && known != null && !known.isEmpty()) {
 			BitSet targetNew = (BitSet) target.clone();
@@ -2083,8 +2105,13 @@ public class MDPModelChecker extends ProbModelChecker
 		
 		// Precomputation (not optional)
 		timerProb1 = System.currentTimeMillis();
+		mainLog.println("target = "+target);
+		mainLog.println("min = "+min);
 		inf = prob1(mdp, null, target, !min, strat);
+		
+		mainLog.println("inf = before flip"+inf);
 		inf.flip(0, n);
+		mainLog.println("inf = afte flip"+inf);
 		timerProb1 = System.currentTimeMillis() - timerProb1;
 		
 		// Print results of precomputation
