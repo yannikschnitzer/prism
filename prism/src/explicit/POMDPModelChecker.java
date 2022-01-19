@@ -594,7 +594,7 @@ public class POMDPModelChecker extends ProbModelChecker
 		//mainLog.println("get number of getNumUnobservations"+pomdp.getNumUnobservations());
 		
 		//generate tony's file
-		boolean generateTony = true;
+		boolean generateTony = false;
 		if (generateTony) {
 			generateTonyPOMDP(pomdp, endStates,   mdpRewards, minMax);
 		}
@@ -668,6 +668,7 @@ public class POMDPModelChecker extends ProbModelChecker
 				else {
 					if(inf.get(s)) {
 						entries[s] = -9999;
+						entries[s] = 0;
 					}
 				}
 			}
@@ -1109,12 +1110,19 @@ public class POMDPModelChecker extends ProbModelChecker
 
 	public boolean checkConverge (ArrayList<Double > diff, double tol){
 		int size = diff.size();
-		if (size>=4) {
-			if ((diff.get(size-1)<tol)&(diff.get(size-2)<tol) &(diff.get(size-3)<tol) &(diff.get(size-4)<tol)  ) {
-				return true;
+		
+		int consecutive_stage = 29;
+		if(size>consecutive_stage) {
+			for (int i=0; i<consecutive_stage;i++) {
+				if (diff.get(size-1)>tol) {
+					return false;
+				}
 			}
+			return true;
 		}
-		return false;
+		else {
+			return false;
+		}
 	}
 	public ArrayList<Belief> randomExploreBeliefs(POMDP pomdp, BitSet target,  BitSet statesOfInterest) throws PrismException
 	{
