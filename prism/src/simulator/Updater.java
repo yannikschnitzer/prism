@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import parser.EvaluateContextState;
 import parser.State;
 import parser.VarList;
 import parser.ast.Command;
@@ -54,6 +55,9 @@ public class Updater<Value> extends PrismComponent
 {
 	// Evaluator for values/states
 	public Evaluator<Value> eval;
+	
+	// Evaluation context for expressions
+	protected EvaluateContextState ec;
 	
 	// Settings:
 	// Do we check that probabilities sum to 1?
@@ -108,6 +112,10 @@ public class Updater<Value> extends PrismComponent
 
 		// Store evaluator
 		this.eval = eval;
+		
+		// Create evaluate context for re-use
+		ec = new EvaluateContextState(modulesFile.getConstantValues(), new State(modulesFile.getNumVars()));
+		ec.setEvaluationMode(eval.evalMode());
 		
 		// For real-time models, store info about which vars are clocks
 		if (modelType.realTime()) {
@@ -293,12 +301,12 @@ public class Updater<Value> extends PrismComponent
 					stateNoClocks.varValues[v] = null;
 				}
 				clockGuard = command.getGuard().deepCopy();
-				clockGuard = (Expression) clockGuard.evaluatePartially(stateNoClocks).simplify();
+				clockGuard = (Expression) clockGuard.evaluatePartially(ec.setState(stateNoClocks)).simplify();
 				if (!Expression.isFalse(clockGuard)) {
 					guardSat = true;
 				}
 			} else {
-				guardSat = eval.exact() ? command.getGuard().evaluateExact(state).toBoolean() :command.getGuard().evaluateBoolean(state); 
+				guardSat = command.getGuard().evaluateBoolean(ec.setState(state));
 			}
 			// If the command is enabled, update stored info
 			if (guardSat) {
