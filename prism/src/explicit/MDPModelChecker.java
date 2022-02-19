@@ -3501,6 +3501,8 @@ public class MDPModelChecker extends ProbModelChecker
 	 */
 	public ModelCheckerResult computeMultiStrategyMultiObj(MDP mdp, List<MDPRewards> mdpRewardsList, List<MinMax> minMaxList) throws PrismException
 	{
+		boolean min = true;
+
 		// Store MDP info
 		int stateNum = mdp.getNumStates();
 		int sInit = mdp.getFirstInitialState();
@@ -3508,7 +3510,9 @@ public class MDPModelChecker extends ProbModelChecker
 		for(int i=0; i<objNum; i++) {
 			MinMax objType = minMaxList.get(i);
 			if(objType.isMax()) {
-				throw new PrismException("Max properties are not supported yet.");
+				min = false;
+				mainLog.println("Max case!");
+				// throw new PrismException("Max properties are not supported yet.");
 			}
 		}
 
@@ -3531,82 +3535,82 @@ public class MDPModelChecker extends ProbModelChecker
 		mainLog.println("Preferences: " + prefWeights);
 
 		// compute EPs corresponding to the given prefWeights
-        Set<ArrayList<Double>> prefWeights_EPs = new HashSet<ArrayList<Double>>();
-        if (objNum==2){
-        	// fix x on boundaries and check y
-        	for(int i=0; i<2; i++){
-        		Double x = prefWeights.get(i).get(0);
-        		Double y = 1-x;
-        		if (y >= prefWeights.get(0).get(1) && y <= prefWeights.get(1).get(1)){
-        			ArrayList<Double> EP = new ArrayList<Double>();
-        			EP.add(x);
-        			EP.add(y);
-        			prefWeights_EPs.add(EP);  // add (x,y) to EPs
-        		}
-        	}
-        	// fix y on boundaries an check x
-        	for(int i=0; i<2; i++){
-        		Double y = prefWeights.get(i).get(1);
-        		Double x = 1-y;
-        		if (x >= prefWeights.get(0).get(0) && x <= prefWeights.get(1).get(0)){
-        			ArrayList<Double> EP = new ArrayList<Double>();
-        			EP.add(x);
-        			EP.add(y);
-        			prefWeights_EPs.add(EP);  // add (x,y) to EPs
-        		}
-        	}
-        }
-        else if (objNum==3){
-        	// fix x,y, check z
-        	for(int i=0; i<2; i++){
-        		for(int j=0; j<2; j++){
-        			Double x = prefWeights.get(i).get(0);
-        			Double y = prefWeights.get(j).get(1);
-        			Double z = 1-x-y;
-        			if (z >= prefWeights.get(0).get(2) && z <= prefWeights.get(1).get(2)){
-        				ArrayList<Double> EP = new ArrayList<Double>();
-        				EP.add(x);
-        				EP.add(y);
-        				EP.add(z);
-        				prefWeights_EPs.add(EP);  // add (x,y) to EPs
-        			}
-        		}
-        	}
-        
-        	// fix x,z, check y
-        	for(int i=0; i<2; i++){
-        		for(int j=0; j<2; j++){
-        			Double x = prefWeights.get(i).get(0);
-        			Double z = prefWeights.get(j).get(2);
-        			Double y = 1-x-z;
-        			if (y >= prefWeights.get(0).get(1) && y <= prefWeights.get(1).get(1)){
-        				ArrayList<Double> EP = new ArrayList<Double>();
-        				EP.add(x);
-        				EP.add(y);
-        				EP.add(z);
-        				prefWeights_EPs.add(EP);  // add (x,y) to EPs
-        			}
-        		}
-        	}
-        
-        	// fix y,z, check x
-        	for(int i=0; i<2; i++){
-        		for(int j=0; j<2; j++){
-        			Double y = prefWeights.get(i).get(1);
-        			Double z = prefWeights.get(j).get(2);
-        			Double x = 1-y-z;
-        			if (x >= prefWeights.get(0).get(0) && x <= prefWeights.get(1).get(0)){
-        				ArrayList<Double> EP = new ArrayList<Double>();
-        				EP.add(x);
-        				EP.add(y);
-        				EP.add(z);
-        				prefWeights_EPs.add(EP);  // add (x,y) to EPs
-        			}
-        		}
-        	}
-        
-        }
-        System.out.println("EPs for pref: " + prefWeights_EPs);
+    Set<ArrayList<Double>> prefWeights_EPs = new HashSet<ArrayList<Double>>();
+    if (objNum==2){
+    	// fix x on boundaries and check y
+    	for(int i=0; i<2; i++){
+    		Double x = prefWeights.get(i).get(0);
+    		Double y = 1-x;
+    		if (y >= prefWeights.get(0).get(1) && y <= prefWeights.get(1).get(1)){
+    			ArrayList<Double> EP = new ArrayList<Double>();
+    			EP.add(x);
+    			EP.add(y);
+    			prefWeights_EPs.add(EP);  // add (x,y) to EPs
+    		}
+    	}
+    	// fix y on boundaries an check x
+    	for(int i=0; i<2; i++){
+    		Double y = prefWeights.get(i).get(1);
+    		Double x = 1-y;
+    		if (x >= prefWeights.get(0).get(0) && x <= prefWeights.get(1).get(0)){
+    			ArrayList<Double> EP = new ArrayList<Double>();
+    			EP.add(x);
+    			EP.add(y);
+    			prefWeights_EPs.add(EP);  // add (x,y) to EPs
+    		}
+    	}
+    }
+    else if (objNum==3){
+    	// fix x,y, check z
+    	for(int i=0; i<2; i++){
+    		for(int j=0; j<2; j++){
+    			Double x = prefWeights.get(i).get(0);
+    			Double y = prefWeights.get(j).get(1);
+    			Double z = 1-x-y;
+    			if (z >= prefWeights.get(0).get(2) && z <= prefWeights.get(1).get(2)){
+    				ArrayList<Double> EP = new ArrayList<Double>();
+    				EP.add(x);
+    				EP.add(y);
+    				EP.add(z);
+    				prefWeights_EPs.add(EP);  // add (x,y) to EPs
+    			}
+    		}
+    	}
+
+    	// fix x,z, check y
+    	for(int i=0; i<2; i++){
+    		for(int j=0; j<2; j++){
+    			Double x = prefWeights.get(i).get(0);
+    			Double z = prefWeights.get(j).get(2);
+    			Double y = 1-x-z;
+    			if (y >= prefWeights.get(0).get(1) && y <= prefWeights.get(1).get(1)){
+    				ArrayList<Double> EP = new ArrayList<Double>();
+    				EP.add(x);
+    				EP.add(y);
+    				EP.add(z);
+    				prefWeights_EPs.add(EP);  // add (x,y) to EPs
+    			}
+    		}
+    	}
+
+    	// fix y,z, check x
+    	for(int i=0; i<2; i++){
+    		for(int j=0; j<2; j++){
+    			Double y = prefWeights.get(i).get(1);
+    			Double z = prefWeights.get(j).get(2);
+    			Double x = 1-y-z;
+    			if (x >= prefWeights.get(0).get(0) && x <= prefWeights.get(1).get(0)){
+    				ArrayList<Double> EP = new ArrayList<Double>();
+    				EP.add(x);
+    				EP.add(y);
+    				EP.add(z);
+    				prefWeights_EPs.add(EP);  // add (x,y) to EPs
+    			}
+    		}
+    	}
+
+    }
+    System.out.println("EPs for pref: " + prefWeights_EPs);
 
 		// Computing objective bounds
 		BitSet target = rewTot0(mdp, mdpRewardsList.get(0), false);
@@ -3666,7 +3670,7 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 
 		// Computing multi-strategy via MILP
-		boolean min = true;
+		// boolean min = true;
 		double[] soln = null;
 
 		// Start solution
@@ -3704,16 +3708,30 @@ public class MDPModelChecker extends ProbModelChecker
 			double scale = 1000.0;
 			GRBLinExpr exprObj = new GRBLinExpr();
 			for (int i=0; i<objNum; i++) {
-				exprObj.addTerm(-1.0, xlVars[i][sInit]);
-				exprObj.addTerm(1.0, xuVars[i][sInit]);
+				if (min == true) {
+					exprObj.addTerm(-1.0, xlVars[i][sInit]);
+					exprObj.addTerm(1.0, xuVars[i][sInit]);
+				}
+				else {
+					exprObj.addTerm(1.0, xlVars[i][sInit]);
+					exprObj.addTerm(-1.0, xuVars[i][sInit]);
+				}
+					
 			}
 			for (int s = 0; s < stateNum; s++) {
 				int nc = mdp.getNumChoices(s);
 				for (int j = 0; j < nc; j++) {
-					exprObj.addTerm(-scale, yaVars[s][j]);
-					exprObj.addConstant(scale);
+					if (min == true) {
+						exprObj.addTerm(-scale, yaVars[s][j]);
+						exprObj.addConstant(scale);
+					}
+					else {
+						exprObj.addTerm(scale, yaVars[s][j]);
+						exprObj.addConstant(-scale);
+					}
 				}
 			}
+			// if min, just use exprObj constructed; else, negate it
 			model.setObjective(exprObj, GRB.MINIMIZE);
 
 
