@@ -2,4 +2,4 @@
 Rmin=? [ F s=3 ];
 
 // RESULT: ?
-R(cvar)min=? [ F s=3 ];
+R(cvar)min=? [ F s=7 ];

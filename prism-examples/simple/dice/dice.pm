@@ -1,4 +1,4 @@
-dtmc
+mdp
 
 module die
 

@@ -2628,7 +2628,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Set up CVAR variables
 		int atoms;
-		int iterations = 250;
+		int iterations = 150;
 		double error_thresh = 0.01;
 		double error_thresh_cvar = 2;
 		double gamma = 1;
@@ -2650,13 +2650,13 @@ public class MDPModelChecker extends ProbModelChecker
 
 
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
-			atoms = 201;
-			double v_max = 400;
+			atoms = 11;
+			double v_max = 10;
 			double v_min = 0;
 			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
 		} else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
-			atoms = 200;
+			atoms = 1000;
 			operator = new DistributionalBellmanQR(atoms, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
 		}
@@ -2734,20 +2734,21 @@ public class MDPModelChecker extends ProbModelChecker
 				operator.update(temp_p[s], s);
 			}
 
-			if((iters > 20)){mainLog.println("Max Wp dist :"+(max_dist) + " dist:"+(max_cvar_dist)+" at iter:"+iters);;}
+			if((iters >=0)){//mainLog.println("Max Wp dist :"+(max_dist) + " dist:"+(max_cvar_dist)+" at iter:"+iters);
+				mainLog.println("\nV at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
+
+				for (double[] doubles : temp_p) // copy  temp value soln2 back to soln -> corresponds to Value table
+				{
+					DecimalFormat df = new DecimalFormat("0.000");
+					mainLog.print("[");
+					Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
+					mainLog.print("]\n");
+				}
+			}
 
 //			mainLog.println("Max Wp dist :"+(max_dist - error_thresh) + " dist:"+(max_cvar_dist- error_thresh)+" at iter:"+iters);
 
-			if ((max_cvar_dist < error_thresh_cvar) & (max_dist <error_thresh)&(iters>20)) {
-//				mainLog.println("\nV at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
-//
-//				for (double[] doubles : temp_p) // copy  temp value soln2 back to soln -> corresponds to Value table
-//				{
-//					DecimalFormat df = new DecimalFormat("0.000");
-//					mainLog.print("[");
-//					Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
-//					mainLog.print("]\n");
-//				}
+			if ((max_cvar_dist < error_thresh_cvar) & (max_dist <error_thresh)&(iters>5)) {
 				break;
 			}
 		}

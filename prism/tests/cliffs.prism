@@ -1,0 +1,34 @@
+mdp
+
+const double delta = 0.1;
+
+module M
+
+	s : [0..5] init 0;
+
+	[north] s=0 -> 1-delta : (s'=1) + delta : (s'= 4);
+	[east] s=0 -> 1-delta : (s'=4) + delta : (s'=1);
+
+	[east] s=1 -> 1-delta : (s'=2) + delta : (s'=1);
+	[south] s=1 -> 1-delta : (s'=0) + delta : (s'=1);
+
+	[west] s=2 -> 1-delta : (s'=1) + delta : (s'=4);
+	[east] s=2 -> 1-delta : (s'=3) + delta : (s'=4);
+	[south] s=2 -> 1-delta : (s'=4) + delta : (s'=4);
+
+	[west] s=3 -> 1-delta : (s'=2) + delta : (s'=3);
+	[south] s=3 -> 1-delta : (s'=5) + delta : (s'=3);
+
+	[obstacle] s=4 -> (s'=5);
+
+    [] s=5 -> true;
+
+endmodule
+
+label "goal" = s=5;
+
+rewards
+	s=4 : 4;
+	s!=5 & s!=4: 1;
+	s=5 :0;
+endrewards

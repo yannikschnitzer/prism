@@ -1,0 +1,20 @@
+mdp
+
+module M
+
+	s : [0..2] init 0;
+
+	[a] s=0 -> 0.5 : (s'=0) + 0.5 : (s'=1);
+	[b] s=0 -> 1 : (s'=2) ;
+
+	[a] s=1 -> 1 : (s'=1) ;
+	[a] s=2 -> 1 : (s'=2) ;
+
+endmodule
+
+rewards
+	[a] s=0  : 0;
+	[b] s=0 : 0.5;
+	[a] s=2 : 1;
+	[a] s=3 : 0;
+endrewards
