@@ -3508,21 +3508,8 @@ public class MDPModelChecker extends ProbModelChecker
 		int sInit = mdp.getFirstInitialState();
 		int objNum = minMaxList.size();
 
-		boolean min_list[] = new boolean[objNum];
-		for(int i=0; i<objNum; i++) {
-			MinMax objType = minMaxList.get(i);
-			if(objType.isMax()) {
-				min_list[i] = false;
-				// throw new PrismException("Max properties are not supported yet.");
-			}
-			else {
-				min_list[i] = true;
-			}
-		}
-		mainLog.println("min_max_bool_list: " + Arrays.toString(min_list));
-
 		// Parsing preference weights as a set of extreme points
-		// Format: ([obj1_l, obj1_u], ..., [objn_l, objn_u])
+		// Format: ([obj1_lower, obj1_upper], [obj2_lower, obj2_upper], ...)
 		ArrayList<ArrayList<Double>> pref = new ArrayList<ArrayList<Double>>();
 		String prefString = getSettings().getString(PrismSettings.PRISM_WEIGHTS_STRING);
 		Pattern p = Pattern.compile("\\[(.*?)\\]");
@@ -3537,7 +3524,7 @@ public class MDPModelChecker extends ProbModelChecker
 			}
 			pref.add(w);
 		}
-		mainLog.println("Pref: " + pref);
+//		mainLog.println("Preferences: " + pref);
 
 		// convert preference to format ([l_obj1, l_obj2, ...],...,[l_obj1, l_obj2, ...])
 		ArrayList<ArrayList<Double>> prefWeights = new ArrayList<ArrayList<Double>>();
@@ -3549,89 +3536,90 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 		prefWeights.add(pref_lower);
 		prefWeights.add(pref_upper);
-		mainLog.println("PrefWeights: " + prefWeights);
+//		mainLog.println("PrefWeights: " + prefWeights);
 
 
 		// compute EPs corresponding to the given prefWeights
-    Set<ArrayList<Double>> prefWeights_EPs = new HashSet<ArrayList<Double>>();
-    if (objNum==2){
-    	// fix x on boundaries and check y
-    	for(int i=0; i<2; i++){
-    		Double x = prefWeights.get(i).get(0);
-    		Double y = 1-x;
-    		if (y >= prefWeights.get(0).get(1) && y <= prefWeights.get(1).get(1)){
-    			ArrayList<Double> EP = new ArrayList<Double>();
-    			EP.add(Math.round(x * 100.0)/100.0);
-    			EP.add(Math.round(y * 100.0)/100.0);
-    			prefWeights_EPs.add(EP);  // add (x,y) to EPs
-    		}
-    	}
-    	// fix y on boundaries an check x
-    	for(int i=0; i<2; i++){
-    		Double y = prefWeights.get(i).get(1);
-    		Double x = 1-y;
-    		if (x >= prefWeights.get(0).get(0) && x <= prefWeights.get(1).get(0)){
-    			ArrayList<Double> EP = new ArrayList<Double>();
-    			EP.add(Math.round(x * 100.0)/100.0);
-    			EP.add(Math.round(y * 100.0)/100.0);
-    			prefWeights_EPs.add(EP);  // add (x,y) to EPs
-    		}
-    	}
-    }
-    else if (objNum==3){
-    	// fix x,y, check z
-    	for(int i=0; i<2; i++){
-    		for(int j=0; j<2; j++){
-    			Double x = prefWeights.get(i).get(0);
-    			Double y = prefWeights.get(j).get(1);
-    			Double z = 1-x-y;
-    			if (z >= prefWeights.get(0).get(2) && z <= prefWeights.get(1).get(2)){
-    				ArrayList<Double> EP = new ArrayList<Double>();
-    				EP.add(Math.round(x * 100.0)/100.0);
-    				EP.add(Math.round(y * 100.0)/100.0);
-    				EP.add(Math.round(z * 100.0)/100.0);
-    				prefWeights_EPs.add(EP);  // add (x,y) to EPs
-    			}
-    		}
-    	}
-
-    	// fix x,z, check y
-    	for(int i=0; i<2; i++){
-    		for(int j=0; j<2; j++){
-    			Double x = prefWeights.get(i).get(0);
-    			Double z = prefWeights.get(j).get(2);
-    			Double y = 1-x-z;
-    			if (y >= prefWeights.get(0).get(1) && y <= prefWeights.get(1).get(1)){
-    				ArrayList<Double> EP = new ArrayList<Double>();
-    				EP.add(Math.round(x * 100.0)/100.0);
-    				EP.add(Math.round(y * 100.0)/100.0);
-    				EP.add(Math.round(z * 100.0)/100.0);
-    				prefWeights_EPs.add(EP);  // add (x,y) to EPs
-    			}
-    		}
-    	}
-
-    	// fix y,z, check x
-    	for(int i=0; i<2; i++){
-    		for(int j=0; j<2; j++){
-    			Double y = prefWeights.get(i).get(1);
-    			Double z = prefWeights.get(j).get(2);
-    			Double x = 1-y-z;
-    			if (x >= prefWeights.get(0).get(0) && x <= prefWeights.get(1).get(0)){
-    				ArrayList<Double> EP = new ArrayList<Double>();
-    				EP.add(Math.round(x * 100.0)/100.0);
-    				EP.add(Math.round(y * 100.0)/100.0);
-    				EP.add(Math.round(z * 100.0)/100.0);
-    				prefWeights_EPs.add(EP);  // add (x,y) to EPs
-    			}
-    		}
-    	}
-
-    }
-    mainLog.println("prefWeights_EPs: " + prefWeights_EPs);
+	    Set<ArrayList<Double>> prefWeights_EPs = new HashSet<ArrayList<Double>>();
+	    if (objNum==2){
+	    	// fix x on boundaries and check y
+	    	for(int i=0; i<2; i++){
+	    		Double x = prefWeights.get(i).get(0);
+	    		Double y = 1-x;
+	    		if (y >= prefWeights.get(0).get(1) && y <= prefWeights.get(1).get(1)){
+	    			ArrayList<Double> EP = new ArrayList<Double>();
+	    			EP.add(Math.round(x * 100.0)/100.0);
+	    			EP.add(Math.round(y * 100.0)/100.0);
+	    			prefWeights_EPs.add(EP);  // add (x,y) to EPs
+	    		}
+	    	}
+	    	// fix y on boundaries an check x
+	    	for(int i=0; i<2; i++){
+	    		Double y = prefWeights.get(i).get(1);
+	    		Double x = 1-y;
+	    		if (x >= prefWeights.get(0).get(0) && x <= prefWeights.get(1).get(0)){
+	    			ArrayList<Double> EP = new ArrayList<Double>();
+	    			EP.add(Math.round(x * 100.0)/100.0);
+	    			EP.add(Math.round(y * 100.0)/100.0);
+	    			prefWeights_EPs.add(EP);  // add (x,y) to EPs
+	    		}
+	    	}
+	    }
+	    else if (objNum==3){
+	    	// fix x,y, check z
+	    	for(int i=0; i<2; i++){
+	    		for(int j=0; j<2; j++){
+	    			Double x = prefWeights.get(i).get(0);
+	    			Double y = prefWeights.get(j).get(1);
+	    			Double z = 1-x-y;
+	    			if (z >= prefWeights.get(0).get(2) && z <= prefWeights.get(1).get(2)){
+	    				ArrayList<Double> EP = new ArrayList<Double>();
+	    				EP.add(Math.round(x * 100.0)/100.0);
+	    				EP.add(Math.round(y * 100.0)/100.0);
+	    				EP.add(Math.round(z * 100.0)/100.0);
+	    				prefWeights_EPs.add(EP);  // add (x,y) to EPs
+	    			}
+	    		}
+	    	}
+	
+	    	// fix x,z, check y
+	    	for(int i=0; i<2; i++){
+	    		for(int j=0; j<2; j++){
+	    			Double x = prefWeights.get(i).get(0);
+	    			Double z = prefWeights.get(j).get(2);
+	    			Double y = 1-x-z;
+	    			if (y >= prefWeights.get(0).get(1) && y <= prefWeights.get(1).get(1)){
+	    				ArrayList<Double> EP = new ArrayList<Double>();
+	    				EP.add(Math.round(x * 100.0)/100.0);
+	    				EP.add(Math.round(y * 100.0)/100.0);
+	    				EP.add(Math.round(z * 100.0)/100.0);
+	    				prefWeights_EPs.add(EP);  // add (x,y) to EPs
+	    			}
+	    		}
+	    	}
+	
+	    	// fix y,z, check x
+	    	for(int i=0; i<2; i++){
+	    		for(int j=0; j<2; j++){
+	    			Double y = prefWeights.get(i).get(1);
+	    			Double z = prefWeights.get(j).get(2);
+	    			Double x = 1-y-z;
+	    			if (x >= prefWeights.get(0).get(0) && x <= prefWeights.get(1).get(0)){
+	    				ArrayList<Double> EP = new ArrayList<Double>();
+	    				EP.add(Math.round(x * 100.0)/100.0);
+	    				EP.add(Math.round(y * 100.0)/100.0);
+	    				EP.add(Math.round(z * 100.0)/100.0);
+	    				prefWeights_EPs.add(EP);  // add (x,y) to EPs
+	    			}
+	    		}
+	    	}
+	
+	    }
+//	    mainLog.println("prefWeights_EPs: " + prefWeights_EPs);
 
 		// Computing objective bounds
 		BitSet target = rewTot0(mdp, mdpRewardsList.get(0), false);
+		mainLog.println("Target states: " + target);
 		MultiObjModelChecker mc = new MultiObjModelChecker(this);
 		StateValues sv = mc.checkExpressionParetoMultiObjMDPWithOLS(mdp, mdpRewardsList, target, minMaxList, null);
 //		StateValues sv = mc.checkExpressionParetoMultiObjMDPWithRandomSampling(mdp, mdpRewardsList, target, minMaxList, null);
@@ -3649,13 +3637,11 @@ public class MDPModelChecker extends ProbModelChecker
 				double[] pv = pp.getCoords();
 				double tmpSum = 0.0;
 				for (int j=0; j<objNum; j++) {
-						if (min_list[j]==false) {
-							// if max obj, negate value
-							tmpSum += weights.get(j) * (-pv[j]);
-						}
-						else {
-							tmpSum += weights.get(j) * pv[j];
-						}
+					if (minMaxList.get(j).isMin()) {
+						tmpSum += weights.get(j) * pv[j];
+					} else {
+						tmpSum += weights.get(j) * (-pv[j]);
+					}
 				}
 				if (tmpSum < rewardSum) {
 					rewardSum = tmpSum;
@@ -3664,6 +3650,7 @@ public class MDPModelChecker extends ProbModelChecker
 			}
 			chosenPoints.add(pointIndex);
 			mainLog.println("Preference weight extreme point " + weights + " -> Pareto point " + paretoPoints.get(pointIndex));
+			
 			boolean sanity = false; 	// Sanity check
 			if (sanity) {
 				ModelCheckerResult res = computeMultiReachRewards(mdp, weights, mdpRewardsList, target, true, null);
