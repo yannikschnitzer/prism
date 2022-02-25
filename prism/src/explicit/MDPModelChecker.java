@@ -3506,7 +3506,7 @@ public class MDPModelChecker extends ProbModelChecker
 		int stateNum = mdp.getNumStates();
 		int sInit = mdp.getFirstInitialState();
 		int objNum = minMaxList.size();
-		
+
 		boolean min_list[] = new boolean[objNum];
 		for(int i=0; i<objNum; i++) {
 			MinMax objType = minMaxList.get(i);
@@ -3560,8 +3560,8 @@ public class MDPModelChecker extends ProbModelChecker
     		Double y = 1-x;
     		if (y >= prefWeights.get(0).get(1) && y <= prefWeights.get(1).get(1)){
     			ArrayList<Double> EP = new ArrayList<Double>();
-    			EP.add(x);
-    			EP.add(y);
+    			EP.add(Math.round(x * 100.0)/100.0);
+    			EP.add(Math.round(y * 100.0)/100.0);
     			prefWeights_EPs.add(EP);  // add (x,y) to EPs
     		}
     	}
@@ -3571,8 +3571,8 @@ public class MDPModelChecker extends ProbModelChecker
     		Double x = 1-y;
     		if (x >= prefWeights.get(0).get(0) && x <= prefWeights.get(1).get(0)){
     			ArrayList<Double> EP = new ArrayList<Double>();
-    			EP.add(x);
-    			EP.add(y);
+    			EP.add(Math.round(x * 100.0)/100.0);
+    			EP.add(Math.round(y * 100.0)/100.0);
     			prefWeights_EPs.add(EP);  // add (x,y) to EPs
     		}
     	}
@@ -3586,9 +3586,9 @@ public class MDPModelChecker extends ProbModelChecker
     			Double z = 1-x-y;
     			if (z >= prefWeights.get(0).get(2) && z <= prefWeights.get(1).get(2)){
     				ArrayList<Double> EP = new ArrayList<Double>();
-    				EP.add(x);
-    				EP.add(y);
-    				EP.add(z);
+    				EP.add(Math.round(x * 100.0)/100.0);
+    				EP.add(Math.round(y * 100.0)/100.0);
+    				EP.add(Math.round(z * 100.0)/100.0);
     				prefWeights_EPs.add(EP);  // add (x,y) to EPs
     			}
     		}
@@ -3602,9 +3602,9 @@ public class MDPModelChecker extends ProbModelChecker
     			Double y = 1-x-z;
     			if (y >= prefWeights.get(0).get(1) && y <= prefWeights.get(1).get(1)){
     				ArrayList<Double> EP = new ArrayList<Double>();
-    				EP.add(x);
-    				EP.add(y);
-    				EP.add(z);
+    				EP.add(Math.round(x * 100.0)/100.0);
+    				EP.add(Math.round(y * 100.0)/100.0);
+    				EP.add(Math.round(z * 100.0)/100.0);
     				prefWeights_EPs.add(EP);  // add (x,y) to EPs
     			}
     		}
@@ -3618,9 +3618,9 @@ public class MDPModelChecker extends ProbModelChecker
     			Double x = 1-y-z;
     			if (x >= prefWeights.get(0).get(0) && x <= prefWeights.get(1).get(0)){
     				ArrayList<Double> EP = new ArrayList<Double>();
-    				EP.add(x);
-    				EP.add(y);
-    				EP.add(z);
+    				EP.add(Math.round(x * 100.0)/100.0);
+    				EP.add(Math.round(y * 100.0)/100.0);
+    				EP.add(Math.round(z * 100.0)/100.0);
     				prefWeights_EPs.add(EP);  // add (x,y) to EPs
     			}
     		}
@@ -3691,6 +3691,8 @@ public class MDPModelChecker extends ProbModelChecker
 				}
 			}
 		}
+		mainLog.println("Lower bounds: " + Arrays.toString(lowerBounds));
+		mainLog.println("Upper bounds: " + Arrays.toString(upperBounds));
 
 		// Computing multi-strategy via MILP
 		// boolean min = true;
