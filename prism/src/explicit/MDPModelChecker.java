@@ -3749,12 +3749,10 @@ public class MDPModelChecker extends ProbModelChecker
 			GRBVar xlVars[][] = new GRBVar[objNum][stateNum];
 			GRBVar xuVars[][] = new GRBVar[objNum][stateNum];
 			for (int i=0; i<objNum; i++) {
-				BitSet maxRew0 = rewTot0(mdp, mdpRewardsList.get(i), false); // Find states where max expected total reward is 0
+//				BitSet maxRew0 = rewTot0(mdp, mdpRewardsList.get(i), false); // Find states where max expected total reward is 0
 				for (int s=0; s<stateNum; s++) {
-//					xlVars[i][s] = model.addVar(0.0, target.get(s) ? 0.0 : GRB.INFINITY, 0.0, GRB.CONTINUOUS, "x_r"+i+"_s"+s+"_lower");
-//					xuVars[i][s] = model.addVar(0.0, target.get(s) ? 0.0 : GRB.INFINITY, 0.0, GRB.CONTINUOUS, "x_r"+i+"_s"+s+"_upper");
-					xlVars[i][s] = model.addVar(0.0, maxRew0.get(s) ? 0.0 : GRB.INFINITY, 0.0, GRB.CONTINUOUS, "x_r"+i+"_s"+s+"_lower");
-					xuVars[i][s] = model.addVar(0.0, maxRew0.get(s) ? 0.0 : GRB.INFINITY, 0.0, GRB.CONTINUOUS, "x_r"+i+"_s"+s+"_upper");
+					xlVars[i][s] = model.addVar(0.0, target.get(s) ? 0.0 : GRB.INFINITY, 0.0, GRB.CONTINUOUS, "x_r"+i+"_s"+s+"_lower");
+					xuVars[i][s] = model.addVar(0.0, target.get(s) ? 0.0 : GRB.INFINITY, 0.0, GRB.CONTINUOUS, "x_r"+i+"_s"+s+"_upper");
 				}
 			}
 

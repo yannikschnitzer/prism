@@ -1,0 +1,46 @@
+Command lines:
+
+-----------------
+UAV case studies
+
+prism tests/uav.prism -const K=5 -pf '<<*>> {multi}(R{"time"}min=? [ C ], R{"risk"}min=? [ C ])' -ex -weights '([0.1, 0.2], [0.8, 0.9])'
+
+prism tests/uav.prism -const K=5 -pf '<<*>> {multi}(R{"time"}min=? [ C ], R{"risk"}min=? [ C ])' -ex -weights '([0.1, 1], [0, 0.9])'
+
+prism tests/uav.prism -const K=10 -pf '<<*>> {multi}(R{"time"}min=? [ C ], R{"risk"}min=? [ C ])' -ex -weights '([0.1, 0.2], [0.8, 0.9])'
+
+prism tests/uav.prism -const K=10 -pf '<<*>> {multi}(R{"time"}min=? [ C ], R{"risk"}min=? [ C ])' -ex -weights '([0.1, 1], [0, 0.9])'
+
+prism tests/uav.prism -const K=20 -pf '<<*>> {multi}(R{"time"}min=? [ C ], R{"risk"}min=? [ C ])' -ex -weights '([0.1, 0.2], [0.8, 0.9])'
+
+prism tests/uav.prism -const K=20 -pf '<<*>> {multi}(R{"time"}min=? [ C ], R{"risk"}min=? [ C ])' -ex -weights '([0.1, 1], [0, 0.9])'
+
+
+----------------------
+Taskgraph case studies
+
+prism tests/taskgraph.prism -const K=30 -pf '<<*>> {multi}(R{"p1_use"}min=? [ C ], R{"p2_use"}min=? [ C ])' -ex -weights '([0.8, 1], [0, 0.2])'
+
+prism tests/taskgraph.prism -const K=30 -pf '<<*>> {multi}(R{"p1_use"}min=? [ C ], R{"p2_use"}min=? [ C ])' -ex -weights '([0.1, 1], [0, 0.9])'
+
+prism tests/taskgraph.prism -const K=40 -pf '<<*>> {multi}(R{"p1_use"}min=? [ C ], R{"p2_use"}min=? [ C ])' -ex -weights '([0.8, 1], [0, 0.2])'
+
+prism tests/taskgraph.prism -const K=40 -pf '<<*>> {multi}(R{"p1_use"}min=? [ C ], R{"p2_use"}min=? [ C ])' -ex -weights '([0.1, 1], [0, 0.9])'
+
+prism tests/taskgraph.prism -const K=50 -pf '<<*>> {multi}(R{"p1_use"}min=? [ C ], R{"p2_use"}min=? [ C ])' -ex -weights '([0.8, 1], [0, 0.2])'
+
+prism tests/taskgraph.prism -const K=50 -pf '<<*>> {multi}(R{"p1_use"}min=? [ C ], R{"p2_use"}min=? [ C ])' -ex -weights '([0.1, 1], [0, 0.9])'
+
+
+--------------------
+Teamform case studies
+
+prism tests/teamform_2.prism -pf '<<*>> {multi}(R{"task1_completed"}max=? [ C ], R{"task2_completed"}max=? [ C ])' -ex -weights '([0.8, 1], [0, 0.2])'
+
+prism tests/teamform_2.prism -pf '<<*>> {multi}(R{"task1_completed"}max=? [ C ], R{"task2_completed"}max=? [ C ])' -ex -weights '([0, 0.9], [0.1, 1])'
+
+prism tests/teamform_3.prism -pf '<<*>> {multi}(R{"task1_completed"}max=? [ C ], R{"task2_completed"}max=? [ C ])' -ex -weights '([0.8, 1], [0, 0.2])'
+
+prism tests/teamform_3.prism -pf '<<*>> {multi}(R{"task1_completed"}max=? [ C ], R{"task2_completed"}max=? [ C ])' -ex -weights '([0, 0.9], [0.1, 1])'
+
+
