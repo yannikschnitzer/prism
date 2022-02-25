@@ -3501,24 +3501,28 @@ public class MDPModelChecker extends ProbModelChecker
 	 */
 	public ModelCheckerResult computeMultiStrategyMultiObj(MDP mdp, List<MDPRewards> mdpRewardsList, List<MinMax> minMaxList) throws PrismException
 	{
-		boolean min = true;
 
 		// Store MDP info
 		int stateNum = mdp.getNumStates();
 		int sInit = mdp.getFirstInitialState();
 		int objNum = minMaxList.size();
+		
+		boolean min_list[] = new boolean[objNum];
 		for(int i=0; i<objNum; i++) {
 			MinMax objType = minMaxList.get(i);
 			if(objType.isMax()) {
-				min = false;
-				mainLog.println("Max case!");
+				min_list[i] = false;
 				// throw new PrismException("Max properties are not supported yet.");
 			}
+			else {
+				min_list[i] = true;
+			}
 		}
+		mainLog.println("min_max_bool_list: " + Arrays.toString(min_list));
 
 		// Parsing preference weights as a set of extreme points
-		// Format: ([obj1, obj2, ...],...,[obj1, obj2, ...])
-		ArrayList<ArrayList<Double>> prefWeights = new ArrayList<ArrayList<Double>>();
+		// Format: ([obj1_l, obj1_u], ..., [objn_l, objn_u])
+		ArrayList<ArrayList<Double>> pref = new ArrayList<ArrayList<Double>>();
 		String prefString = getSettings().getString(PrismSettings.PRISM_WEIGHTS_STRING);
 		Pattern p = Pattern.compile("\\[(.*?)\\]");
 		Matcher m = p.matcher(prefString);
@@ -3530,9 +3534,22 @@ public class MDPModelChecker extends ProbModelChecker
 				double v = Double.parseDouble(sa[i]);
 				w.add(v);
 			}
-			prefWeights.add(w);
+			pref.add(w);
 		}
-		mainLog.println("Preferences: " + prefWeights);
+		mainLog.println("Pref: " + pref);
+
+		// convert preference to format ([l_obj1, l_obj2, ...],...,[l_obj1, l_obj2, ...])
+		ArrayList<ArrayList<Double>> prefWeights = new ArrayList<ArrayList<Double>>();
+		ArrayList<Double> pref_lower = new ArrayList<Double>();
+		ArrayList<Double> pref_upper = new ArrayList<Double>();
+		for(int i=0; i<pref.size(); i++){
+			pref_lower.add(pref.get(i).get(0));
+			pref_upper.add(pref.get(i).get(1));
+		}
+		prefWeights.add(pref_lower);
+		prefWeights.add(pref_upper);
+		mainLog.println("PrefWeights: " + prefWeights);
+
 
 		// compute EPs corresponding to the given prefWeights
     Set<ArrayList<Double>> prefWeights_EPs = new HashSet<ArrayList<Double>>();
@@ -3610,7 +3627,7 @@ public class MDPModelChecker extends ProbModelChecker
     	}
 
     }
-    System.out.println("EPs for pref: " + prefWeights_EPs);
+    mainLog.println("prefWeights_EPs: " + prefWeights_EPs);
 
 		// Computing objective bounds
 		BitSet target = rewTot0(mdp, mdpRewardsList.get(0), false);
@@ -3630,7 +3647,13 @@ public class MDPModelChecker extends ProbModelChecker
 				double[] pv = pp.getCoords();
 				double tmpSum = 0.0;
 				for (int j=0; j<objNum; j++) {
-						tmpSum += weights.get(j) * pv[j];
+						if (min_list[j]==false) {
+							// if max obj, negate value
+							tmpSum += weights.get(j) * (-pv[j]);
+						}
+						else {
+							tmpSum += weights.get(j) * pv[j];
+						}
 				}
 				if (tmpSum < rewardSum) {
 					rewardSum = tmpSum;
@@ -3674,7 +3697,7 @@ public class MDPModelChecker extends ProbModelChecker
 		double[] soln = null;
 
 		// Start solution
-		mainLog.println("Starting linear programming (" + (min ? "min" : "max") + ")...");
+//		mainLog.println("Starting linear programming (" + (min ? "min" : "max") + ")...");
 
 		try {
 			// Initialise MILP solver
@@ -3708,30 +3731,17 @@ public class MDPModelChecker extends ProbModelChecker
 			double scale = 1000.0;
 			GRBLinExpr exprObj = new GRBLinExpr();
 			for (int i=0; i<objNum; i++) {
-				if (min == true) {
-					exprObj.addTerm(-1.0, xlVars[i][sInit]);
-					exprObj.addTerm(1.0, xuVars[i][sInit]);
-				}
-				else {
-					exprObj.addTerm(1.0, xlVars[i][sInit]);
-					exprObj.addTerm(-1.0, xuVars[i][sInit]);
-				}
-					
+				exprObj.addTerm(-1.0, xlVars[i][sInit]);
+				exprObj.addTerm(1.0, xuVars[i][sInit]);
+
 			}
 			for (int s = 0; s < stateNum; s++) {
 				int nc = mdp.getNumChoices(s);
 				for (int j = 0; j < nc; j++) {
-					if (min == true) {
-						exprObj.addTerm(-scale, yaVars[s][j]);
-						exprObj.addConstant(scale);
-					}
-					else {
-						exprObj.addTerm(scale, yaVars[s][j]);
-						exprObj.addConstant(-scale);
-					}
+					exprObj.addTerm(-scale, yaVars[s][j]);
+					exprObj.addConstant(scale);
 				}
 			}
-			// if min, just use exprObj constructed; else, negate it
 			model.setObjective(exprObj, GRB.MINIMIZE);
 
 
