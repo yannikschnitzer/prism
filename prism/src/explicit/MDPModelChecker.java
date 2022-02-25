@@ -3653,10 +3653,9 @@ public class MDPModelChecker extends ProbModelChecker
 			}
 		};
 		BitSet target = rewTot0(mdp, mdpRewardsSum, false);
+//		mainLog.println("Target states: " + target);
 		
 		// Computing objective bounds
-		///BitSet target = rewTot0(mdp, mdpRewardsList.get(0), false);
-		mainLog.println("Target states: " + target);
 		MultiObjModelChecker mc = new MultiObjModelChecker(this);
 		StateValues sv = mc.checkExpressionParetoMultiObjMDPWithOLS(mdp, mdpRewardsList, target, minMaxList, null);
 //		StateValues sv = mc.checkExpressionParetoMultiObjMDPWithRandomSampling(mdp, mdpRewardsList, target, minMaxList, null);
@@ -3750,10 +3749,12 @@ public class MDPModelChecker extends ProbModelChecker
 			GRBVar xlVars[][] = new GRBVar[objNum][stateNum];
 			GRBVar xuVars[][] = new GRBVar[objNum][stateNum];
 			for (int i=0; i<objNum; i++) {
-				//BitSet maxRew0 = rewTot0(mdp, mdpRewardsList.get(i), false); // Find states where max expected total reward is 0
+				BitSet maxRew0 = rewTot0(mdp, mdpRewardsList.get(i), false); // Find states where max expected total reward is 0
 				for (int s=0; s<stateNum; s++) {
-					xlVars[i][s] = model.addVar(0.0, target.get(s) ? 0.0 : GRB.INFINITY, 0.0, GRB.CONTINUOUS, "x_r"+i+"_s"+s+"_lower");
-					xuVars[i][s] = model.addVar(0.0, target.get(s) ? 0.0 : GRB.INFINITY, 0.0, GRB.CONTINUOUS, "x_r"+i+"_s"+s+"_upper");
+//					xlVars[i][s] = model.addVar(0.0, target.get(s) ? 0.0 : GRB.INFINITY, 0.0, GRB.CONTINUOUS, "x_r"+i+"_s"+s+"_lower");
+//					xuVars[i][s] = model.addVar(0.0, target.get(s) ? 0.0 : GRB.INFINITY, 0.0, GRB.CONTINUOUS, "x_r"+i+"_s"+s+"_upper");
+					xlVars[i][s] = model.addVar(0.0, maxRew0.get(s) ? 0.0 : GRB.INFINITY, 0.0, GRB.CONTINUOUS, "x_r"+i+"_s"+s+"_lower");
+					xuVars[i][s] = model.addVar(0.0, maxRew0.get(s) ? 0.0 : GRB.INFINITY, 0.0, GRB.CONTINUOUS, "x_r"+i+"_s"+s+"_upper");
 				}
 			}
 
@@ -3892,6 +3893,16 @@ public class MDPModelChecker extends ProbModelChecker
 				throw new PrismException("Error solving LP: " + "unbounded");
 			}
 			if (model.get(GRB.IntAttr.Status) == GRB.Status.TIME_LIMIT) {
+				// Print model statistics
+				int bVarsNum = model.get(GRB.IntAttr.NumBinVars);
+				int rVarsNum = model.get(GRB.IntAttr.NumVars) - bVarsNum;
+				mainLog.println("*********** Model and MILP statistics ************");
+				mainLog.println("MDP states: " + stateNum);
+				mainLog.println("MDP transitions: " + mdp.getNumTransitions());
+				mainLog.println("MILP binary varibles: " + bVarsNum);
+				mainLog.println("MILP real varibles: " + rVarsNum);
+				mainLog.println("MILP constraints: " + model.get(GRB.IntAttr.NumConstrs));
+				mainLog.println("**************************************************");
 				throw new PrismException("Error solving LP: " + "time out");
 			}
 			if (model.get(GRB.IntAttr.Status) != GRB.Status.OPTIMAL) {
