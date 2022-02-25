@@ -3496,6 +3496,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 	/**
 	 * Compute a multi-strategy for a multi-objective property with uncertain human preferences
+	 * preference weights -ex -weights '([obj1_lower, obj1_upper], [obj2_lower, obj2_upper], ...)'
 	 * @param mdp: The MDP
 	 * @param mdpRewards The rewards
 	 */
@@ -3633,6 +3634,7 @@ public class MDPModelChecker extends ProbModelChecker
 		BitSet target = rewTot0(mdp, mdpRewardsList.get(0), false);
 		MultiObjModelChecker mc = new MultiObjModelChecker(this);
 		StateValues sv = mc.checkExpressionParetoMultiObjMDPWithOLS(mdp, mdpRewardsList, target, minMaxList, null);
+//		StateValues sv = mc.checkExpressionParetoMultiObjMDPWithRandomSampling(mdp, mdpRewardsList, target, minMaxList, null);
 		ArrayList<Point> paretoPoints = (ArrayList<Point>) sv.getValue(sInit);
 
 		// Step 1: find the corresponding Pareto point for each preference weight
@@ -3661,7 +3663,7 @@ public class MDPModelChecker extends ProbModelChecker
 				}
 			}
 			chosenPoints.add(pointIndex);
-//			mainLog.println("Preference weights " + weights + " -> Pareto point " + paretoPoints.get(pointIndex));
+			mainLog.println("Preference weight extreme point " + weights + " -> Pareto point " + paretoPoints.get(pointIndex));
 			boolean sanity = false; 	// Sanity check
 			if (sanity) {
 				ModelCheckerResult res = computeMultiReachRewards(mdp, weights, mdpRewardsList, target, true, null);
@@ -3691,8 +3693,9 @@ public class MDPModelChecker extends ProbModelChecker
 				}
 			}
 		}
-		mainLog.println("Lower bounds: " + Arrays.toString(lowerBounds));
-		mainLog.println("Upper bounds: " + Arrays.toString(upperBounds));
+		mainLog.println("*********** Objective bounds ************");
+		mainLog.println("Lower bounds [obj1, obj2, ...]: " + Arrays.toString(lowerBounds));
+		mainLog.println("Upper bounds [obj1, obj2, ...]: " + Arrays.toString(upperBounds));
 
 		// Computing multi-strategy via MILP
 		// boolean min = true;
@@ -3703,6 +3706,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 		try {
 			// Initialise MILP solver
+			mainLog.println("Initializing Gurobi solver ...");
 			GRBEnv env = new GRBEnv("gurobi.log");
 			env.set(GRB.IntParam.OutputFlag, 0);
 			GRBModel model = new GRBModel(env);
