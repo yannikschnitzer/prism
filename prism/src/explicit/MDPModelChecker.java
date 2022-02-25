@@ -53,6 +53,7 @@ import explicit.modelviews.MDPEquiv;
 import explicit.rewards.MCRewards;
 import explicit.rewards.MCRewardsFromMDPRewards;
 import explicit.rewards.MDPRewards;
+import explicit.rewards.MDPRewardsSimple;
 import explicit.rewards.Rewards;
 import explicit.rewards.WeightedSumMDPRewards;
 import parser.VarList;
@@ -3617,8 +3618,44 @@ public class MDPModelChecker extends ProbModelChecker
 	    }
 //	    mainLog.println("prefWeights_EPs: " + prefWeights_EPs);
 
+		// Find states where max expected total reward (for all objectives) is 0
+	    MDPRewards mdpRewardsSum = new MDPRewards() {
+			
+			@Override
+			public MDPRewards liftFromModel(Product<? extends Model> product) {
+				return null;
+			}
+			
+			@Override
+			public boolean hasTransitionRewards() {
+				for (int o = 0; o < objNum; o++) {
+					if (mdpRewardsList.get(o).hasTransitionRewards()) return true;
+				}
+				return false;
+			}
+			
+			@Override
+			public double getTransitionReward(int s, int i) {
+				double d = 0;
+				for (int o = 0; o < objNum; o++) {
+					d += mdpRewardsList.get(o).getTransitionReward(s, i);
+				}
+				return d;
+			}
+			
+			@Override
+			public double getStateReward(int s) {
+				double d = 0;
+				for (int o = 0; o < objNum; o++) {
+					d += mdpRewardsList.get(o).getStateReward(s);
+				}
+				return d;
+			}
+		};
+		BitSet target = rewTot0(mdp, mdpRewardsSum, false);
+		
 		// Computing objective bounds
-		BitSet target = rewTot0(mdp, mdpRewardsList.get(0), false);
+		///BitSet target = rewTot0(mdp, mdpRewardsList.get(0), false);
 		mainLog.println("Target states: " + target);
 		MultiObjModelChecker mc = new MultiObjModelChecker(this);
 		StateValues sv = mc.checkExpressionParetoMultiObjMDPWithOLS(mdp, mdpRewardsList, target, minMaxList, null);
@@ -3713,10 +3750,10 @@ public class MDPModelChecker extends ProbModelChecker
 			GRBVar xlVars[][] = new GRBVar[objNum][stateNum];
 			GRBVar xuVars[][] = new GRBVar[objNum][stateNum];
 			for (int i=0; i<objNum; i++) {
-				BitSet maxRew0 = rewTot0(mdp, mdpRewardsList.get(i), false); // Find states where max expected total reward is 0
+				//BitSet maxRew0 = rewTot0(mdp, mdpRewardsList.get(i), false); // Find states where max expected total reward is 0
 				for (int s=0; s<stateNum; s++) {
-					xlVars[i][s] = model.addVar(0.0, maxRew0.get(s) ? 0.0 : GRB.INFINITY, 0.0, GRB.CONTINUOUS, "x_r"+i+"_s"+s+"_lower");
-					xuVars[i][s] = model.addVar(0.0, maxRew0.get(s) ? 0.0 : GRB.INFINITY, 0.0, GRB.CONTINUOUS, "x_r"+i+"_s"+s+"_upper");
+					xlVars[i][s] = model.addVar(0.0, target.get(s) ? 0.0 : GRB.INFINITY, 0.0, GRB.CONTINUOUS, "x_r"+i+"_s"+s+"_lower");
+					xuVars[i][s] = model.addVar(0.0, target.get(s) ? 0.0 : GRB.INFINITY, 0.0, GRB.CONTINUOUS, "x_r"+i+"_s"+s+"_upper");
 				}
 			}
 
