@@ -76,6 +76,7 @@ import prism.PrismUtils;
 //import solver.ProbabilitySample;
 import explicit.AlphaVector;
 import explicit.AlphaMatrix;
+import explicit.PartiallyObservableMonteCarloPlanning;
 //import solver.BeliefPoint;
 
 /**
@@ -1338,7 +1339,7 @@ public class POMDPModelChecker extends ProbModelChecker
 				if (B.size()>1000) {
 					break;
 				}
-				mainLog.println("Bsize="+B.size());
+				//mainLog.println("Bsize="+B.size());
 			}
 		}
 		/*
@@ -1353,9 +1354,9 @@ public class POMDPModelChecker extends ProbModelChecker
 			}
 		}
 		*/
-		for (int i=0; i<B.size();i++) {
-			mainLog.println("index="+i+" "+B.get(i)+" full="+Arrays.toString(B.get(i).toDistributionOverStates(pomdp)));
-		}
+//		for (int i=0; i<B.size();i++) {
+//			mainLog.println("index="+i+" "+B.get(i)+" full="+Arrays.toString(B.get(i).toDistributionOverStates(pomdp)));
+//		}
 		return B;
 	}
 	
@@ -1740,11 +1741,130 @@ public class POMDPModelChecker extends ProbModelChecker
 		return max;
 	}
 	
+	public ModelCheckerResult computeReachRewardsPOMCP(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest) throws PrismException
+	{
+
+		BitSet targetObs = getObservationsMatchingStates(pomdp, target);
+		// Check we are only computing for a single state (and use initial state if unspecified)
+		if (statesOfInterest == null) {
+			statesOfInterest = new BitSet();
+			statesOfInterest.set(pomdp.getFirstInitialState());
+		} else if (statesOfInterest.cardinality() > 1) {
+			throw new PrismNotSupportedException("POMDPs can only be solved from a single start state");
+		}	
+		
+		if (targetObs == null) {
+			throw new PrismException("Target for expected reachability is not observable");
+		}
+		
+		// Find _some_ of the states with infinite reward
+		// (those from which *every* MDP strategy has prob<1 of reaching the target,
+		// and therefore so does every POMDP strategy)
+		MDPModelChecker mcProb1 = new MDPModelChecker(this);
+		BitSet inf = mcProb1.prob1(pomdp, null, target, false, null);
+		inf.flip(0, pomdp.getNumStates());
+		// Find observations for which all states are known to have inf reward
+		BitSet infObs = getObservationsCoveredByStates(pomdp, inf);
+		BitSet unknownObs = new BitSet();
+		unknownObs.set(0, pomdp.getNumObservations());
+		if (targetObs != null) {
+			unknownObs.andNot(targetObs);	
+		}
+		unknownObs.andNot(infObs);
+		int nStates = pomdp.getNumStates();
+		ModelCheckerResult res = null;
+		long timer;
+		mainLog.println("endS ");
+		ArrayList<Integer> endStates = new ArrayList<Integer>();
+		for (int i=0; i<nStates;i++) {
+			if (!unknownObs.get(pomdp.getObservation(i))) {
+				endStates.add(i);
+				mainLog.print(i + " ");
+			}
+		}
+		mainLog.println(" ");
+		int numEpisode = 5000;
+		ArrayList<Double> rewards = new ArrayList<Double> ();
+		double rewardAverage = 0;
+		for (int n =0; n < numEpisode; n++) {
+			mainLog.println("start Episode"+n+" out of "+numEpisode);
+			double reward = computeReachRewardsPOMCPEpisode(pomdp,  mdpRewards,  target,  min,  statesOfInterest, endStates);
+			rewards.add(reward);
+			rewardAverage += reward;
+		}
+		rewardAverage = rewardAverage / rewards.size();
+		mainLog.println("average reward = "+ rewardAverage);
+		return res; 
+		
+	}
+	
+
+	public double computeReachRewardsPOMCPEpisode(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest, ArrayList<Integer> endStates) throws PrismException
+	{
+		
+		mainLog.println("start running episode");
+		double[] initialBelief = pomdp.getInitialBeliefInDist();
+		int initialState = POMCPDrawStateFromBelief(initialBelief);
+		double[] currentBelief = pomdp.getInitialBeliefInDist();
+		
+		ArrayList<ArrayList<Object>> history = new ArrayList<ArrayList<Object>>();
+		int state = initialState;
+		double totalReward = 0;
+		double discount = 0.95;
+		discount = 1;
+		double c = 1;
+		double threshold = 0.005;
+		double timeout = 10000;
+		double noParticles = 1200; 
+
+//		public PartiallyObservableMonteCarloPlanning(POMDP pomdp, double gamma, double c, double threshold, double timeout, double noParticles ) 
+		PartiallyObservableMonteCarloPlanning pomcp = new PartiallyObservableMonteCarloPlanning(pomdp, mdpRewards, target, min, statesOfInterest, endStates,  discount, c, threshold, timeout, noParticles);
+		int step = 0;
+		int stepLimit = 100;
+		while (! endStates.contains(state)) {
+			// policy <- Search(history)
+			if (step > stepLimit) {
+				mainLog.println("reaching step limit" + stepLimit);
+				break;
+			}
+			step += 1;
+			Object action = pomcp.search();
+			
+			ArrayList<Double> sord = pomcp.step(state, action);
+			int nextState = sord.get(0).intValue();
+			int obsSample = sord.get(1).intValue();
+			double reward = sord.get(2);
+			double done = sord.get(3);
+			pomcp.update(action,  obsSample);
+			totalReward += reward;
+			//mainLog.println("step = " + step + " state = "+ state + " action = " + action + " obs = " + obsSample + " reward = " + reward + " nextS= " + nextState );
+			state = nextState;
+		}
+		mainLog.println("totoal reward = " + totalReward);
+		return totalReward;
+	}
+	
+	public int POMCPDrawStateFromBelief(double[] belief) 
+	{
+		int state = 0;
+		double randomThreshold = Math.random();
+		double cumulativeProb = 0;
+		for (int i = 0; i < belief.length; i++) {
+			cumulativeProb += belief[i];
+			if (cumulativeProb >= randomThreshold) {
+				state = i;
+				break;
+			}
+		}
+		return state; 
+	}
+	
 	
 	public ModelCheckerResult computeReachRewards(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest) throws PrismException
 	{
 		mainLog.println("Calling Perseus pomdp solver");
 		computeReachRewardsPerseus( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
+		computeReachRewardsPOMCP( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
 		mainLog.println("End calling Perseus pomdp solver");
 		
 		ModelCheckerResult res = null;
