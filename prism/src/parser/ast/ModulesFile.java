@@ -1483,6 +1483,10 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 			// Search through commands, checking for probabilities
 			accept(new ASTTraverse()
 			{
+				public Object visit(ExpressionDistr e) throws PrismLangException
+				{
+					throw new PrismLangException("Found one");
+				}
 				public Object visit(Updates e) throws PrismLangException
 				{
 					int n = e.getNumUpdates();

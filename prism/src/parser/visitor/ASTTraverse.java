@@ -233,7 +233,8 @@ public class ASTTraverse implements ASTVisitor
 		// so take care to update those versions if changing this method
 		visitPre(e);
 		e.getGuard().accept(this);
-		e.getUpdates().accept(this);
+//		e.getUpdates().accept(this);
+		e.getUpdateNew().accept(this);
 		visitPost(e);
 		return null;
 	}
@@ -276,6 +277,44 @@ public class ASTTraverse implements ASTVisitor
 		return null;
 	}
 	public void visitPost(UpdateElement e) throws PrismLangException { defaultVisitPost(e); }
+	// -----------------------------------------------------------------------------------
+	public void visitPre(UpdateAssignment e) throws PrismLangException { defaultVisitPre(e); }
+	public Object visit(UpdateAssignment e) throws PrismLangException
+	{
+		visitPre(e);
+		if (e.getExpression() != null) e.getExpression().accept(this);
+		return null;
+	}
+	public void visitPost(UpdateAssignment e) throws PrismLangException { defaultVisitPost(e); }
+	// -----------------------------------------------------------------------------------
+	public void visitPre(UpdateAnd e) throws PrismLangException { defaultVisitPre(e); }
+	public Object visit(UpdateAnd e) throws PrismLangException
+	{
+		visitPre(e);
+		int i, n;
+		n = e.getNumElements();
+		for (i = 0; i < n; i++) {
+			if (e.getElement(i) != null) e.getElement(i).accept(this);
+		}
+		visitPost(e);
+		return null;
+	}
+	public void visitPost(UpdateAnd e) throws PrismLangException { defaultVisitPost(e); }
+	// -----------------------------------------------------------------------------------
+	public void visitPre(UpdateWeightedSum e) throws PrismLangException { defaultVisitPre(e); }
+	public Object visit(UpdateWeightedSum e) throws PrismLangException
+	{
+		visitPre(e);
+		int i, n;
+		n = e.getNumUpdates();
+		for (i = 0; i < n; i++) {
+			if (e.getProbability(i) != null) e.getProbability(i).accept(this);
+			if (e.getUpdate(i) != null) e.getUpdate(i).accept(this);
+		}
+		visitPost(e);
+		return null;
+	}
+	public void visitPost(UpdateWeightedSum e) throws PrismLangException { defaultVisitPost(e); }
 	// -----------------------------------------------------------------------------------
 	public void visitPre(RenamedModule e) throws PrismLangException { defaultVisitPre(e); }
 	public Object visit(RenamedModule e) throws PrismLangException
@@ -523,6 +562,20 @@ public class ASTTraverse implements ASTVisitor
 		return null;
 	}
 	public void visitPost(ExpressionVar e) throws PrismLangException { defaultVisitPost(e); }
+	// -----------------------------------------------------------------------------------
+	public void visitPre(ExpressionDistr e) throws PrismLangException { defaultVisitPre(e); }
+	public Object visit(ExpressionDistr e) throws PrismLangException
+	{
+		visitPre(e);
+		int i, n = e.size();
+		for (i = 0; i < n; i++) {
+			if (e.getProbability(i) != null) e.getProbability(i).accept(this);
+			if (e.getExpression(i) != null) e.getExpression(i).accept(this);
+		}
+		visitPost(e);
+		return null;
+	}
+	public void visitPost(ExpressionDistr e) throws PrismLangException { defaultVisitPost(e); }
 	// -----------------------------------------------------------------------------------
 	public void visitPre(ExpressionProb e) throws PrismLangException { defaultVisitPre(e); }
 	public Object visit(ExpressionProb e) throws PrismLangException

@@ -53,8 +53,9 @@ public class ExpressionBinaryOp extends Expression
 	public static final int MINUS = 12;
 	public static final int TIMES = 13;
 	public static final int DIVIDE = 14;
+	public static final int ASSIGN = 15;
 	// Operator symbols
-	public static final String opSymbols[] = { "", "=>", "<=>", "|", "&", "=", "!=", ">", ">=", "<", "<=", "+", "-", "*", "/" };
+	public static final String opSymbols[] = { "", "=>", "<=>", "|", "&", "=", "!=", ">", ">=", "<", "<=", "+", "-", "*", "/", "'=" };
 	// Operator type testers
 	public static boolean isLogical(int op) { return op==IMPLIES || op==IFF || op==OR || op==AND; }
 	public static boolean isRelOp(int op) { return op==EQ || op==NE || op==GT ||  op==GE || op==LT || op==LE; }
@@ -214,6 +215,10 @@ public class ExpressionBinaryOp extends Expression
 				throw new PrismLangException("Unknown evaluation mode " + evalMode);
 			}
 
+		// Assignent - not supported
+		case ASSIGN:
+			throw new PrismLangException("Cannot evaluate an assignment", this);
+			
 		// Other numerical (relations/arithmetic) - mix of doubles/ints
 		default:
 			try {

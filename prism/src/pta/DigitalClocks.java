@@ -244,15 +244,8 @@ public class DigitalClocks extends PrismComponent
 		{
 			public Object visit(parser.ast.Module e) throws PrismLangException
 			{
-				Command timeCommand;
-				Updates ups;
-				Update up;
-				int cMax;
-				Expression invar;
-				ExpressionFunc expr;
-
 				// Get (clock) invariant for module; create default if none
-				invar = e.getInvariant();
+				Expression invar = e.getInvariant();
 				invar = (invar == null) ? Expression.True() : invar.deepCopy();
 				// Collect invariant for "invariants" label
 				if (!Expression.isTrue(invar)) {
@@ -271,25 +264,24 @@ public class DigitalClocks extends PrismComponent
 					}
 				});
 				// Construct command representing progression of time
-				timeCommand = new Command();
+				Command timeCommand = new Command();
 				timeCommand.setSynch(timeAction);
 				// Guard comes from invariant
 				timeCommand.setGuard(invar);
 				// Update is constructed from clocks
-				up = new Update();
+				Expression update = null;
 				for (String x : cci.getClocksForModule(e.getName())) {
 					// Get clock max value
-					cMax = cci.getScaledClockMax(x);
+					int cMax = cci.getScaledClockMax(x);
 					// Build expression min(x+1,cMax)
-					expr = new ExpressionFunc("min");
+					ExpressionFunc expr = new ExpressionFunc("min");
 					expr.addOperand(Expression.Plus(new ExpressionVar(x, TypeInt.getInstance()), Expression.Int(1)));
 					expr.addOperand(Expression.Int(cMax + 1));
-					// Add to update
-					up.addElement(new ExpressionIdent(x), expr);
+					// Add assignment to update
+					Expression updateAssm = Expression.Assignment(new ExpressionVar(x, TypeInt.getInstance()), expr);
+					update = (update == null) ? updateAssm : Expression.And(update,  updateAssm);
 				}
-				ups = new Updates();
-				ups.addUpdate(Expression.Double(1.0), up);
-				timeCommand.setUpdates(ups);
+				timeCommand.setUpdateNew(update);
 				e.addCommand(timeCommand);
 				// Finally, remove invariant info
 				e.setInvariant(null);
@@ -397,17 +389,13 @@ public class DigitalClocks extends PrismComponent
 			Command timeCommand = new Command();
 			timeCommand.setSynch(timeAction);
 			timeCommand.setGuard(Expression.True());
-			// Construct update
-			Update up = new Update();
 			// Build expression min(timer+1,timerMax)
 			ExpressionFunc exprMin = new ExpressionFunc("min");
 			exprMin.addOperand(Expression.Plus(new ExpressionVar(timerVarName, TypeInt.getInstance()), Expression.Int(1)));
 			exprMin.addOperand(Expression.Plus(new ExpressionConstant(timeboundName, TypeInt.getInstance()), Expression.Literal(1)));
-			// Add to update
-			up.addElement(new ExpressionIdent(timerVarName), exprMin);
-			Updates ups = new Updates();
-			ups.addUpdate(Expression.Double(1.0), up);
-			timeCommand.setUpdates(ups);
+			// Construct update
+			Expression up = new ExpressionBinaryOp(ExpressionBinaryOp.EQ, new ExpressionIdent(timerVarName), exprMin); 
+			timeCommand.setUpdateNew(up);
 			timerModule.addCommand(timeCommand);
 			// Finally add module to model
 			mf.addModule(timerModule);

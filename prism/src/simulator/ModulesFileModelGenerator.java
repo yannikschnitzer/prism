@@ -28,6 +28,7 @@ import prism.ModelType;
 import prism.PrismComponent;
 import prism.PrismException;
 import prism.PrismLangException;
+import prism.PrismNotSupportedException;
 import prism.RewardGenerator;
 
 public class ModulesFileModelGenerator<Value> implements ModelGenerator<Value>, RewardGenerator<Value>
@@ -172,7 +173,7 @@ public class ModulesFileModelGenerator<Value> implements ModelGenerator<Value>, 
 		
 		// No support for system...endsystem yet
 		if (modulesFile.getSystemDefn() != null) {
-			throw new PrismException("The system...endsystem construct is not currently supported");
+			throw new PrismNotSupportedException("The system...endsystem construct is not currently supported");
 		}
 		
 		// Store basic model info

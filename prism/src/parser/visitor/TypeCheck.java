@@ -235,13 +235,21 @@ public class TypeCheck extends ASTTraverse
 		case ExpressionBinaryOp.IFF:
 		case ExpressionBinaryOp.OR:
 		case ExpressionBinaryOp.AND:
-			if (!(t1 instanceof TypeBool) && !(t1 instanceof TypePathBool)) {
-				throw new PrismLangException("Type error: " + e.getOperatorSymbol() + " applied to non-Boolean expression", e.getOperand1());
+			if (!(t1 instanceof TypeBool) && !(t1 instanceof TypePathBool) && !(t1 instanceof TypeAssignment)) {
+				throw new PrismLangException("Type error: " + e.getOperatorSymbol() + " cannot be applied to " + t1, e.getOperand1());
 			}
-			if (!(t2 instanceof TypeBool) && !(t2 instanceof TypePathBool)) {
-				throw new PrismLangException("Type error: " + e.getOperatorSymbol() + " applied to non-Boolean expression", e.getOperand2());
+			if (!(t2 instanceof TypeBool) && !(t2 instanceof TypePathBool) && !(t2 instanceof TypeAssignment)) {
+				throw new PrismLangException("Type error: " + e.getOperatorSymbol() + " cannot be applied to " + t2, e.getOperand2());
 			}
-			e.setType(t1 instanceof TypePathBool || t2 instanceof TypePathBool ? TypePathBool.getInstance() : TypeBool.getInstance());
+			if (t1 instanceof TypePathBool || t2 instanceof TypePathBool) {
+				e.setType(TypePathBool.getInstance());
+			} else if (t1 instanceof TypeBool || t2 instanceof TypeBool) {
+				e.setType(TypeBool.getInstance());
+			} else if (t1 instanceof TypeAssignment && t1 instanceof TypeAssignment) {
+				e.setType(TypeAssignment.getInstance(t1)); // REMOVE ???
+			} else {
+				throw new PrismLangException("Type error: " + e.getOperatorSymbol() + " cannot be applied", e);
+			}
 			break;
 		case ExpressionBinaryOp.EQ:
 		case ExpressionBinaryOp.NE:
@@ -290,6 +298,21 @@ public class TypeCheck extends ASTTraverse
 			e.setType(TypeBool.getInstance());
 			break;
 		case ExpressionBinaryOp.PLUS:
+			// Assignments
+			if ((t1 instanceof TypeAssignment || Expression.isTrue(e.getOperand1())) && (t2 instanceof TypeAssignment || Expression.isTrue(e.getOperand2()))) {
+				e.setType(TypeAssignment.getInstance(t2));
+			}
+			// Normal +
+			else {
+				if (!(t1 instanceof TypeInt || t1 instanceof TypeDouble)) {
+					throw new PrismLangException("Type error: " + e.getOperatorSymbol() + " can only be applied to ints or doubles", e.getOperand1());
+				}
+				if (!(t2 instanceof TypeInt || t2 instanceof TypeDouble)) {
+					throw new PrismLangException("Type error: " + e.getOperatorSymbol() + " can only be applied to ints or doubles", e.getOperand2());
+				}
+				e.setType(t1 instanceof TypeDouble || t2 instanceof TypeDouble ? TypeDouble.getInstance() : TypeInt.getInstance());
+			}
+			break;
 		case ExpressionBinaryOp.MINUS:
 		case ExpressionBinaryOp.TIMES:
 			if (!(t1 instanceof TypeInt || t1 instanceof TypeDouble)) {
@@ -309,6 +332,22 @@ public class TypeCheck extends ASTTraverse
 			}
 			e.setType(TypeDouble.getInstance());
 			break;
+		case ExpressionBinaryOp.ASSIGN:
+			// Updates to non-clocks
+			if (!(t1 instanceof TypeClock)) {
+				if (!t1.canAssign(t2)) {
+					throw new PrismLangException("Type error in update to variable \"" + e.getOperand1() + "\"", e.getOperand2());
+				}
+			}
+			// Updates to clocks
+			else {
+				if (!(t2.equals(TypeInt.getInstance())))
+					throw new PrismLangException("Clocks can only be reset to constant integer values", e);
+				// TODO
+//				if (!(e.getExpression(i).isConstant()))
+//					throw new PrismLangException("Clocks can only be reset to constant integer values", e);
+			}
+			e.setType(TypeAssignment.getInstance(t1));
 		}
 	}
 
@@ -330,6 +369,9 @@ public class TypeCheck extends ASTTraverse
 			e.setType(t);
 			break;
 		case ExpressionUnaryOp.PARENTH:
+			e.setType(t);
+			break;
+		case ExpressionUnaryOp.PRIMED:
 			e.setType(t);
 			break;
 		}
@@ -462,6 +504,21 @@ public class TypeCheck extends ASTTraverse
 		// Type already known
 	}
 
+	public void visitPost(ExpressionDistr e) throws PrismLangException
+	{
+		// Get types of operands
+		int n = e.size();
+		Type[] types = new Type[n];
+		for (int i = 0; i < n; i++) {
+			types[i] = e.getExpression(i).getType();
+			if (!(types[i] instanceof TypeAssignment)) {
+				throw new PrismLangException("Distributions can only be over assignments currently", e);
+			}
+		}
+		e.setType(types[0]);
+		// TODO
+	}
+	
 	public void visitPost(ExpressionProb e) throws PrismLangException
 	{
 		// Check prob bound

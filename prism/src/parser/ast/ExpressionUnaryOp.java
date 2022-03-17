@@ -41,8 +41,9 @@ public class ExpressionUnaryOp extends Expression
 	public static final int NOT = 1;
 	public static final int MINUS = 2;
 	public static final int PARENTH = 3;
+	public static final int PRIMED = 4;
 	// Operator symbols
-	public static final String opSymbols[] = { "", "!", "-", "()" };
+	public static final String opSymbols[] = { "", "!", "-", "()", "'" };
 
 	// Operator
 	protected int op = 0;
@@ -160,6 +161,8 @@ public class ExpressionUnaryOp extends Expression
 			}
 		case PARENTH:
 			return eval;
+		case PRIMED:
+			throw new PrismLangException("Cannot evaluate a primed expression", this);
 		}
 		throw new PrismLangException("Unknown unary operator", this);
 	}
@@ -192,10 +195,19 @@ public class ExpressionUnaryOp extends Expression
 	@Override
 	public String toString()
 	{
-		if (op == PARENTH)
+		switch (op) {
+		// (op)
+		case PARENTH:
 			return "(" + operand + ")";
-		else
+		// Suffix
+		case PRIMED:
+			return operand + opSymbols[op];
+		// Prefix (default)
+		case NOT:
+		case MINUS:
+		default:
 			return opSymbols[op] + operand;
+		}
 	}
 
 	@Override

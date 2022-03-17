@@ -33,8 +33,13 @@ import explicit.StateStorage;
 
 import parser.*;
 import parser.ast.*;
+import parser.ast.Filter;
+import parser.ast.Module;
+import parser.ast.Observable;
 import parser.type.*;
 import parser.visitor.ASTTraverse;
+import parser.visitor.ASTTraverseModify;
+import parser.visitor.ASTVisitor;
 import prism.*;
 
 /**
@@ -305,8 +310,8 @@ public class Modules2PTA extends PrismComponent
 		Declaration decl, declNew;
 		Command command, commandNew;
 		Expression guard, guardNew;
-		Updates updates, updatesNew;
-		Update update, updateNew;
+		Expression updates, updatesNew;
+		Expression update, updateNew;
 		Expression invar, invarNew;
 		Expression exprPc;
 		int numUpdates, numCommands, numElements;
@@ -392,7 +397,20 @@ public class Modules2PTA extends PrismComponent
 						commandNew.setSynch(command.getSynch());
 						guardNew = Expression.And(exprPc, guard);
 						commandNew.setGuard(guardNew);
-						// Go through updates, modifying them 
+						// Go through update, modifying it
+						update = command.getUpdateNew();
+						updateNew = (Expression) update.deepCopy().accept(new ASTTraverseModify() {
+							public Object visit(ExpressionBinaryOp e) throws PrismLangException
+							{
+								if (Expression.isAssignment(e)) {
+									int index = ((ExpressionVar) ((ExpressionBinaryOp) e).getOperand1()).getIndex();
+									mainLog.println(e);
+									mainLog.println(index);
+								}
+								return e;
+							}
+						});
+						/*
 						updates = command.getUpdates();
 						updatesNew = new Updates();
 						numUpdates = updates.getNumUpdates();
@@ -426,8 +444,9 @@ public class Modules2PTA extends PrismComponent
 							}
 							updatesNew.addUpdate(probNew, updateNew);
 						}
+						*/
 						// Add new stuff to new module
-						commandNew.setUpdates(updatesNew);
+//						commandNew.setUpdates(updatesNew);
 						moduleNew.addCommand(commandNew);
 					}
 				}

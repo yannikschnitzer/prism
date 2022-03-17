@@ -29,6 +29,7 @@ package simulator;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,10 @@ import parser.State;
 import parser.VarList;
 import parser.ast.Command;
 import parser.ast.Expression;
+import parser.ast.ExpressionBinaryOp;
+import parser.ast.ExpressionDistr;
+import parser.ast.ExpressionUnaryOp;
+import parser.ast.ExpressionVar;
 import parser.ast.Module;
 import parser.ast.ModulesFile;
 import parser.ast.Update;
@@ -46,11 +51,15 @@ import parser.ast.Updates;
 import parser.type.TypeClock;
 import prism.Evaluator;
 import prism.ModelType;
+import prism.Pair;
 import prism.PrismComponent;
 import prism.PrismException;
 import prism.PrismLangException;
 import prism.PrismSettings;
 
+/**
+ * Class for evaluating the semantics of a PRISM language model
+ */
 public class Updater<Value> extends PrismComponent
 {
 	// Evaluator for values/states
@@ -81,7 +90,7 @@ public class Updater<Value> extends PrismComponent
 
 	// Element i,j of updateLists is a list of the updates from module i labelled with action j
 	// (where j=0 denotes independent, otherwise 1-indexed action label)
-	protected List<List<List<Updates>>> updateLists;
+	protected List<List<List<Expression>>> updateLists;
 	// Bit j of enabledSynchs is set iff action j is currently enabled
 	// (where j=0 denotes independent, otherwise 1-indexed action label)
 	protected BitSet enabledSynchs;
@@ -89,7 +98,7 @@ public class Updater<Value> extends PrismComponent
 	// (where j=0 denotes independent, otherwise 1-indexed action label)
 	protected BitSet enabledModules[];
 	// For real-time models, the guards over clock variables attached to (some) Updates
-	protected Map<Updates,Expression> clockGuards;
+	protected Map<Expression,Expression> clockGuards;
 
 	public Updater(ModulesFile modulesFile, VarList varList, Evaluator<Value> eval)
 	{
@@ -146,11 +155,11 @@ public class Updater<Value> extends PrismComponent
 		}
 
 		// Build lists/bitsets for later use
-		updateLists = new ArrayList<List<List<Updates>>>(numModules);
+		updateLists = new ArrayList<List<List<Expression>>>(numModules);
 		for (int i = 0; i < numModules; i++) {
-			updateLists.add(new ArrayList<List<Updates>>(numSynchs + 1));
+			updateLists.add(new ArrayList<List<Expression>>(numSynchs + 1));
 			for (int j = 0; j < numSynchs + 1; j++) {
-				updateLists.get(i).add(new ArrayList<Updates>());
+				updateLists.get(i).add(new ArrayList<Expression>());
 			}
 		}
 		enabledSynchs = new BitSet(numSynchs + 1);
@@ -158,7 +167,7 @@ public class Updater<Value> extends PrismComponent
 		for (int j = 0; j < numSynchs + 1; j++) {
 			enabledModules[j] = new BitSet(numModules);
 		}
-		clockGuards = new HashMap<Updates, Expression>();
+		clockGuards = new HashMap<Expression, Expression>();
 	}
 
 	/**
@@ -168,7 +177,7 @@ public class Updater<Value> extends PrismComponent
 	 */
 	public void calculateTransitions(State state, TransitionList<Value> transitionList) throws PrismException
 	{
-		List<ChoiceListFlexi<Value>> chs;
+		List<ChoiceNew<Value>> chs;
 		int i, j, k, l, n, count;
 
 		// Clear lists/bitsets
@@ -193,14 +202,14 @@ public class Updater<Value> extends PrismComponent
 
 		// Add independent transitions for each (enabled) module to list
 		for (i = enabledModules[0].nextSetBit(0); i >= 0; i = enabledModules[0].nextSetBit(i + 1)) {
-			for (Updates ups : updateLists.get(i).get(0)) {
-				ChoiceListFlexi<Value> ch = processUpdatesAndCreateNewChoice(-(i + 1), ups, state);
+			for (Expression ups : updateLists.get(i).get(0)) {
+				ChoiceNew<Value> ch = updateToChoice(-(i + 1), ups, state);
 				if (ch.size() > 0)
 					transitionList.add(ch);
 			}
 		}
 		// Add synchronous transitions to list
-		chs = new ArrayList<ChoiceListFlexi<Value>>();
+		chs = new ArrayList<ChoiceNew<Value>>();
 		for (i = enabledSynchs.nextSetBit(1); i >= 0; i = enabledSynchs.nextSetBit(i + 1)) {
 			chs.clear();
 			// Check counts to see if this action is blocked by some module
@@ -211,17 +220,17 @@ public class Updater<Value> extends PrismComponent
 				count = updateLists.get(j).get(i).size();
 				// Case where there is only 1 Updates for this module
 				if (count == 1) {
-					Updates ups = updateLists.get(j).get(i).get(0);
+					Expression ups = updateLists.get(j).get(i).get(0);
 					// Case where this is the first Choice created
 					if (chs.size() == 0) {
-						ChoiceListFlexi<Value> ch = processUpdatesAndCreateNewChoice(i, ups, state);
+						ChoiceNew<Value> ch = updateToChoice(i, ups, state);
 						if (ch.size() > 0)
 							chs.add(ch);
 					}
 					// Case where there are existing Choices
 					else {
 						// Product with all existing choices
-						for (ChoiceListFlexi<Value> ch : chs) {
+						for (ChoiceNew<Value> ch : chs) {
 							processUpdatesAndAddToProduct(ups, state, ch);
 						}
 					}
@@ -230,8 +239,8 @@ public class Updater<Value> extends PrismComponent
 				else {
 					// Case where there are no existing choices
 					if (chs.size() == 0) {
-						for (Updates ups : updateLists.get(j).get(i)) {
-							ChoiceListFlexi<Value> ch = processUpdatesAndCreateNewChoice(i, ups, state);
+						for (Expression ups : updateLists.get(j).get(i)) {
+							ChoiceNew<Value> ch = updateToChoice(i, ups, state);
 							if (ch.size() > 0)
 								chs.add(ch);
 						}
@@ -242,10 +251,10 @@ public class Updater<Value> extends PrismComponent
 						n = chs.size();
 						for (k = 0; k < count - 1; k++)
 							for (l = 0; l < n; l++)
-								chs.add(new ChoiceListFlexi<Value>(chs.get(l)));
+								chs.add(new ChoiceNew<Value>(chs.get(l)));
 						// Products with existing choices
 						for (k = 0; k < count; k++) {
-							Updates ups = updateLists.get(j).get(i).get(k);
+							Expression ups = updateLists.get(j).get(i).get(k);
 							for (l = 0; l < n; l++) {
 								processUpdatesAndAddToProduct(ups, state, chs.get(k * n + l));
 							}
@@ -254,7 +263,7 @@ public class Updater<Value> extends PrismComponent
 				}
 			}
 			// Add all new choices to transition list
-			for (ChoiceListFlexi<Value> ch : chs) {
+			for (ChoiceNew<Value> ch : chs) {
 				transitionList.add(ch);
 			}
 		}
@@ -311,23 +320,22 @@ public class Updater<Value> extends PrismComponent
 			// If the command is enabled, update stored info
 			if (guardSat) {
 				int j = command.getSynchIndex();
-				updateLists.get(m).get(j).add(command.getUpdates());
+				updateLists.get(m).get(j).add(command.getUpdateNew());
 				enabledSynchs.set(j);
 				enabledModules[j].set(m);
 				if (modelType.realTime()) {
-					clockGuards.put(command.getUpdates(), clockGuard);
+					clockGuards.put(command.getUpdateNew(), clockGuard);
 				}
 			}
 		}
 	}
 
 	/**
-	 * Evaluate the probability (or rate) of the ith update, in the context of a state.
-	 * If the probability is not specified in the update, it is assumed to be 1.
+	 * Evaluate the probability (or rate) of an update, in the context of a state.
+	 * If the probability is not specified in the update (null), it is assumed to be 1.
 	 */
-	protected Value getProbabilityInState(Updates ups, int i, State state) throws PrismLangException
+	protected Value getProbabilityInState(Expression p, State state) throws PrismLangException
 	{
-		Expression p = ups.getProbability(i);
 		if (p == null) {
 			return eval.one();
 		} else {
@@ -340,69 +348,161 @@ public class Updater<Value> extends PrismComponent
 	 * and a (global) state. Check for negative probabilities/rates and, if appropriate,
 	 * check probabilities sum to 1 too.
 	 * @param moduleOrActionIndex Module/action for the choice, encoded as an integer (see Choice)
-	 * @param ups The Updates object 
+	 * @param update The Updates object 
 	 * @param state Global state
 	 */
-	private ChoiceListFlexi<Value> processUpdatesAndCreateNewChoice(int moduleOrActionIndex, Updates ups, State state) throws PrismLangException
+	private ChoiceNew<Value> updateToChoice(int moduleOrActionIndex, Expression update, State state) throws PrismLangException
 	{
-		ChoiceListFlexi<Value> ch;
-		List<Update> list;
-		int i, n;
-		Value p, sum;
-
+		ChoiceNew<Value> ch;
+		if (update instanceof ExpressionDistr) {
+			ch = updateDistrToChoice(moduleOrActionIndex, (ExpressionDistr) update, state);
+		}
+		else if (Expression.isAnd(update)) {
+			ch = updateAndToChoice(moduleOrActionIndex, (ExpressionBinaryOp) update, state);
+		}
+		else if (Expression.isAssignment(update)) {
+			ch = updateAssignmentToChoice(moduleOrActionIndex, (ExpressionBinaryOp) update, state);
+		}
+		else if (Expression.isTrue(update)) {
+			ch = updateTrueToChoice(moduleOrActionIndex, state);
+		}
+		else if (Expression.isParenth(update)) {
+			ch = updateToChoice(moduleOrActionIndex, ((ExpressionUnaryOp) update).getOperand(), state);
+		} else {
+			throw new PrismLangException("Unsupported update", update);
+		}
+		
+		if (modelType.realTime() && clockGuards.containsKey(update)) {
+			ch.setClockGuard(clockGuards.get(update));
+		}
+		return ch;
+	}
+		
+	private ChoiceNew<Value> updateDistrToChoice(int moduleOrActionIndex, ExpressionDistr update, State state) throws PrismLangException
+	{
 		// Create choice and add all info
-		ch = new ChoiceListFlexi<Value>(eval);
+		ChoiceNew<Value> ch = new ChoiceNew<Value>(eval);
 		ch.setModuleOrActionIndex(moduleOrActionIndex);
-		n = ups.getNumUpdates();
-		sum = eval.zero();
-		for (i = 0; i < n; i++) {
+		
+		Value sum = eval.zero();
+		
+		
+		int n = update.size();
+		for (int i = 0; i < n; i++) {
+			
 			// Compute probability/rate
-			p = getProbabilityInState(ups, i, state);
-			// Check that probabilities/rates are finite (non-infinite, non-NaN) and non-negative
+			Value p = getProbabilityInState(update.getProbability(i), state);
+			
+			// Check that probability/rate is finite (non-infinite, non-NaN) and non-negative
 			// We omit the check in symbolic (parametric) cases - too expensive
-			// Note: we indicate errors in whole Updates object because the offending
+			// Note: we indicate errors in whole update object because the offending
 			// probability expression has probably been simplified from original form.
 			if (!eval.isSymbolic()) {
 				if (!eval.isFinite(p)) {
 					String msg = modelType.probabilityOrRate() + " is not finite in state " + state.toString(modulesFile);
-					throw new PrismLangException(msg, ups);
+					throw new PrismLangException(msg, update);
 				}
 				if (!eval.geq(p, eval.zero())) {
 					String msg = modelType.probabilityOrRate() + " is negative in state " + state.toString(modulesFile);
-					throw new PrismLangException(msg, ups);
+					throw new PrismLangException(msg, update);
 				}
 			}
-			// Skip transitions with zero probability/rate
-			if (eval.isZero(p))
-				continue;
-			sum  = eval.add(sum, p);
-			list = new ArrayList<Update>();
-			list.add(ups.getUpdate(i));
-			ch.add(p, list);
+
+			// NB: Skip summands with zero probability/rate
+			if (!eval.isZero(p)) {
+				ChoiceNew<Value> ch1 = updateToChoice(moduleOrActionIndex, update.getExpression(i), state);
+				ch1.scaleProbabilitiesBy(p);
+				ch.add(ch1);
+			}
 		}
+		
+		
+
 		// For now, PRISM treats empty (all zero probs/rates) distributions as an error.
 		// Later, when errors in symbolic model construction are improved, this might be relaxed.
 		if (ch.size() == 0) {
 			String msg = modelType.probabilityOrRate();
-			msg += (ups.getNumUpdates() > 1) ? " values sum to " : " is ";
+			msg += (update.size() > 1) ? " values sum to " : " is ";
 			msg += "zero for updates in state " + state.toString(modulesFile);
-			throw new PrismLangException(msg, ups);
+			throw new PrismLangException(msg, update);
 		}
+		
 		// Check distribution sums to 1 (if required, and if is non-empty)
 		// As above, we omit the check in symbolic (parametric) cases - too expensive
 		if (doProbChecks && ch.size() > 0 && modelType.choicesSumToOne() && !eval.isSymbolic()) {
-			try {
-				eval.checkProbabilitySum(sum);
-			} catch (PrismException e) {
-				throw new PrismLangException(e.getMessage() + " in state " + state.toString(modulesFile), ups);
-			}
+			// TODO
+//			try {
+//				eval.checkProbabilitySum(sum);
+//			} catch (PrismException e) {
+//				throw new PrismLangException(e.getMessage() + " in state " + state.toString(modulesFile), update);
+//			}
 		}
-		if (modelType.realTime() && clockGuards.containsKey(ups)) {
-			ch.setClockGuard(clockGuards.get(ups));
-		}
+//		mainLog.println("SUM" + update + " -> " + ch);
 		return ch;
 	}
-
+	
+	private ChoiceNew<Value> updateWeightToChoice(int moduleOrActionIndex, ExpressionBinaryOp update, State state) throws PrismLangException
+	{
+		// Compute probability/rate
+		Value p = getProbabilityInState(update.getOperand1(), state);
+		
+		// Check that probability/rate is finite (non-infinite, non-NaN) and non-negative
+		// We omit the check in symbolic (parametric) cases - too expensive
+		// Note: we indicate errors in whole update object because the offending
+		// probability expression has probably been simplified from original form.
+		if (!eval.isSymbolic()) {
+			if (!eval.isFinite(p)) {
+				String msg = modelType.probabilityOrRate() + " is not finite in state " + state.toString(modulesFile);
+				throw new PrismLangException(msg, update);
+			}
+			if (!eval.geq(p, eval.zero())) {
+				String msg = modelType.probabilityOrRate() + " is negative in state " + state.toString(modulesFile);
+				throw new PrismLangException(msg, update);
+			}
+		}
+		
+		// Create/return choice
+		ChoiceNew<Value> ch = updateToChoice(moduleOrActionIndex, update.getOperand2(), state);
+		ch.scaleProbabilitiesBy(p);
+		return ch;
+	}
+	
+	private ChoiceNew<Value> updateAndToChoice(int moduleOrActionIndex, ExpressionBinaryOp update, State state) throws PrismLangException
+	{
+		ChoiceNew<Value> ch1 = updateToChoice(moduleOrActionIndex, update.getOperand1(), state);
+		ChoiceNew<Value> ch2 = updateToChoice(moduleOrActionIndex, update.getOperand2(), state);
+		ch1.productWith(ch2);
+//		mainLog.println("AND " + update + " -> " + ch1);
+		return ch1;
+	}
+	
+	private ChoiceNew<Value> updateAssignmentToChoice(int moduleOrActionIndex, ExpressionBinaryOp update, State state) throws PrismLangException
+	{
+		ExpressionUnaryOp exprLHSPrimed = (ExpressionUnaryOp) update.getOperand1();
+		ExpressionVar exprLHS = (ExpressionVar) exprLHSPrimed.getOperand();
+		int index = exprLHS.getIndex();
+		Expression exprRHS = update.getOperand2();
+		Object newValue = exprRHS.evaluate(ec.setState(state));
+		newValue = exprRHS.getType().castValueTo(newValue);
+		List<Pair<Integer,Object>> ups = new ArrayList<Pair<Integer,Object>>(1);
+		ups.add(new Pair<>(index, newValue));
+		ChoiceNew<Value> ch = new ChoiceNew<Value>(eval);
+		ch.setModuleOrActionIndex(moduleOrActionIndex);
+		// TODO? ch.add(null, ups);
+		ch.add(eval.one(), ups);
+//		mainLog.println("ASSM " + update + " -> " + ch);
+		return ch;
+	}
+	
+	private ChoiceNew<Value> updateTrueToChoice(int moduleOrActionIndex, State state) throws PrismLangException
+	{
+		// "true" equates to empty assignment list
+		ChoiceNew<Value> ch = new ChoiceNew<Value>(eval);
+		ch.setModuleOrActionIndex(moduleOrActionIndex);
+		ch.add(eval.one(), new ArrayList<>());
+		return ch;
+	}
+	
 	/**
 	 * Create a new Choice object (currently ChoiceListFlexi) based on the product
 	 * of an existing ChoiceListFlexi and an Updates object, for some (global) state.
@@ -411,11 +511,52 @@ public class Updater<Value> extends PrismComponent
 	 * @param state Global state
 	 * @param ch The existing Choices object
 	 */
-	private void processUpdatesAndAddToProduct(Updates ups, State state, ChoiceListFlexi<Value> ch) throws PrismLangException
+	private void processUpdatesAndAddToProduct(Expression update, State state, ChoiceNew<Value> ch) throws PrismLangException
 	{
 		// Create new choice (action index is 0 - not needed)
-		ChoiceListFlexi<Value> chNew = processUpdatesAndCreateNewChoice(0, ups, state);
+		ChoiceNew<Value> chNew = updateToChoice(0, update, state);
 		// Build product with existing
 		ch.productWith(chNew);
 	}
+
+	/*private Expression flattenUpdate(Expression update, State state) throws PrismLangException
+	{
+		if (update instanceof ExpressionDistr) {
+			return flattenUpdateDistr((ExpressionDistr) update, state);
+		}
+		else if (Expression.isAnd(update)) {
+			return flattenUpdateDistr((ExpressionBinaryOp) update, state);
+		}
+		else if (Expression.isAssignment(update)) {
+			return flattenUpdateAssignment((ExpressionBinaryOp) update, state);
+		}
+		else if (Expression.isTrue(update)) {
+			return flattenUpdateTrue(state);
+		}
+		else if (Expression.isParenth(update)) {
+			return flattenUpdate(((ExpressionUnaryOp) update).getOperand(), state);
+		}
+		throw new PrismLangException("Unsupported update", update);
+	}
+		
+	private Expression flattenUpdateAnd(ExpressionBinaryOp update, State state) throws PrismLangException
+	{
+		Expression expr1 = flattenUpdate(update.getOperand1(), state);
+		Expression expr2 = flattenUpdate(update.getOperand2(), state);
+		
+	}
+	
+	private Expression flattenUpdateAnd(ExpressionBinaryOp update, State state) throws PrismLangException
+	{
+		Expression expr1 = flattenUpdate(update.getOperand1(), state);
+		Expression expr2 = flattenUpdate(update.getOperand2(), state);
+		if (expr1 == update.getOperand1() && expr2 == update.getOperand2()) {
+			return update;
+		}
+		if ((Expression.isAnd(expr1) || Expression.isAssignment(expr1)) && (Expression.isAnd(expr2) || Expression.isAssignment(expr2))) {
+			return Expression.And(expr1, expr2);
+		}
+		
+	}
+	 */
 }

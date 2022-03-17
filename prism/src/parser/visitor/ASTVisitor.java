@@ -49,6 +49,11 @@ public interface ASTVisitor
 	public Object visit(Updates e) throws PrismLangException;
 	public Object visit(Update e) throws PrismLangException;
 	public Object visit(UpdateElement e) throws PrismLangException;
+	
+	public Object visit(UpdateAssignment e) throws PrismLangException;
+	public Object visit(UpdateAnd e) throws PrismLangException;
+	public Object visit(UpdateWeightedSum e) throws PrismLangException;
+	
 	public Object visit(RenamedModule e) throws PrismLangException;
 	public Object visit(RewardStruct e) throws PrismLangException;
 	public Object visit(RewardStructItem e) throws PrismLangException;
@@ -74,6 +79,7 @@ public interface ASTVisitor
 	public Object visit(ExpressionConstant e) throws PrismLangException;
 	public Object visit(ExpressionFormula e) throws PrismLangException;
 	public Object visit(ExpressionVar e) throws PrismLangException;
+	public Object visit(ExpressionDistr e) throws PrismLangException;
 	public Object visit(ExpressionProb e) throws PrismLangException;
 	public Object visit(ExpressionReward e) throws PrismLangException;
 	public Object visit(ExpressionSS e) throws PrismLangException;

@@ -37,6 +37,8 @@ public class ExpressionVar extends Expression
 	private String name;
 	// The index of the variable in the model to which it belongs
 	private int index;
+	// Whether this reference is to name' rather than name
+//	private boolean primed;
 	
 	// Constructors
 	
@@ -46,6 +48,14 @@ public class ExpressionVar extends Expression
 		name = n;
 		index = -1;
 	}
+			
+//	public ExpressionVar(String n, Type t, boolean primed)
+//	{
+//		setType(t);
+//		name = n;
+//		index = -1;
+//		this.primed = primed;
+//	}
 			
 	// Set method
 	
@@ -59,6 +69,11 @@ public class ExpressionVar extends Expression
 		index = i;
 	}
 	
+//	public void setPrimed(boolean p)
+//	{
+//		primed = p;
+//	}
+	
 	// Get method
 	
 	public String getName()
@@ -70,6 +85,11 @@ public class ExpressionVar extends Expression
 	{
 		return index;
 	}
+	
+//	public boolean getPrimed()
+//	{
+//		return primed;
+//	}	
 	
 	// Methods required for Expression:
 	
@@ -88,6 +108,8 @@ public class ExpressionVar extends Expression
 	@Override
 	public Object evaluate(EvaluateContext ec) throws PrismLangException
 	{
+		// TODO: primes
+		
 		// Extract variable value from the evaluation context
 		Object res = ec.getVarValue(name, index);
 		if (res == null) {
@@ -116,6 +138,7 @@ public class ExpressionVar extends Expression
 	{
 		ExpressionVar expr = new ExpressionVar(name, type);
 		expr.setIndex(index);
+//		expr.setPrimed(primed);
 		expr.setPosition(this);
 		return expr;
 	}
@@ -135,6 +158,7 @@ public class ExpressionVar extends Expression
 		int result = 1;
 		result = prime * result + index;
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+//		result = prime * result + (primed ? 1231 : 1237);
 		return result;
 	}
 
@@ -155,6 +179,8 @@ public class ExpressionVar extends Expression
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
+//		if (primed != other.primed)
+//			return false;
 		return true;
 	}
 }

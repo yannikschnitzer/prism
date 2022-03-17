@@ -763,6 +763,11 @@ public abstract class Expression extends ASTElement
 		return new ExpressionUnaryOp(ExpressionUnaryOp.PARENTH, expr);
 	}
 
+	public static ExpressionBinaryOp Assignment(Expression expr1, Expression expr2)
+	{
+		return new ExpressionBinaryOp(ExpressionBinaryOp.ASSIGN, expr1, expr2);
+	}
+
 	public static ExpressionTemporal Next(Expression expr) {
 		return new ExpressionTemporal(ExpressionTemporal.P_X, null, expr);
 	}
@@ -792,6 +797,11 @@ public abstract class Expression extends ASTElement
 	public static boolean isNot(Expression expr)
 	{
 		return expr instanceof ExpressionUnaryOp && ((ExpressionUnaryOp) expr).getOperator() == ExpressionUnaryOp.NOT;
+	}
+
+	public static boolean isPrimed(Expression expr)
+	{
+		return expr instanceof ExpressionUnaryOp && ((ExpressionUnaryOp) expr).getOperator() == ExpressionUnaryOp.PRIMED;
 	}
 
 	public static boolean isAnd(Expression expr)
@@ -829,6 +839,57 @@ public abstract class Expression extends ASTElement
 				&& ExpressionBinaryOp.isRelOp(((ExpressionBinaryOp) expr).getOperator());
 	}
 
+	public static boolean isPlus(Expression expr)
+	{
+		return expr instanceof ExpressionBinaryOp && ((ExpressionBinaryOp) expr).getOperator() == ExpressionBinaryOp.PLUS;
+	}
+
+	public static boolean isAssignment(Expression expr)
+	{
+		return isEquals(expr) && isPrimed(((ExpressionBinaryOp) expr).getOperand1());
+//		return expr instanceof ExpressionBinaryOp && ((ExpressionBinaryOp) expr).getOperator() == ExpressionBinaryOp.ASSIGN;
+//		if (expr instanceof ExpressionBinaryOp) {
+//			if (((ExpressionBinaryOp) expr).getOperator() == ExpressionBinaryOp.ASSIGN) {
+//				Expression lhs = ((ExpressionBinaryOp) expr).getOperand1();
+//				if (lhs instanceof ExpressionVar && ((ExpressionVar) lhs).getPrimed()) {
+//					return true;
+//				}
+//			}
+//		}
+//		return false;
+	}
+
+	public static boolean isEquals(Expression expr)
+	{
+		return expr instanceof ExpressionBinaryOp && ((ExpressionBinaryOp) expr).getOperator() == ExpressionBinaryOp.EQ;
+	}
+
+	public static boolean isUpdate(Expression expr)
+	{
+		if (expr instanceof ExpressionDistr) {
+			int n = ((ExpressionDistr) expr).size();
+			for (int i = 0; i < n; i++) {
+				if (!isUpdate(((ExpressionDistr) expr).getExpression(i))) {
+					return false;
+				}
+			}
+			return true;
+		}
+		else if (Expression.isAnd(expr)) {
+			return isUpdate(((ExpressionBinaryOp) expr).getOperand1()) && isUpdate(((ExpressionBinaryOp) expr).getOperand2());
+		}
+		else if (Expression.isAssignment(expr)) {
+			return true;
+		}
+		else if (Expression.isTrue(expr)) {
+			return true;
+		}
+		else if (Expression.isParenth(expr)) {
+			return isUpdate(((ExpressionUnaryOp) expr).getOperand());
+		}
+		return false;
+	}
+	
 	public static boolean isFilter(Expression expr, ExpressionFilter.FilterOperator opType)
 	{
 		return expr instanceof ExpressionFilter && ((ExpressionFilter) expr).getOperatorType() == opType;

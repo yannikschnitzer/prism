@@ -30,8 +30,8 @@ import java.util.Vector;
 
 import parser.ast.*;
 import parser.type.*;
-import prism.ModelType;
 import prism.PrismLangException;
+import simulator.ChoiceNew;
 
 /**
  * Perform any required semantic checks on a ModulesFile (or parts of it).
@@ -43,9 +43,12 @@ public class ModulesFileSemanticCheck extends SemanticCheck
 	// Sometimes we need to keep track of parent (ancestor) objects
 	//private Module inModule = null;
 	private Expression inInvariant = null;
+	private Command inCommand = null;
 	private Expression inGuard = null;
+	private Expression inUpdate = null;
 	private ASTElement inObservable = null;
-	//private Update inUpdate = null;
+	private ASTElement inAssignmentLHS = null;
+	//private ASTElement inAssignmentRHS = null;
 
 	public ModulesFileSemanticCheck(ModulesFile modulesFile)
 	{
@@ -210,22 +213,21 @@ public class ModulesFileSemanticCheck extends SemanticCheck
 
 	public Object visit(Command e) throws PrismLangException
 	{
-		// Override this so we can keep track of when we are in a command
+		// Override this so we can keep track of when we are in a command (or parts of it)
 		visitPre(e);
+		inCommand = e;
 		inGuard = e.getGuard();
 		e.getGuard().accept(this);
 		inGuard = null;
-		e.getUpdates().accept(this);
+		inUpdate = e.getUpdateNew();
+		e.getUpdateNew().accept(this);
+//		checkUpdate(e.getUpdateNew());
+		inUpdate = null;
+		inCommand = null;
 		visitPost(e);
 		return null;
 	}
 	
-	public void visitPre(Update e) throws PrismLangException
-	{
-		// Register the fact we are entering an update
-		//inUpdate = e;
-	}
-
 	public void visitPost(Update e) throws PrismLangException
 	{
 		int i, n;
@@ -233,9 +235,6 @@ public class ModulesFileSemanticCheck extends SemanticCheck
 		Command c;
 		parser.ast.Module m;
 		boolean isLocal, isGlobal;
-
-		// Register the fact we are leaving an update
-		//inUpdate = null;
 
 		// Determine containing command/module/model
 		// (mf should coincide with the stored modulesFile)
@@ -350,20 +349,65 @@ public class ModulesFileSemanticCheck extends SemanticCheck
 		}
 	}
 
+	public Object visit(ExpressionBinaryOp e) throws PrismLangException
+	{
+		// Override this so we can keep track of when we are in a assignment
+		visitPre(e);
+		if (e.getOperator() == ExpressionBinaryOp.ASSIGN) {
+			inAssignmentLHS = e;
+		}
+		e.getOperand1().accept(this);
+		if (e.getOperator() == ExpressionBinaryOp.ASSIGN) {
+			inAssignmentLHS = null;
+			//inAssignmentRHS = e;
+		}
+		e.getOperand2().accept(this);
+		if (e.getOperator() == ExpressionBinaryOp.ASSIGN) {
+			//inAssignmentRHS = null;
+		}
+		visitPost(e);
+		return null;
+	}
+
+	public void visitPost(ExpressionUnaryOp e) throws PrismLangException
+	{
+		// Check primed expressions: should be vars, and only in certain places
+		if (e.getOperator() == ExpressionUnaryOp.PRIMED) {
+			if (!(e.getOperand() instanceof ExpressionVar)) {
+				throw new PrismLangException("Only variables can be primed", e);
+			}
+			if (inUpdate == null) {
+				throw new PrismLangException("Primed variables can only occur in updates", e);
+			}
+		}
+	}
+	
 	public void visitPost(ExpressionVar e) throws PrismLangException
 	{
-		// For PTAs, references to variables in modules have to be local
-		// (no longer checked here, e.g. because allowed for digital clocks)
-		/*if (modulesFile != null && modulesFile.getModelType() == ModelType.PTA && inModule != null) {
-			if (!inModule.isLocalVariable(e.getName())) {
-				throw new PrismLangException("Modules in a PTA cannot access non-local variables", e);
-			}
-		}*/
 		// Clock references, in models, can only appear in certain places
 		// (Note: type checking has not been done, but we know types for ExpressionVars)
 		if (e.getType() instanceof TypeClock) {
-			if (inInvariant == null && inGuard == null && inObservable == null) {
+			if (inInvariant == null && inGuard == null && inObservable == null && inAssignmentLHS == null) {
 				throw new PrismLangException("Reference to a clock variable cannot appear here", e);
+			}
+		}
+		
+		// If an assignment, check that we are allowed to modify this variable
+		if (inAssignmentLHS != null) {
+			if (inCommand == null) {
+				throw new PrismLangException("Assignments can only apear in commands", e);
+			}
+			parser.ast.Module m = inCommand.getParent();
+			String var = e.getName();
+			boolean isLocal = m.isLocalVariable(var);
+			boolean isGlobal = isLocal ? false : modulesFile.isGlobalVariable(var);
+			if (!isLocal && !isGlobal) {
+				String s = "Module \"" + m.getName() + "\" is not allowed to modify variable \"" + var + "\"";
+				throw new PrismLangException(s, e);
+			}
+			if (isGlobal && !inCommand.getSynch().equals("")) {
+				String s = "Synchronous command cannot modify global variable";
+				throw new PrismLangException(s, e);
 			}
 		}
 	}

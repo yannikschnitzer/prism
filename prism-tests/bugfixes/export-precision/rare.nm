@@ -5,7 +5,7 @@ const double p = 1e-13;
 module rare
   rare : bool init false;
 
-  [tick] !rare -> p:   (rare' = true)
+  [tick] !rare -> p:   (rare'= true)
                 + 1-p: true;
   [tick] rare  -> true;
 endmodule

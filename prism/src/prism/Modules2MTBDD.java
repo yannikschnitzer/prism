@@ -1855,6 +1855,85 @@ public class Modules2MTBDD
 		return compDDs;
 	}
 
+	// translate the update part of a command
+
+	private JDDNode translateUpdate(int m, int l, Expression update, boolean synch, JDDNode guard) throws PrismException
+	{
+		if (update instanceof ExpressionDistr) {
+			return translateUpdateDistr(m, l, (ExpressionDistr) update, synch, guard);
+		}
+		else if (Expression.isAnd(update)) {
+			return translateUpdateAnd(m, l, (ExpressionBinaryOp) update, synch, guard);
+		}
+		else if (Expression.isAssignment(update)) {
+			return translateUpdateAssignment(m, l, (ExpressionBinaryOp) update, synch, guard);
+		}
+		else if (Expression.isTrue(update)) {
+			return translateUpdateTrue(m, l, synch, guard);
+		}
+		else if (Expression.isParenth(update)) {
+			return translateUpdate(m, l, ((ExpressionUnaryOp) update).getOperand(), synch, guard);
+		}
+		throw new PrismLangException("Unsupported update", update);
+	}
+	
+	private JDDNode translateUpdateDistr(int m, int l, ExpressionDistr update, boolean synch, JDDNode guard)
+	{
+		Expression p;
+		JDDNode udd, pdd;
+		boolean warned;
+		String msg;
+		
+		// sum up over possible updates
+		JDDNode dd = JDD.Constant(0);
+		int n = update.size();
+		for (int i = 0; i < n; i++) {
+			// translate a single update
+			udd = translateUpdate(m, u.getUpdate(i), synch, guard);
+			// check for zero update
+			warned = false;
+			if (udd.equals(JDD.ZERO)) {
+				warned = true;
+				// Use a PrismLangException to get line numbers displayed
+				msg = "Update " + (i+1) + " of command " + (l+1);
+				msg += " of module \"" + moduleNames[m] + "\" doesn't do anything";
+				mainLog.printWarning(new PrismLangException(msg, u.getUpdate(i)).getMessage());
+			}
+			// multiply by probability/rate
+			p = update.getProbability(i);
+			if (p == null) {
+				p = Expression.Double(1.0);
+			}
+			pdd = translateExpression(p);
+			udd = JDD.Apply(JDD.TIMES, udd, pdd);
+			// check (again) for zero update
+			if (!warned && udd.equals(JDD.ZERO)) {
+				// Use a PrismLangException to get line numbers displayed
+				msg = "Update " + (i+1) + " of command " + (l+1);
+				msg += " of module \"" + moduleNames[m] + "\" doesn't do anything";
+				mainLog.printWarning(new PrismLangException(msg, u.getUpdate(i)).getMessage());
+			}
+			dd = JDD.Apply(JDD.PLUS, dd, udd);
+		}
+		
+		return dd;
+	}
+
+	private JDDNode translateUpdateAnd(int m, int l, ExpressionBinaryOp update, boolean synch, JDDNode guard) throws PrismException
+	{
+		throw new PrismException("Not implemented yet"); 	
+	}
+	
+	private JDDNode translateUpdateAssignment(int m, int l, ExpressionBinaryOp update, boolean synch, JDDNode guard) throws PrismException
+	{
+		throw new PrismException("Not implemented yet"); 	
+	}
+	
+	private JDDNode translateUpdateTrue(int m, int l, boolean synch, JDDNode guard) throws PrismException
+	{
+		throw new PrismException("Not implemented yet"); 	
+	}
+	
 	/**
 	 * Translate the updates part of a command.
 	 * <br>[ REFS: <i>result</i>, DEREFS: <i>none</i> ]

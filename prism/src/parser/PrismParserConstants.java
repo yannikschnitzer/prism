@@ -195,13 +195,11 @@ public interface PrismParserConstants {
   /** RegularExpression Id. */
   int REG_DOUBLE = 92;
   /** RegularExpression Id. */
-  int REG_IDENTPRIME = 93;
+  int REG_IDENT = 93;
   /** RegularExpression Id. */
-  int REG_IDENT = 94;
+  int PREPROC = 94;
   /** RegularExpression Id. */
-  int PREPROC = 95;
-  /** RegularExpression Id. */
-  int LEXICAL_ERROR = 96;
+  int LEXICAL_ERROR = 95;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -301,7 +299,6 @@ public interface PrismParserConstants {
     "\"\\\"\"",
     "<REG_INT>",
     "<REG_DOUBLE>",
-    "<REG_IDENTPRIME>",
     "<REG_IDENT>",
     "<PREPROC>",
     "<LEXICAL_ERROR>",

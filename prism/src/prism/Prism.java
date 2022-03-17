@@ -2063,7 +2063,11 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 					try {
 						getModelGenerator();
 					} catch (PrismException e){
-						throw new PrismException("Explicit engine: " + e.getMessage());
+						if (e instanceof PrismNotSupportedException) {
+							throw new PrismNotSupportedException("Explicit engine: " + e.getMessage());
+						} else {
+							throw new PrismException("Explicit engine: " + e.getMessage());
+						}
 					}
 					ConstructModel constructModel = new ConstructModel(this);
 					constructModel.setFixDeadlocks(getFixDeadlocks());
@@ -3117,6 +3121,8 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 
 		// Remove old strategy if present
 		clearStrategy();
+		
+		if (1==1) throw new PrismNotSupportedException("soon!");
 		
 		// Digital clocks translation
 		if (settings.getString(PrismSettings.PRISM_PTA_METHOD).equals("Digital clocks") || currentModelType == ModelType.POPTA) {

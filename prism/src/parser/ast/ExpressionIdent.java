@@ -32,7 +32,10 @@ import prism.PrismLangException;
 
 public class ExpressionIdent extends Expression
 {
+	// Identifier name
 	protected String name;
+	// Whether this reference is to name' rather than name
+//	protected boolean primed;
 	
 	// Constructors
 	
@@ -45,12 +48,23 @@ public class ExpressionIdent extends Expression
 		name = n;
 	}
 	
+//	public ExpressionIdent(String n, boolean primed)
+//	{
+//		name = n;
+//		this.primed = primed;
+//	}
+	
 	// Set method
 	
 	public void setName(String n)
 	{
 		name = n;
 	}
+	
+//	public void setPrimed(boolean p) 
+//	{
+//		primed = p;
+//	}
 	
 	// Get method
 	
@@ -59,6 +73,11 @@ public class ExpressionIdent extends Expression
 		return name;
 	}
 
+//	public boolean getPrimed() 
+//	{
+//		return primed;
+//	}	
+	
 	// Methods required for Expression:
 	
 	@Override
@@ -102,6 +121,7 @@ public class ExpressionIdent extends Expression
 	public Expression deepCopy()
 	{
 		ExpressionIdent expr = new ExpressionIdent(name);
+//		expr.setPrimed(primed);
 		expr.setType(type);
 		expr.setPosition(this);
 		return expr;
@@ -121,6 +141,7 @@ public class ExpressionIdent extends Expression
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+//		result = prime * result + (primed ? 1231 : 1237);
 		return result;
 	}
 
@@ -139,6 +160,8 @@ public class ExpressionIdent extends Expression
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
+//		if (primed != other.primed)
+//			return false;
 		return true;
 	}
 	

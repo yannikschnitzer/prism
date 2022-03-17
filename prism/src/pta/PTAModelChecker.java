@@ -88,6 +88,8 @@ public class PTAModelChecker extends PrismComponent
 		String resultString;
 		long timer;
 
+		if (1==1) throw new PrismNotSupportedException("soon!");
+		
 		// Starting model checking
 		timer = System.currentTimeMillis();
 

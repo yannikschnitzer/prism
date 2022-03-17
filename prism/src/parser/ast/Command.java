@@ -41,6 +41,8 @@ public class Command extends ASTElement
 	private Expression guard;
 	// List of updates
 	private Updates updates;
+	// Probabilistic update
+	private Expression updateNew;
 	// Parent module
 	private Module parent;
 	
@@ -75,6 +77,12 @@ public class Command extends ASTElement
 	{
 		updates = u;
 		u.setParent(this);
+	}
+	
+	public void setUpdateNew(Expression updateNew)
+	{
+		this.updateNew = updateNew;
+//		u.setParent(this);
 	}
 	
 	public void setParent(Module m)
@@ -113,6 +121,11 @@ public class Command extends ASTElement
 		return updates;
 	}
 	
+	public Expression getUpdateNew()
+	{
+		return updateNew;
+	}
+	
 	public Module getParent()
 	{
 		return parent;
@@ -134,7 +147,7 @@ public class Command extends ASTElement
 	public String toString()
 	{
 		String s = "[" + synch;
-		s += "] " + guard + " -> " + updates;
+		s += "] " + guard + " -> " + updateNew;
 		return s;
 	}
 	
@@ -147,7 +160,8 @@ public class Command extends ASTElement
 		ret.setSynch(getSynch());
 		ret.setSynchIndex(getSynchIndex());
 		ret.setGuard(getGuard().deepCopy());
-		ret.setUpdates((Updates)getUpdates().deepCopy());
+//		ret.setUpdates((Updates)getUpdates().deepCopy());
+		ret.setUpdateNew(getUpdateNew().deepCopy());
 		ret.setPosition(this);
 		return ret;
 	}

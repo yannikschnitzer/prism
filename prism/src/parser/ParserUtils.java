@@ -84,6 +84,100 @@ public class ParserUtils
 	}
 	
 	/**
+	 * Attempt to repair a mis-parsed update expression.
+	 * In particular, updates to Boolean variables such as b1'=b2&b3
+	 * are parsed as a conjunction of two updates, b1'=b2 and b3,
+	 * which is invalid since b3 is not an update.
+	 * If the expression {@code update} is valid or contains cases such as the above
+	 * that can be repaired, a valid update expression is thrown.
+	 * Otherwise an exception is thrown.   
+	 */
+	public static Expression repairBooleanUpdate(Expression update) throws PrismLangException
+	{
+		// Distribution: recursively check/repair operands
+		if (update instanceof ExpressionDistr) {
+			int n = ((ExpressionDistr) update).size();
+			for (int i = 0; i < n; i++) {
+				Expression expri = repairBooleanUpdate(((ExpressionDistr) update).getExpression(i));
+				((ExpressionDistr) update).setExpression(i, expri);
+			}
+			return update;
+		}
+		// Conjunction
+		else if (Expression.isAnd(update)) {
+			// Recursively check/repair operands
+			Expression op1 = repairBooleanUpdate(((ExpressionBinaryOp) update).getOperand1()); 
+			((ExpressionBinaryOp) update).setOperand1(op1);
+			try {
+				Expression op2 = repairBooleanUpdate(((ExpressionBinaryOp) update).getOperand2()); 
+				((ExpressionBinaryOp) update).setOperand2(op2);
+				// Valid conjunction of updates: return
+				return update;
+			} catch (PrismLangException e) {
+				// If update is of form (x'=rhs)&op2
+				if (Expression.isAssignment(op1)) {
+					Expression rhs = ((ExpressionBinaryOp) op1).getOperand2();
+					// Then we repair as x'=(rhs&op)
+					((ExpressionBinaryOp) update).setOperand1(rhs);
+					((ExpressionBinaryOp) op1).setOperand2(update);
+					// TD
+					return op1;
+				} else {
+					// Otherwise it's invalid
+					throw e;
+				}
+			}
+		}
+		// Disjunction: not an update but maybe reparable
+		else if (Expression.isOr(update)) {
+			// Recursively check/repair operands
+			Expression op1 = repairBooleanUpdate(((ExpressionBinaryOp) update).getOperand1());
+			// If update is of form (x'=rhs)|op2
+			if (Expression.isAssignment(op1)) {
+				Expression rhs = ((ExpressionBinaryOp) op1).getOperand2();
+				// Then we recreate as x'=(rhs|op)
+				((ExpressionBinaryOp) update).setOperand1(rhs);
+				((ExpressionBinaryOp) op1).setOperand2(update);
+				return op1;
+			} else {
+				// Otherwise it's invalid
+				throw new PrismLangException("Invalid update", update);
+			}
+		}
+		// ITE: not an update but maybe reparable
+		else if (update instanceof ExpressionITE) {
+			// Recursively check/repair operands
+			Expression op1 = repairBooleanUpdate(((ExpressionITE) update).getOperand1());
+			// If update is of form (x'=rhs)?op2:op3
+			if (Expression.isAssignment(op1)) {
+				Expression rhs = ((ExpressionBinaryOp) op1).getOperand2();
+				// Then we recreate as x'=(rhs?op2:op3)
+				((ExpressionITE) update).setOperand1(rhs);
+				((ExpressionBinaryOp) op1).setOperand2(update);
+				return op1;
+			} else {
+				// Otherwise it's invalid
+				throw new PrismLangException("Invalid update", update);
+			}
+		}
+		// Assignment: valid
+		else if (Expression.isAssignment(update)) {
+			return update;
+		}
+		// "true": valid
+		else if (Expression.isTrue(update)) {
+			return update;
+		}
+		// Parentheses: recursively check/repair operand
+		else if (Expression.isParenth(update)) {
+			Expression op = repairBooleanUpdate(((ExpressionUnaryOp) update).getOperand());
+			((ExpressionUnaryOp) update).setOperand(op);
+			return update;
+		}
+		throw new PrismLangException("Invalid update", update);
+	}
+	
+	/**
 	 * Find the minimum value of an integer valued-expression
 	 * with respect to a variable list and some values for constants.
 	 */

@@ -5,6 +5,6 @@ dtmc
 module test
     s : bool init false;
 
-    [] s => false -> (s' = true);
+    [] s => false -> (s'= true);
     [] s          -> true;
 endmodule
