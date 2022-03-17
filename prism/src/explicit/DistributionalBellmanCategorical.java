@@ -20,27 +20,12 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
     double v_max ;
     double alpha=1;
     int numStates;
+
+    // slack variable b
+    int b_atoms;
+    double delta_b;
+    double [] b; // array containing b values
     prism.PrismLog mainLog;
-
-
-    public DistributionalBellmanCategorical(int atoms, double vmin, double vmax, int nactions, int numStates, PrismLog log){
-        super();
-        this.atoms = atoms;
-        double[] p;
-        double [][] z;
-        this.nactions = nactions;
-        this.delta_z = (vmax - vmin) / (atoms -1);
-        this.v_min = vmin;
-        this.v_max = vmax;
-        this.numStates = numStates;
-        mainLog = log;
-        this.z= new double[atoms];
-
-        for (int i = 0; i < atoms; i++) {
-            this.z[i] = (vmin + i *this.delta_z);
-        }
-        this.p = new double [numStates][atoms];
-    }
 
     public DistributionalBellmanCategorical(int atoms, double vmin, double vmax, int numStates, prism.PrismLog log){
         super();
@@ -50,13 +35,40 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
         this.v_min = vmin;
         this.v_max = vmax;
         this.numStates = numStates;
-        mainLog = log;
+        this.mainLog = log;
 
         for (int i = 0; i < atoms; i++) {
             this.z[i] = (vmin + i *this.delta_z);
         }
         this.p = new double [numStates][atoms];
     }
+
+    // TODO new constructor to take b into account
+    // TODO should this have its own bounds? b_min and b_max?
+    public DistributionalBellmanCategorical(int atoms, int b_atoms, double vmin, double vmax, int numStates, prism.PrismLog log){
+        super();
+        this.atoms = atoms;
+        this.z = new double[atoms];
+        this.delta_z = (vmax - vmin) / (atoms -1);
+        this.v_min = vmin;
+        this.v_max = vmax;
+        this.numStates = numStates;
+        this.mainLog = log;
+        this.p = new double [numStates][atoms]; // TODO p should be  
+
+        // Initialize distribution atoms 
+        for (int i = 0; i < atoms; i++) {
+            this.z[i] = (vmin + i *this.delta_z);
+        }
+        
+        // Initialize slack variable atoms 
+        this.b_atoms = b_atoms;
+        this.delta_b = (vmax - vmin) / (b_atoms -1);
+        for (int i = 0; i < b_atoms; i++) {
+            this.b[i] = (vmin + i *this.delta_b);
+        }
+    }
+
 
     public double [] getZ()
     {
@@ -67,6 +79,18 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
 
         this.p = new double[numStates][this.atoms];
         double [] temp2 = new double[this.atoms];
+        temp2[0] =1.0;
+        for (int i = 0; i < numStates; i++) {
+
+            this.p[i]= Arrays.copyOf(temp2, temp2.length);
+        }
+    }
+
+    // TODO add option for initializing with augmented state and actions.
+    public void initialize( int numStates) {
+
+        this.p = new double[numStates][this.b_atoms][this.n_actions][this.atoms];
+        double [][] temp2 = new double[this.n_actions][this.atoms];
         temp2[0] =1.0;
         for (int i = 0; i < numStates; i++) {
 

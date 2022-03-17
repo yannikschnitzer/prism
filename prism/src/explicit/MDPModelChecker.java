@@ -2645,7 +2645,7 @@ public class MDPModelChecker extends ProbModelChecker
 		unknown.andNot(target);
 		unknown.andNot(inf);
 		IntSet unknownStates = IntSet.asIntSet(unknown);
-//		int numS = unknownStates.cardinality();
+		//	int numS = unknownStates.cardinality();
 		DistributionalBellman operator;
 
 
@@ -2746,7 +2746,218 @@ public class MDPModelChecker extends ProbModelChecker
 				}
 			}
 
-//			mainLog.println("Max Wp dist :"+(max_dist - error_thresh) + " dist:"+(max_cvar_dist- error_thresh)+" at iter:"+iters);
+		// mainLog.println("Max Wp dist :"+(max_dist - error_thresh) + " dist:"+(max_cvar_dist- error_thresh)+" at iter:"+iters);
+
+			if ((max_cvar_dist < error_thresh_cvar) & (max_dist <error_thresh)&(iters>5)) {
+				break;
+			}
+		}
+
+		// Print to file
+		boolean print= true;
+		if (print) {
+			printToFile(policy, action_val, alpha, "gridmap/cvar_out_"+n+"_"+ settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) +"_"+alpha+".out", n, mdp.getMaxNumChoices());
+		}
+
+		mainLog.println("\nV[0] at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
+		DecimalFormat df = new DecimalFormat("0.000");
+		mainLog.print("[");
+		Arrays.stream(operator.getDist(0)).forEach(e -> mainLog.print(df.format(e) + ", "));
+		mainLog.print("]\n");
+
+		// Policy
+		mainLog.println("\nPolicy");
+		//Arrays.toString(policy);
+		mainLog.println(Arrays.toString(policy));
+
+		// Compute distribution on induced DTMC
+		mainLog.println("Computing distribution on induced DTMC...");
+		MDStrategy strat = new MDStrategyArray(mdp, choices);
+		DTMC dtmc = new DTMCFromMDPAndMDStrategy(mdp, strat);
+		StateRewardsArray mcRewards = new StateRewardsArray(n);
+		for (int s = 0; s < n; s++) {
+			mcRewards.setStateReward(s, mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choices[s]));
+		}
+		DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
+		mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, target);
+
+		// Finished CVAR
+		timer = System.currentTimeMillis() - timer;
+		if (verbosity >= 1) {
+			mainLog.print("\nCVAR (" + (min ? "min" : "max") + ")");
+			mainLog.println(" ran " + iters + " iterations and " + timer / 1000.0 + " seconds.");
+		}
+
+		// Store results
+		ModelCheckerResult res = new ModelCheckerResult();
+		res.soln = Arrays.copyOf(action_cvar, action_cvar.length); // FIXME make it based on y parameter and iterate over columns to get result
+		res.numIters = iterations;
+		res.timeTaken = timer / 1000.0;
+		return res;
+	}
+
+
+	// alternative version to be integrated with cvar focused iteration
+		public ModelCheckerResult cvarValueIteration(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException
+	{
+		// Start expected reachability
+		long timer = System.currentTimeMillis();
+		mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
+
+		// Check for deadlocks in non-target state (because breaks e.g. prob1)
+		mdp.checkForDeadlocks(target);
+
+		// Store num states
+		int n = mdp.getNumStates();
+		
+		// Precomputation (not optional)
+		long timerProb1 = System.currentTimeMillis();
+		BitSet inf = prob1(mdp, null, target, !min, null);
+		inf.flip(0, n);
+		timerProb1 = System.currentTimeMillis() - timerProb1;
+
+		// Print results of precomputation
+		int numTarget = target.cardinality();
+		int numInf = inf.cardinality();
+		mainLog.println("target=" + numTarget + ", inf=" + numInf + ", rest=" + (n - (numTarget + numInf)));
+
+		// Start value iteration
+		timer = System.currentTimeMillis();
+
+		// Set up CVAR variables
+		int atoms;
+		int iterations = 150;
+		double error_thresh = 0.01;
+		double error_thresh_cvar = 2;
+		double gamma = 1;
+		double alpha=0.7;
+
+		String c51 = "C51";
+		String qr = "QR";
+
+		int nactions = mdp.getMaxNumChoices();
+
+		// Determine set of states actually need to compute values for
+		BitSet unknown = new BitSet();
+		unknown.set(0, n);
+		unknown.andNot(target);
+		unknown.andNot(inf);
+		IntSet unknownStates = IntSet.asIntSet(unknown);
+		//int numS = unknownStates.cardinality();
+		DistributionalBellman operator;
+
+		// TODO new slack variable b for augmented MDP
+		// use vmin and vmax for b values?
+		// TODO figure out how to work out b stuff with aquantile representation
+
+		int b_atoms;
+
+
+
+		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
+			atoms = 11;
+			b_atoms = 11;
+			double v_max = 10;
+			double v_min = 0;
+			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
+			operator.initialize(n); // initialization based on parameters.
+		} else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
+			atoms = 1000;
+			operator = new DistributionalBellmanQR(atoms, n, mainLog);
+			operator.initialize(n); // initialization based on parameters.
+		}
+		else{
+			atoms=101;
+			double v_max = 100;
+			double v_min = 0;
+			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
+			operator.initialize(n); // initialization based on parameters.
+		}
+
+		
+
+
+		// Create/initialise solution vector(s)
+		double[][] temp_p;
+		double [][] action_val = new double[n][nactions]; 
+		double [] action_cvar = new double[n];
+		Object [] policy = new Object[n]; // TODO policy is now state x slack variable b
+		int[] choices = new int[n];
+		double min_v;
+		double max_dist ;
+		double max_cvar_dist ;
+		int iters;
+
+
+
+		// Start iterations - number of episodes
+		for (iters = 0; (iters < iterations) ; iters++)
+		{
+			temp_p = new double[n][atoms];
+			// copy to temp value soln2
+			for (int k=0; k<n; k++) {
+				temp_p[k] = Arrays.copyOf(operator.getDist(k), operator.getDist(k).length);
+			}
+
+			PrimitiveIterator.OfInt states = unknownStates.iterator();
+			while (states.hasNext()) {
+				final int s = states.nextInt();
+				int numChoices = mdp.getNumChoices(s);
+				int numTransitions = 0;
+				double[][] save_p = new double[numChoices][atoms];
+				Arrays.fill(action_val[s], Float.POSITIVE_INFINITY);
+
+				for (int choice = 0; choice < numChoices; choice++){ // aka action
+					double [] m ; numTransitions = mdp.getNumTransitions(s, choice);
+					Iterator<Entry<Integer, Double>>it = mdp.getTransitionsIterator(s,choice);
+
+					if (mdpRewards.hasTransitionRewards()) {
+						m = operator.step(it, numTransitions, gamma, mdpRewards.getTransitionReward(s, choice));
+					} else {
+						m = operator.step(it, numTransitions, gamma, mdpRewards.getStateReward(s));
+					}
+
+					action_val[s][choice] = operator.getValueCvar(m, alpha);
+					save_p[choice] = Arrays.copyOf(m, m.length);
+				}
+
+				int min_i = 0;
+				min_v = Float.POSITIVE_INFINITY;
+				for (int i =0; i<numChoices; i++) {
+					if (action_val[s][i] < min_v){ min_i = i; min_v = action_val[s][i]; action_cvar[s]=min_v; policy[s] = mdp.getAction(s, i);choices[s] = i;}
+				}
+				temp_p[s] = Arrays.copyOf(save_p[min_i], save_p[min_i].length);
+			}
+
+			states = unknownStates.iterator();
+			max_dist = 0.0;
+			max_cvar_dist = 0.0;
+			ArrayList<Integer> bad = new ArrayList<>();
+			// TODO max metric dist instead of max cvar distance.
+			while (states.hasNext()) {
+				final int s = states.nextInt();
+				double tempo = operator.getW(temp_p[s], s);
+				if(tempo > max_dist){bad.add(s);}
+				max_dist = max(max_dist, tempo);
+
+				max_cvar_dist = max(max_cvar_dist,
+						abs(operator.getValueCvar(temp_p[s], alpha) - operator.getValueCvar(operator.getDist(s), alpha)));
+				operator.update(temp_p[s], s);
+			}
+
+			if((iters >=0)){//mainLog.println("Max Wp dist :"+(max_dist) + " dist:"+(max_cvar_dist)+" at iter:"+iters);
+				mainLog.println("\nV at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
+
+				for (double[] doubles : temp_p) // copy  temp value soln2 back to soln -> corresponds to Value table
+				{
+					DecimalFormat df = new DecimalFormat("0.000");
+					mainLog.print("[");
+					Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
+					mainLog.print("]\n");
+				}
+			}
+
+		//mainLog.println("Max Wp dist :"+(max_dist - error_thresh) + " dist:"+(max_cvar_dist- error_thresh)+" at iter:"+iters);
 
 			if ((max_cvar_dist < error_thresh_cvar) & (max_dist <error_thresh)&(iters>5)) {
 				break;

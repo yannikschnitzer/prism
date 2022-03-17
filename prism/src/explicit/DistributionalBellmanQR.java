@@ -17,7 +17,8 @@ public class DistributionalBellmanQR extends DistributionalBellman {
     double delta_p = 1;
     prism.PrismLog mainLog;
     double [] tau_hat;
-
+    // FIXME add slack variable related info
+    
     public DistributionalBellmanQR(int atoms, int n, PrismLog log)
     {
         super();
@@ -34,6 +35,9 @@ public class DistributionalBellmanQR extends DistributionalBellman {
             this.p[i] =  delta_p;
         }
     }
+
+    // FIXME constructor with slack variable
+    public DistributionalBellmanQR(int atoms, int b_atoms, double vmin, double vmax, int numStates, prism.PrismLog log);
 
     @Override
     public double getExpValue(double[] temp) {
