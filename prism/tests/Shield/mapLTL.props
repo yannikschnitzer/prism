@@ -1,0 +1,14 @@
+const double w1;
+const double w2 = 1.0 - w1;
+
+
+Rmin=?[ F("end")];
+Rmax=?[ F("end")];
+
+Rmin=?[ F("stop"&(F"end"))];
+Rmax=?[ F("stop"&(F"end"))];
+
+Rmin=?[ F("stop"&(F"end"))&(!"end"U"stop")  ];
+Rmax=?[ F("stop"&(F"end"))&(!"end"U"stop")  ];
+
+Rmax=?[ F("end"&(F"end"))];
