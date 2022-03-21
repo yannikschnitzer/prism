@@ -14,8 +14,8 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     int atoms = 1;
     double delta_z = 1;
     double [] z ;
-    double [][] p;
-    int nactions = 4;
+    double [][][][] p;
+    int n_actions = 4;
     double v_min ;
     double v_max ;
     double alpha=1;
@@ -34,6 +34,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         super();
         this.atoms = atoms;
         this.z = new double[atoms];
+        this.b = new double[b_atoms];
         this.delta_z = (vmax - vmin) / (atoms -1);
         this.v_min = vmin;
         this.v_max = vmax;
@@ -57,12 +58,10 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         }
     }
 
-
     public double [] getZ()
     {
         return this.z;
     }
-
 
     // TODO add option for initializing with augmented state and actions.
     // FIXME sending numStates is redundant?
@@ -73,7 +72,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         temp2[0] =1.0;
 
         for (int i = 0; i < numStates; i++) {
-            for (int idx_b; idx_b < b_atoms; idx_b++){
+            for (int idx_b=0; idx_b < b_atoms; idx_b++){
                 for (int a = 0; a<n_actions; a++){
                     this.p[i][idx_b][a]= Arrays.copyOf(temp2, temp2.length);
                 }
@@ -96,15 +95,12 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     // updates probabilities for 1 action
     public double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it, int idx_b, int action) {
         double [] sum_p= new double[atoms];
-        trans_it.reset(); // FIXME reset iterator
+
         while (trans_it.hasNext()) {
-
             Map.Entry<Integer, Double> e = trans_it.next();
-
             for (int j = 0; j < atoms; j++) {
                 sum_p[j] += e.getValue() * p[e.getKey()][idx_b][action][j];
             }
-
         }
         return sum_p;
     }
@@ -112,7 +108,6 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     public double [] update_support(double gamma, double state_reward, double []sum_p){
 
         double [] m = new double [atoms];
-        trans_it.reset(); // FIXME reset iterator
         // FIXME do I need to use transition probability -> prob not since R(s,a) and not R(s,a,s')
 
         for (int j =0; j<atoms; j++){
@@ -134,10 +129,10 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     }
 
     // Interpolate to find the closest b index
-    public int getClosestB(double b){
-        int new_b = max(b[0], min(b[b_atoms-1]));
+    public int getClosestB(double temp_b){
+        double new_b = max(b[0], min(temp_b,b[b_atoms-1]));
         double index = new_b/delta_b;
-        int l= (int) floor(b); int u= (int) ceil(b);
+        int l= (int) floor(new_b); int u= (int) ceil(new_b);
 
         // TODO : right now I'm choosing a slightly more lax approach by 
         // choosing lower index -> intuition :"we have used less budget than we actually have"
@@ -146,17 +141,22 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
 
     public void update(double [] temp, int state, int idx_b, int action){
-        p[state] = Arrays.copyOf(temp, temp.length);
+        p[state][idx_b][action] = Arrays.copyOf(temp, temp.length);
     }
 
+    // FIXME this needs to change -> they're dummy functions
     @Override
     public double[] getDist(int i) {
-        return p[i];
+        return p[i][0][0];
     }
 
     @Override
     public double[][] getDist() {
-        return p;
+        return p[0][0];
+    }
+
+    public double[] getDist(int s, int idx_b, int a) {
+        return p[s][idx_b][a];
     }
 
     // TODO probably rename this
@@ -167,7 +167,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     {
         int res = 0;
         for (int j=0; j<atoms; j++){
-            res += temp[j] * max(0, (atoms[j] - b[idx_b]));
+            res += temp[j] * max(0, (z[j] - b[idx_b]));
         }
 
         return res;
@@ -186,19 +186,49 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     }
 
     // FIXME here we need to send augmented state
+
+    // TODO this assumes b[0]
     @Override
+    public double getValueCvar(double [] probs, double lim){
+        double res = 0;
+        int idx_b=0;
+        int expected_c= 0;
+        for (int i=0; i<atoms; i++){
+            if (probs[i] > 0){
+                expected_c += probs[i] * max(0, z[i]-b[idx_b]);
+            }
+        }
+
+        res = b[idx_b] + 1/(1-lim) * expected_c;
+
+        return res;
+    }
+
+    public double getValueCvar(double [] probs, double lim, int idx_b){
+        double res = 0;
+        int expected_c= 0;
+        for (int i=0; i<atoms; i++){
+            if (probs[i] > 0){
+                expected_c += probs[i] * max(0, z[i]-b[idx_b]);
+            }
+        }
+
+        res = b[idx_b] + 1/(1-lim) * expected_c;
+
+        return res;
+    }
+
     public double getValueCvar(double [][] probs, double lim){
         double [] res = new double [b_atoms];
         int min_b = 0;
         double min_cvar= 1000000;
         int expected_c;
-        for (int idx_b = 0; idx_b< b_atoms; b++){
+        for (int idx_b = 0; idx_b< b_atoms; idx_b++){
             expected_c = 0;
             for (int i=0; i<atoms; i++){
                 if (probs[idx_b][i] > 0){
                     expected_c += probs[idx_b][i] * max(0, z[i]-b[idx_b]);
                 }
-
             }
             res[idx_b] = b[idx_b] + 1/(1-lim) * expected_c;
 
@@ -208,8 +238,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
             }
         }
 
-
-        return res;
+        return res[min_b];
     }
 
     // TODO: change following functions to take into account slack variable
@@ -236,8 +265,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         double mu = getExpValue(probs);
         double res = 0.0;
 
-        for( int j = 0; j<atoms; j++)
-        {
+        for( int j = 0; j<atoms; j++) {
             res += (1.0 / atoms) * pow(((probs[j] * z[j]) - mu), 2);
         }
 
@@ -267,7 +295,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     }
 
     // FIXME return [][][]
-    public double [][] getP ()
+    public double [][][][] getP ()
     {
         return p;
     }

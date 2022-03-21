@@ -2798,7 +2798,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 
 	// alternative version to be integrated with cvar focused iteration
-		public ModelCheckerResult cvarValueIteration(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException
+		public ModelCheckerResult computeReachRewardsCvarAugmented(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException
 	{
 		// Start expected reachability
 		long timer = System.currentTimeMillis();
@@ -2809,6 +2809,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Store num states
 		int n = mdp.getNumStates();
+		int n_actions = mdp.getNumChoices();
 		
 		// Precomputation (not optional)
 		long timerProb1 = System.currentTimeMillis();
@@ -2843,7 +2844,7 @@ public class MDPModelChecker extends ProbModelChecker
 		unknown.andNot(target);
 		unknown.andNot(inf);
 		IntSet unknownStates = IntSet.asIntSet(unknown);
-		//int numS = unknownStates.cardinality();
+//		int numStates = unknownStates.cardinality();
 		DistributionalBellman operator;
 
 		// TODO new slack variable b for augmented MDP
@@ -2853,50 +2854,51 @@ public class MDPModelChecker extends ProbModelChecker
 		int b_atoms;
 
 
-
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
 			atoms = 11;
 			b_atoms = 11;
 			double v_max = 10;
 			double v_min = 0;
-			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
+			operator = new DistributionalBellmanCategoricalAugmented(atoms, b_atoms, v_min, v_max, n, n_actions, mainLog);
 			operator.initialize(n); // initialization based on parameters.
 		} else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
 			atoms = 1000;
+			b_atoms = atoms;
+			// FIXME add a distbellmanQRaugmented class
 			operator = new DistributionalBellmanQR(atoms, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
 		}
 		else{
 			atoms=101;
+			b_atoms = 11;
 			double v_max = 100;
 			double v_min = 0;
-			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
+			operator = new DistributionalBellmanCategoricalAugmented(atoms, b_atoms, v_min, v_max, n, n_actions, mainLog);
 			operator.initialize(n); // initialization based on parameters.
 		}
 
-		
-
-
 		// Create/initialise solution vector(s)
-		double[][] temp_p;
-		double [][] action_val = new double[n][nactions]; 
+		double[][][][] temp_p;
+		double [][][] action_val = new double[n][b_atoms][nactions];
 		double [] action_cvar = new double[n];
-		Object [] policy = new Object[n]; // TODO policy is now state x slack variable b
-		int[] choices = new int[n];
+		Object [][] policy = new Object[n][b_atoms]; // TODO policy is now state x slack variable b
+		int[][] choices = new int[n];
 		double min_v;
 		double max_dist ;
 		double max_cvar_dist ;
 		int iters;
 
 
-
 		// Start iterations - number of episodes
 		for (iters = 0; (iters < iterations) ; iters++)
 		{
-			temp_p = new double[n][atoms];
-			// copy to temp value soln2
-			for (int k=0; k<n; k++) {
-				temp_p[k] = Arrays.copyOf(operator.getDist(k), operator.getDist(k).length);
+			temp_p = new double[n][b_atoms][n_actions][atoms];
+			for (int idx_s=0; idx_s<n; idx_s++){
+				for (int idx_b = 0; idx_b < b_atoms; idx_b++) {
+					for (int k=0; k<n_actions; k++) {
+						temp_p[idx_s][idx_b][k] = Arrays.copyOf(operator.getDist(idx_s, idx_b, k), operator.getDist(idx_s, idx_b, k).length);
+					}
+				}
 			}
 
 			PrimitiveIterator.OfInt states = unknownStates.iterator();
@@ -2904,29 +2906,34 @@ public class MDPModelChecker extends ProbModelChecker
 				final int s = states.nextInt();
 				int numChoices = mdp.getNumChoices(s);
 				int numTransitions = 0;
-				double[][] save_p = new double[numChoices][atoms];
-				Arrays.fill(action_val[s], Float.POSITIVE_INFINITY);
 
-				for (int choice = 0; choice < numChoices; choice++){ // aka action
-					double [] m ; numTransitions = mdp.getNumTransitions(s, choice);
-					Iterator<Entry<Integer, Double>>it = mdp.getTransitionsIterator(s,choice);
+				for (int b =0; b< b_atoms; b++) {
 
-					if (mdpRewards.hasTransitionRewards()) {
-						m = operator.step(it, numTransitions, gamma, mdpRewards.getTransitionReward(s, choice));
-					} else {
-						m = operator.step(it, numTransitions, gamma, mdpRewards.getStateReward(s));
+					Arrays.fill(action_val[s][b], Float.POSITIVE_INFINITY);
+					double min_magic = Float.POSITIVE_INFINITY;
+					int min_a = 0;
+
+					for (int choice = 0; choice < numChoices; choice++) { // aka action
+						double[] m;
+						numTransitions = mdp.getNumTransitions(s, choice);
+						Iterator<Entry<Integer, Double>> it = mdp.getTransitionsIterator(s, choice);
+
+						if (mdpRewards.hasTransitionRewards()) {
+							m = operator.step(it, b, choice, numTransitions, gamma, mdpRewards.getTransitionReward(s, choice));
+						} else {
+							m = operator.step(it, b, choice, numTransitions, gamma, mdpRewards.getStateReward(s));
+						}
+
+						action_val[s][b][choice] = operator.getMagic(m, b);
+						if(action_val[s][b][choice]< min_magic) {
+							min_a = choice;
+							min_magic= action_val[s][b][choice];
+						}
+						temp_p[s][b][choice] = Arrays.copyOf(m, m.length);
 					}
-
-					action_val[s][choice] = operator.getValueCvar(m, alpha);
-					save_p[choice] = Arrays.copyOf(m, m.length);
+					policy[s][b] =mdp.getAction(s, min_a);
+					choices[s][b] = min_a;
 				}
-
-				int min_i = 0;
-				min_v = Float.POSITIVE_INFINITY;
-				for (int i =0; i<numChoices; i++) {
-					if (action_val[s][i] < min_v){ min_i = i; min_v = action_val[s][i]; action_cvar[s]=min_v; policy[s] = mdp.getAction(s, i);choices[s] = i;}
-				}
-				temp_p[s] = Arrays.copyOf(save_p[min_i], save_p[min_i].length);
 			}
 
 			states = unknownStates.iterator();
@@ -2965,6 +2972,7 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 
 		// Print to file
+		// FIXME create a new printToFile function
 		boolean print= true;
 		if (print) {
 			printToFile(policy, action_val, alpha, "gridmap/cvar_out_"+n+"_"+ settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) +"_"+alpha+".out", n, mdp.getMaxNumChoices());
@@ -2983,6 +2991,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Compute distribution on induced DTMC
 		mainLog.println("Computing distribution on induced DTMC...");
+		// FIXME create finite memory strategy instead.
 		MDStrategy strat = new MDStrategyArray(mdp, choices);
 		DTMC dtmc = new DTMCFromMDPAndMDStrategy(mdp, strat);
 		StateRewardsArray mcRewards = new StateRewardsArray(n);
