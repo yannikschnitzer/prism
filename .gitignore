@@ -36,5 +36,10 @@ prism/\.project
 # Eclipse project custom settings
 \.settings/
 prism/\.settings/
-/prism/tests/gridmap/.ipynb_checkpoints/
+
+# Python jupyter Lab
+.ipynb_checkpoints/
 /prims/tests/gridmap/*.out
+
+#IDEA java IDE
+.idea/
