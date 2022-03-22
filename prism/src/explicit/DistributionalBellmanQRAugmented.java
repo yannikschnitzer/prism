@@ -3,15 +3,13 @@ package explicit;
 
 import prism.PrismLog;
 
-import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 
 import static java.lang.Math.*;
-import static java.lang.Math.sqrt;
 
-public class DistributionalBellmanCategoricalAugmented extends DistributionalBellmanAugmented {
+public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugmented {
     int atoms = 1;
     double delta_z = 1;
     double [] z ;
@@ -27,11 +25,11 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     double delta_b;
     double [] b; // array containing b values
 
-    prism.PrismLog mainLog;
+    PrismLog mainLog;
 
-    // new constructor to take b into account
+    // TODO new constructor to take b into account
     // should this have its own bounds? b_min and b_max?
-    public DistributionalBellmanCategoricalAugmented(int atoms, int b_atoms, double vmin, double vmax, int numStates, int n_actions, prism.PrismLog log){
+    public DistributionalBellmanQRAugmented(int atoms, int b_atoms, double vmin, double vmax, int numStates, int n_actions, PrismLog log){
         super();
         this.atoms = atoms;
         this.z = new double[atoms];
@@ -43,7 +41,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         this.n_actions = n_actions;
         this.mainLog = log;
 
-        // INFO right now saving augmented state-action distributions
+        // TODO right now saving augmented state-action distributions 
         this.p = new double[numStates][b_atoms][n_actions][atoms]; 
 
         // Initialize distribution atoms 
@@ -59,50 +57,13 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         }
     }
 
-    public DistributionalBellmanCategoricalAugmented(DistributionalBellmanCategoricalAugmented el)
-    {
-        super(el);
-
-        atoms = el.atoms;
-        z = Arrays.copyOf(el.z, atoms);
-        delta_z = (el.v_max - el.v_min) / (atoms -1);
-        v_min = el.v_min;
-        v_max = el.v_max;
-        numStates = el.numStates;
-        n_actions = el.n_actions;
-        mainLog = el.mainLog;
-
-        // Initialize slack variable atoms
-        b_atoms = el.b_atoms;
-        delta_b = el.delta_b;
-        b = Arrays.copyOf(el.b, b_atoms);
-
-        // Deep copy distribution
-        this.p = new double[numStates][b_atoms][n_actions][atoms];
-        for (int s=0; s<numStates; s++) {
-            for (int idx_b = 0; idx_b < b_atoms; idx_b++) {
-                for (int a = 0; a < n_actions; a++) {
-                    p[s][idx_b][a] = Arrays.copyOf(el.p[s][idx_b][a], atoms);
-                }
-            }
-        }
-
-    }
-
-    @Override
-    public DistributionalBellmanAugmented copy() {
-        return new DistributionalBellmanCategoricalAugmented(this);
-    }
-
-
     public double [] getZ()
     {
         return this.z;
     }
 
-    //  Initializing with augmented state and actions.
+    // TODO add option for initializing with augmented state and actions.
     // FIXME sending numStates is redundant?
-    @Override
     public void initialize( int numStates) {
 
         this.p = new double[numStates][b_atoms][n_actions][atoms];
@@ -119,6 +80,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     }
 
 
+    // FIXME how to pass current b + current choice action with class definitions
     public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, double cur_b, int choice, int numTransitions, double gamma, double state_reward)
     {
         double temp_b = (cur_b-state_reward)/gamma;
@@ -176,39 +138,22 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         return l;
     }
 
-    @Override
-    public void display() {
-        for (int s=0; s<numStates; s++) {
-            display(s);
-        }
-    }
 
-    @Override
-    public void display(int s) {
-
-        for (int idx_b = 0; idx_b < b_atoms; idx_b++) {
-            for (double[] doubles : p[s][idx_b]) {
-                DecimalFormat df = new DecimalFormat("0.000");
-                mainLog.print("[");
-                Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
-                mainLog.print("]\n");
-            }
-        }
-
-    }
-
-    @Override
     public void update(double [] temp, int state, int idx_b, int action){
         p[state][idx_b][action] = Arrays.copyOf(temp, temp.length);
     }
 
-
+    // FIXME this needs to change -> they're dummy functions
     @Override
-    public double[][] getDist(int s, int idx_b) {
-        return p[s][idx_b];
+    public double[] getDist(int i) {
+        return p[i][0][0];
     }
 
     @Override
+    public double[][] getDist() {
+        return p[0][0];
+    }
+
     public double[] getDist(int s, int idx_b, int a) {
         return p[s][idx_b][a];
     }
@@ -217,7 +162,6 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     // Compute inner optimization from Bauerle and Ott
     // paper : Markov Decision Processes with Average-Value-At-Risk Criteria
     //  E[[dist-b]+]
-    @Override
     public double getMagic(double [] temp, int idx_b)
     {
         int res = 0;
@@ -240,6 +184,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         return sum;
     }
 
+    @Override
     public double getValueCvar(double [] probs, double lim, int idx_b){
         double res = 0;
         int expected_c= 0;
@@ -254,6 +199,28 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         return res;
     }
 
+    public double getValueCvar(double [][] probs, double lim){
+        double [] res = new double [b_atoms];
+        int min_b = 0;
+        double min_cvar= 1000000;
+        int expected_c;
+        for (int idx_b = 0; idx_b< b_atoms; idx_b++){
+            expected_c = 0;
+            for (int i=0; i<atoms; i++){
+                if (probs[idx_b][i] > 0){
+                    expected_c += probs[idx_b][i] * max(0, z[i]-b[idx_b]);
+                }
+            }
+            res[idx_b] = b[idx_b] + 1/(1-lim) * expected_c;
+
+            if (res[idx_b] < min_cvar){
+                min_b = idx_b;
+                min_cvar = res[idx_b];
+            }
+        }
+
+        return res[min_b];
+    }
 
     // TODO: change following functions to take into account slack variable
     @Override
@@ -298,16 +265,17 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     }
 
     // Wp with p=2
-    public double getW(double [] dist1, int state, int idx_b, int idx_a)
+    public double getW(double [] dist1, int state)
     {
         double sum = 0;
         for (int i =0; i<atoms; i++)
         {
-            sum+=  pow(((delta_z) *dist1[i] - (delta_z) *p[state][idx_b][idx_a][i]), 2);
+            sum+=  pow(((delta_z) *dist1[i] - (delta_z) *p[state][i]), 2);
         }
         return sqrt(sum);
     }
 
+    // FIXME return [][][]
     public double [][][][] getP ()
     {
         return p;

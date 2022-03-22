@@ -2798,7 +2798,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 
 	// alternative version to be integrated with cvar focused iteration
-		public ModelCheckerResult computeReachRewardsCvarAugmented(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException
+	public ModelCheckerResult computeReachRewardsCvarAugmented(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException
 	{
 		// Start expected reachability
 		long timer = System.currentTimeMillis();
@@ -2845,7 +2845,7 @@ public class MDPModelChecker extends ProbModelChecker
 		unknown.andNot(inf);
 		IntSet unknownStates = IntSet.asIntSet(unknown);
 //		int numStates = unknownStates.cardinality();
-		DistributionalBellman operator;
+		DistributionalBellmanAugmented operator;
 
 		// TODO new slack variable b for augmented MDP
 		// use vmin and vmax for b values?
@@ -2865,7 +2865,7 @@ public class MDPModelChecker extends ProbModelChecker
 			atoms = 1000;
 			b_atoms = atoms;
 			// FIXME add a distbellmanQRaugmented class
-			operator = new DistributionalBellmanQR(atoms, n, mainLog);
+			operator = new DistributionalBellmanQRAugmented(atoms, b_atoms, n, n_actions, mainLog);
 			operator.initialize(n); // initialization based on parameters.
 		}
 		else{
@@ -2878,11 +2878,10 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 
 		// Create/initialise solution vector(s)
-		double[][][][] temp_p;
+		DistributionalBellmanAugmented temp_p;
 		double [][][] action_val = new double[n][b_atoms][nactions];
-		double [] action_cvar = new double[n];
-		Object [][] policy = new Object[n][b_atoms]; // TODO policy is now state x slack variable b
-		int[][] choices = new int[n];
+		Object [][] policy = new Object[n][b_atoms]; // policy is now state x slack variable b
+		int[][] choices = new int[n][b_atoms];
 		double min_v;
 		double max_dist ;
 		double max_cvar_dist ;
@@ -2892,14 +2891,7 @@ public class MDPModelChecker extends ProbModelChecker
 		// Start iterations - number of episodes
 		for (iters = 0; (iters < iterations) ; iters++)
 		{
-			temp_p = new double[n][b_atoms][n_actions][atoms];
-			for (int idx_s=0; idx_s<n; idx_s++){
-				for (int idx_b = 0; idx_b < b_atoms; idx_b++) {
-					for (int k=0; k<n_actions; k++) {
-						temp_p[idx_s][idx_b][k] = Arrays.copyOf(operator.getDist(idx_s, idx_b, k), operator.getDist(idx_s, idx_b, k).length);
-					}
-				}
-			}
+			temp_p = operator.copy();
 
 			PrimitiveIterator.OfInt states = unknownStates.iterator();
 			while (states.hasNext()) {
@@ -2929,7 +2921,8 @@ public class MDPModelChecker extends ProbModelChecker
 							min_a = choice;
 							min_magic= action_val[s][b][choice];
 						}
-						temp_p[s][b][choice] = Arrays.copyOf(m, m.length);
+
+						temp_p.update(m, s, b, choice);
 					}
 					policy[s][b] =mdp.getAction(s, min_a);
 					choices[s][b] = min_a;
@@ -2939,29 +2932,28 @@ public class MDPModelChecker extends ProbModelChecker
 			states = unknownStates.iterator();
 			max_dist = 0.0;
 			max_cvar_dist = 0.0;
-			ArrayList<Integer> bad = new ArrayList<>();
-			// TODO max metric dist instead of max cvar distance.
-			while (states.hasNext()) {
-				final int s = states.nextInt();
-				double tempo = operator.getW(temp_p[s], s);
-				if(tempo > max_dist){bad.add(s);}
-				max_dist = max(max_dist, tempo);
+//			ArrayList<Integer> bad = new ArrayList<>();
+			int action ;
 
-				max_cvar_dist = max(max_cvar_dist,
-						abs(operator.getValueCvar(temp_p[s], alpha) - operator.getValueCvar(operator.getDist(s), alpha)));
-				operator.update(temp_p[s], s);
+			while (states.hasNext()) {
+				final int s = states.nextInt(); // fIXME right now checking only policy action
+				for (int b=0; b<b_atoms; b++) {
+					action = choices[s][b];
+					double tempo = operator.getW(temp_p.getDist(s, b, action), s, b, action);
+//					if (tempo > max_dist) {
+//						bad.add(s);
+//					}
+					max_dist = max(max_dist, tempo);
+
+					max_cvar_dist = max(max_cvar_dist,
+							abs(operator.getValueCvar(temp_p.getDist(s, b, action), alpha, b) - operator.getValueCvar(operator.getDist(s, b, action), alpha, b)));
+					operator.update(temp_p.getDist(s, b, action), s, b, action);
+				}
 			}
 
 			if((iters >=0)){//mainLog.println("Max Wp dist :"+(max_dist) + " dist:"+(max_cvar_dist)+" at iter:"+iters);
 				mainLog.println("\nV at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
-
-				for (double[] doubles : temp_p) // copy  temp value soln2 back to soln -> corresponds to Value table
-				{
-					DecimalFormat df = new DecimalFormat("0.000");
-					mainLog.print("[");
-					Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
-					mainLog.print("]\n");
-				}
+				operator.display();
 			}
 
 		//mainLog.println("Max Wp dist :"+(max_dist - error_thresh) + " dist:"+(max_cvar_dist- error_thresh)+" at iter:"+iters);
@@ -2973,16 +2965,13 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Print to file
 		// FIXME create a new printToFile function
-		boolean print= true;
-		if (print) {
-			printToFile(policy, action_val, alpha, "gridmap/cvar_out_"+n+"_"+ settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) +"_"+alpha+".out", n, mdp.getMaxNumChoices());
-		}
+//		boolean print= false;
+//		if (print) {
+//			printToFile(policy, action_val, alpha, "gridmap/cvar_out_"+n+"_"+ settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) +"_"+alpha+".out", n, mdp.getMaxNumChoices());
+//		}
 
 		mainLog.println("\nV[0] at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
-		DecimalFormat df = new DecimalFormat("0.000");
-		mainLog.print("[");
-		Arrays.stream(operator.getDist(0)).forEach(e -> mainLog.print(df.format(e) + ", "));
-		mainLog.print("]\n");
+		operator.display(0);
 
 		// Policy
 		mainLog.println("\nPolicy");
@@ -2990,16 +2979,20 @@ public class MDPModelChecker extends ProbModelChecker
 		mainLog.println(Arrays.toString(policy));
 
 		// Compute distribution on induced DTMC
+		// FIXME create finite memory strategy instead? which b for consecutive steps.
+
+		/*
 		mainLog.println("Computing distribution on induced DTMC...");
-		// FIXME create finite memory strategy instead.
-		MDStrategy strat = new MDStrategyArray(mdp, choices);
+		MDStrategy strat = new MDStrategyArray(mdp, choices[0]);
 		DTMC dtmc = new DTMCFromMDPAndMDStrategy(mdp, strat);
+
 		StateRewardsArray mcRewards = new StateRewardsArray(n);
 		for (int s = 0; s < n; s++) {
 			mcRewards.setStateReward(s, mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choices[s]));
 		}
 		DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
 		mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, target);
+		*/
 
 		// Finished CVAR
 		timer = System.currentTimeMillis() - timer;
@@ -3009,8 +3002,9 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 
 		// Store results
+
 		ModelCheckerResult res = new ModelCheckerResult();
-		res.soln = Arrays.copyOf(action_cvar, action_cvar.length); // FIXME make it based on y parameter and iterate over columns to get result
+		res.soln = Arrays.stream(choices[0]).asDoubleStream().toArray();
 		res.numIters = iterations;
 		res.timeTaken = timer / 1000.0;
 		return res;
@@ -3067,19 +3061,6 @@ public class MDPModelChecker extends ProbModelChecker
 	 * @param numStates the number of MDP states
 	 * @return p size of p -> states * actions * number of supports
 	 */
-
-	public double[][] initialize_p_noa( int atoms,  int numStates) {
-
-		double [][] temp = new double[numStates][atoms];
-		double [] temp2 = new double[atoms];
-		temp2[0] =1.0;
-		for (int i = 0; i < numStates; i++) {
-
-			temp[i]= Arrays.copyOf(temp2, temp2.length);
-		}
-
-		return temp;
-	}
 
 	/**
 	 * Construct strategy information for min/max expected reachability.

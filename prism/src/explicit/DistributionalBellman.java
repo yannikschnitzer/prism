@@ -37,7 +37,5 @@ abstract class DistributionalBellman {
 
     public abstract double[] getDist(int i);
 
-    public abstract double [] getDist(int s, int idx_b, int a);
-
-    public abstract double [][] getDist();
+//    public abstract double [][] getDist();
 }
