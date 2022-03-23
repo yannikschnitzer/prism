@@ -320,6 +320,22 @@ public class DBM extends Zone
 	}
 	
 	/**
+	 * Check if the lower bound on a clock is strict.
+	 */
+	public boolean isClockMinStrict(int x)
+	{
+		return DB.isStrict(d[0][x]);
+	}
+	
+	/**
+	 * Check if the upper bound on a clock is strict.
+	 */
+	public boolean isClockMaxStrict(int x)
+	{
+		return DB.isStrict(d[x][0]);
+	}
+	
+	/**
 	 * Check if a clock is unbounded (can be infinite).
 	 */
 	public boolean clockIsUnbounded(int x)
