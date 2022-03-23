@@ -42,6 +42,7 @@ import parser.ast.ExpressionTemporal;
 import parser.ast.LabelList;
 import parser.ast.PropertiesFile;
 import parser.type.Type;
+import parser.type.TypeClock;
 import prism.ModelGenerator;
 import prism.ModelType;
 import prism.PrismComponent;
@@ -55,6 +56,10 @@ import prism.Result;
 import prism.ResultsCollection;
 import prism.RewardGenerator;
 import prism.UndefinedConstants;
+import pta.DBM;
+import pta.PTA;
+import pta.PTAUtils;
+import pta.Zone;
 import simulator.method.SimulationMethod;
 import simulator.sampler.Sampler;
 import strat.Strategy;
@@ -115,6 +120,7 @@ public class SimulatorEngine extends PrismComponent
 	// Variable info
 	private VarList varList;
 	private int numVars;
+	private List<Integer> clockVars;
 	// Constant definitions from model file
 	private Values mfConstants;
 
@@ -147,6 +153,10 @@ public class SimulatorEngine extends PrismComponent
 	protected double tmpStateRewards[];
 	protected double tmpTransitionRewards[];
 
+	protected boolean realTimeTransInfoBuilt = false;
+	protected List<Double> realTimeTrans = null;
+	
+	
 	// Random number generator
 	private RandomNumberGenerator rng;
 
@@ -175,6 +185,7 @@ public class SimulatorEngine extends PrismComponent
 		modelType = null;
 		varList = null;
 		numVars = 0;
+		clockVars = null;
 		mfConstants = null;
 		labels = null;
 		properties = null;
@@ -186,6 +197,8 @@ public class SimulatorEngine extends PrismComponent
 		transitionListStep = -1;
 		tmpStateRewards = null;
 		tmpTransitionRewards = null;
+		realTimeTransInfoBuilt = false;
+		realTimeTrans = null;
 		rng = new RandomNumberGenerator();
 	}
 
@@ -211,6 +224,12 @@ public class SimulatorEngine extends PrismComponent
 		// Get variable list (symbol table) for model 
 		varList = modelGen.createVarList();
 		numVars = varList.getNumVars();
+		clockVars = new ArrayList<>();
+		for (int i = 0; i < numVars; i++) {
+			if (varList.getType(i) instanceof TypeClock) {
+				clockVars.add(i);
+			}
+		}
 		
 		// Clear storage for strategy
 		stratGen = null;
@@ -240,6 +259,9 @@ public class SimulatorEngine extends PrismComponent
 		tmpStateRewards = new double[rewardGen.getNumRewardStructs()];
 		tmpTransitionRewards = new double[rewardGen.getNumRewardStructs()];
 
+		realTimeTransInfoBuilt = false;
+		realTimeTrans = new ArrayList<>();
+		
 		// Create storage for labels/properties
 		labels = new ArrayList<Expression>();
 		properties = new ArrayList<Expression>();
@@ -368,6 +390,8 @@ public class SimulatorEngine extends PrismComponent
 		initialiseStrategy();
 		// Explore initial state in model generator
 		computeTransitionsForCurrentState();
+		// Check any invariants
+		checkInvariants();
 		// Reset and then update samplers for any loaded properties
 		resetSamplers();
 		updateSamplers();
@@ -383,8 +407,13 @@ public class SimulatorEngine extends PrismComponent
 		int i = modelGen.getChoiceIndexOfTransition(index);
 		int offset = modelGen.getChoiceOffsetOfTransition(index);
 		if (modelType.continuousTime()) {
-			double r = modelGen.getProbabilitySum();
-			executeTimedTransition(i, offset, rng.randomExpDouble(r), index);
+			if (modelType == ModelType.PTA) {
+				double delay = automaticTimeDelay(i);
+				executeTimedTransition(i, offset, delay, index);
+			} else {
+				double r = modelGen.getProbabilitySum();
+				executeTimedTransition(i, offset, rng.randomExpDouble(r), index);
+			}
 		} else {
 			executeTransition(i, offset, index);
 		}
@@ -400,6 +429,14 @@ public class SimulatorEngine extends PrismComponent
 	{
 		int i = modelGen.getChoiceIndexOfTransition(index);
 		int offset = modelGen.getChoiceOffsetOfTransition(index);
+		
+		if (modelType == ModelType.PTA) {
+			TimeRange delay = getChoiceClockDelay(i);
+			if (!delay.contains(time)) {
+				throw new PrismException("NO! " + delay);
+			}
+			
+		}
 		executeTimedTransition(i, offset, time, index);
 	}
 
@@ -411,6 +448,7 @@ public class SimulatorEngine extends PrismComponent
 	 */
 	public boolean automaticTransition() throws PrismException
 	{
+		System.out.println("automaticTransition() in " + currentState);
 
 		// Check for deadlock; if so, stop and return false
 		if (modelGen.getNumChoices() == 0)
@@ -438,6 +476,22 @@ public class SimulatorEngine extends PrismComponent
 			// Execute
 			executeTransition(i, j, -1);
 			break;
+		case PTA:
+			// Pick a random choice
+			i = rng.randomUnifInt(modelGen.getNumChoices());
+			while (getChoiceClockDelay(i) == null) {
+				i = rng.randomUnifInt(modelGen.getNumChoices());
+			}
+			
+			
+			// Pick a random transition from this choice
+			d = rng.randomUnifDouble();
+			j = getTransitionIndexByProbabilitySum(i, d);
+			// Execute
+			double delay = automaticTimeDelay(i);
+			executeTimedTransition(i, j, delay, -1);
+//			executeTransition(i, j, -1);
+			break;
 		case CTMC:
 			// Get sum of all rates
 			r = modelGen.getProbabilitySum();
@@ -461,6 +515,71 @@ public class SimulatorEngine extends PrismComponent
 		return true;
 	}
 
+	private double automaticTimeDelay(int i) throws PrismException
+	{
+//		if (modelType == ModelType.PTA) {
+			TimeRange delay = getChoiceClockDelay(i);
+			double tMin = delay.min;
+			if (delay.minStrict) {
+				tMin += 0.1;
+			}
+			return tMin;
+			
+			/*
+			Expression clockGuard = ((ModulesFileModelGenerator<?>)modelGen).getChoiceClockGuard(i);
+			PTA pta = new PTA(null);
+			for (int c : clockVars) {
+				pta.addClock(varList.getName(c));
+			}
+			
+			int numClocks = clockVars.size();
+			double[] clockVals = new double[numClocks];
+			for (int j = 0; j < numClocks; j++) {
+				clockVals[j] = (Double) currentState.varValues[clockVars.get(j)];
+			}
+			
+			Zone region = PTAUtils.regionForPoint(clockVals, pta);
+			if (((ModulesFileModelGenerator<?>) modelGen).getInvariant() == null) {
+				region.up();
+			} else {
+				region.up(PTAUtils.exprConjToConstraintList(((ModulesFileModelGenerator<?>) modelGen).getInvariant(), modelGen.getConstantValues(), pta));
+			}
+			PTAUtils.exprConjToConstraintConsumer(clockGuard, modelGen.getConstantValues(), pta, c -> { region.addConstraint(c); });
+			System.out.println(region);
+			
+			
+//			PTAUtils.exprConjToConstraintConsumer(((ModulesFileModelGenerator<?>) modelGen).getInvariant(), modelGen.getConstantValues(), pta, c -> { cons.add(c); });
+			
+			List<Constraint> cons = new ArrayList<>();
+//			DBM dbm = createTrue(pta);
+			PTAUtils.exprConjToConstraintConsumer(clockGuard, modelGen.getConstantValues(), pta, c -> { cons.add(c); });
+//			dbm.addConstraint(c)
+			Zone zone = DBM.createFromConstraints(pta, cons);
+			List<Constraint> inv = new ArrayList<>(); //todo
+			
+			Zone zz = DBM.createTrue(pta);
+//			zz.free(x);
+			
+			for (int j = 0; j < clockVars.size(); j++) {
+				double v = (Double) currentState.varValues[clockVars.get(j)];
+				int vF = (int) Math.floor(v);
+				zz.addConstraint(Constraint.buildLeq(j, vF));
+				zz.addConstraint(Constraint.buildGeq(j, vF));
+			}
+			if (((ModulesFileModelGenerator<?>) modelGen).getInvariant() == null) {
+				zz.up();
+			} else {
+				zz.up(PTAUtils.exprConjToConstraintList(((ModulesFileModelGenerator<?>) modelGen).getInvariant(), modelGen.getConstantValues(), pta));
+			}
+			PTAUtils.exprConjToConstraintConsumer(clockGuard, modelGen.getConstantValues(), pta, c -> { zz.addConstraint(c); });
+			
+			return 99;
+		} else {
+			return 99;
+		}
+		*/
+	}
+	
 	/**
 	 * Get the index of the choice to be automatically selected in the current state.
 	 * If a strategy is loaded (and to be enforced, and defined for the current state), this will be used.
@@ -682,8 +801,26 @@ public class SimulatorEngine extends PrismComponent
 	{
 		modelGen.exploreState(state);
 		transitionListState = state;
+		
+		realTimeTransInfoBuilt = false;
+		realTimeTrans.clear();
 	}
 
+	// real time stuff
+	
+	// nb: do after computeTransitionsForState (so modelgen aware)
+	private void checkInvariants() throws PrismException
+	{
+		// Just clock invs fro now
+		if (modelType.realTime()) {
+			Expression inv = ((ModulesFileModelGenerator)modelGen).getClockInvariant();
+			if (!inv.evaluateBoolean(modelGen.getConstantValues(), currentState)) {
+				System.out.println("Clock invariant " + inv + " not satisfied in state " + currentState);
+//				throw new PrismException("Clock invariant " + inv + " not satisfied in state " + currentState);
+			}
+		}
+	}
+	
 	// ------------------------------------------------------------------------------
 	// Methods for loading objects from model checking: paths, etc.
 	// ------------------------------------------------------------------------------
@@ -966,6 +1103,8 @@ public class SimulatorEngine extends PrismComponent
 		updateStrategy();
 		// Explore new state in model generator
 		computeTransitionsForCurrentState();
+		// Check any invariants
+		checkInvariants();
 		// Update samplers for any loaded properties
 		updateSamplers();
 	}
@@ -992,6 +1131,13 @@ public class SimulatorEngine extends PrismComponent
 		double p = modelGen.getTransitionProbability(i, offset);
 		Object action = modelGen.getChoiceAction(i);
 		String actionString = modelGen.getChoiceActionString(i);
+		
+		if (modelType == ModelType.PTA) {
+			for (int c : clockVars) {
+				currentState.varValues[c] = ((Double) currentState.varValues[c]) + time;
+			}
+		}
+		
 		// Compute its transition rewards
 		calculateTransitionRewards(path.getCurrentState(), action, tmpTransitionRewards);
 		// Compute next state
@@ -1006,6 +1152,8 @@ public class SimulatorEngine extends PrismComponent
 		updateStrategy();
 		// Explore new state in model generator
 		computeTransitionsForCurrentState();
+		// Check any invariants
+		checkInvariants();
 		// Update samplers for any loaded properties
 		updateSamplers();
 	}
@@ -1233,6 +1381,113 @@ public class SimulatorEngine extends PrismComponent
 		return getTransitionActionString(i, offset);
 	}
 
+	public Expression getTransitionClockGuard(int index) throws PrismException
+	{
+		int i = modelGen.getChoiceIndexOfTransition(index);
+		int offset = modelGen.getChoiceOffsetOfTransition(index);
+		return ((ModulesFileModelGenerator)modelGen).getChoiceClockGuard(i);
+	}
+	
+	public String getTransitionClockDelay(int index) throws PrismException
+	{
+		int i = modelGen.getChoiceIndexOfTransition(index);
+		TimeRange delay = getChoiceClockDelay(i);
+		return delay == null ? "DISABLED" : delay.toString();
+	}
+	
+	class TimeRange
+	{
+		double min = 0;
+		double max = Double.POSITIVE_INFINITY;
+		boolean minStrict = false;
+		boolean maxStrict = false;
+		public boolean contains(double t)
+		{
+			if (minStrict ? t <= min : t < min) {
+				return false;
+			}
+			if (maxStrict ? t >= max : t > max) {
+				return false;
+			}
+			return true;
+		}
+		public String toString()
+		{
+			return (minStrict ? ">" : ">=") + min; 
+		}
+	}
+	
+	public TimeRange getChoiceClockDelay(int i) throws PrismException
+	{	
+		// todo: call getTransitions() to make sure done
+		// and cache results?
+		
+		if (modelType == ModelType.PTA) {
+			TimeRange delay = new TimeRange();
+			//if (!realTimeTransInfoBuilt) {
+				Expression clockGuard = ((ModulesFileModelGenerator)modelGen).getChoiceClockGuard(i);
+				PTA pta = new PTA(null);
+				for (int c : clockVars) {
+					pta.addClock(varList.getName(c));
+				}
+				
+				int numClocks = clockVars.size();
+				double[] clockVals = new double[numClocks];
+				for (int j = 0; j < numClocks; j++) {
+					clockVals[j] = (Double) currentState.varValues[clockVars.get(j)];
+				}
+				
+				Zone region = PTAUtils.regionForPoint(clockVals, pta);
+				System.out.println("1:"+region);
+				if (((ModulesFileModelGenerator) modelGen).getClockInvariant() == null) {
+					region.up();
+				} else {
+					region.up(PTAUtils.exprConjToConstraintList(((ModulesFileModelGenerator) modelGen).getClockInvariant(), modelGen.getConstantValues(), pta));
+				}
+				System.out.println("2:"+region);
+				PTAUtils.exprConjToConstraintConsumer(clockGuard, modelGen.getConstantValues(), pta, c -> { region.addConstraint(c); });
+				System.out.println("3:"+region);
+				
+				if (region.isEmpty()) {
+					return null;
+				}
+				
+				String str = region.toString();
+				double tMin = Double.NEGATIVE_INFINITY;
+				boolean tMinStrict = false;
+				for (int j = 0; j < numClocks; j++) {
+					double t = region.getClockMin(j+1) - clockVals[j];
+					System.out.println("t="+t);
+					if (t > tMin) {
+						tMin = t;
+						System.out.println("tMin="+tMin);
+						tMinStrict = ((DBM) region).isClockMinStrict(j+1);
+						System.out.println("tMinStrict="+tMinStrict);
+					} else if (t >= tMin) {
+						if (((DBM) region).isClockMinStrict(j+1)) {
+							tMinStrict = true;
+							System.out.println("tMinStrict="+tMinStrict);
+						}
+					}
+					str += " " + varList.getName(clockVars.get(j)) + "=" + region.getClockMin(j+1);
+				}
+				str += " tmin=" + tMin;
+				
+				delay.min = tMin;
+				delay.minStrict = tMinStrict;
+				if (delay.contains(0.0)) {
+					delay.min = 0.0;
+					delay.minStrict = false;
+				}
+				
+				return delay;
+			//}
+		} else {
+			return null;
+		}
+		
+	}
+	
 	/**
 	 * Get the probability/rate of a transition within a choice, specified by its index/offset.
 	 * Usually, this is for the current (final) state of the path but, if you called {@link #computeTransitionsForStep(int step)}, it will be for this state instead.

@@ -448,6 +448,7 @@ public class GUISimulator extends GUIPlugin implements MouseListener, ListSelect
 			setPathActive(true);
 			repopulateFormulae(pf);
 			engine.initialisePath(initialState);
+			engine.getNumTransitions();
 			// Update model/path/tables/lists
 			if (engine.hasStrategyInfo()) {
 				stratCombo.setSelectedItem("Enforce");
@@ -2267,7 +2268,7 @@ public class GUISimulator extends GUIPlugin implements MouseListener, ListSelect
 	}
 	
 	enum UpdateTableModelColumn {
-		STRAT, ACTION, PROB, UPDATE
+		STRAT, ACTION, DELAY, PROB, UPDATE
 	};
 	
 	class UpdateTableModel extends AbstractTableModel
@@ -2312,7 +2313,9 @@ public class GUISimulator extends GUIPlugin implements MouseListener, ListSelect
 					case STRAT:
 						return engine.getStrategyDecisionString(rowIndex);
 					case ACTION:
-						return engine.getTransitionActionString(rowIndex);
+						return engine.getTransitionActionString(rowIndex)+" "+engine.getTransitionClockGuard(rowIndex);
+					case DELAY:
+						return "" + engine.getTransitionClockDelay(rowIndex);
 					case PROB:
 						return "" + engine.getTransitionProbability(rowIndex);
 					case UPDATE:
@@ -2336,6 +2339,8 @@ public class GUISimulator extends GUIPlugin implements MouseListener, ListSelect
 					return "Strategy";
 				case ACTION:
 					return engine.getModel().getActionStringDescription();
+				case DELAY:
+					return "Delay";
 				case PROB:
 					return parsedModel == null ? "Probability" : parsedModel.getModelType().probabilityOrRate();
 				case UPDATE:
@@ -2401,6 +2406,9 @@ public class GUISimulator extends GUIPlugin implements MouseListener, ListSelect
 				visibleColumns.add(UpdateTableModelColumn.STRAT);
 			}
 			visibleColumns.add(UpdateTableModelColumn.ACTION);
+			if (parsedModel != null && parsedModel.getModelType().realTime()) {
+				visibleColumns.add(UpdateTableModelColumn.DELAY);
+			}
 			if (parsedModel != null && parsedModel.getModelType().isProbabilistic()) {
 				visibleColumns.add(UpdateTableModelColumn.PROB);
 			}
