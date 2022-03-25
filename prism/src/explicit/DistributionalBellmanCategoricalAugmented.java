@@ -1,8 +1,6 @@
 package explicit;
 
 
-import prism.PrismLog;
-
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -28,6 +26,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     double [] b; // array containing b values
 
     prism.PrismLog mainLog;
+    DecimalFormat df;
 
     // new constructor to take b into account
     // should this have its own bounds? b_min and b_max?
@@ -42,6 +41,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         this.numStates = numStates;
         this.n_actions = n_actions;
         this.mainLog = log;
+        df = new DecimalFormat("0.000");
 
         // INFO right now saving augmented state-action distributions
         this.p = new double[numStates][b_atoms][n_actions][atoms]; 
@@ -50,7 +50,8 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         for (int i = 0; i < atoms; i++) {
             this.z[i] = (vmin + i *this.delta_z);
         }
-        
+        log.println(" z: "+ Arrays.toString(z));
+
         // Initialize slack variable atoms 
         this.b_atoms = b_atoms;
         this.delta_b = (vmax - vmin) / (b_atoms -1);
@@ -184,15 +185,47 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     }
 
     @Override
-    public void display(int s) {
+    public void display(MDP mdp) {
+        for (int s=0; s<numStates; s++) {
+            display(s, mdp.getNumChoices(s));
+        }
+    }
 
+    @Override
+    public void display(int s) {
+        mainLog.println("------- state:"+s);
         for (int idx_b = 0; idx_b < b_atoms; idx_b++) {
+            mainLog.println("------");
             for (double[] doubles : p[s][idx_b]) {
-                DecimalFormat df = new DecimalFormat("0.000");
                 mainLog.print("[");
                 Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
                 mainLog.print("]\n");
             }
+        }
+
+    }
+
+    public void display(int s, int num_actions) {
+        mainLog.println("------- state:"+s);
+        for (int idx_b = 0; idx_b < b_atoms; idx_b++) {
+            mainLog.println("------ b:"+df.format(b[idx_b]));
+            for (int j =0; j< num_actions; j++) {
+                mainLog.print("[");
+                Arrays.stream(p[s][idx_b][j]).forEach(e -> mainLog.print(df.format(e) + ", "));
+                mainLog.print("]\n");
+            }
+        }
+
+    }
+
+    public void display(int s, int [][] policy) {
+
+        for (int idx_b = 0; idx_b < b_atoms; idx_b++) {
+            double[] doubles = p[s][idx_b][policy[s][idx_b]];
+            mainLog.print("[");
+            Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
+            mainLog.print("]\n");
+
         }
 
     }

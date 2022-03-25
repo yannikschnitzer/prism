@@ -2600,7 +2600,7 @@ public class MDPModelChecker extends ProbModelChecker
 	 * @param target Target states
 	 * @param min Min or max rewards (true=min, false=max)
 	 */
-	public ModelCheckerResult computeReachRewardsCvar(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException
+	public ModelCheckerResult computeReachRewardsCvarOld(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException
 	{
 		// Start expected reachability
 		long timer = System.currentTimeMillis();
@@ -2798,7 +2798,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 
 	// alternative version to be integrated with cvar focused iteration
-	public ModelCheckerResult computeReachRewardsCvarAugmented(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException
+	public ModelCheckerResult computeReachRewardsCvar(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException
 	{
 		// Start expected reachability
 		long timer = System.currentTimeMillis();
@@ -2827,7 +2827,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Set up CVAR variables
 		int atoms;
-		int iterations = 150;
+		int iterations = 2;
 		double error_thresh = 0.01;
 		double error_thresh_cvar = 2;
 		double gamma = 1;
@@ -2837,6 +2837,7 @@ public class MDPModelChecker extends ProbModelChecker
 		String qr = "QR";
 
 		int nactions = mdp.getMaxNumChoices();
+
 
 		// Determine set of states actually need to compute values for
 		BitSet unknown = new BitSet();
@@ -2855,19 +2856,20 @@ public class MDPModelChecker extends ProbModelChecker
 
 
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
-			atoms = 11;
-			b_atoms = 11;
-			double v_max = 10;
+			atoms = 16;
+			b_atoms = 16;
+			double v_max = 3;
 			double v_min = 0;
 			operator = new DistributionalBellmanCategoricalAugmented(atoms, b_atoms, v_min, v_max, n, n_actions, mainLog);
 			operator.initialize(n); // initialization based on parameters.
-		} else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
-			atoms = 1000;
-			b_atoms = atoms;
-			// FIXME add a distbellmanQRaugmented class
-			operator = new DistributionalBellmanQRAugmented(atoms, b_atoms, n, n_actions, mainLog);
-			operator.initialize(n); // initialization based on parameters.
 		}
+//		else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
+//			atoms = 1000;
+//			b_atoms = atoms;
+//			// FIXME add a distbellmanQRaugmented class
+//			operator = new DistributionalBellmanQRAugmented(atoms, b_atoms, n, n_actions, mainLog);
+//			operator.initialize(n); // initialization based on parameters.
+//		}
 		else{
 			atoms=101;
 			b_atoms = 11;
@@ -2953,7 +2955,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 			if((iters >=0)){//mainLog.println("Max Wp dist :"+(max_dist) + " dist:"+(max_cvar_dist)+" at iter:"+iters);
 				mainLog.println("\nV at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
-				operator.display();
+				operator.display(mdp);
 			}
 
 		//mainLog.println("Max Wp dist :"+(max_dist - error_thresh) + " dist:"+(max_cvar_dist- error_thresh)+" at iter:"+iters);
@@ -2971,12 +2973,12 @@ public class MDPModelChecker extends ProbModelChecker
 //		}
 
 		mainLog.println("\nV[0] at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
-		operator.display(0);
+		operator.display(0, choices);
 
 		// Policy
 		mainLog.println("\nPolicy");
 		//Arrays.toString(policy);
-		mainLog.println(Arrays.toString(policy));
+		Arrays.stream(policy).forEach(e -> mainLog.print(Arrays.toString(e) + ", "));
 
 		// Compute distribution on induced DTMC
 		// FIXME create finite memory strategy instead? which b for consecutive steps.

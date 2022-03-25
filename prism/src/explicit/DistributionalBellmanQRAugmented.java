@@ -80,6 +80,11 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
     }
 
 
+    @Override
+    public DistributionalBellmanAugmented copy() {
+        return null;
+    }
+
     // FIXME how to pass current b + current choice action with class definitions
     public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, double cur_b, int choice, int numTransitions, double gamma, double state_reward)
     {
@@ -138,24 +143,40 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
         return l;
     }
 
+    @Override
+    public void display() {
+
+    }
+
+    @Override
+    public void display(MDP mdp) {
+
+    }
+
+    @Override
+    public void display(int s) {
+
+    }
+
+    @Override
+    public void display(int i, int[][] choices) {
+
+    }
+
 
     public void update(double [] temp, int state, int idx_b, int action){
         p[state][idx_b][action] = Arrays.copyOf(temp, temp.length);
     }
 
     // FIXME this needs to change -> they're dummy functions
-    @Override
-    public double[] getDist(int i) {
-        return p[i][0][0];
-    }
-
-    @Override
-    public double[][] getDist() {
-        return p[0][0];
-    }
 
     public double[] getDist(int s, int idx_b, int a) {
         return p[s][idx_b][a];
+    }
+
+    @Override
+    public double[][] getDist(int s, int idx_b) {
+        return new double[0][];
     }
 
     // TODO probably rename this
@@ -264,13 +285,11 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
         return sqrt(sum);
     }
 
-    // Wp with p=2
-    public double getW(double [] dist1, int state)
-    {
+    @Override
+    public double getW(double[] dist1, int state, int idx_b, int idx_a) {
         double sum = 0;
-        for (int i =0; i<atoms; i++)
-        {
-            sum+=  pow(((delta_z) *dist1[i] - (delta_z) *p[state][i]), 2);
+        for (int i = 0; i < atoms; i++) {
+            sum += pow(((delta_z) * dist1[i] - (delta_z) * p[state][idx_b][idx_a][i]), 2);
         }
         return sqrt(sum);
     }

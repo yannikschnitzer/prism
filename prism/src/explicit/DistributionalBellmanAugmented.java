@@ -44,5 +44,9 @@ public abstract class DistributionalBellmanAugmented {
 
     public abstract void display();
 
+    public abstract void display(MDP mdp);
+
     public abstract void display(int s);
+
+    public abstract void display(int i, int[][] choices);
 }

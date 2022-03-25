@@ -107,11 +107,6 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
     }
 
     @Override
-    public double[][] getDist() {
-        return p;
-    }
-
-    @Override
     public double getExpValue(double [] temp){
         double sum =0;
         for (int j=0; j<atoms; j++)
