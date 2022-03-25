@@ -472,7 +472,9 @@ public class LTLModelChecker extends PrismComponent
 		// handling needed for cosafety reward translation
 		Vector<BitSet> labelBS = new Vector<BitSet>();
 		DA<BitSet, AcceptanceReach> da = constructDFAForCosafetyRewardLTL(mc, model, expr, labelBS);
-
+		
+		da.print(PrismUtils.newPrintStream("E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\dfa.dot"), "dot"); 		//only temporary
+		
 		// Build product of model and automaton
 		mainLog.println("Constructing " + model.getModelType() + "-" + da.getAutomataType() + " product...");
 		StopWatch timer = new StopWatch(getLog());
