@@ -1,5 +1,8 @@
 package explicit;
 
+import explicit.rewards.MDPRewards;
+import explicit.rewards.StateRewardsArray;
+
 import java.util.Iterator;
 import java.util.Map;
 
@@ -14,7 +17,7 @@ public abstract class DistributionalBellmanAugmented {
 
     public void setAlpha(double a){ alpha=a;}
 
-    public abstract double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, double cur_b, int choice, int numTransitions, double gamma, double state_reward);
+    public abstract double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, double cur_b, int [][] choice, int numTransitions, double gamma, double state_reward);
 
     public abstract double getExpValue(double [] temp);
 
@@ -49,4 +52,6 @@ public abstract class DistributionalBellmanAugmented {
     public abstract void display(int s);
 
     public abstract void display(int i, int[][] choices);
+
+    public abstract int[] getStrategy(int start, MDPRewards mdpRewards, StateRewardsArray rewardsArray, int[][] choices, double alpha, double gamma);
 }

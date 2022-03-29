@@ -2830,7 +2830,7 @@ public class MDPModelChecker extends ProbModelChecker
 		int iterations = 2;
 		double error_thresh = 0.01;
 		double error_thresh_cvar = 2;
-		double gamma = 1;
+		double gamma = 0.4;
 		double alpha=0.7;
 
 		String c51 = "C51";
@@ -2888,7 +2888,7 @@ public class MDPModelChecker extends ProbModelChecker
 		double max_dist ;
 		double max_cvar_dist ;
 		int iters;
-
+		double reward=  0;
 
 		// Start iterations - number of episodes
 		for (iters = 0; (iters < iterations) ; iters++)
@@ -2900,7 +2900,6 @@ public class MDPModelChecker extends ProbModelChecker
 				final int s = states.nextInt();
 				int numChoices = mdp.getNumChoices(s);
 				int numTransitions = 0;
-
 				for (int b =0; b< b_atoms; b++) {
 
 					Arrays.fill(action_val[s][b], Float.POSITIVE_INFINITY);
@@ -2912,11 +2911,8 @@ public class MDPModelChecker extends ProbModelChecker
 						numTransitions = mdp.getNumTransitions(s, choice);
 						Iterator<Entry<Integer, Double>> it = mdp.getTransitionsIterator(s, choice);
 
-						if (mdpRewards.hasTransitionRewards()) {
-							m = operator.step(it, b, choice, numTransitions, gamma, mdpRewards.getTransitionReward(s, choice));
-						} else {
-							m = operator.step(it, b, choice, numTransitions, gamma, mdpRewards.getStateReward(s));
-						}
+						reward = mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choice);
+						m = operator.step(it, b, choices, numTransitions, gamma, reward);
 
 						action_val[s][b][choice] = operator.getMagic(m, b);
 						if(action_val[s][b][choice]< min_magic) {
@@ -2935,21 +2931,21 @@ public class MDPModelChecker extends ProbModelChecker
 			max_dist = 0.0;
 			max_cvar_dist = 0.0;
 //			ArrayList<Integer> bad = new ArrayList<>();
-			int action ;
 
 			while (states.hasNext()) {
 				final int s = states.nextInt(); // fIXME right now checking only policy action
 				for (int b=0; b<b_atoms; b++) {
-					action = choices[s][b];
-					double tempo = operator.getW(temp_p.getDist(s, b, action), s, b, action);
+					for (int choice = 0; choice <mdp.getNumChoices(s); choice++)
+
+					operator.update(temp_p.getDist(s, b, choice), s, b, choice);
+//					action = choices[s][b];
+//					double tempo = operator.getW(temp_p.getDist(s, b, action), s, b, action);
 //					if (tempo > max_dist) {
 //						bad.add(s);
 //					}
-					max_dist = max(max_dist, tempo);
-
-					max_cvar_dist = max(max_cvar_dist,
-							abs(operator.getValueCvar(temp_p.getDist(s, b, action), alpha, b) - operator.getValueCvar(operator.getDist(s, b, action), alpha, b)));
-					operator.update(temp_p.getDist(s, b, action), s, b, action);
+//					max_dist = max(max_dist, tempo);
+//					max_cvar_dist = max(max_cvar_dist,
+//							abs(operator.getValueCvar(temp_p.getDist(s, b, action), alpha, b) - operator.getValueCvar(operator.getDist(s, b, action), alpha, b)));
 				}
 			}
 
@@ -2982,19 +2978,17 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Compute distribution on induced DTMC
 		// FIXME create finite memory strategy instead? which b for consecutive steps.
+		mainLog.println("\n\nComputing distribution on induced DTMC...");
 
-		/*
-		mainLog.println("Computing distribution on induced DTMC...");
-		MDStrategy strat = new MDStrategyArray(mdp, choices[0]);
+		// FIXME what to do if multiple initial states?
+		StateRewardsArray mcRewards = new StateRewardsArray(n);
+		Iterator<Integer> startStates= mdp.getInitialStates().iterator();
+		int [] pol = operator.getStrategy(startStates.next(), mdpRewards, mcRewards, choices, alpha, gamma);
+		MDStrategyArray strat = new MDStrategyArray(mdp, pol);
 		DTMC dtmc = new DTMCFromMDPAndMDStrategy(mdp, strat);
 
-		StateRewardsArray mcRewards = new StateRewardsArray(n);
-		for (int s = 0; s < n; s++) {
-			mcRewards.setStateReward(s, mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choices[s]));
-		}
 		DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
 		mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, target);
-		*/
 
 		// Finished CVAR
 		timer = System.currentTimeMillis() - timer;
@@ -3004,9 +2998,9 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 
 		// Store results
-
+		// FIXME choices[0]
 		ModelCheckerResult res = new ModelCheckerResult();
-		res.soln = Arrays.stream(choices[0]).asDoubleStream().toArray();
+		res.soln = Arrays.stream(pol).asDoubleStream().toArray();
 		res.numIters = iterations;
 		res.timeTaken = timer / 1000.0;
 		return res;

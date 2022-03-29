@@ -1,6 +1,8 @@
 package explicit;
 
 
+import explicit.rewards.MDPRewards;
+import explicit.rewards.StateRewardsArray;
 import prism.PrismLog;
 
 import java.util.Arrays;
@@ -79,31 +81,30 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
         }
     }
 
-
     @Override
     public DistributionalBellmanAugmented copy() {
         return null;
     }
 
     // FIXME how to pass current b + current choice action with class definitions
-    public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, double cur_b, int choice, int numTransitions, double gamma, double state_reward)
+    public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, double cur_b, int [][] choices, int numTransitions, double gamma, double state_reward)
     {
         double temp_b = (cur_b-state_reward)/gamma;
         int idx_b = getClosestB(temp_b);
 
-        double [] res = update_probabilities(trans_it, idx_b, choice);
+        double [] res = update_probabilities(trans_it, idx_b, choices);
         res = update_support(gamma, state_reward, res);
         return res;
     }
 
     // updates probabilities for 1 action
-    public double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it, int idx_b, int action) {
+    public double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it, int idx_b, int [][] action) {
         double [] sum_p= new double[atoms];
 
         while (trans_it.hasNext()) {
             Map.Entry<Integer, Double> e = trans_it.next();
             for (int j = 0; j < atoms; j++) {
-                sum_p[j] += e.getValue() * p[e.getKey()][idx_b][action][j];
+                sum_p[j] += e.getValue() * p[e.getKey()][idx_b][action[0][0]][j];
             }
         }
         return sum_p;
@@ -161,6 +162,11 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
     @Override
     public void display(int i, int[][] choices) {
 
+    }
+
+    @Override
+    public int[] getStrategy(int start, MDPRewards mdpRewards, StateRewardsArray rewardsArray,  int[][] choices, double alpha, double gamma) {
+        return new int[0];
     }
 
 

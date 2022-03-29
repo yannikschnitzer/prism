@@ -1,6 +1,11 @@
 package explicit;
 
 
+import explicit.rewards.MDPRewards;
+import explicit.rewards.StateRewardsArray;
+import strat.MDStrategy;
+import strat.MDStrategyArray;
+
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -120,23 +125,28 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     }
 
 
-    public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, double cur_b, int choice, int numTransitions, double gamma, double state_reward)
+    public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, double cur_b, int [][] choices, int numTransitions, double gamma, double state_reward)
     {
         double temp_b = (cur_b-state_reward)/gamma;
         int idx_b = getClosestB(temp_b);
 
-        double [] res = update_probabilities(trans_it, idx_b, choice);
+        double [] res = update_probabilities(trans_it, idx_b, choices);
         res = update_support(gamma, state_reward, res);
         return res;
     }
 
     // updates probabilities for 1 action
-    public double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it, int idx_b, int action) {
+    public double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it, int idx_b, int [][] choices) {
         double [] sum_p= new double[atoms];
+        int action = 0;
 
         while (trans_it.hasNext()) {
             Map.Entry<Integer, Double> e = trans_it.next();
             for (int j = 0; j < atoms; j++) {
+                // FIXME here action should be the action at the next state.
+                //  -> but which idx_b - it shouldn't be the same as for current state since it is next state.
+                //  -> but this might be ok because this is adjusted b
+                action  = choices[e.getKey()][idx_b];
                 sum_p[j] += e.getValue() * p[e.getKey()][idx_b][action][j];
             }
         }
@@ -344,5 +354,56 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     public double [][][][] getP ()
     {
         return p;
+    }
+
+    public double [] computeStartingB(int startState, double alpha, int [][] choices){
+        double [] res = new double [2]; // contains the min index + min cvar.
+        double cvar = 0;
+        res [1] = Float.POSITIVE_INFINITY;
+        double expected_cost =0;
+
+        for(int idx_b=0; idx_b < b_atoms; idx_b++){
+            expected_cost = 0;
+            for ( int i =0; i < atoms; i++){
+                double j = p[startState][idx_b][choices[startState][idx_b]][i];
+                if (j >0){
+                    expected_cost += j * max(0, z[i] - b[idx_b]);
+                }
+            }
+            cvar = b[idx_b] + 1/(1-alpha) * expected_cost;
+            if (cvar < res[1]){
+                res[0] = idx_b;
+                res[1] = cvar;
+            }
+        }
+        return res;
+    }
+
+    public int [] getStrategy(int start, MDPRewards mdpRewards, StateRewardsArray rewardsArray, int [][] choices, double alpha, double gamma)
+    {
+        int [] res = new int [numStates];
+
+
+        double [] cvar_info = computeStartingB(start, alpha, choices);
+
+        int idx_b = (int) cvar_info[0];
+        double r = 0;
+        mainLog.println("b :"+b[idx_b] + " cvar = " + cvar_info[1]);
+
+
+        for (int i = 0; i < numStates; i++) {
+            res[i] = choices[i][idx_b];
+            // Compute reward
+            r = mdpRewards.getStateReward(i) ;
+            r += mdpRewards.getTransitionReward(i, choices[i][idx_b]);
+
+            rewardsArray.setStateReward(i, r);
+
+            // update b
+            idx_b = getClosestB((b[idx_b] - r) /gamma);
+            mainLog.println ("policy: "+res[i]+" - rew:"+r+" - new b :"+b[idx_b]);
+        }
+
+        return res;
     }
 }
