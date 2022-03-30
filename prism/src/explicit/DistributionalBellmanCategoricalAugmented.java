@@ -263,7 +263,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     @Override
     public double getMagic(double [] temp, int idx_b)
     {
-        int res = 0;
+        double res = 0;
         for (int j=0; j<atoms; j++){
             res += temp[j] * max(0, (z[j] - b[idx_b]));
         }

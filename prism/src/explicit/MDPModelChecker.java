@@ -2830,8 +2830,8 @@ public class MDPModelChecker extends ProbModelChecker
 		int iterations = 2;
 		double error_thresh = 0.01;
 		double error_thresh_cvar = 2;
-		double gamma = 0.4;
-		double alpha=0.7;
+		double gamma = 1;
+		double alpha=0.5;
 
 		String c51 = "C51";
 		String qr = "QR";
@@ -2986,6 +2986,8 @@ public class MDPModelChecker extends ProbModelChecker
 		int [] pol = operator.getStrategy(startStates.next(), mdpRewards, mcRewards, choices, alpha, gamma);
 		MDStrategyArray strat = new MDStrategyArray(mdp, pol);
 		DTMC dtmc = new DTMCFromMDPAndMDStrategy(mdp, strat);
+
+		mainLog.println("Currently returning policy "+ Arrays.toString(pol));
 
 		DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
 		mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, target);
