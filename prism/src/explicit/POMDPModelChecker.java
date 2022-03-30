@@ -1798,79 +1798,105 @@ public class POMDPModelChecker extends ProbModelChecker
 			}
 		}
 		mainLog.println(" ");
+		
+		ArrayList<Double>  undiscountedReward = new ArrayList<Double> ();
+		double undiscountedRewardAverage = 0;
+		
+		ArrayList<Double> discountedReward = new ArrayList<Double> ();
+		double discountedRewardAverage = 0;
 		int numEpisode = 100;
-		ArrayList<Double> rewards = new ArrayList<Double> ();
-		double rewardAverage = 0;
-		for (int n =0; n < numEpisode; n++) {
+		
+		for (int n = 0; n < numEpisode; n++) {
 			mainLog.println("start Episode"+n+" out of "+numEpisode);
-			double reward = computeReachRewardsPOMCPEpisode(pomdp,  mdpRewards,  target,  min,  statesOfInterest, endStates);
-			rewards.add(reward);
-			rewardAverage += reward;
+			double[] reward = computeReachRewardsPOMCPEpisode(pomdp,  mdpRewards,  target,  min,  statesOfInterest, endStates);
+			
+			undiscountedReward.add(reward[0]);
+			undiscountedRewardAverage += reward[0];
+			discountedReward.add(reward[1]);
+			discountedRewardAverage += reward[1];
+			mainLog.println("End Episode "+ n + " out of " + numEpisode + "\nCurrent average undiscounted : " + (undiscountedRewardAverage/undiscountedReward.size())
+			+ "; average discounted : " + (discountedRewardAverage/discountedReward.size()));
+
 		}
-		rewardAverage = rewardAverage / rewards.size();
-		mainLog.println("average reward = "+ rewardAverage);
+		undiscountedRewardAverage = undiscountedRewardAverage / undiscountedReward.size();
+		discountedRewardAverage = undiscountedRewardAverage / undiscountedReward.size();
+
+//		double std = 0;
+//		mainLog.println("rewards from POMCP");
+//		for(double reward : undiscountedReward) {
+//			mainLog.println(reward);
+//			std += Math.pow(reward -  undiscountedRewardAverage, 2);
+//		}
+//		std = Math.sqrt(std / undiscountedReward.size());
+//		mainLog.println("average reward = "+ undiscountedRewardAverage + "std = "+ std);
+//		
 		return res; 
 	}
 	
 
-	public double computeReachRewardsPOMCPEpisode(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest, ArrayList<Integer> endStates) throws PrismException
+	public double[] computeReachRewardsPOMCPEpisode(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest, ArrayList<Integer> endStates) throws PrismException
 	{
 		//pomdp.exportToDotFile(mainLog);;
 		
 		mainLog.println("start running episode");
 		double[] initialBelief = pomdp.getInitialBeliefInDist();
 		int initialState = POMCPDrawStateFromBelief(initialBelief);
-		double[] currentBelief = pomdp.getInitialBeliefInDist();
 		
-		ArrayList<ArrayList<Object>> history = new ArrayList<ArrayList<Object>>();
 		int state = initialState;
-		double totalReward = 0;
-		double discount = 1;
-		discount = 1;
-		double c = 1;
-		double threshold = 0.005;
+		double [] totalReward = new double [2];
+		double totalUndiscountedReward = 0;
+		double totalDiscountedReward = 0;
+		double discount = 0.95;
+		double c = 20;
+		double threshold = 0.001;
 		double timeout = 10000;
 		double noParticles = 1200; 
-		ArrayList<Object> allActions = getAllActions(pomdp);
-		//Object east = allActions.get(3);
-//		public PartiallyObservableMonteCarloPlanning(POMDP pomdp, double gamma, double c, double threshold, double timeout, double noParticles ) 
+		
 		PartiallyObservableMonteCarloPlanning pomcp = new PartiallyObservableMonteCarloPlanning(pomdp, mdpRewards, target, min, statesOfInterest, endStates,  discount, c, threshold, timeout, noParticles);
+		pomcp.setNumSimulations(Math.pow(2, 0));
 		int step = 0;
 		int stepLimit = 1000;
+		double gamma = 1;
 		while (! endStates.contains(state)) {
-			// policy <- Search(history)
-			if (step > stepLimit) {
+			if (step > stepLimit ) {
 				mainLog.println("reaching step limit" + stepLimit);
 				break;
 			}
 			step += 1;
+			pomcp.setVerbose(0);
 			if(step >= 2) {
 				mainLog.println("step = " + step);
+				pomcp.setVerbose(0);
+				pomcp.setNumSimulations(Math.pow(2, 16));
 			}
+			
 			Object action = pomcp.search();
-
+			//Object action = pomcp.SelectAction();
 			ArrayList<Double> sord = pomcp.step(state, action);
 			int nextState = sord.get(0).intValue();
 			int obsSample = sord.get(1).intValue();
 			double reward = sord.get(2);
 			double done = sord.get(3);
-			if (reward == -100) {
-				pomcp.search();
-			}
-			
 			pomcp.update(action,  obsSample);
-			totalReward += reward;
-			mainLog.println("\nStep =============== "+ step + " Cur state");
-			pomcp.displayVar();
+			
+			totalUndiscountedReward += reward;
+			totalDiscountedReward += reward * gamma;
+			gamma *= discount;
+			mainLog.println("\n =============== Step "+ step + " Cur state");
 			mainLog.println("Action = "+ action + " reward = "+ reward + "states after action :");
 			pomcp.displayState(nextState);
+			pomcp.displayRootBelief();
 			
 //			mainLog.println("Updated Belief=");
 //			pomcp.displayRoot();
 		    //pomcp.display();
 			state = nextState;
 		}
-		mainLog.println("totoal reward = " + totalReward);
+		mainLog.println("UndiscountedReward "+ totalUndiscountedReward+ " DiscountedReward "+ totalDiscountedReward );
+
+
+		totalReward[0] = totalUndiscountedReward;
+		totalReward[1] = totalDiscountedReward;
 		return totalReward;
 	}
 	
@@ -2134,7 +2160,7 @@ public class POMDPModelChecker extends ProbModelChecker
 //
 //		// Update time taken
 //		res.timeTaken = timer / 1000.0;
-		
+//		
 		/////202203 temp code; for verification of POMCP algorithms
 		// Build a combined reward structure
 		int numRewards = weights.size();
