@@ -32,8 +32,10 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
 
+import acceptance.AcceptanceOmega;
 import acceptance.AcceptanceReach;
 import acceptance.AcceptanceType;
+import automata.DA;
 import common.IntSet;
 import common.IterableBitSet;
 import common.IterableStateSet;
@@ -49,9 +51,14 @@ import explicit.rewards.StateRewards;
 import explicit.rewards.StateRewardsArray;
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
+import parser.State;
+import parser.VarList;
+import parser.ast.Declaration;
+import parser.ast.DeclarationInt;
 import parser.ast.Expression;
 import parser.type.TypeDouble;
 import prism.AccuracyFactory;
+import prism.ModelType;
 import prism.OptionsIntervalIteration;
 import prism.Prism;
 import prism.PrismComponent;
@@ -66,6 +73,8 @@ import strat.MDStrategy;
 import strat.MDStrategyArray;
 
 import static java.lang.Math.*;
+
+import java.awt.Point;
 
 /**
  * Explicit-state model checker for Markov decision processes (MDPs).
@@ -3149,6 +3158,191 @@ public class MDPModelChecker extends ProbModelChecker
 		mainLog.println("Max-Quotient MDP: " + realStates + " equivalence classes / non-trap states.");
 
 		return quotient;
+	}
+
+	/**
+	 * Construct the product of a model for CVaR purposes.
+	 * @param da The DA
+	 * @param model The model
+	 * @param labelBS BitSets giving the set of states for each AP in the DA
+	 * @param statesOfInterest the set of states for which values should be calculated (null = all states)
+	 * @return The product model
+	 */
+	 public <M extends Model> CVaRProduct constructProductModel(DA<BitSet,? extends AcceptanceOmega> da, MDP model, Vector<BitSet> labelBS, BitSet statesOfInterest) throws PrismException
+	{
+		ModelType modelType = model.getModelType();
+		int daSize = da.size();
+		int numAPs = da.getAPList().size();
+		int modelNumStates = model.getNumStates();
+		int prodNumStates;
+		int s_1, s_2, q_1, q_2;
+		BitSet s_labels = new BitSet(numAPs);
+		List<State> prodStatesList = null, daStatesList = null;
+
+		try {
+			prodNumStates = Math.multiplyExact(modelNumStates, daSize);
+		} catch (ArithmeticException e) {
+			throw new PrismException("Size of product state space of model and automaton is too large for explicit engine");
+		}
+
+		VarList newVarList = null;
+
+		if (model.getVarList() != null) {
+			VarList varList = model.getVarList();
+			// Create a (new, unique) name for the variable that will represent DA states
+			String daVar = "_da";
+			while (varList.getIndex(daVar) != -1) {
+				daVar = "_" + daVar;
+			}
+
+			newVarList = (VarList) varList.clone();
+			// NB: if DA only has one state, we add an extra dummy state
+			Declaration decl = new Declaration(daVar, new DeclarationInt(Expression.Int(0), Expression.Int(Math.max(da.size() - 1, 1))));
+			newVarList.addVar(0, decl, 1, model.getConstantValues());
+		}
+
+		// Create a (simple, mutable) MDP
+		MDPSimple mdpProd = new MDPSimple();
+		mdpProd.setVarList(newVarList);
+
+		// Encoding: 
+		// each state s' = <s, q> = s * daSize + q
+		// s(s') = s' / daSize
+		// q(s') = s' % daSize
+
+		LinkedList<Point> queue = new LinkedList<Point>();
+		int map[] = new int[prodNumStates];
+		Arrays.fill(map, -1);
+
+		if (model.getStatesList() != null) {
+			prodStatesList = new ArrayList<State>();
+			daStatesList = new ArrayList<State>(da.size());
+			for (int i = 0; i < da.size(); i++) {
+				daStatesList.add(new State(1).setValue(0, i));
+			}
+		}
+
+		// We need results for all states of the original model in statesOfInterest
+		// We thus explore states of the product starting from these states.
+		// These are designated as initial states of the product model
+		// (a) to ensure reachability is done for these states; and
+		// (b) to later identify the corresponding product state for the original states
+		//     of interest
+		for (int s_0 : new IterableStateSet(statesOfInterest, model.getNumStates())) {
+			// Get BitSet representing APs (labels) satisfied by state s_0
+			for (int k = 0; k < numAPs; k++) {
+				s_labels.set(k, labelBS.get(Integer.parseInt(da.getAPList().get(k).substring(1))).get(s_0));
+			}
+			// Find corresponding initial state in DA
+			int q_0 = da.getEdgeDestByLabel(da.getStartState(), s_labels);
+			if (q_0 < 0) {
+				throw new PrismException("The deterministic automaton is not complete (state " + da.getStartState() + ")");
+			}
+			// Add (initial) state to product
+			queue.add(new Point(s_0, q_0));
+			mdpProd.addState();
+			mdpProd.addInitialState(mdpProd.getNumStates() - 1);
+			map[s_0 * daSize + q_0] = mdpProd.getNumStates() - 1;
+			if (prodStatesList != null) {
+				// Store state information for the product
+				prodStatesList.add(new State(daStatesList.get(q_0), model.getStatesList().get(s_0)));
+			}
+		}
+
+		// Product states
+		BitSet visited = new BitSet(prodNumStates);
+		while (!queue.isEmpty()) {
+			Point p = queue.pop();
+			s_1 = p.x;
+			q_1 = p.y;
+			visited.set(s_1 * daSize + q_1);
+
+			// Go through transitions from state s_1 in original model
+			int numChoices = (model instanceof NondetModel) ? ((NondetModel) model).getNumChoices(s_1) : 1;
+			for (int j = 0; j < numChoices; j++) {
+				Iterator<Map.Entry<Integer, Double>> iter;
+				iter = ((MDP) model).getTransitionsIterator(s_1, j);
+				Distribution prodDistr = null;
+				if (modelType.nondeterministic()) {
+					prodDistr = new Distribution();
+				}
+				while (iter.hasNext()) {
+					Map.Entry<Integer, Double> e = iter.next();
+					s_2 = e.getKey();
+					double prob = e.getValue();
+					// Get BitSet representing APs (labels) satisfied by successor state s_2
+					for (int k = 0; k < numAPs; k++) {
+						s_labels.set(k, labelBS.get(Integer.parseInt(da.getAPList().get(k).substring(1))).get(s_2));
+					}
+					// Find corresponding successor in DA
+					q_2 = da.getEdgeDestByLabel(q_1, s_labels);
+					if (q_2 < 0) {
+						throw new PrismException("The deterministic automaton is not complete (state " + q_1 + ")");
+					}
+					// Add state/transition to model
+					if (!visited.get(s_2 * daSize + q_2) && map[s_2 * daSize + q_2] == -1) {
+						queue.add(new Point(s_2, q_2));
+						mdpProd.addState();
+						map[s_2 * daSize + q_2] = mdpProd.getNumStates() - 1;
+						if (prodStatesList != null) {
+							// Store state information for the product
+							prodStatesList.add(new State(daStatesList.get(q_2), model.getStatesList().get(s_2)));
+						}
+					}
+					prodDistr.set(map[s_2 * daSize + q_2], prob);
+				}
+				mdpProd.addActionLabelledChoice(map[s_1 * daSize + q_1], prodDistr, ((MDP) model).getAction(s_1, j));
+			}
+		}
+
+		// Build a mapping from state indices to states (s,q), encoded as (s * daSize + q) 
+		int invMap[] = new int[mdpProd.getNumStates()];
+		for (int i = 0; i < map.length; i++) {
+			if (map[i] != -1) {
+				invMap[map[i]] = i;
+			}
+		}
+
+		mdpProd.findDeadlocks(false);
+
+		if (prodStatesList != null) {
+			mdpProd.setStatesList(prodStatesList);
+		}
+
+		CVaRProduct product = new CVaRProduct(mdpProd, model, daSize, invMap);
+
+		// lift the labels
+		for (String label : model.getLabels()) {
+			BitSet liftedLabel = product.liftFromModel(model.getLabelStates(label));
+			mdpProd.addLabel(label, liftedLabel);
+		}
+
+		return product;
+	}
+
+	public class CVaRProduct extends Product<MDP>
+	{
+		private int memSize;
+		private int invMap[];
+
+		public CVaRProduct(MDP productModel, MDP originalModel, int memSize, int[] invMap)
+		{
+			super(productModel, originalModel);
+			this.memSize = memSize;
+			this.invMap = invMap;
+		}
+
+		@Override
+		public int getModelState(int productState)
+		{
+			return invMap[productState] / memSize;
+		}
+
+		@Override
+		public int getAutomatonState(int productState)
+		{
+			return invMap[productState] % memSize;
+		}
 	}
 
 	/**
