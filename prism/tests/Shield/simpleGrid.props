@@ -1,0 +1,5 @@
+Rmin=?[ F("end")];
+Rmax=?[ F("end")];
+Rmin=?[ F("battery"&(F"end"))];
+Rmax=?[ F("battery"&(F"end"))];
+Rmin=?[ F("trust5"&(F"end"))];

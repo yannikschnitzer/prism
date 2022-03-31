@@ -1,0 +1,8 @@
+//multi(Rmin=? [F "target"], P>=1 [G !"obstacle"])
+Rmin=? [ F "target" ]
+Pmax=? [F "target"]
+Pmin=? [F "target"]
+//Pmin=? [F "obstacle"]
+//Rmin=? [! (F  "target" )]
+//1 - Rmax = ? [F("obstacle")]
+//Pmin=? [F("obstacle")] 
