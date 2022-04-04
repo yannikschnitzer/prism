@@ -2989,7 +2989,7 @@ public class MDPModelChecker extends ProbModelChecker
 		// FIXME create finite memory strategy instead? which b for consecutive steps.
 		mainLog.println("\n\nComputing distribution on induced DTMC...");
 
-		// FIXME what to do if multiple initial states?
+		// FIXME what to do if multiple initial states? -> check if there are initial states
 		StateRewardsArray mcRewards = new StateRewardsArray(n);
 		Iterator<Integer> startStates= mdp.getInitialStates().iterator();
 		int [] pol = operator.getStrategy(startStates.next(), mdpRewards, mcRewards, choices, alpha, gamma);
@@ -3009,7 +3009,6 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 
 		// Store results
-		// FIXME choices[0]
 		ModelCheckerResult res = new ModelCheckerResult();
 		res.soln = Arrays.stream(pol).asDoubleStream().toArray();
 		res.numIters = iterations;
