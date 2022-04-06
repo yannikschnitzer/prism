@@ -166,7 +166,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     public double [] update_support(double gamma, double state_reward, double []sum_p){
 
         double [] m = new double [atoms];
-        // FIXME do I need to use transition probability -> prob not since R(s,a) and not R(s,a,s')
+        // INFO do I need to use transition probability -> prob not since R(s,a) and not R(s,a,s')
 
         for (int j =0; j<atoms; j++){
             
@@ -192,9 +192,10 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         double index = new_b/delta_b;
         int l= (int) floor(new_b); int u= (int) ceil(new_b);
 
-        // TODO : right now I'm choosing a slightly more lax approach by 
+        //  right now I'm choosing a slightly more conservative approach by
         // choosing lower index -> intuition :"we have used less budget than we actually have"
-        return l;
+        // opposite of chap 7 -> they take floor since they are doing max and we are doing min -> cost approach
+        return u;
     }
 
     @Override
@@ -574,7 +575,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
                         map[s_2 * b_atoms + q_2] = mdpProd.getNumStates() - 1;
                         if (prodStatesList != null) {
                             State temp = new State(2);
-                            temp.setValue(0, b[i]);
+                            temp.setValue(0, b[q_2]);
                             temp.setValue(1, model.getStatesList().get(s_2));
                             // Store state information for the product
                             prodStatesList.add(temp);
