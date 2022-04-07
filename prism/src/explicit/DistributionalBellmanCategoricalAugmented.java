@@ -408,12 +408,14 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         {
             cur_initial = prd_initial.next();
             int val = prodMDP.getAutomatonState(cur_initial); // FIXME check, get b value?
-            if (b[val] == b[idx_b])
+            if (val == idx_b)
             {
                 initial_state = cur_initial;
                 break;
             }
         }
+         //TODO d  i even need the initial state anymore?
+        // TODO -> need to update product mdp initial state.
 
         double r ;
         for (int i = 0; i < prodNumStates; i++) {
@@ -493,9 +495,9 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
             newVarList = (VarList) varList.clone();
             // NB: if DA only has one state, we add an extra dummy state
-            //TODO: b bounds don't have to be ints. -> floor and ceil ?
-            Declaration decl = new Declaration(bVar, new DeclarationInt(Expression.Int((int)floor(b[0])), Expression.Int((int)floor(b[b_atoms-1]))));
-            newVarList.addVar(0, decl, 1, model.getConstantValues()); // FIXME ??
+            // Inform for bounds of idx_b
+            Declaration decl = new Declaration(bVar, new DeclarationInt(Expression.Int(0), Expression.Int(b_atoms)));
+            newVarList.addVar(0, decl, 1, model.getConstantValues());
         }
 
         // Create a (simple, mutable) MDP
@@ -503,8 +505,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         mdpProd.setVarList(newVarList); // MDP var list + new b variable
 
         // Encoding:
-        // FIXME
-        // each state s' = <s, idx_b> = s * b_atoms + idx_b ??
+        // each state s' = <s, idx_b> = s * b_atoms + idx_b
         // s(s') = s' / b_atoms
         // b(s') = s' % b_atoms
 
