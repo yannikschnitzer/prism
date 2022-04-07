@@ -81,4 +81,10 @@ public class TypeVoid extends Type
 	{
 		throw new PrismLangException("Can't convert " + value.getClass() + " to type " + getTypeString());
 	}
+	
+	@Override
+	public Object accept(TypeTraverseModify v) throws PrismLangException
+	{
+		return v.visit(this);
+	}
 }

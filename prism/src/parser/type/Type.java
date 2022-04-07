@@ -104,6 +104,11 @@ public abstract class Type
 		throw new PrismLangException("Cannot cast a value to type " + getTypeString());
 	}
 	
+	/**
+	 * Visitor method.
+	 */
+	public abstract Object accept(TypeTraverseModify v) throws PrismLangException;
+
 	@Override
 	public String toString()
 	{

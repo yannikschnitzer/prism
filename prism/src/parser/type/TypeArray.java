@@ -28,6 +28,8 @@ package parser.type;
 
 import java.util.*;
 
+import prism.PrismLangException;
+
 public class TypeArray extends Type 
 {
 	private static Map<Type, TypeArray> singletons;
@@ -76,5 +78,11 @@ public class TypeArray extends Type
 			singletons.put(subType, new TypeArray(subType));
 			
 		return singletons.get(subType);
+	}
+	
+	@Override
+	public Object accept(TypeTraverseModify v) throws PrismLangException
+	{
+		return v.visit(this);
 	}
 }

@@ -102,6 +102,12 @@ public class TypeBool extends Type
 		}
 	}
 	
+	@Override
+	public Object accept(TypeTraverseModify v) throws PrismLangException
+	{
+		return v.visit(this);
+	}
+
 	// Standard methods:
 	
 	@Override

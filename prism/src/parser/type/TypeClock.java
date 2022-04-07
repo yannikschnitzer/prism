@@ -89,6 +89,12 @@ public class TypeClock extends Type
 		return TypeDouble.getInstance().castValueTo(value, evalMode);
 	}
 
+	@Override
+	public Object accept(TypeTraverseModify v) throws PrismLangException
+	{
+		return v.visit(this);
+	}
+
 	// Standard methods:
 	
 	public boolean equals(Object o)

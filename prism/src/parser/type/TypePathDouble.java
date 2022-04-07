@@ -26,6 +26,8 @@
 
 package parser.type;
 
+import prism.PrismLangException;
+
 public class TypePathDouble extends Type 
 {
 	private static TypePathDouble singleton;
@@ -52,5 +54,11 @@ public class TypePathDouble extends Type
 	public static TypePathDouble getInstance()
 	{
 		return singleton;
+	}
+	
+	@Override
+	public Object accept(TypeTraverseModify v) throws PrismLangException
+	{
+		return v.visit(this);
 	}
 }

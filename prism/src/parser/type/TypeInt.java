@@ -120,6 +120,12 @@ public class TypeInt extends Type
 		}
 	}
 
+	@Override
+	public Object accept(TypeTraverseModify v) throws PrismLangException
+	{
+		return v.visit(this);
+	}
+
 	// Standard methods:
 	
 	public boolean equals(Object o)

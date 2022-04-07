@@ -141,6 +141,12 @@ public class TypeDouble extends Type
 			throw new PrismLangException("Unknown evaluation mode " + evalMode);
 		}
 	}
+	
+	@Override
+	public Object accept(TypeTraverseModify v) throws PrismLangException
+	{
+		return v.visit(this);
+	}
 
 	// Standard methods:
 	
@@ -148,5 +154,4 @@ public class TypeDouble extends Type
 	{
 		return (o instanceof TypeDouble);
 	}
-	
 }

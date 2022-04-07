@@ -65,31 +65,31 @@ public class TypeInterval extends Type
 	}
 
 	// Methods required for Type:
-	
+
 	@Override
 	public String getTypeString()
 	{
 		return "interval of " + subType.getTypeString();
 	}
-	
+
 	@Override
 	public boolean isPrimitive()
 	{
 		return false;
 	}
-	
+
 	@Override
 	public Object defaultValue()
 	{
 		return new Interval<Object>(subType.defaultValue(), subType.defaultValue());
 	}
-	
+
 	@Override
 	public boolean canCastTypeTo(Type type)
 	{
 		return type instanceof TypeDouble || type instanceof TypeInt || (type instanceof TypeInterval && getSubType().canCastTypeTo(((TypeInterval) type).getSubType()));
 	}
-	
+
 	@Override
 	public Interval<?> castValueTo(Object value) throws PrismLangException
 	{
@@ -128,8 +128,14 @@ public class TypeInterval extends Type
 		}
 	}
 
+	@Override
+	public Object accept(TypeTraverseModify v) throws PrismLangException
+	{
+		return v.visit(this);
+	}
+
 	// Standard methods:
-	
+
 	@Override
 	public boolean equals(Object o)
 	{
