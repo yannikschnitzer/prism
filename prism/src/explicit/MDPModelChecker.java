@@ -2986,16 +2986,16 @@ public class MDPModelChecker extends ProbModelChecker
 		Arrays.stream(policy).forEach(e -> mainLog.print(Arrays.toString(e) + ", "));
 
 		// Compute distribution on induced DTMC
-		// FIXME create finite memory strategy instead? which b for consecutive steps.
 		mainLog.println("\n\nComputing distribution on induced DTMC...");
 
-		// FIXME what to do if multiple initial states? -> check if there are initial states
-		// TODO create product MDP and send strat array based on that.
-		StateRewardsArray mcRewards = new StateRewardsArray(n);
-		Iterator<Integer> startStates= mdp.getInitialStates().iterator(); // FIXME get startng state based on starting b
-		int [] pol = operator.getStrategy(startStates.next(), mdpRewards, mcRewards, choices, alpha, gamma);
-		MDStrategyArray strat = new MDStrategyArray(mdp, pol);
-		DTMC dtmc = new DTMCFromMDPAndMDStrategy(mdp, strat);
+		// Assumption: the original MDP model has only one initial state.
+		// TODO check that target is the right set to send
+		DistributionalBellmanCategoricalAugmented.CVaRProduct cvar_mdp = operator.makeProduct(mdp, mdpRewards, gamma, target);
+		StateRewardsArray mcRewards = new StateRewardsArray(cvar_mdp.getProductModel().getNumStates());
+		// TODO check if the mcRewards is being updated correctly
+		int [] pol = operator.getStrategy(mdp.getFirstInitialState(), cvar_mdp, mdpRewards, mcRewards, choices, alpha);
+		MDStrategyArray strat = new MDStrategyArray(cvar_mdp.productModel, pol);
+		DTMC dtmc = new DTMCFromMDPAndMDStrategy(cvar_mdp.productModel, strat);
 
 		mainLog.println("Currently returning policy "+ Arrays.toString(pol));
 

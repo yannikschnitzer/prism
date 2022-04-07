@@ -390,29 +390,41 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         return res;
     }
 
-    public int [] getStrategy(int start, MDPRewards mdpRewards, StateRewardsArray rewardsArray, int [][] choices, double alpha, double gamma)
+    public int [] getStrategy(int start, CVaRProduct prodMDP , MDPRewards mdpRewards, StateRewardsArray rewardsArray, int [][] choices, double alpha)
     {
-        int [] res = new int [numStates];
-
+        int prodNumStates = prodMDP.getProductModel().getNumStates();
+        int [] res = new int [prodNumStates];
 
         double [] cvar_info = computeStartingB(start, alpha, choices);
-
         int idx_b = (int) cvar_info[0];
-        double r = 0;
+
         mainLog.println("b :"+b[idx_b] + " cvar = " + cvar_info[1]);
 
+        // Find the correct start state
+        Iterator<Integer> prd_initial = prodMDP.getProductModel().getInitialStates().iterator();
+        int initial_state = 0;
+        int cur_initial;
+        while(prd_initial.hasNext())
+        {
+            cur_initial = prd_initial.next();
+            int val = prodMDP.getAutomatonState(cur_initial); // FIXME check, get b value?
+            if (b[val] == b[idx_b])
+            {
+                initial_state = cur_initial;
+                break;
+            }
+        }
 
-        for (int i = 0; i < numStates; i++) {
-            res[i] = choices[i][idx_b];
+        double r ;
+        for (int i = 0; i < prodNumStates; i++) {
+            res[i] = choices[prodMDP.getModelState(i)][prodMDP.getAutomatonState(i)];
             // Compute reward
-            r = mdpRewards.getStateReward(i) ;
-            r += mdpRewards.getTransitionReward(i, choices[i][idx_b]);
+            r = mdpRewards.getStateReward(prodMDP.getModelState(i)) ;
+            r += mdpRewards.getTransitionReward(prodMDP.getModelState(i), res[i]);
 
             rewardsArray.setStateReward(i, r);
 
-            // update b
-            idx_b = getClosestB((b[idx_b] - r) /gamma);
-            mainLog.println ("policy: "+res[i]+" - rew:"+r+" - new b :"+b[idx_b]);
+            mainLog.println ("policy: "+res[i]+" - rew:"+r+" - new b :"+b[prodMDP.getAutomatonState(i)]);
         }
 
         return res;
@@ -481,8 +493,8 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
             newVarList = (VarList) varList.clone();
             // NB: if DA only has one state, we add an extra dummy state
-            //TODO: b bounds don't have to be ints.
-            Declaration decl = new Declaration(bVar, new DeclarationDouble(Expression.Int(b[0]), Expression.Int(b[b_atoms-1])));
+            //TODO: b bounds don't have to be ints. -> floor and ceil ?
+            Declaration decl = new Declaration(bVar, new DeclarationInt(Expression.Int((int)floor(b[0])), Expression.Int((int)floor(b[b_atoms-1]))));
             newVarList.addVar(0, decl, 1, model.getConstantValues()); // FIXME ??
         }
 

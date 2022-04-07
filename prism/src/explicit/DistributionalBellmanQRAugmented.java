@@ -3,9 +3,11 @@ package explicit;
 
 import explicit.rewards.MDPRewards;
 import explicit.rewards.StateRewardsArray;
+import prism.PrismException;
 import prism.PrismLog;
 
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -167,6 +169,11 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
     @Override
     public int[] getStrategy(int start, MDPRewards mdpRewards, StateRewardsArray rewardsArray,  int[][] choices, double alpha, double gamma) {
         return new int[0];
+    }
+
+    @Override
+    public <M extends Model> DistributionalBellmanCategoricalAugmented.CVaRProduct makeProduct(MDP model, MDPRewards mdpRewards, double gamma, BitSet statesOfInterest) throws PrismException {
+        return null;
     }
 
 
