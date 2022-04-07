@@ -1,12 +1,24 @@
 package explicit;
 
 
-import prism.PrismLog;
+import common.IterableStateSet;
+import explicit.rewards.MDPRewards;
+import explicit.rewards.StateRewardsArray;
+import parser.State;
+import parser.VarList;
+import parser.ast.Declaration;
+import parser.ast.DeclarationInt;
+import parser.ast.Expression;
+import prism.ModelType;
+import prism.Pair;
+import prism.PrismException;
+import strat.MDStrategy;
+import strat.MDStrategyArray;
 
+import java.awt.*;
 import java.text.DecimalFormat;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 
 import static java.lang.Math.*;
 import static java.lang.Math.sqrt;
@@ -28,6 +40,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     double [] b; // array containing b values
 
     prism.PrismLog mainLog;
+    DecimalFormat df;
 
     // new constructor to take b into account
     // should this have its own bounds? b_min and b_max?
@@ -42,6 +55,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         this.numStates = numStates;
         this.n_actions = n_actions;
         this.mainLog = log;
+        df = new DecimalFormat("0.000");
 
         // INFO right now saving augmented state-action distributions
         this.p = new double[numStates][b_atoms][n_actions][atoms]; 
@@ -50,7 +64,8 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         for (int i = 0; i < atoms; i++) {
             this.z[i] = (vmin + i *this.delta_z);
         }
-        
+        log.println(" z: "+ Arrays.toString(z));
+
         // Initialize slack variable atoms 
         this.b_atoms = b_atoms;
         this.delta_b = (vmax - vmin) / (b_atoms -1);
@@ -62,7 +77,8 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     public DistributionalBellmanCategoricalAugmented(DistributionalBellmanCategoricalAugmented el)
     {
         super(el);
-
+        df = el.df;
+        alpha = el.alpha;
         atoms = el.atoms;
         z = Arrays.copyOf(el.z, atoms);
         delta_z = (el.v_max - el.v_min) / (atoms -1);
@@ -119,23 +135,28 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     }
 
 
-    public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, double cur_b, int choice, int numTransitions, double gamma, double state_reward)
+    public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, double cur_b, int [][] choices, int numTransitions, double gamma, double state_reward)
     {
         double temp_b = (cur_b-state_reward)/gamma;
         int idx_b = getClosestB(temp_b);
 
-        double [] res = update_probabilities(trans_it, idx_b, choice);
+        double [] res = update_probabilities(trans_it, idx_b, choices);
         res = update_support(gamma, state_reward, res);
         return res;
     }
 
     // updates probabilities for 1 action
-    public double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it, int idx_b, int action) {
+    public double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it, int idx_b, int [][] choices) {
         double [] sum_p= new double[atoms];
+        int action = 0;
 
         while (trans_it.hasNext()) {
             Map.Entry<Integer, Double> e = trans_it.next();
             for (int j = 0; j < atoms; j++) {
+                // FIXME here action should be the action at the next state.
+                //  -> but which idx_b - it shouldn't be the same as for current state since it is next state.
+                //  -> but this might be ok because this is adjusted b
+                action  = choices[e.getKey()][idx_b];
                 sum_p[j] += e.getValue() * p[e.getKey()][idx_b][action][j];
             }
         }
@@ -145,7 +166,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     public double [] update_support(double gamma, double state_reward, double []sum_p){
 
         double [] m = new double [atoms];
-        // FIXME do I need to use transition probability -> prob not since R(s,a) and not R(s,a,s')
+        // INFO do I need to use transition probability -> prob not since R(s,a) and not R(s,a,s')
 
         for (int j =0; j<atoms; j++){
             
@@ -171,9 +192,10 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         double index = new_b/delta_b;
         int l= (int) floor(new_b); int u= (int) ceil(new_b);
 
-        // TODO : right now I'm choosing a slightly more lax approach by 
+        //  right now I'm choosing a slightly more conservative approach by
         // choosing lower index -> intuition :"we have used less budget than we actually have"
-        return l;
+        // opposite of chap 7 -> they take floor since they are doing max and we are doing min -> cost approach
+        return u;
     }
 
     @Override
@@ -184,15 +206,47 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     }
 
     @Override
-    public void display(int s) {
+    public void display(MDP mdp) {
+        for (int s=0; s<numStates; s++) {
+            display(s, mdp.getNumChoices(s));
+        }
+    }
 
+    @Override
+    public void display(int s) {
+        mainLog.println("------- state:"+s);
         for (int idx_b = 0; idx_b < b_atoms; idx_b++) {
+            mainLog.println("------");
             for (double[] doubles : p[s][idx_b]) {
-                DecimalFormat df = new DecimalFormat("0.000");
                 mainLog.print("[");
                 Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
                 mainLog.print("]\n");
             }
+        }
+
+    }
+
+    public void display(int s, int num_actions) {
+        mainLog.println("------- state:"+s);
+        for (int idx_b = 0; idx_b < b_atoms; idx_b++) {
+            mainLog.println("------ b:"+df.format(b[idx_b]));
+            for (int j =0; j< num_actions; j++) {
+                mainLog.print("[");
+                Arrays.stream(p[s][idx_b][j]).forEach(e -> mainLog.print(df.format(e) + ", "));
+                mainLog.print("]\n");
+            }
+        }
+
+    }
+
+    public void display(int s, int [][] policy) {
+
+        for (int idx_b = 0; idx_b < b_atoms; idx_b++) {
+            double[] doubles = p[s][idx_b][policy[s][idx_b]];
+            mainLog.print("[");
+            Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
+            mainLog.print("]\n");
+
         }
 
     }
@@ -220,7 +274,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     @Override
     public double getMagic(double [] temp, int idx_b)
     {
-        int res = 0;
+        double res = 0;
         for (int j=0; j<atoms; j++){
             res += temp[j] * max(0, (z[j] - b[idx_b]));
         }
@@ -311,5 +365,263 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     public double [][][][] getP ()
     {
         return p;
+    }
+
+    public double [] computeStartingB(int startState, double alpha, int [][] choices){
+        double [] res = new double [2]; // contains the min index + min cvar.
+        double cvar = 0;
+        res [1] = Float.POSITIVE_INFINITY;
+        double expected_cost =0;
+
+        for(int idx_b=0; idx_b < b_atoms; idx_b++){
+            expected_cost = 0;
+            for ( int i =0; i < atoms; i++){
+                double j = p[startState][idx_b][choices[startState][idx_b]][i];
+                if (j >0){
+                    expected_cost += j * max(0, z[i] - b[idx_b]);
+                }
+            }
+            cvar = b[idx_b] + 1/(1-alpha) * expected_cost;
+            if (cvar < res[1]){
+                res[0] = idx_b;
+                res[1] = cvar;
+            }
+        }
+        return res;
+    }
+
+    public int [] getStrategy(int start, CVaRProduct prodMDP , MDPRewards mdpRewards, StateRewardsArray rewardsArray, int [][] choices, double alpha)
+    {
+        int prodNumStates = prodMDP.getProductModel().getNumStates();
+        int [] res = new int [prodNumStates];
+
+        double [] cvar_info = computeStartingB(start, alpha, choices);
+        int idx_b = (int) cvar_info[0];
+
+        mainLog.println("b :"+b[idx_b] + " cvar = " + cvar_info[1]);
+
+        // Find the correct start state
+        Iterator<Integer> prd_initial = prodMDP.getProductModel().getInitialStates().iterator();
+        int initial_state = 0;
+        int cur_initial;
+        while(prd_initial.hasNext())
+        {
+            cur_initial = prd_initial.next();
+            int val = prodMDP.getAutomatonState(cur_initial); // FIXME check, get b value?
+            if (b[val] == b[idx_b])
+            {
+                initial_state = cur_initial;
+                break;
+            }
+        }
+
+        double r ;
+        for (int i = 0; i < prodNumStates; i++) {
+            res[i] = choices[prodMDP.getModelState(i)][prodMDP.getAutomatonState(i)];
+            // Compute reward
+            r = mdpRewards.getStateReward(prodMDP.getModelState(i)) ;
+            r += mdpRewards.getTransitionReward(prodMDP.getModelState(i), res[i]);
+
+            rewardsArray.setStateReward(i, r);
+
+            mainLog.println ("policy: "+res[i]+" - rew:"+r+" - new b :"+b[prodMDP.getAutomatonState(i)]);
+        }
+
+        return res;
+    }
+
+    public class CVaRProduct extends Product<MDP>
+    {
+        private int memSize;
+        private int invMap[];
+
+        public CVaRProduct(MDP productModel, MDP originalModel, int memSize, int[] invMap)
+        {
+            super(productModel, originalModel);
+            this.memSize = memSize;
+            this.invMap = invMap;
+        }
+
+        @Override
+        public int getModelState(int productState)
+        {
+            return invMap[productState] / memSize;
+        }
+
+        // This returns b
+        @Override
+        public int getAutomatonState(int productState)
+        {
+            return invMap[productState] % memSize;
+        }
+    }
+
+
+    /**
+     //	 * Construct the product of a model for CVaR purposes using the operators' b array for augmented states.
+     //	 * @param model The model (MDP)
+     //  * @param mdpRewards the rewards structure for the MDP
+     //	 * @param gamma discount factor
+     //	 * @param statesOfInterest the set of states for which values should be calculated (null = all states)
+     //	 * @return The product model
+     //	 */
+    public <M extends Model> CVaRProduct makeProduct(MDP model, MDPRewards mdpRewards, double gamma, BitSet statesOfInterest) throws PrismException
+    {
+        ModelType modelType = model.getModelType();
+        int mdpNumStates = model.getNumStates();
+        int prodNumStates;
+        List<State> prodStatesList = null, bStatesList = null;
+        int s_1, s_2, q_1, q_2;
+
+        // TODO should I make a new MDP rewards object for the new MDP?
+
+        try {
+            prodNumStates = Math.multiplyExact(mdpNumStates, b_atoms);
+        } catch (ArithmeticException e) {
+            throw new PrismException("Size of product state space of model and automaton is too large for explicit engine");
+        }
+
+        VarList newVarList = null;
+
+        if (model.getVarList() != null) {
+            VarList varList = model.getVarList();
+            // Create a (new, unique) name for the variable that will represent the value for b
+            String bVar = "b";
+            while (varList.getIndex(bVar) != -1) {
+                bVar = "_" + bVar;
+            }
+
+            newVarList = (VarList) varList.clone();
+            // NB: if DA only has one state, we add an extra dummy state
+            //TODO: b bounds don't have to be ints. -> floor and ceil ?
+            Declaration decl = new Declaration(bVar, new DeclarationInt(Expression.Int((int)floor(b[0])), Expression.Int((int)floor(b[b_atoms-1]))));
+            newVarList.addVar(0, decl, 1, model.getConstantValues()); // FIXME ??
+        }
+
+        // Create a (simple, mutable) MDP
+        MDPSimple mdpProd = new MDPSimple();
+        mdpProd.setVarList(newVarList); // MDP var list + new b variable
+
+        // Encoding:
+        // FIXME
+        // each state s' = <s, idx_b> = s * b_atoms + idx_b ??
+        // s(s') = s' / b_atoms
+        // b(s') = s' % b_atoms
+
+        LinkedList<Point> queue = new LinkedList<Point>();
+        int map[] = new int[prodNumStates];
+        Arrays.fill(map, -1);
+
+        if (model.getStatesList() != null) {
+            prodStatesList = new ArrayList<State>();
+            bStatesList = new ArrayList<State>(b_atoms);
+            for (int i = 0; i < b_atoms; i++) {
+                bStatesList.add(new State(1).setValue(0, i));
+            }
+        }
+
+        // We need results for all states of the original model in statesOfInterest
+        // We thus explore states of the product starting from these states.
+        // These are designated as initial states of the product model
+        // (a) to ensure reachability is done for these states; and
+        // (b) to later identify the corresponding product state for the original states
+        //     of interest
+        for (int s_0 : new IterableStateSet(statesOfInterest, model.getNumStates())) {
+
+            // All b values are possible initial states
+            for(int i =0; i<b_atoms; i++)
+            {
+                // Add (initial) state to product
+                queue.add(new Point(s_0, i));
+                mdpProd.addState();
+                // FIXME : double check this
+                mdpProd.addInitialState(mdpProd.getNumStates() - i -1);
+                map[s_0 * b_atoms + i] = mdpProd.getNumStates() - i -1;
+                if (prodStatesList != null) {
+                    // Store state information for the product
+                    State temp = new State(2);
+                    temp.setValue(0, b[i]);
+                    temp.setValue(1, model.getStatesList().get(s_0));
+
+                    prodStatesList.add(temp);
+                }
+            }
+
+        }
+
+        // Product states
+        BitSet visited = new BitSet(prodNumStates);
+        while (!queue.isEmpty()) {
+            Point p = queue.pop();
+            s_1 = p.x;
+            q_1 = p.y;
+            visited.set(s_1 * b_atoms + q_1);
+
+            // Go through transitions from state s_1 in original model
+            int numChoices = (model instanceof NondetModel) ? ((NondetModel) model).getNumChoices(s_1) : 1;
+
+            for (int j = 0; j < numChoices; j++) {
+                Iterator<Map.Entry<Integer, Double>> iter;
+                iter = ((MDP) model).getTransitionsIterator(s_1, j);
+                Distribution prodDistr = null;
+                if (modelType.nondeterministic()) {
+                    prodDistr = new Distribution();
+                }
+                while (iter.hasNext()) {
+                    Map.Entry<Integer, Double> e = iter.next();
+                    s_2 = e.getKey();
+                    double prob = e.getValue();
+                    double reward = mdpRewards.getStateReward(s_1) ;
+                    reward += mdpRewards.getTransitionReward(s_1, j);
+
+                    // Find corresponding successor in b
+                    q_2 = getClosestB((b[q_1]-reward)/gamma);
+
+                    if (q_2 < 0) {
+                        throw new PrismException("Cannot find closest b  (b = " + q_1 + ")");
+                    }
+                    // Add state/transition to model
+                    if (!visited.get(s_2 * b_atoms + q_2) && map[s_2 * b_atoms + q_2] == -1) {
+                        queue.add(new Point(s_2, q_2));
+                        mdpProd.addState();
+                        map[s_2 * b_atoms + q_2] = mdpProd.getNumStates() - 1;
+                        if (prodStatesList != null) {
+                            State temp = new State(2);
+                            temp.setValue(0, b[q_2]);
+                            temp.setValue(1, model.getStatesList().get(s_2));
+                            // Store state information for the product
+                            prodStatesList.add(temp);
+                        }
+                    }
+                    prodDistr.set(map[s_2 * b_atoms + q_2], prob);
+                }
+                mdpProd.addActionLabelledChoice(map[s_1 * b_atoms + q_1], prodDistr, ((MDP) model).getAction(s_1, j));
+            }
+        }
+
+        // Build a mapping from state indices to states (s,q), encoded as (s * daSize + q)
+        int[] invMap = new int[mdpProd.getNumStates()];
+        for (int i = 0; i < map.length; i++) {
+            if (map[i] != -1) {
+                invMap[map[i]] = i;
+            }
+        }
+
+        mdpProd.findDeadlocks(false);
+
+        if (prodStatesList != null) {
+            mdpProd.setStatesList(prodStatesList);
+        }
+
+        CVaRProduct product = new CVaRProduct(mdpProd, model, b_atoms, invMap);
+
+        // lift the labels
+        for (String label : model.getLabels()) {
+            BitSet liftedLabel = product.liftFromModel(model.getLabelStates(label));
+            mdpProd.addLabel(label, liftedLabel);
+        }
+
+        return product;
+
     }
 }

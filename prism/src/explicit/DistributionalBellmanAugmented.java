@@ -1,5 +1,10 @@
 package explicit;
 
+import explicit.rewards.MDPRewards;
+import explicit.rewards.StateRewardsArray;
+import prism.PrismException;
+
+import java.util.BitSet;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -14,7 +19,7 @@ public abstract class DistributionalBellmanAugmented {
 
     public void setAlpha(double a){ alpha=a;}
 
-    public abstract double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, double cur_b, int choice, int numTransitions, double gamma, double state_reward);
+    public abstract double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, double cur_b, int [][] choice, int numTransitions, double gamma, double state_reward);
 
     public abstract double getExpValue(double [] temp);
 
@@ -44,5 +49,13 @@ public abstract class DistributionalBellmanAugmented {
 
     public abstract void display();
 
+    public abstract void display(MDP mdp);
+
     public abstract void display(int s);
+
+    public abstract void display(int i, int[][] choices);
+
+    public abstract int[] getStrategy(int start, DistributionalBellmanCategoricalAugmented.CVaRProduct prodMDP , MDPRewards mdpRewards, StateRewardsArray rewardsArray, int [][] choices, double alpha);
+
+    public abstract <M extends Model> DistributionalBellmanCategoricalAugmented.CVaRProduct makeProduct(MDP model, MDPRewards mdpRewards, double gamma, BitSet statesOfInterest) throws PrismException;
 }

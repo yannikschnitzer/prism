@@ -1,9 +1,11 @@
 package explicit;
 
 
+import prism.PrismException;
 import prism.PrismLog;
 
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -104,11 +106,6 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
     @Override
     public double[] getDist(int i) {
         return p[i];
-    }
-
-    @Override
-    public double[][] getDist() {
-        return p;
     }
 
     @Override
