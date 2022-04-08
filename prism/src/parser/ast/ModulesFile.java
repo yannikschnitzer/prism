@@ -1324,7 +1324,8 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 	public void setUndefinedConstants(Values someValues, boolean exact) throws PrismLangException
 	{
 		undefinedConstantValues = someValues == null ? null : new Values(someValues);
-		constantValues = constantList.evaluateConstants(someValues, null, exact);
+		EvaluateContext ec = new EvaluateContextConstants(someValues).setEvaluationMode(exact ? EvalMode.EXACT : EvalMode.FP);
+		constantValues = constantList.evaluateConstants(ec);
 		doSemanticChecksAfterConstants();
 	}
 
@@ -1338,7 +1339,8 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 	public void setSomeUndefinedConstants(Values someValues, boolean exact) throws PrismLangException
 	{
 		undefinedConstantValues = someValues == null ? null : new Values(someValues);
-		constantValues = constantList.evaluateSomeConstants(someValues, null, exact);
+		EvaluateContext ec = new EvaluateContextConstants(someValues).setEvaluationMode(exact ? EvalMode.EXACT : EvalMode.FP);
+		constantValues = constantList.evaluateSomeConstants(ec);
 		doSemanticChecksAfterConstants();
 	}
 

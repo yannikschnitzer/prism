@@ -29,6 +29,7 @@ package parser.ast;
 import java.util.*;
 
 import parser.*;
+import parser.EvaluateContext.EvalMode;
 import parser.visitor.*;
 import prism.ModelInfo;
 import prism.PrismLangException;
@@ -541,7 +542,9 @@ public class PropertiesFile extends ASTElement
 	{
 		undefinedConstantValues = someValues == null ? null : new Values(someValues);
 		// Might need values for ModulesFile constants too
-		constantValues = constantList.evaluateConstants(someValues, modulesFile.getConstantValues(), exact);
+		Values allValues = new Values(someValues, modulesFile.getConstantValues());
+		EvaluateContext ec = new EvaluateContextConstants(allValues).setEvaluationMode(exact ? EvalMode.EXACT : EvalMode.FP);
+		constantValues = constantList.evaluateConstants(ec);
 		// Note: unlike ModulesFile, we don't trigger any semantic checks at this point
 		// This will usually be done on a per-property basis later
 	}
@@ -572,7 +575,9 @@ public class PropertiesFile extends ASTElement
 	{
 		undefinedConstantValues = someValues == null ? null : new Values(someValues);
 		// Might need values for ModulesFile constants too
-		constantValues = constantList.evaluateSomeConstants(someValues, modulesFile.getConstantValues(), exact);
+		Values allValues = new Values(someValues, modulesFile.getConstantValues());
+		EvaluateContext ec = new EvaluateContextConstants(allValues).setEvaluationMode(exact ? EvalMode.EXACT : EvalMode.FP);
+		constantValues = constantList.evaluateSomeConstants(ec);
 		// Note: unlike ModulesFile, we don't trigger any semantic checks at this point
 		// This will usually be done on a per-property basis later
 	}
