@@ -167,13 +167,8 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
     }
 
     @Override
-    public int[] getStrategy(int start, MDPRewards mdpRewards, StateRewardsArray rewardsArray,  int[][] choices, double alpha, double gamma) {
+    public int[] getStrategy(int start, CVaRProduct prodMDP, MDPRewards mdpRewards, StateRewardsArray rewardsArray,  int[][] choices, double alpha) throws PrismException{
         return new int[0];
-    }
-
-    @Override
-    public <M extends Model> DistributionalBellmanCategoricalAugmented.CVaRProduct makeProduct(MDP model, MDPRewards mdpRewards, double gamma, BitSet statesOfInterest) throws PrismException {
-        return null;
     }
 
 

@@ -72,6 +72,7 @@ import prism.PrismUtils;
 import strat.MDStrategy;
 import strat.MDStrategyArray;
 
+import static explicit.CVaRProduct.makeProduct;
 import static java.lang.Math.*;
 
 import java.awt.Point;
@@ -2990,7 +2991,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Assumption: the original MDP model has only one initial state.
 		// TODO check that target is the right set to send
-		DistributionalBellmanCategoricalAugmented.CVaRProduct cvar_mdp = operator.makeProduct(mdp, mdpRewards, gamma, target);
+		CVaRProduct cvar_mdp = makeProduct(operator, mdp, mdpRewards, gamma, target);
 		StateRewardsArray mcRewards = new StateRewardsArray(cvar_mdp.getProductModel().getNumStates());
 		// TODO check if the mcRewards is being updated correctly
 		int [] pol = operator.getStrategy(mdp.getFirstInitialState(), cvar_mdp, mdpRewards, mcRewards, choices, alpha);

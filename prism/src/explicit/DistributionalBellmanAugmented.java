@@ -9,6 +9,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 public abstract class DistributionalBellmanAugmented {
+    public int b_atoms;
+    public double [] b;
     double alpha = 1;
 
     public DistributionalBellmanAugmented(){}
@@ -55,7 +57,5 @@ public abstract class DistributionalBellmanAugmented {
 
     public abstract void display(int i, int[][] choices);
 
-    public abstract int[] getStrategy(int start, DistributionalBellmanCategoricalAugmented.CVaRProduct prodMDP , MDPRewards mdpRewards, StateRewardsArray rewardsArray, int [][] choices, double alpha);
-
-    public abstract <M extends Model> DistributionalBellmanCategoricalAugmented.CVaRProduct makeProduct(MDP model, MDPRewards mdpRewards, double gamma, BitSet statesOfInterest) throws PrismException;
+    public abstract int[] getStrategy(int start, CVaRProduct prodMDP , MDPRewards mdpRewards, StateRewardsArray rewardsArray, int [][] choices, double alpha) throws PrismException;
 }
