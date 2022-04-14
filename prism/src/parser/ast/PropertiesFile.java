@@ -26,12 +26,16 @@
 
 package parser.ast;
 
-import java.util.*;
+import java.util.List;
+import java.util.Vector;
 
-import parser.*;
-import parser.EvaluateContext.EvalMode;
-import parser.visitor.*;
+import parser.EvaluateContext;
+import parser.IdentUsage;
+import parser.Values;
+import parser.visitor.ASTVisitor;
+import parser.visitor.PropertiesSemanticCheck;
 import prism.ModelInfo;
+import prism.PrismException;
 import prism.PrismLangException;
 import prism.PrismUtils;
 
@@ -54,8 +58,9 @@ public class PropertiesFile extends ASTElement
 	private IdentUsage identUsage;
 	private IdentUsage quotedIdentUsage;
 
-	// Values set for undefined constants (null if none)
-	private Values undefinedConstantValues;
+	// Copy of the evaluation context used to defined undefined constants (null if none)
+	private EvaluateContext ecUndefined;
+	
 	// Actual values of (some or all) constants
 	private Values constantValues;
 
@@ -71,7 +76,7 @@ public class PropertiesFile extends ASTElement
 		properties = new Vector<Property>();
 		identUsage = new IdentUsage();
 		quotedIdentUsage = new IdentUsage(true);
-		undefinedConstantValues = null;
+		ecUndefined = null;
 		constantValues = null;
 	}
 
@@ -346,10 +351,9 @@ public class PropertiesFile extends ASTElement
 
 		// Set up some values for constants
 		// (without assuming any info about undefined constants)
-		//
-		// we use non-exact constant evaluation by default,
+		// NB: we use non-exact constant evaluation by default,
 		// for exact mode constants will be reevaluated later on
-		setSomeUndefinedConstants(null, false);
+		setSomeUndefinedConstants(EvaluateContext.create());
 	}
 
 	// check formula identifiers
@@ -517,69 +521,52 @@ public class PropertiesFile extends ASTElement
 	}
 
 	/**
-	 * Set values for *all* undefined constants and then evaluate all constants.
-	 * If there are no undefined constants, {@code someValues} can be null.
+	 * Set values for some undefined constants.
+	 * The values being provided for these constants, as well as any other constants needed,
+	 * are provided in an EvaluateContext object. This also determines the evaluation mode.
+	 * If there are no undefined constants, {@code ecUndefined} can be null.
 	 * Undefined constants can be subsequently redefined to different values with the same method.
-	 * The current constant values (if set) are available via {@link #getConstantValues()}.
-	 * <br>
-	 * Constant values are evaluated using standard (integer, floating-point) arithmetic.
+	 * This may result in the values for other model constants now being known;
+	 * the values for all current constant values (if set) are available via {@link #getConstantValues()}.
 	 */
-	public void setUndefinedConstants(Values someValues) throws PrismLangException
+	public void setSomeUndefinedConstants(EvaluateContext ecUndefined) throws PrismLangException
 	{
-		setUndefinedConstants(someValues, false);
-	}
-
-	/**
-	 * Set values for *all* undefined constants and then evaluate all constants.
-	 * If there are no undefined constants, {@code someValues} can be null.
-	 * Undefined constants can be subsequently redefined to different values with the same method.
-	 * The current constant values (if set) are available via {@link #getConstantValues()}.
-	 * <br>
-	 * Constant values are evaluated using either standard (integer, floating-point) arithmetic
-	 * or exact arithmetic, depending on the value of the {@code exact} flag.
-	 */
-	public void setUndefinedConstants(Values someValues, boolean exact) throws PrismLangException
-	{
-		undefinedConstantValues = someValues == null ? null : new Values(someValues);
+		this.ecUndefined = ecUndefined == null ? EvaluateContext.create() : EvaluateContext.create(ecUndefined);
 		// Might need values for ModulesFile constants too
-		Values allValues = new Values(someValues, modulesFile.getConstantValues());
-		EvaluateContext ec = new EvaluateContextConstants(allValues).setEvaluationMode(exact ? EvalMode.EXACT : EvalMode.FP);
-		constantValues = constantList.evaluateConstants(ec);
+		EvaluateContext ecUndefinedPlusMF = EvaluateContext.create(this.ecUndefined).addConstantValues(modulesFile.getConstantValues());
+		constantValues = constantList.evaluateSomeConstants(ecUndefinedPlusMF);
 		// Note: unlike ModulesFile, we don't trigger any semantic checks at this point
 		// This will usually be done on a per-property basis later
 	}
 
 	/**
-	 * Set values for *some* undefined constants and then evaluate all constants where possible.
-	 * If there are no undefined constants, {@code someValues} can be null.
-	 * Undefined constants can be subsequently redefined to different values with the same method.
-	 * The current constant values (if set) are available via {@link #getConstantValues()}.
-	 * <br>
-	 * Constant values are evaluated using standard (integer, floating-point) arithmetic.
+	 * Set values for some undefined constants.
+	 * Deprecated. Better to use {@link #setSomeUndefinedConstants(EvaluateContext)}.
+	 * @deprecated
 	 */
-	public void setSomeUndefinedConstants(Values someValues) throws PrismLangException
+	public void setSomeUndefinedConstants(Values someValues) throws PrismException
 	{
-		setSomeUndefinedConstants(someValues, false);
+		setSomeUndefinedConstants(EvaluateContext.create(someValues));
 	}
 
 	/**
-	 * Set values for *some* undefined constants and then evaluate all constants where possible.
-	 * If there are no undefined constants, {@code someValues} can be null.
-	 * Undefined constants can be subsequently redefined to different values with the same method.
-	 * The current constant values (if set) are available via {@link #getConstantValues()}.
-	 * <br>
-	 * Constant values are evaluated using either standard (integer, floating-point) arithmetic
-	 * or exact arithmetic, depending on the value of the {@code exact} flag.
+	 * Set values for some undefined constants.
+	 * Deprecated. Better to use {@link #setSomeUndefinedConstants(EvaluateContext)}.
+	 * @deprecated
 	 */
-	public void setSomeUndefinedConstants(Values someValues, boolean exact) throws PrismLangException
+	public void setSomeUndefinedConstants(Values someValues, boolean exact) throws PrismException
 	{
-		undefinedConstantValues = someValues == null ? null : new Values(someValues);
-		// Might need values for ModulesFile constants too
-		Values allValues = new Values(someValues, modulesFile.getConstantValues());
-		EvaluateContext ec = new EvaluateContextConstants(allValues).setEvaluationMode(exact ? EvalMode.EXACT : EvalMode.FP);
-		constantValues = constantList.evaluateSomeConstants(ec);
-		// Note: unlike ModulesFile, we don't trigger any semantic checks at this point
-		// This will usually be done on a per-property basis later
+		setSomeUndefinedConstants(EvaluateContext.create(someValues, exact));
+	}
+
+	/**
+	 * Same as {@link #setSomeUndefinedConstants(Values)}.
+	 * Note: This method no longer throws an exception if some constants are undefined.
+	 * @deprecated
+	 */
+	public void setUndefinedConstants(Values someValues) throws PrismException
+	{
+		setSomeUndefinedConstants(someValues);
 	}
 
 	/**
@@ -592,19 +579,18 @@ public class PropertiesFile extends ASTElement
 	}
 
 	/**
-	 * Get access to the values that have been provided for undefined constants in the model 
-	 * (e.g. via the method {@link #setUndefinedConstants(Values)}).
+	 * Get the evaluation context that was used to provide values for undefined constants in the model
+	 * (e.g. via the method {@link #setSomeUndefinedConstants(EvaluateContext)}).
 	 */
-	public Values getUndefinedConstantValues()
+	public EvaluateContext getUndefinedEvaluateContext()
 	{
-		return undefinedConstantValues;
+		return ecUndefined;
 	}
 
 	/**
 	 * Get access to the values for all constants in the properties file, including the
-	 * undefined constants set previously via the method {@link #setUndefinedConstants(Values)}
-	 * or {@link #setUndefinedConstants(Values)}. If neither method has been called
-	 * constant values will have been evaluated assuming that there are no undefined constants.
+	 * undefined constants set previously via the method {@link #setSomeUndefinedConstants(Values)}
+	 * If this has been called, constant values will have been evaluated assuming that there are no undefined constants.
 	 */
 	public Values getConstantValues()
 	{
