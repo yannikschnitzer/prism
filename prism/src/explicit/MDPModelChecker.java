@@ -2849,12 +2849,7 @@ public class MDPModelChecker extends ProbModelChecker
 		int nactions = mdp.getMaxNumChoices();
 
 
-		// Determine set of states actually need to compute values for
-		BitSet unknown = new BitSet();
-		unknown.set(0, n);
-		unknown.andNot(target);
-		unknown.andNot(inf);
-		IntSet unknownStates = IntSet.asIntSet(unknown);
+
 //		int numStates = unknownStates.cardinality();
 		DistributionalBellmanAugmented operator;
 
@@ -2871,7 +2866,7 @@ public class MDPModelChecker extends ProbModelChecker
 			double v_max = 3;
 			double v_min = 0;
 			operator = new DistributionalBellmanCategoricalAugmented(atoms, b_atoms, v_min, v_max, n, n_actions, mainLog);
-			operator.initialize(n); // initialization based on parameters.
+			operator.initialize( mdp, mdpRewards, gamma, target); // initialization based on parameters.
 		}
 //		else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
 //			atoms = 1000;
@@ -2886,19 +2881,31 @@ public class MDPModelChecker extends ProbModelChecker
 			double v_max = 100;
 			double v_min = 0;
 			operator = new DistributionalBellmanCategoricalAugmented(atoms, b_atoms, v_min, v_max, n, n_actions, mainLog);
-			operator.initialize(n); // initialization based on parameters.
+			operator.initialize( mdp, mdpRewards, gamma, target); // initialization based on parameters.
 		}
 
+		CVaRProduct cvar_mdp = makeProduct(operator, mdp, mdpRewards, gamma, target);
+		int product_n = cvar_mdp.getProductModel().getNumStates();
+
+		// Determine set of states actually need to compute values for in the augmented MDP
+		BitSet unknown = new BitSet();
+		unknown.set(0, product_n);
+		unknown.andNot(target);
+		unknown.andNot(inf);
+		IntSet unknownStates = IntSet.asIntSet(unknown);
+
 		// Create/initialise solution vector(s)
+		// TODO adjust dimensions to augmented
 		DistributionalBellmanAugmented temp_p;
-		double [][][] action_val = new double[n][b_atoms][nactions];
-		Object [][] policy = new Object[n][b_atoms]; // policy is now state x slack variable b
-		int[][] choices = new int[n][b_atoms];
+		double [][] action_val = new double[product_n][nactions];
+		Object [] policy = new Object[product_n]; // policy is now state x slack variable b
+		int[] choices = new int[product_n];
 		double min_v;
 		double max_dist ;
 		double max_cvar_dist ;
 		int iters;
 		double reward=  0;
+		int numChoices; int numTransitions; int b;
 
 		// Start iterations - number of episodes
 		for (iters = 0; (iters < iterations) ; iters++)
@@ -2906,35 +2913,34 @@ public class MDPModelChecker extends ProbModelChecker
 			temp_p = operator.copy();
 
 			PrimitiveIterator.OfInt states = unknownStates.iterator();
+			// Loop over augmented state
 			while (states.hasNext()) {
 				final int s = states.nextInt();
-				int numChoices = mdp.getNumChoices(s);
-				int numTransitions = 0;
-				for (int b =0; b< b_atoms; b++) {
+				numChoices = mdp.getNumChoices(s);
 
-					Arrays.fill(action_val[s][b], Float.POSITIVE_INFINITY);
-					double min_magic = Float.POSITIVE_INFINITY;
-					int min_a = 0;
+				Arrays.fill(action_val[s], Float.POSITIVE_INFINITY);
+				double min_magic = Float.POSITIVE_INFINITY;
+				int min_a = 0;
 
-					for (int choice = 0; choice < numChoices; choice++) { // aka action
-						double[] m;
-						numTransitions = mdp.getNumTransitions(s, choice);
-						Iterator<Entry<Integer, Double>> it = mdp.getTransitionsIterator(s, choice);
+				for (int choice = 0; choice < numChoices; choice++) { // aka action
+					double[] m;
+					numTransitions = mdp.getNumTransitions(s, choice);
+					Iterator<Entry<Integer, Double>> it = mdp.getTransitionsIterator(s, choice);
 
-						reward = mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choice);
-						m = operator.step(it, b, choices, numTransitions, gamma, reward);
+					reward = mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choice);
+					m = operator.step(it,  choices, numTransitions, gamma, reward);
 
-						action_val[s][b][choice] = operator.getMagic(m, b);
-						if(action_val[s][b][choice]< min_magic) {
-							min_a = choice;
-							min_magic= action_val[s][b][choice];
-						}
-
-						temp_p.update(m, s, b, choice);
+					action_val[s][choice] = operator.getMagic(m, b);
+					if(action_val[s][choice]< min_magic) {
+						min_a = choice;
+						min_magic= action_val[s][choice];
 					}
-					policy[s][b] =mdp.getAction(s, min_a);
-					choices[s][b] = min_a;
+
+					temp_p.update(m, s, choice);
 				}
+				policy[s] =mdp.getAction(s, min_a);
+				choices[s] = min_a;
+
 			}
 
 			states = unknownStates.iterator();
@@ -2944,10 +2950,9 @@ public class MDPModelChecker extends ProbModelChecker
 
 			while (states.hasNext()) {
 				final int s = states.nextInt(); // fIXME right now checking only policy action
-				for (int b=0; b<b_atoms; b++) {
-					for (int choice = 0; choice <mdp.getNumChoices(s); choice++)
+				for (int choice = 0; choice <mdp.getNumChoices(s); choice++){
 
-					operator.update(temp_p.getDist(s, b, choice), s, b, choice);
+					operator.update(temp_p.getDist(s, choice), s, choice);
 //					action = choices[s][b];
 //					double tempo = operator.getW(temp_p.getDist(s, b, action), s, b, action);
 //					if (tempo > max_dist) {
@@ -2984,17 +2989,16 @@ public class MDPModelChecker extends ProbModelChecker
 		// Policy
 		mainLog.println("\nPolicy");
 		//Arrays.toString(policy);
-		Arrays.stream(policy).forEach(e -> mainLog.print(Arrays.toString(e) + ", "));
+		Arrays.stream(policy).forEach(e -> mainLog.print(e + ", "));
 
 		// Compute distribution on induced DTMC
 		mainLog.println("\n\nComputing distribution on induced DTMC...");
 
 		// Assumption: the original MDP model has only one initial state.
-		// TODO check that target is the right set to send
-		CVaRProduct cvar_mdp = makeProduct(operator, mdp, mdpRewards, gamma, target);
+
 		StateRewardsArray mcRewards = new StateRewardsArray(cvar_mdp.getProductModel().getNumStates());
 		// TODO check if the mcRewards is being updated correctly
-		int [] pol = operator.getStrategy(mdp.getFirstInitialState(), cvar_mdp, mdpRewards, mcRewards, choices, alpha);
+		int [] pol = operator.getStrategy(mdpRewards, mcRewards, choices, alpha);
 		MDStrategyArray strat = new MDStrategyArray(cvar_mdp.productModel, pol);
 		DTMC dtmc = new DTMCFromMDPAndMDStrategy(cvar_mdp.productModel, strat);
 

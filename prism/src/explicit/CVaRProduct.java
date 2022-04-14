@@ -27,6 +27,13 @@ public class CVaRProduct extends Product<MDP>
         this.invMap = invMap;
     }
 
+    public CVaRProduct(CVaRProduct el){
+        super(el.getProductModel(), el.getOriginalModel());
+        memSize = el.memSize;
+        invMap = el.invMap;
+
+    }
+
     @Override
     public int getModelState(int productState)
     {

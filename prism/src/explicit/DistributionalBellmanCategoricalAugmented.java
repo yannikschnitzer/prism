@@ -1,24 +1,12 @@
 package explicit;
 
 
-import common.IterableStateSet;
 import explicit.rewards.MDPRewards;
 import explicit.rewards.StateRewardsArray;
-import parser.State;
-import parser.VarList;
-import parser.ast.Declaration;
-import parser.ast.DeclarationInt;
-import parser.ast.Expression;
-import prism.ModelType;
-import prism.Pair;
 import prism.PrismException;
-import strat.MDStrategy;
-import strat.MDStrategyArray;
 
-import java.awt.*;
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.List;
 
 import static java.lang.Math.*;
 import static java.lang.Math.sqrt;
@@ -27,7 +15,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     int atoms = 1;
     double delta_z = 1;
     double [] z ;
-    double [][][][] p;
+    double [][][] p;
     int n_actions = 4;
     double v_min ;
     double v_max ;
@@ -58,7 +46,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         df = new DecimalFormat("0.000");
 
         // INFO right now saving augmented state-action distributions
-        this.p = new double[numStates][b_atoms][n_actions][atoms]; 
+        this.p = new double[numStates][n_actions][atoms];
 
         // Initialize distribution atoms 
         for (int i = 0; i < atoms; i++) {
@@ -72,6 +60,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         for (int i = 0; i < b_atoms; i++) {
             this.b[i] = (vmin + i *this.delta_b);
         }
+
     }
 
     public DistributionalBellmanCategoricalAugmented(DistributionalBellmanCategoricalAugmented el)
@@ -94,15 +83,15 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         b = Arrays.copyOf(el.b, b_atoms);
 
         // Deep copy distribution
-        this.p = new double[numStates][b_atoms][n_actions][atoms];
+        this.p = new double[numStates][n_actions][atoms];
         for (int s=0; s<numStates; s++) {
-            for (int idx_b = 0; idx_b < b_atoms; idx_b++) {
-                for (int a = 0; a < n_actions; a++) {
-                    p[s][idx_b][a] = Arrays.copyOf(el.p[s][idx_b][a], atoms);
-                }
+            for (int a = 0; a < n_actions; a++) {
+                p[s][a] = Arrays.copyOf(el.p[s][a], atoms);
             }
         }
 
+        // Deep Copy product MDP
+        prod_mdp = new CVaRProduct(el.prod_mdp);
     }
 
     @Override
@@ -117,44 +106,44 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     }
 
     //  Initializing with augmented state and actions.
-    // FIXME sending numStates is redundant?
     @Override
-    public void initialize( int numStates) {
+    public void initialize( MDP mdp, MDPRewards mdpRewards, double gamma, BitSet target) throws PrismException {
 
-        this.p = new double[numStates][b_atoms][n_actions][atoms];
+        prod_mdp = CVaRProduct.makeProduct(this, mdp, mdpRewards, gamma, target);
+
+        // Update to augmented states
+        numStates = prod_mdp.getProductModel().getNumStates();
+
+        this.p = new double[numStates][n_actions][atoms];
         double [] temp2 = new double[atoms];
         temp2[0] =1.0;
 
         for (int i = 0; i < numStates; i++) {
-            for (int idx_b=0; idx_b < b_atoms; idx_b++){
-                for (int a = 0; a<n_actions; a++){
-                    this.p[i][idx_b][a]= Arrays.copyOf(temp2, temp2.length);
-                }
+            for (int a = 0; a<n_actions; a++){
+                this.p[i][a]= Arrays.copyOf(temp2, temp2.length);
             }
         }
     }
 
 
-    public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, double cur_b, int [][] choices, int numTransitions, double gamma, double state_reward)
+    public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, int [] choices, int numTransitions, double gamma, double state_reward)
     {
-        double temp_b = (cur_b-state_reward)/gamma;
-        int idx_b = getClosestB(temp_b);
-
-        double [] res = update_probabilities(trans_it, idx_b, choices);
+        double [] res = update_probabilities(trans_it, choices);
         res = update_support(gamma, state_reward, res);
         return res;
     }
 
     // updates probabilities for 1 action
-    public double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it, int idx_b, int [][] choices) {
+    public double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it, int [] choices) {
         double [] sum_p= new double[atoms];
         int action = 0;
 
         while (trans_it.hasNext()) {
             Map.Entry<Integer, Double> e = trans_it.next();
             for (int j = 0; j < atoms; j++) {
-                action  = choices[e.getKey()][idx_b];
-                sum_p[j] += e.getValue() * p[e.getKey()][idx_b][action][j];
+                action  = choices[e.getKey()];
+
+                sum_p[j] += e.getValue() * p[e.getKey()][action][j];
             }
         }
         return sum_p;
@@ -205,63 +194,45 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     @Override
     public void display(MDP mdp) {
         for (int s=0; s<numStates; s++) {
-            display(s, mdp.getNumChoices(s));
+            display(s);
         }
     }
 
     @Override
     public void display(int s) {
         mainLog.println("------- state:"+s);
-        for (int idx_b = 0; idx_b < b_atoms; idx_b++) {
-            mainLog.println("------");
-            for (double[] doubles : p[s][idx_b]) {
-                mainLog.print("[");
-                Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
-                mainLog.print("]\n");
-            }
-        }
-
-    }
-
-    public void display(int s, int num_actions) {
-        mainLog.println("------- state:"+s);
-        for (int idx_b = 0; idx_b < b_atoms; idx_b++) {
-            mainLog.println("------ b:"+df.format(b[idx_b]));
-            for (int j =0; j< num_actions; j++) {
-                mainLog.print("[");
-                Arrays.stream(p[s][idx_b][j]).forEach(e -> mainLog.print(df.format(e) + ", "));
-                mainLog.print("]\n");
-            }
-        }
-
-    }
-
-    public void display(int s, int [][] policy) {
-
-        for (int idx_b = 0; idx_b < b_atoms; idx_b++) {
-            double[] doubles = p[s][idx_b][policy[s][idx_b]];
+        int idx_b = prod_mdp.getAutomatonState(s);
+        mainLog.println("------ b:"+df.format(b[idx_b]));
+        for (int j =0; j< prod_mdp.productModel.getNumChoices(s); j++) {
             mainLog.print("[");
-            Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
+            Arrays.stream(p[s][j]).forEach(e -> mainLog.print(df.format(e) + ", "));
             mainLog.print("]\n");
-
         }
 
+
+    }
+
+    public void display(int s, int [] choices) {
+        double[] doubles = p[s][choices[s]];
+        mainLog.print("[");
+        Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
+        mainLog.print("]\n");
     }
 
     @Override
-    public void update(double [] temp, int state, int idx_b, int action){
-        p[state][idx_b][action] = Arrays.copyOf(temp, temp.length);
+    public void update(double [] temp, int state, int action){
+        p[state][action] = Arrays.copyOf(temp, temp.length);
     }
 
 
     @Override
-    public double[][] getDist(int s, int idx_b) {
-        return p[s][idx_b];
+    public double[][] getDist(int s) {
+        return p[s];
     }
 
     @Override
-    public double[] getDist(int s, int idx_b, int a) {
-        return p[s][idx_b][a];
+    public double[] getDist(int s, int a) {
+        return p[s][a];
     }
 
     // TODO probably rename this
@@ -338,6 +309,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     }
 
     // Wp with p=2
+    @Override
     public double getW(double[] dist1, double[] dist2)
     {
         double sum = 0;
@@ -349,31 +321,39 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     }
 
     // Wp with p=2
-    public double getW(double [] dist1, int state, int idx_b, int idx_a)
+    @Override
+    public double getW(double [] dist1, int state, int idx_a)
     {
         double sum = 0;
         for (int i =0; i<atoms; i++)
         {
-            sum+=  pow(((delta_z) *dist1[i] - (delta_z) *p[state][idx_b][idx_a][i]), 2);
+            sum+=  pow(((delta_z) *dist1[i] - (delta_z) *p[state][idx_a][i]), 2);
         }
         return sqrt(sum);
     }
 
-    public double [][][][] getP ()
+    public double [][][] getP ()
     {
         return p;
     }
 
-    public double [] computeStartingB(int startState, double alpha, int [][] choices){
+    // Find the starting that minimizes CVAR at initial state based on a given alpha
+    public double [] computeStartingB( double alpha, int [] choices){
         double [] res = new double [2]; // contains the min index + min cvar.
         double cvar = 0;
         res [1] = Float.POSITIVE_INFINITY;
         double expected_cost =0;
+        int idx_b = 0;
 
-        for(int idx_b=0; idx_b < b_atoms; idx_b++){
+        Iterable<Integer> initials = prod_mdp.getProductModel().getInitialStates();
+
+        // iterate over initial states
+        // -> this should correspond to starting state of MDP + all possible values of b
+        for(int startState: initials){
             expected_cost = 0;
+            idx_b = prod_mdp.getAutomatonState(startState);
             for ( int i =0; i < atoms; i++){
-                double j = p[startState][idx_b][choices[startState][idx_b]][i];
+                double j = p[startState][choices[startState]][i];
                 if (j >0){
                     expected_cost += j * max(0, z[i] - b[idx_b]);
                 }
@@ -387,23 +367,23 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         return res;
     }
 
-    public int [] getStrategy(int start, CVaRProduct prodMDP , MDPRewards mdpRewards, StateRewardsArray rewardsArray, int [][] choices, double alpha) throws PrismException {
-        int prodNumStates = prodMDP.getProductModel().getNumStates();
+    public int [] getStrategy(MDPRewards mdpRewards, StateRewardsArray rewardsArray, int [] choices, double alpha) throws PrismException {
+        int prodNumStates = prod_mdp.getProductModel().getNumStates();
         int [] res = new int [prodNumStates];
 
-        double [] cvar_info = computeStartingB(start, alpha, choices);
+        double [] cvar_info = computeStartingB(alpha, choices);
         int idx_b = (int) cvar_info[0];
 
         mainLog.println("b :"+b[idx_b] + " cvar = " + cvar_info[1]);
 
         // Find the correct start state
-        Iterator<Integer> prd_initial = prodMDP.getProductModel().getInitialStates().iterator();
+        Iterator<Integer> prd_initial = prod_mdp.getProductModel().getInitialStates().iterator();
         int initial_state = 0;
         int cur_initial;
         while(prd_initial.hasNext())
         {
             cur_initial = prd_initial.next();
-            int val = prodMDP.getAutomatonState(cur_initial);
+            int val = prod_mdp.getAutomatonState(cur_initial);
             if (val == idx_b)
             {
                 initial_state = cur_initial;
@@ -413,9 +393,9 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
         //  Update product mdp initial state to correct b
         // FIXME double check that this is working
-        if (prodMDP.productModel instanceof ModelExplicit) {
-            ((ModelExplicit) prodMDP.productModel).clearInitialStates();
-            ((ModelExplicit) prodMDP.productModel).addInitialState(initial_state);
+        if (prod_mdp.productModel instanceof ModelExplicit) {
+            ((ModelExplicit) prod_mdp.productModel).clearInitialStates();
+            ((ModelExplicit) prod_mdp.productModel).addInitialState(initial_state);
         }
         else {
             throw new PrismException("Error updating initial states productMDP is not an instance of ModelExplicit");
@@ -423,14 +403,14 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
         double r ;
         for (int i = 0; i < prodNumStates; i++) {
-            res[i] = choices[prodMDP.getModelState(i)][prodMDP.getAutomatonState(i)];
+            res[i] = choices[i];
             // Compute reward
-            r = mdpRewards.getStateReward(prodMDP.getModelState(i)) ;
-            r += mdpRewards.getTransitionReward(prodMDP.getModelState(i), res[i]);
+            r = mdpRewards.getStateReward(prod_mdp.getModelState(i)) ;
+            r += mdpRewards.getTransitionReward(prod_mdp.getModelState(i), res[i]);
 
             rewardsArray.setStateReward(i, r);
 
-            mainLog.println ("policy: "+res[i]+" - rew:"+r+" - new b :"+b[prodMDP.getAutomatonState(i)]);
+            mainLog.println ("policy: "+res[i]+" - rew:"+r+" - new b :"+b[prod_mdp.getAutomatonState(i)]);
         }
 
         return res;
