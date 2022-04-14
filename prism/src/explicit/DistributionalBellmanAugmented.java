@@ -62,4 +62,8 @@ public abstract class DistributionalBellmanAugmented {
     public abstract int[] getStrategy(MDPRewards mdpRewards, StateRewardsArray rewardsArray, int [] choices, double alpha) throws PrismException;
 
     public abstract CVaRProduct getProductMDP();
+
+    public abstract int getB_atoms();
+
+    public abstract double getBVal(int idx);
 }

@@ -128,4 +128,14 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
         return prod_mdp;
     }
 
+    @Override
+    public int getB_atoms() {
+        return 0;
+    }
+
+    @Override
+    public double getBVal(int idx) {
+        return 0;
+    }
+
 }

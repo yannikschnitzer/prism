@@ -2856,13 +2856,18 @@ public class MDPModelChecker extends ProbModelChecker
 
 		int b_atoms;
 
+		BitSet unknown_original = new BitSet();
+		unknown_original.set(0, n);
+		unknown_original.andNot(target);
+		unknown_original.andNot(inf);
+
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
 			atoms = 16;
 			b_atoms = 16;
 			double v_max = 3;
 			double v_min = 0;
 			operator = new DistributionalBellmanCategoricalAugmented(atoms, b_atoms, v_min, v_max, n, n_actions, mainLog);
-			operator.initialize( mdp, mdpRewards, gamma, target); // initialization based on parameters.
+			operator.initialize( mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
 		}
 //		else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
 //			atoms = 1000;
@@ -2877,7 +2882,7 @@ public class MDPModelChecker extends ProbModelChecker
 			double v_max = 100;
 			double v_min = 0;
 			operator = new DistributionalBellmanCategoricalAugmented(atoms, b_atoms, v_min, v_max, n, n_actions, mainLog);
-			operator.initialize( mdp, mdpRewards, gamma, target); // initialization based on parameters.
+			operator.initialize( mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
 		}
 
 		// TODO double check that this is copying properly
@@ -2902,7 +2907,7 @@ public class MDPModelChecker extends ProbModelChecker
 		double max_cvar_dist ;
 		int iters;
 		double reward=  0;
-		int numChoices; int numTransitions; int b;
+		int numChoices; int numTransitions; int b; int model_s;
 
 		// Start iterations - number of episodes
 		for (iters = 0; (iters < iterations) ; iters++)
@@ -2913,18 +2918,18 @@ public class MDPModelChecker extends ProbModelChecker
 			// Loop over augmented state
 			while (states.hasNext()) {
 				final int s = states.nextInt();
-				numChoices = mdp.getNumChoices(s);
-
+				numChoices = cvar_mdp.getProductModel().getNumChoices(s);
+				model_s = cvar_mdp.getModelState(s);
 				Arrays.fill(action_val[s], Float.POSITIVE_INFINITY);
 				double min_magic = Float.POSITIVE_INFINITY;
 				int min_a = 0;
 
 				for (int choice = 0; choice < numChoices; choice++) { // aka action
 					double[] m;
-					numTransitions = mdp.getNumTransitions(s, choice);
-					Iterator<Entry<Integer, Double>> it = mdp.getTransitionsIterator(s, choice);
+					numTransitions = cvar_mdp.getProductModel().getNumTransitions(s, choice);
+					Iterator<Entry<Integer, Double>> it = cvar_mdp.getProductModel().getTransitionsIterator(s, choice);
 
-					reward = mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choice);
+					reward = mdpRewards.getStateReward(model_s) + mdpRewards.getTransitionReward(model_s, choice);
 					m = operator.step(it,  choices, numTransitions, gamma, reward);
 
 					action_val[s][choice] = operator.getMagic(m, cvar_mdp.getAutomatonState(s));
@@ -2935,7 +2940,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 					temp_p.update(m, s, choice);
 				}
-				policy[s] =mdp.getAction(s, min_a);
+				policy[s] =cvar_mdp.getProductModel().getAction(s, min_a);
 				choices[s] = min_a;
 
 			}
@@ -2947,7 +2952,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 			while (states.hasNext()) {
 				final int s = states.nextInt(); // fIXME right now checking only policy action
-				for (int choice = 0; choice <mdp.getNumChoices(s); choice++){
+				for (int choice = 0; choice <cvar_mdp.getProductModel().getNumChoices(s); choice++){
 
 					operator.update(temp_p.getDist(s, choice), s, choice);
 //					action = choices[s][b];
@@ -2963,7 +2968,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 			if((iters >=0)){//mainLog.println("Max Wp dist :"+(max_dist) + " dist:"+(max_cvar_dist)+" at iter:"+iters);
 				mainLog.println("\nV at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
-				operator.display(mdp);
+				operator.display(cvar_mdp.getProductModel());
 			}
 
 		//mainLog.println("Max Wp dist :"+(max_dist - error_thresh) + " dist:"+(max_cvar_dist- error_thresh)+" at iter:"+iters);

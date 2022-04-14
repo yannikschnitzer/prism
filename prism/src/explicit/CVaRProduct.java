@@ -9,6 +9,7 @@ import parser.ast.DeclarationInt;
 import parser.ast.Expression;
 import prism.ModelType;
 import prism.PrismException;
+import prism.PrismLog;
 
 import java.awt.*;
 import java.util.*;
@@ -56,16 +57,17 @@ public class CVaRProduct extends Product<MDP>
      //	 * @param statesOfInterest the set of states for which values should be calculated (null = all states)
      //	 * @return The product model
      //	 */
-    public static  <M extends Model> CVaRProduct makeProduct(DistributionalBellmanAugmented operator, MDP model, MDPRewards mdpRewards, double gamma, BitSet statesOfInterest) throws PrismException
+    public static  <M extends Model> CVaRProduct makeProduct(DistributionalBellmanAugmented operator, MDP model, MDPRewards mdpRewards, double gamma, BitSet statesOfInterest, PrismLog mainLog) throws PrismException
     {
         ModelType modelType = model.getModelType();
         int mdpNumStates = model.getNumStates();
         int prodNumStates;
-        List<State> prodStatesList = null, bStatesList = null;
+        List<State> prodStatesList = null, bStatesList = null; List<Integer> initialStatesList = null;
         int s_1, s_2, q_1, q_2;
+        int b_atoms = operator.getB_atoms();
 
         try {
-            prodNumStates = Math.multiplyExact(mdpNumStates, operator.b_atoms);
+            prodNumStates = Math.multiplyExact(mdpNumStates, b_atoms);
         } catch (ArithmeticException e) {
             throw new PrismException("Size of product state space of model and automaton is too large for explicit engine");
         }
@@ -83,7 +85,7 @@ public class CVaRProduct extends Product<MDP>
             newVarList = (VarList) varList.clone();
             // NB: if DA only has one state, we add an extra dummy state
             // Inform for bounds of idx_b
-            Declaration decl = new Declaration(bVar, new DeclarationInt(Expression.Int(0), Expression.Int(operator.b_atoms)));
+            Declaration decl = new Declaration(bVar, new DeclarationInt(Expression.Int(0), Expression.Int(b_atoms)));
             newVarList.addVar(0, decl, 1, model.getConstantValues());
         }
 
@@ -102,8 +104,9 @@ public class CVaRProduct extends Product<MDP>
 
         if (model.getStatesList() != null) {
             prodStatesList = new ArrayList<State>();
-            bStatesList = new ArrayList<State>(operator.b_atoms);
-            for (int i = 0; i < operator.b_atoms; i++) {
+            initialStatesList = new ArrayList<Integer>();
+            bStatesList = new ArrayList<State>(b_atoms);
+            for (int i = 0; i < b_atoms; i++) {
                 bStatesList.add(new State(1).setValue(0, i));
             }
         }
@@ -117,21 +120,26 @@ public class CVaRProduct extends Product<MDP>
         for (int s_0 : new IterableStateSet(statesOfInterest, model.getNumStates())) {
 
             // All b values are possible initial states
-            for(int i =0; i<operator.b_atoms; i++)
+            for(int i =0; i<b_atoms; i++)
             {
                 // Add (initial) state to product
                 queue.add(new Point(s_0, i));
                 mdpProd.addState();
                 // FIXME : double check this
-                mdpProd.addInitialState(mdpProd.getNumStates() - i -1);
-                map[s_0 * operator.b_atoms + i] = mdpProd.getNumStates() - i -1;
+
+                mdpProd.addInitialState(mdpProd.getNumStates() -1);
+                map[s_0 * b_atoms + i] = mdpProd.getNumStates() -1;
                 if (prodStatesList != null) {
                     // Store state information for the product
                     State temp = new State(2);
-                    temp.setValue(0, operator.b[i]);
+                    temp.setValue(0, i);
                     temp.setValue(1, model.getStatesList().get(s_0));
 
                     prodStatesList.add(temp);
+                    if (model.isInitialState(s_0))
+                    {
+                        initialStatesList.add(s_0 * b_atoms + i);
+                    }
                 }
             }
 
@@ -143,7 +151,7 @@ public class CVaRProduct extends Product<MDP>
             Point p = queue.pop();
             s_1 = p.x;
             q_1 = p.y;
-            visited.set(s_1 * operator.b_atoms + q_1);
+            visited.set(s_1 * b_atoms + q_1);
 
             // Go through transitions from state s_1 in original model
             int numChoices = (model instanceof NondetModel) ? ((NondetModel) model).getNumChoices(s_1) : 1;
@@ -163,27 +171,27 @@ public class CVaRProduct extends Product<MDP>
                     reward += mdpRewards.getTransitionReward(s_1, j);
 
                     // Find corresponding successor in b
-                    q_2 = operator.getClosestB((operator.b[q_1]-reward)/gamma);
+                    q_2 = operator.getClosestB((operator.getBVal(q_1)-reward)/gamma);
 
                     if (q_2 < 0) {
                         throw new PrismException("Cannot find closest b  (b = " + q_1 + ")");
                     }
                     // Add state/transition to model
-                    if (!visited.get(s_2 * operator.b_atoms + q_2) && map[s_2 * operator.b_atoms + q_2] == -1) {
+                    if (!visited.get(s_2 * b_atoms + q_2) && map[s_2 * b_atoms + q_2] == -1) {
                         queue.add(new Point(s_2, q_2));
                         mdpProd.addState();
-                        map[s_2 * operator.b_atoms + q_2] = mdpProd.getNumStates() - 1;
+                        map[s_2 * b_atoms + q_2] = mdpProd.getNumStates() - 1;
                         if (prodStatesList != null) {
                             State temp = new State(2);
-                            temp.setValue(0, operator.b[q_2]);
+                            temp.setValue(0, q_2);
                             temp.setValue(1, model.getStatesList().get(s_2));
                             // Store state information for the product
                             prodStatesList.add(temp);
                         }
                     }
-                    prodDistr.set(map[s_2 * operator.b_atoms + q_2], prob);
+                    prodDistr.set(map[s_2 * b_atoms + q_2], prob);
                 }
-                mdpProd.addActionLabelledChoice(map[s_1 * operator.b_atoms + q_1], prodDistr, ((MDP) model).getAction(s_1, j));
+                mdpProd.addActionLabelledChoice(map[s_1 * b_atoms + q_1], prodDistr, ((MDP) model).getAction(s_1, j));
             }
         }
 
@@ -201,7 +209,15 @@ public class CVaRProduct extends Product<MDP>
             mdpProd.setStatesList(prodStatesList);
         }
 
-        CVaRProduct product = new CVaRProduct(mdpProd, model, operator.b_atoms, invMap);
+        // Update initialState with initial state from MDP x (all possible b)
+        if(initialStatesList != null){
+            mdpProd.clearInitialStates();
+            for (int state :initialStatesList){
+                mdpProd.addInitialState(state);
+            }
+        }
+
+        CVaRProduct product = new CVaRProduct(mdpProd, model, b_atoms, invMap);
 
         // lift the labels
         for (String label : model.getLabels()) {

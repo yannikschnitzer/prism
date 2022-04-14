@@ -109,7 +109,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     @Override
     public void initialize( MDP mdp, MDPRewards mdpRewards, double gamma, BitSet target) throws PrismException {
 
-        prod_mdp = CVaRProduct.makeProduct(this, mdp, mdpRewards, gamma, target);
+        prod_mdp = CVaRProduct.makeProduct(this, mdp, mdpRewards, gamma, target, mainLog);
 
         // Update to augmented states
         numStates = prod_mdp.getProductModel().getNumStates();
@@ -419,5 +419,15 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     @Override
     public CVaRProduct getProductMDP() {
         return prod_mdp;
+    }
+
+    @Override
+    public int getB_atoms(){
+        return b_atoms;
+    }
+
+    @Override
+    public double getBVal(int idx){
+        return b[idx];
     }
 }
