@@ -123,4 +123,9 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
         return new int[0];
     }
 
+    @Override
+    public CVaRProduct getProductMDP() {
+        return prod_mdp;
+    }
+
 }

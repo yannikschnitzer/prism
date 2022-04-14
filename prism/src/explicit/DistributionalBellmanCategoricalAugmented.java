@@ -415,4 +415,9 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
         return res;
     }
+
+    @Override
+    public CVaRProduct getProductMDP() {
+        return prod_mdp;
+    }
 }

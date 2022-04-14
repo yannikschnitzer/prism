@@ -2846,19 +2846,15 @@ public class MDPModelChecker extends ProbModelChecker
 		String c51 = "C51";
 		String qr = "QR";
 
+		// TODO find a better way of getting this -> >>maxnumactions for one state.
 		int nactions = mdp.getMaxNumChoices();
 
-
-
-//		int numStates = unknownStates.cardinality();
 		DistributionalBellmanAugmented operator;
 
-		// TODO new slack variable b for augmented MDP
 		// use vmin and vmax for b values?
 		// TODO figure out how to work out b stuff with aquantile representation
 
 		int b_atoms;
-
 
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
 			atoms = 16;
@@ -2884,7 +2880,8 @@ public class MDPModelChecker extends ProbModelChecker
 			operator.initialize( mdp, mdpRewards, gamma, target); // initialization based on parameters.
 		}
 
-		CVaRProduct cvar_mdp = makeProduct(operator, mdp, mdpRewards, gamma, target);
+		// TODO double check that this is copying properly
+		CVaRProduct cvar_mdp = operator.getProductMDP();
 		int product_n = cvar_mdp.getProductModel().getNumStates();
 
 		// Determine set of states actually need to compute values for in the augmented MDP
@@ -2930,7 +2927,7 @@ public class MDPModelChecker extends ProbModelChecker
 					reward = mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choice);
 					m = operator.step(it,  choices, numTransitions, gamma, reward);
 
-					action_val[s][choice] = operator.getMagic(m, b);
+					action_val[s][choice] = operator.getMagic(m, cvar_mdp.getAutomatonState(s));
 					if(action_val[s][choice]< min_magic) {
 						min_a = choice;
 						min_magic= action_val[s][choice];
