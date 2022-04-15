@@ -67,7 +67,7 @@ public class CVaRProduct extends Product<MDP>
         int b_atoms = operator.getB_atoms();
 
         try {
-            prodNumStates = Math.multiplyExact(mdpNumStates, b_atoms);
+            prodNumStates = Math.multiplyExact(mdpNumStates, b_atoms) ;
         } catch (ArithmeticException e) {
             throw new PrismException("Size of product state space of model and automaton is too large for explicit engine");
         }

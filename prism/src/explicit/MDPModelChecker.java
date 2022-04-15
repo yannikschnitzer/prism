@@ -2837,7 +2837,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Set up CVAR variables
 		int atoms;
-		int iterations = 2;
+		int iterations = 150;
 		double error_thresh = 0.01;
 		double error_thresh_cvar = 2;
 		double gamma = 1;
@@ -2862,9 +2862,9 @@ public class MDPModelChecker extends ProbModelChecker
 		unknown_original.andNot(inf);
 
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
-			atoms = 16;
-			b_atoms = 16;
-			double v_max = 3;
+			atoms = 101;
+			b_atoms = 40;
+			double v_max = 100;
 			double v_min = 0;
 			operator = new DistributionalBellmanCategoricalAugmented(atoms, b_atoms, v_min, v_max, n, n_actions, mainLog);
 			operator.initialize( mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
@@ -2888,16 +2888,17 @@ public class MDPModelChecker extends ProbModelChecker
 		// TODO double check that this is copying properly
 		CVaRProduct cvar_mdp = operator.getProductMDP();
 		int product_n = cvar_mdp.getProductModel().getNumStates();
+		BitSet product_target = cvar_mdp.liftFromModel(target); // compute the target states in the product MDP
 
 		// Determine set of states actually need to compute values for in the augmented MDP
 		BitSet unknown = new BitSet();
 		unknown.set(0, product_n);
-		unknown.andNot(target);
+		unknown.andNot(product_target);
 		unknown.andNot(inf);
 		IntSet unknownStates = IntSet.asIntSet(unknown);
 
 		// Create/initialise solution vector(s)
-		// TODO adjust dimensions to augmented
+		// adjust dimensions to augmented
 		DistributionalBellmanAugmented temp_p;
 		double [][] action_val = new double[product_n][nactions];
 		Object [] policy = new Object[product_n]; // policy is now state x slack variable b
@@ -2966,16 +2967,16 @@ public class MDPModelChecker extends ProbModelChecker
 				}
 			}
 
-			if((iters >=0)){//mainLog.println("Max Wp dist :"+(max_dist) + " dist:"+(max_cvar_dist)+" at iter:"+iters);
-				mainLog.println("\nV at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
-				operator.display(cvar_mdp.getProductModel());
-			}
+//			if((iters >=0)){//mainLog.println("Max Wp dist :"+(max_dist) + " dist:"+(max_cvar_dist)+" at iter:"+iters);
+//				mainLog.println("\nV at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
+//				operator.display(cvar_mdp.getProductModel());
+//			}
 
 		//mainLog.println("Max Wp dist :"+(max_dist - error_thresh) + " dist:"+(max_cvar_dist- error_thresh)+" at iter:"+iters);
 
-			if ((max_cvar_dist < error_thresh_cvar) & (max_dist <error_thresh)&(iters>5)) {
-				break;
-			}
+//			if ((max_cvar_dist < error_thresh_cvar) & (max_dist <error_thresh)&(iters>5)) {
+//				break;
+//			}
 		}
 
 		// Print to file
@@ -3007,7 +3008,7 @@ public class MDPModelChecker extends ProbModelChecker
 		mainLog.println("Currently returning policy "+ Arrays.toString(pol));
 
 		DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
-		mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, target);
+		mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, product_target);
 
 		// Finished CVAR
 		timer = System.currentTimeMillis() - timer;

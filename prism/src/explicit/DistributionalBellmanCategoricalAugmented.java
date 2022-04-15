@@ -176,7 +176,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     public int getClosestB(double temp_b){
         double new_b = max(b[0], min(temp_b,b[b_atoms-1]));
         double index = new_b/delta_b;
-        int l= (int) floor(new_b); int u= (int) ceil(new_b);
+        int l= (int) floor(index); int u= (int) ceil(index);
 
         //  right now I'm choosing a slightly more conservative approach by
         // choosing lower index -> intuition :"we have used less budget than we actually have"
