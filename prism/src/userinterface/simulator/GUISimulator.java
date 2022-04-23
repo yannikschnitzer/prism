@@ -66,6 +66,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
+import parser.State;
 import parser.Values;
 import parser.ast.LabelList;
 import parser.ast.ModulesFile;
@@ -122,7 +123,7 @@ public class GUISimulator extends GUIPlugin implements MouseListener, ListSelect
 	private boolean chooseInitialState;
 	private boolean stratShow;
 
-	private Values lastPropertyConstants, lastInitialState;
+	private Values lastPropertyConstants, lastInitialStateValues;
 	private boolean computing;
 
 	// Config/options
@@ -209,7 +210,7 @@ public class GUISimulator extends GUIPlugin implements MouseListener, ListSelect
 
 		lastPropertyConstants = null;
 
-		lastInitialState = null;
+		lastInitialStateValues = null;
 
 		tableScroll.setRowHeaderView(((GUISimulatorPathTable) pathTable).getPathLoopIndicator());
 		manualUpdateTableScrollPane.setRowHeaderView(((GUISimulatorUpdatesTable) currentUpdatesTable).getUpdateRowHeader());
@@ -381,7 +382,7 @@ public class GUISimulator extends GUIPlugin implements MouseListener, ListSelect
 	public void newPathAfterParse()
 	{
 		newPathAfterReceiveParseNotification = false;
-		Values initialState;
+		State initialState;
 		try {
 			// Check model is simulate-able
 			// (bail out now else causes problems below)
@@ -419,6 +420,10 @@ public class GUISimulator extends GUIPlugin implements MouseListener, ListSelect
 				throw new PrismException("The simulator does not yet handle models with multiple initial states");
 			}
 
+			// Load model into the simulator
+			getPrism().loadModelIntoSimulator();
+			getPrism().loadStrategyIntoSimulator();
+			
 			// do we need to ask for an initial state for simulation?
 			// no: just use default/random
 			if (!chooseInitialState) {
@@ -439,12 +444,10 @@ public class GUISimulator extends GUIPlugin implements MouseListener, ListSelect
 			displayPathLoops = true;
 			
 			// Create a new path in the simulator and add labels/properties
-			getPrism().loadModelIntoSimulator();
-			getPrism().loadStrategyIntoSimulator();
 			engine.createNewPath();
 			setPathActive(true);
 			repopulateFormulae(pf);
-			engine.initialisePath(initialState == null ? null : new parser.State(initialState, parsedModel));
+			engine.initialisePath(initialState);
 			// Update model/path/tables/lists
 			if (engine.hasStrategyInfo()) {
 				stratCombo.setSelectedItem("Enforce");
@@ -459,7 +462,8 @@ public class GUISimulator extends GUIPlugin implements MouseListener, ListSelect
 			doEnables();
 
 			// store initial state for next time
-			lastInitialState = initialState;
+			// (but as Values in case variables change)
+			lastInitialStateValues = new Values(initialState, engine.getModel());
 
 			if (getPrism().getSettings().getBoolean(PrismSettings.SIMULATOR_NEW_PATH_ASK_VIEW)) {
 				new GUIViewDialog(getGUI(), pathTableModel.getView(), pathTableModel);
@@ -474,44 +478,9 @@ public class GUISimulator extends GUIPlugin implements MouseListener, ListSelect
 		}
 	}
 
-	public Values a_chooseInitialState() throws PrismLangException
+	public State a_chooseInitialState() throws PrismLangException
 	{
-		// first, pick default values for chooser dialog
-
-		// default initial state if none specified previously
-		if (lastInitialState == null) {
-			lastInitialState = new Values(parsedModel.getDefaultInitialState(), parsedModel);
-		}
-		// otherwise, check previously used state for validity
-		else {
-			boolean match = true;
-			int i, n;
-			n = parsedModel.getNumVars();
-			if (lastInitialState.getNumValues() != n) {
-				match = false;
-			} else {
-				for (i = 0; i < n; i++) {
-					if (!lastInitialState.contains(parsedModel.getVarName(i))) {
-						match = false;
-						break;
-					} else {
-						int index = lastInitialState.getIndexOf(parsedModel.getVarName(i));
-						if (!lastInitialState.getType(index).equals(parsedModel.getVarType(i))) {
-							match = false;
-							break;
-						}
-					}
-				}
-			}
-			// if there's a problem, just use the default
-			if (!match) {
-				lastInitialState = new Values(parsedModel.getDefaultInitialState(), parsedModel);
-			}
-		}
-
-		Values initialState = null;
-		initialState = GUIInitialStatePicker.defineInitalValuesWithDialog(getGUI(), lastInitialState, parsedModel);
-		return initialState;
+		return GUIInitialStatePicker.defineInitalValuesWithDialog(getGUI(), engine, lastInitialStateValues);
 	}
 
 	/** Explore a number of steps. */
@@ -821,7 +790,7 @@ public class GUISimulator extends GUIPlugin implements MouseListener, ListSelect
 	public void newPathPlotAfterParse()
 	{
 		newPathPlotAfterReceiveParseNotification = false;
-		Values initialState;
+		State initialState;
 		try {
 			// Check model is simulate-able
 			// (bail out now else causes problems below)
@@ -838,6 +807,10 @@ public class GUISimulator extends GUIPlugin implements MouseListener, ListSelect
 			// store constants (currently, compute non-exact for simulation)
 			getPrism().setPRISMModelConstants(uCon.getMFConstantValues(), false);
 
+			// Load model into the simulator
+			getPrism().loadModelIntoSimulator();
+			getPrism().loadStrategyIntoSimulator();
+			
 			// do we need to ask for an initial state for simulation?
 			// no: just use default/random
 			if (!chooseInitialState) {
@@ -852,10 +825,6 @@ public class GUISimulator extends GUIPlugin implements MouseListener, ListSelect
 				}
 			}
 
-			// Initialise path creation 
-			getPrism().loadModelIntoSimulator();
-			getPrism().loadStrategyIntoSimulator();
-			
 			// Get path details from dialog
 			GUIPathPlotDialog pathPlotDialog = GUIPathPlotDialog.showDialog(getGUI(), this, parsedModel);
 			if (pathPlotDialog == null)
@@ -872,11 +841,11 @@ public class GUISimulator extends GUIPlugin implements MouseListener, ListSelect
 			Graph graphModel = new Graph();
 			guiProp.getGraphHandler().addGraph(graphModel);
 			getPrism().getMainLog().resetNumberOfWarnings();
-			parser.State initialStateObject = initialState == null ? null : new parser.State(initialState, parsedModel);
-			new SimPathPlotThread(this, engine, initialStateObject, simPathDetails, maxPathLength, graphModel).start();
+			new SimPathPlotThread(this, engine, initialState, simPathDetails, maxPathLength, graphModel).start();
 
 			// store initial state for next time
-			lastInitialState = initialState;
+			// (but as Values in case variables change)
+			lastInitialStateValues = new Values(initialState, engine.getModel());
 
 		} catch (PrismException e) {
 			this.error(e.getMessage());
