@@ -339,7 +339,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
     // Find the starting that minimizes CVAR at initial state based on a given alpha
     public double [] computeStartingB( double alpha, int [] choices){
-        double [] res = new double [2]; // contains the min index + min cvar.
+        double [] res = new double [3]; // contains the min index + min cvar.
         double cvar = 0;
         res [1] = Float.POSITIVE_INFINITY;
         double expected_cost =0;
@@ -362,6 +362,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
             if (cvar < res[1]){
                 res[0] = idx_b;
                 res[1] = cvar;
+                res[2] = startState;
             }
         }
         return res;
@@ -374,32 +375,22 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         double [] cvar_info = computeStartingB(alpha, choices);
         int idx_b = (int) cvar_info[0];
 
-        mainLog.println("b :"+b[idx_b] + " cvar = " + cvar_info[1]);
-
-        // Find the correct start state
-        Iterator<Integer> prd_initial = prod_mdp.getProductModel().getInitialStates().iterator();
-        int initial_state = 0;
-        int cur_initial;
-        while(prd_initial.hasNext())
-        {
-            cur_initial = prd_initial.next();
-            int val = prod_mdp.getAutomatonState(cur_initial);
-            if (val == idx_b)
-            {
-                initial_state = cur_initial;
-                break;
-            }
-        }
+        mainLog.println("b :"+b[idx_b] + " cvar = " + cvar_info[1]+" start="+cvar_info[2]);
 
         //  Update product mdp initial state to correct b
         // FIXME double check that this is working
         if (prod_mdp.productModel instanceof ModelExplicit) {
             ((ModelExplicit) prod_mdp.productModel).clearInitialStates();
-            ((ModelExplicit) prod_mdp.productModel).addInitialState(initial_state);
+            ((ModelExplicit) prod_mdp.productModel).addInitialState((int)cvar_info[2]);
         }
         else {
             throw new PrismException("Error updating initial states productMDP is not an instance of ModelExplicit");
         }
+
+        mainLog.println("\nV[0] at state: " + (int)cvar_info[2]
+                + " original model:" + prod_mdp.getModelState((int)cvar_info[2])
+                + " b:"+ b[idx_b] + " alpha:" + alpha);
+        this.display((int)cvar_info[2], choices);
 
         double r ;
         for (int i = 0; i < prodNumStates; i++) {
@@ -410,7 +401,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
             rewardsArray.setStateReward(i, r);
 
-            mainLog.println ("policy: "+res[i]+" - rew:"+r+" - new b :"+b[prod_mdp.getAutomatonState(i)]);
+//            mainLog.println ("policy: "+res[i]+" - rew:"+r+" - new b :"+b[prod_mdp.getAutomatonState(i)]);
         }
 
         return res;
