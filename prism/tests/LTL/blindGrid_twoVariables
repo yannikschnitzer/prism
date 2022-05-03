@@ -1,0 +1,56 @@
+pomdp
+observables obsLocation endobservables
+module agent
+location: [0..100] init 0;
+obsLocation: [0..100] init 0;
+
+[n] location=0 -> 0.2:(location'=0)+0.7:(location'=1)+0.1:(location'=10);
+[w] location=0 -> 0.8:(location'=0)+0.1:(location'=1)+0.1:(location'=10);
+[s] location=0 -> 0.8:(location'=0)+0.1:(location'=1)+0.1:(location'=10);
+[e] location=0 -> 0.2:(location'=0)+0.1:(location'=1)+0.7:(location'=10);
+[n] location=1 -> 0.2:(location'=1)+0.7:(location'=2)+0.1:(location'=11);
+[w] location=1 -> 0.8:(location'=1)+0.1:(location'=2)+0.1:(location'=11);
+[s] location=1 -> 0.8:(location'=1)+0.1:(location'=2)+0.1:(location'=11);
+[e] location=1 -> 0.2:(location'=1)+0.1:(location'=2)+0.7:(location'=11);
+[n] location=2 -> 0.9:(location'=2)+0.1:(location'=12);
+[w] location=2 -> 0.9:(location'=2)+0.1:(location'=12);
+[s] location=2 -> 0.9:(location'=2)+0.1:(location'=12);
+[e] location=2 -> 0.3:(location'=2)+0.7:(location'=12);
+[n] location=10 -> 0.1:(location'=10)+0.7:(location'=11)+0.1:(location'=0)+0.1:(location'=20);
+[w] location=10 -> 0.1:(location'=10)+0.1:(location'=11)+0.7:(location'=0)+0.1:(location'=20);
+[s] location=10 -> 0.7:(location'=10)+0.1:(location'=11)+0.1:(location'=0)+0.1:(location'=20);
+[e] location=10 -> 0.1:(location'=10)+0.1:(location'=11)+0.1:(location'=0)+0.7:(location'=20);
+[n] location=11 -> 0.1:(location'=11)+0.7:(location'=12)+0.1:(location'=1)+0.1:(location'=21);
+[w] location=11 -> 0.1:(location'=11)+0.1:(location'=12)+0.7:(location'=1)+0.1:(location'=21);
+[s] location=11 -> 0.7:(location'=11)+0.1:(location'=12)+0.1:(location'=1)+0.1:(location'=21);
+[e] location=11 -> 0.1:(location'=11)+0.1:(location'=12)+0.1:(location'=1)+0.7:(location'=21);
+[n] location=12 -> 0.8:(location'=12)+0.1:(location'=2)+0.1:(location'=22);
+[w] location=12 -> 0.2:(location'=12)+0.7:(location'=2)+0.1:(location'=22);
+[s] location=12 -> 0.8:(location'=12)+0.1:(location'=2)+0.1:(location'=22);
+[e] location=12 -> 0.2:(location'=12)+0.1:(location'=2)+0.7:(location'=22);
+[n] location=20 -> 0.2:(location'=20)+0.7:(location'=21)+0.1:(location'=10);
+[w] location=20 -> 0.2:(location'=20)+0.1:(location'=21)+0.7:(location'=10);
+[s] location=20 -> 0.8:(location'=20)+0.1:(location'=21)+0.1:(location'=10);
+[e] location=20 -> 0.8:(location'=20)+0.1:(location'=21)+0.1:(location'=10);
+[n] location=21 -> 0.2:(location'=21)+0.7:(location'=22)+0.1:(location'=11);
+[w] location=21 -> 0.2:(location'=21)+0.1:(location'=22)+0.7:(location'=11);
+[s] location=21 -> 0.8:(location'=21)+0.1:(location'=22)+0.1:(location'=11);
+[e] location=21 -> 0.8:(location'=21)+0.1:(location'=22)+0.1:(location'=11);
+
+[n] location=22->(location'=22)&(obsLocation'=100);
+[s] location=22->(location'=22)&(obsLocation'=100);
+[w] location=22->(location'=22)&(obsLocation'=100);
+[e] location=22->(location'=22)&(obsLocation'=100);
+
+[n] true -> 0.5: (obsLocation' = location) + 0.5: (obsLocation' = location+1);
+
+
+endmodule
+
+label "end" = obsLocation= 100;
+rewards "dd"
+	location = 0 : 10;
+	obsLocation = 0 : 10;
+	location = 0 & obsLocation = 0 : 10;
+endrewards
+

@@ -1,0 +1,22 @@
+R{"takeovers"}min=?[F "end"];
+R{"takeovers"}max=?[F "end"];
+R{"takeovers"}min=?[F("stop" &(F"end")) ];
+R{"takeovers"}max=?[F("stop" &(F"end")) ] ;
+
+R{"states"}min=?[F "end"];
+R{"states"}max=?[F "end"];
+R{"states"}min=?[F("stop" &(F"end")) ];
+R{"states"}max=?[F("stop" &(F"end")) ] ;
+
+
+R{"takeovers2"}min=?[F("stop" &(F"end")) ];
+R{"takeovers2"}max=?[F("stop" &(F"end")) ];
+
+
+
+
+//R{"max_performance_TrustBased"}max=?[F("stop" &(F"end"))];
+//R{"max_performance_TrustBased"}max=?[F "end"];
+
+<<*>> ( R{"takeovers"}min=?[F "end"] , R{"takeovers2"}min=?[F "end"]);
+<<*>> ( R{"takeovers"}max=?[F("stop" &(F"end")) ], R{"takeovers2"}max=?[F("stop" &(F"end")) ]);

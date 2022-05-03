@@ -5,16 +5,28 @@ const double w32;
 
 const double w33;
 
+<<*>> ( R{"max_FinalTrust"}max=? [ F "end" ], R{"max_performance_TrustBased"}max=? [ F "end" ]);
+<<*>> ( R{"max_FinalTrust"}max=? [ F "end" ], R{"min_distance_decimal"}min=? [ F "end" ]);
+<<*>> ( R{"max_FinalTrust"}max=? [ F "end" ], R{"min_energy_decimal_ManualAuto"}min=? [ F "end" ]);
+<<*>> ( R{"max_FinalTrust"}max=? [ F "end" ], R{"min_energyEfficiency_decimal_ManualAuto"}min=? [ F "end" ]);
+
+<<*>> ( R{"max_averageTrust"}max=? [ F "end" ], R{"max_performance_TrustBased"}max=? [ F "end" ]);
+<<*>> ( R{"max_averageTrust"}max=? [ F "end" ], R{"min_distance_decimal"}min=? [ F "end" ]);
+<<*>> ( R{"max_averageTrust"}max=? [ F "end" ], R{"min_energy_decimal_ManualAuto"}min=? [ F "end" ]);
+<<*>> ( R{"max_averageTrust"}max=? [ F "end" ], R{"min_energyEfficiency_decimal_ManualAuto"}min=? [ F "end" ]);
+
+
+
+
+<<*>> ( R{"max_FinalTrust"}min=? [ F "end" ], R{"max_averageTrust"}min=? [ F "end" ]);
+<<*>> ( R{"max_performance_TrustBased"}min=? [ F "end" ], R{"min_takeoverTimes_V2"}min=? [ F "end" ]);
+<<*>> ( R{"max_performance_TrustBased"}max=? [ F "end" ], R{"min_takeoverTimes_V2"}max=? [ F "end" ]);
 
 R{"min_takeoverTimes_V2"}min=?[F "end"];
 R{"min_takeoverTimes_V2"}max=?[F "end"];
 R{"max_performance_TrustBased"}max=?[F "end"];
 R{"max_performance_TrustBased"}min=?[F "end"];
 
-<<*>> ( R{"max_FinalTrust"}max=? [ F "end" ], R{"max_averageTrust"}max=? [ F "end" ]);
-<<*>> ( R{"max_FinalTrust"}min=? [ F "end" ], R{"max_averageTrust"}min=? [ F "end" ]);
-<<*>> ( R{"max_performance_TrustBased"}min=? [ F "end" ], R{"min_takeoverTimes_V2"}min=? [ F "end" ]);
-<<*>> ( R{"max_performance_TrustBased"}max=? [ F "end" ], R{"min_takeoverTimes_V2"}max=? [ F "end" ]);
 
 <<*>> ( R{"max_performance_TrustBased"}min=? [ F "end" ], R{"min_takeoverTimes_V2"}max=? [ F "end" ]);
 <<*>> ( R{"max_performance_TrustBased"}max=? [ F "end" ], R{"min_takeoverTimes_V2"}min=? [ F "end" ]);

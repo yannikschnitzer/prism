@@ -901,7 +901,7 @@ public class POMDPModelChecker extends ProbModelChecker
 								Iterator<Entry<Integer, Double>> iter = pomdp.getTransitionsIterator(s,choice);
 								while (iter.hasNext()) {
 									Map.Entry<Integer, Double> trans = iter.next();
-									if (trans.getKey()==sPrime) {
+									if (trans.getKey() == sPrime) {
 										tranP = trans.getValue();	 
 									}
 								}
@@ -1315,11 +1315,11 @@ public class POMDPModelChecker extends ProbModelChecker
 						}
 					}
 					
-					for(int o=0; o<pomdp.getNumObservations(); o++) {
+					for(int o = 0; o < pomdp.getNumObservations(); o++) {
 						//mainLog.println("obs = "+o);
 						HashSet<Integer> availableChoices = new HashSet<Integer> ();
 						//find the available choices
-						for (int i=0; i<b_dis.length; i++) {
+						for (int i=0; i < b_dis.length; i++) {
 							if (b_dis[i]>0) {
 								List<Object> availbleActions = pomdp.getAvailableActions(i);
 								for (Object availbleAction : availbleActions) {
@@ -1330,8 +1330,8 @@ public class POMDPModelChecker extends ProbModelChecker
 						//iterate all choices
 						//add all possible updated choices 
 						for(int a: availableChoices) {
-							double probs= pomdp.getObservationProbAfterChoice(b, a, o);
-							if (probs>0) {
+							double probs = pomdp.getObservationProbAfterChoice(b, a, o);
+							if (probs > 0) {
 								Belief bao = pomdp.getBeliefAfterChoiceAndObservation(b, a, o);
 								if ((!B.contains(bao)) & unknownObs.get(bao.so)){
 									//if ((!B.contains(bao))){
@@ -1809,7 +1809,9 @@ public class POMDPModelChecker extends ProbModelChecker
 		for (int n = 0; n < numEpisode; n++) {
 			mainLog.println("start Episode"+n+" out of "+numEpisode);
 			double[] reward = computeReachRewardsPOMCPEpisode(pomdp,  mdpRewards,  target,  min,  statesOfInterest, endStates);
-			
+			if (reward == null) {
+				break;
+			}
 			undiscountedReward.add(reward[0]);
 			undiscountedRewardAverage += reward[0];
 			discountedReward.add(reward[1]);
@@ -1858,6 +1860,10 @@ public class POMDPModelChecker extends ProbModelChecker
 		int stepLimit = 1000;
 		double gamma = 1;
 		while (! endStates.contains(state)) {
+			mainLog.println("\n =============== Step "+ step + " Cur state " + state );
+			pomcp.displayState(state);
+			pomcp.displayRootBelief();
+
 			if (step > stepLimit ) {
 				mainLog.println("reaching step limit" + stepLimit);
 				break;
@@ -1865,13 +1871,13 @@ public class POMDPModelChecker extends ProbModelChecker
 			step += 1;
 			pomcp.setVerbose(0);
 			if(step >= 2) {
-				mainLog.println("step = " + step);
+//				mainLog.println("step = " + step);
 				pomcp.setVerbose(0);
-				pomcp.setNumSimulations(Math.pow(2, 16));
+				pomcp.setNumSimulations(Math.pow(2, 15));
 			}
-			
-			Object action = pomcp.search();
-			//Object action = pomcp.SelectAction();
+						
+			//Object action = pomcp.search(); //
+			Object action = pomcp.selectAction(); // SimulateV SimulateQ
 			ArrayList<Double> sord = pomcp.step(state, action);
 			int nextState = sord.get(0).intValue();
 			int obsSample = sord.get(1).intValue();
@@ -1882,10 +1888,14 @@ public class POMDPModelChecker extends ProbModelChecker
 			totalUndiscountedReward += reward;
 			totalDiscountedReward += reward * gamma;
 			gamma *= discount;
-			mainLog.println("\n =============== Step "+ step + " Cur state");
-			mainLog.println("Action = "+ action + " reward = "+ reward + "states after action :");
-			pomcp.displayState(nextState);
-			pomcp.displayRootBelief();
+			mainLog.println("Action = "+ action + " reward = "+ reward + " states after action :");
+//			pomcp.displayState(nextState);
+			if (pomdp.hasLabel("notbad") && !pomdp.getLabelStates("notbad").get(nextState)) {
+				mainLog.println("violated !");
+				return null;
+			} else {
+				mainLog.println("safe");
+			}
 			
 //			mainLog.println("Updated Belief=");
 //			pomcp.displayRoot();
@@ -1920,8 +1930,8 @@ public class POMDPModelChecker extends ProbModelChecker
 	{
 		
 		mainLog.println("Calling Perseus pomdp solver");
-		computeReachRewardsPerseus( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
-		//computeReachRewardsPOMCP( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
+		//computeReachRewardsPerseus( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
+		computeReachRewardsPOMCP( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
 		mainLog.println("End calling Perseus pomdp solver");
 		
 		

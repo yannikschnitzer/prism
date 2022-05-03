@@ -1,0 +1,38 @@
+pomdp
+
+observables v endobservables
+
+module vehicle
+
+	// vehicle location
+	v : [0..4] init 0;
+	[c1] v=0 -> (v'=1);
+	[c2] v=1 -> (v'=2);
+	[c3] v=2 -> (v'=3);
+	[c4] v=2 -> (v'=3);
+	
+endmodule
+
+module driver
+
+	// human trust level
+	u : [0..5] init 0;
+	[c1] u=0 -> (u'=1);
+	[c2] u=1 -> (u'=2);
+	[c3] u=2 -> (u'=3);
+	[c4] u=2 -> (u'=4);
+	
+
+endmodule
+
+label "stop" = v=1;
+label "end" = u=3;
+
+rewards "takeovers"
+	[c3] v=2:10;
+	[c4] v=2:100;
+endrewards
+
+rewards "takeovers2"
+	v=1 : 1;
+endrewards

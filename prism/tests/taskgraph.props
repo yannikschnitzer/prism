@@ -6,3 +6,4 @@ multi(R{"p1_use"}min=? [ C ], R{"p2_use"}min=? [ C ]);
 
 <<*>> (R{"p1_use"}min=? [ F "end" ], R{"p2_use"}min=? [ F "end" ]);
 
+R{"p1_use"}max=?[F "end"];

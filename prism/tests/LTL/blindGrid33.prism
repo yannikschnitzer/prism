@@ -1,0 +1,46 @@
+pomdp
+observables obsLocation endobservables
+module agent
+location: [0.. 100] init 0;
+obsLocation: [0.. 100] init 0;
+[n] location=0 -> 0.10000000000000003:(location'=0) & (obsLocation'=10)+0.10000000000000003:(location'=0) & (obsLocation'=0)+0.35:(location'=1) & (obsLocation'=11)+0.35:(location'=1) & (obsLocation'=1)+0.05:(location'=10) & (obsLocation'=20)+0.05:(location'=10) & (obsLocation'=10);
+[w] location=0 -> 0.4:(location'=0) & (obsLocation'=10)+0.4:(location'=0) & (obsLocation'=0)+0.05:(location'=1) & (obsLocation'=11)+0.05:(location'=1) & (obsLocation'=1)+0.05:(location'=10) & (obsLocation'=20)+0.05:(location'=10) & (obsLocation'=10);
+[s] location=0 -> 0.4:(location'=0) & (obsLocation'=10)+0.4:(location'=0) & (obsLocation'=0)+0.05:(location'=1) & (obsLocation'=11)+0.05:(location'=1) & (obsLocation'=1)+0.05:(location'=10) & (obsLocation'=20)+0.05:(location'=10) & (obsLocation'=10);
+[e] location=0 -> 0.10000000000000003:(location'=0) & (obsLocation'=10)+0.10000000000000003:(location'=0) & (obsLocation'=0)+0.05:(location'=1) & (obsLocation'=11)+0.05:(location'=1) & (obsLocation'=1)+0.35:(location'=10) & (obsLocation'=20)+0.35:(location'=10) & (obsLocation'=10);
+[n] location=1 -> 0.10000000000000003:(location'=1) & (obsLocation'=11)+0.10000000000000003:(location'=1) & (obsLocation'=1)+0.35:(location'=2) & (obsLocation'=12)+0.35:(location'=2) & (obsLocation'=2)+0.05:(location'=11) & (obsLocation'=21)+0.05:(location'=11) & (obsLocation'=11);
+[w] location=1 -> 0.4:(location'=1) & (obsLocation'=11)+0.4:(location'=1) & (obsLocation'=1)+0.05:(location'=2) & (obsLocation'=12)+0.05:(location'=2) & (obsLocation'=2)+0.05:(location'=11) & (obsLocation'=21)+0.05:(location'=11) & (obsLocation'=11);
+[s] location=1 -> 0.4:(location'=1) & (obsLocation'=11)+0.4:(location'=1) & (obsLocation'=1)+0.05:(location'=2) & (obsLocation'=12)+0.05:(location'=2) & (obsLocation'=2)+0.05:(location'=11) & (obsLocation'=21)+0.05:(location'=11) & (obsLocation'=11);
+[e] location=1 -> 0.10000000000000003:(location'=1) & (obsLocation'=11)+0.10000000000000003:(location'=1) & (obsLocation'=1)+0.05:(location'=2) & (obsLocation'=12)+0.05:(location'=2) & (obsLocation'=2)+0.35:(location'=11) & (obsLocation'=21)+0.35:(location'=11) & (obsLocation'=11);
+[n] location=2 -> 0.45:(location'=2) & (obsLocation'=12)+0.45:(location'=2) & (obsLocation'=2)+0.05:(location'=12) & (obsLocation'=22)+0.05:(location'=12) & (obsLocation'=12);
+[w] location=2 -> 0.45:(location'=2) & (obsLocation'=12)+0.45:(location'=2) & (obsLocation'=2)+0.05:(location'=12) & (obsLocation'=22)+0.05:(location'=12) & (obsLocation'=12);
+[s] location=2 -> 0.45:(location'=2) & (obsLocation'=12)+0.45:(location'=2) & (obsLocation'=2)+0.05:(location'=12) & (obsLocation'=22)+0.05:(location'=12) & (obsLocation'=12);
+[e] location=2 -> 0.15000000000000002:(location'=2) & (obsLocation'=12)+0.15000000000000002:(location'=2) & (obsLocation'=2)+0.35:(location'=12) & (obsLocation'=22)+0.35:(location'=12) & (obsLocation'=12);
+[n] location=10 -> 0.050000000000000044:(location'=10) & (obsLocation'=20)+0.050000000000000044:(location'=10) & (obsLocation'=10)+0.35:(location'=11) & (obsLocation'=21)+0.35:(location'=11) & (obsLocation'=11)+0.05:(location'=0) & (obsLocation'=10)+0.05:(location'=0) & (obsLocation'=0)+0.1:(location'=20) & (obsLocation'=20);
+[w] location=10 -> 0.050000000000000044:(location'=10) & (obsLocation'=20)+0.050000000000000044:(location'=10) & (obsLocation'=10)+0.05:(location'=11) & (obsLocation'=21)+0.05:(location'=11) & (obsLocation'=11)+0.35:(location'=0) & (obsLocation'=10)+0.35:(location'=0) & (obsLocation'=0)+0.1:(location'=20) & (obsLocation'=20);
+[s] location=10 -> 0.35:(location'=10) & (obsLocation'=20)+0.35:(location'=10) & (obsLocation'=10)+0.05:(location'=11) & (obsLocation'=21)+0.05:(location'=11) & (obsLocation'=11)+0.05:(location'=0) & (obsLocation'=10)+0.05:(location'=0) & (obsLocation'=0)+0.1:(location'=20) & (obsLocation'=20);
+[e] location=10 -> 0.050000000000000044:(location'=10) & (obsLocation'=20)+0.050000000000000044:(location'=10) & (obsLocation'=10)+0.05:(location'=11) & (obsLocation'=21)+0.05:(location'=11) & (obsLocation'=11)+0.05:(location'=0) & (obsLocation'=10)+0.05:(location'=0) & (obsLocation'=0)+0.7:(location'=20) & (obsLocation'=20);
+[n] location=11 -> 0.050000000000000044:(location'=11) & (obsLocation'=21)+0.050000000000000044:(location'=11) & (obsLocation'=11)+0.35:(location'=12) & (obsLocation'=22)+0.35:(location'=12) & (obsLocation'=12)+0.05:(location'=1) & (obsLocation'=11)+0.05:(location'=1) & (obsLocation'=1)+0.1:(location'=21) & (obsLocation'=21);
+[w] location=11 -> 0.050000000000000044:(location'=11) & (obsLocation'=21)+0.050000000000000044:(location'=11) & (obsLocation'=11)+0.05:(location'=12) & (obsLocation'=22)+0.05:(location'=12) & (obsLocation'=12)+0.35:(location'=1) & (obsLocation'=11)+0.35:(location'=1) & (obsLocation'=1)+0.1:(location'=21) & (obsLocation'=21);
+[s] location=11 -> 0.35:(location'=11) & (obsLocation'=21)+0.35:(location'=11) & (obsLocation'=11)+0.05:(location'=12) & (obsLocation'=22)+0.05:(location'=12) & (obsLocation'=12)+0.05:(location'=1) & (obsLocation'=11)+0.05:(location'=1) & (obsLocation'=1)+0.1:(location'=21) & (obsLocation'=21);
+[e] location=11 -> 0.050000000000000044:(location'=11) & (obsLocation'=21)+0.050000000000000044:(location'=11) & (obsLocation'=11)+0.05:(location'=12) & (obsLocation'=22)+0.05:(location'=12) & (obsLocation'=12)+0.05:(location'=1) & (obsLocation'=11)+0.05:(location'=1) & (obsLocation'=1)+0.7:(location'=21) & (obsLocation'=21);
+[n] location=12 -> 0.4:(location'=12) & (obsLocation'=22)+0.4:(location'=12) & (obsLocation'=12)+0.05:(location'=2) & (obsLocation'=12)+0.05:(location'=2) & (obsLocation'=2)+0.1:(location'=22) & (obsLocation'=22);
+[w] location=12 -> 0.10000000000000003:(location'=12) & (obsLocation'=22)+0.10000000000000003:(location'=12) & (obsLocation'=12)+0.35:(location'=2) & (obsLocation'=12)+0.35:(location'=2) & (obsLocation'=2)+0.1:(location'=22) & (obsLocation'=22);
+[s] location=12 -> 0.4:(location'=12) & (obsLocation'=22)+0.4:(location'=12) & (obsLocation'=12)+0.05:(location'=2) & (obsLocation'=12)+0.05:(location'=2) & (obsLocation'=2)+0.1:(location'=22) & (obsLocation'=22);
+[e] location=12 -> 0.10000000000000003:(location'=12) & (obsLocation'=22)+0.10000000000000003:(location'=12) & (obsLocation'=12)+0.05:(location'=2) & (obsLocation'=12)+0.05:(location'=2) & (obsLocation'=2)+0.7:(location'=22) & (obsLocation'=22);
+[n] location=20 -> 0.20000000000000007:(location'=20) & (obsLocation'=20)+0.7:(location'=21) & (obsLocation'=21)+0.05:(location'=10) & (obsLocation'=20)+0.05:(location'=10) & (obsLocation'=10);
+[w] location=20 -> 0.20000000000000007:(location'=20) & (obsLocation'=20)+0.1:(location'=21) & (obsLocation'=21)+0.35:(location'=10) & (obsLocation'=20)+0.35:(location'=10) & (obsLocation'=10);
+[s] location=20 -> 0.8:(location'=20) & (obsLocation'=20)+0.1:(location'=21) & (obsLocation'=21)+0.05:(location'=10) & (obsLocation'=20)+0.05:(location'=10) & (obsLocation'=10);
+[e] location=20 -> 0.8:(location'=20) & (obsLocation'=20)+0.1:(location'=21) & (obsLocation'=21)+0.05:(location'=10) & (obsLocation'=20)+0.05:(location'=10) & (obsLocation'=10);
+[n] location=21 -> 0.20000000000000007:(location'=21) & (obsLocation'=21)+0.7:(location'=22) & (obsLocation'=22)+0.05:(location'=11) & (obsLocation'=21)+0.05:(location'=11) & (obsLocation'=11);
+[w] location=21 -> 0.20000000000000007:(location'=21) & (obsLocation'=21)+0.1:(location'=22) & (obsLocation'=22)+0.35:(location'=11) & (obsLocation'=21)+0.35:(location'=11) & (obsLocation'=11);
+[s] location=21 -> 0.8:(location'=21) & (obsLocation'=21)+0.1:(location'=22) & (obsLocation'=22)+0.05:(location'=11) & (obsLocation'=21)+0.05:(location'=11) & (obsLocation'=11);
+[e] location=21 -> 0.8:(location'=21) & (obsLocation'=21)+0.1:(location'=22) & (obsLocation'=22)+0.05:(location'=11) & (obsLocation'=21)+0.05:(location'=11) & (obsLocation'=11);
+[n] location=22->(location'=22)&(obsLocation'=100);
+[s] location=22->(location'=22)&(obsLocation'=100);
+[w] location=22->(location'=22)&(obsLocation'=100);
+[e] location=22->(location'=22)&(obsLocation'=100);
+endmodule
+label "end" = obsLocation= 100;
+rewards "dd"
+	location = 22 : 1;
+endrewards

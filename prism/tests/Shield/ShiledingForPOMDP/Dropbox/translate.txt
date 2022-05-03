@@ -1,0 +1,5 @@
+{"ax":0,"ay":0,"start":false}, state=0, obs=3
+{"ax":0,"ay":0,"start":true}, state=1, obs=1
+{"ax":0,"ay":1,"start":true}, state=2, obs=1
+{"ax":1,"ay":0,"start":true}, state=3, obs=2
+{"ax":1,"ay":1,"start":true}, state=4, obs=0

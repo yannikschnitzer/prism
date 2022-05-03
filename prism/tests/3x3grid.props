@@ -1,0 +1,3 @@
+// Minimum steps to reach goal
+Rmin=? [ F "target" ]
+Rmax=? [ F "target" ]

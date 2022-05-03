@@ -1,0 +1,7 @@
+
+label "ALoc" = location= 22;
+label "BLoc" = location= 33;
+label "CLoc" = location= 44;
+Rmax=?[F( (!"CLoc" U "ALoc")&(!"CLoc" U "BLoc" )   ) ]
+
+Rmax=?[ F("end")];
