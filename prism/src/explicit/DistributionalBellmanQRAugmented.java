@@ -138,4 +138,9 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
         return 0;
     }
 
+    @Override
+    public double[] getB() {
+        return new double[0];
+    }
+
 }

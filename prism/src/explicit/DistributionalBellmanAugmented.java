@@ -66,4 +66,6 @@ public abstract class DistributionalBellmanAugmented {
     public abstract int getB_atoms();
 
     public abstract double getBVal(int idx);
+
+    public abstract double [] getB();
 }

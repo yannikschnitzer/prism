@@ -69,9 +69,9 @@ public class CVaRProduct extends Product<MDP>
         try {
             prodNumStates = Math.multiplyExact(mdpNumStates, b_atoms) ;
         } catch (ArithmeticException e) {
-            throw new PrismException("Size of product state space of model and automaton is too large for explicit engine");
+            throw new PrismException("Size of mapproduct state space of model and automaton is too large for explicit engine");
         }
-
+        mainLog.println("Prod Num States:"+prodNumStates);
         VarList newVarList = null;
 
         if (model.getVarList() != null) {
@@ -125,7 +125,6 @@ public class CVaRProduct extends Product<MDP>
                 // Add (initial) state to product
                 queue.add(new Point(s_0, i));
                 mdpProd.addState();
-                // FIXME : double check this
 
                 mdpProd.addInitialState(mdpProd.getNumStates() -1);
                 map[s_0 * b_atoms + i] = mdpProd.getNumStates() -1;

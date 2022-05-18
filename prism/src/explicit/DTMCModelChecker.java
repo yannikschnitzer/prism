@@ -2616,7 +2616,11 @@ public class DTMCModelChecker extends ProbModelChecker
 			states.add(sr);
 			probs.add(1.0 / dtmc.getNumInitialStates());
 		}
-		
+
+		if (verbosity >=1 ) {
+			mainLog.println("DTMC #initial states: " + dtmc.getNumInitialStates());
+		}
+
 		for (int t = 1; t <= T; t++) {
 			
 			List<Pair<Integer,Integer>> statesNew = new ArrayList<>();

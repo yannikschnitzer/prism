@@ -1,0 +1,31 @@
+mdp
+const int N=315; // N*N grid map
+const double p=0.1; // with probability p, a move to a neighboring state state occurs due to seeing and control noise
+
+module robot
+	//define robot position
+	r:[1..N] init 1; //grid row
+	c:[1..N] init 1; //grid column
+
+	// go to the terminal state when hitting an obstacle
+	[obstacle] (r=78 & c=42) | (r=178 & c=23) | (r=104 & c=56) | (r=226 & c=10) | (r=198 & c=82) | (r=110 & c=33) | (r=83 & c=187) | (r=66 & c=141) | (r=112 & c=182) | (r=246 & c=26) | (r=253 & c=193) | (r=143 & c=41)-> (r'=315) & (c'=1);
+
+	// transitions
+	[east] (c<N | c=N) & !((r=78 & c=42) | (r=178 & c=23) | (r=104 & c=56) | (r=226 & c=10) | (r=198 & c=82) | (r=110 & c=33) | (r=83 & c=187) | (r=66 & c=141) | (r=112 & c=182) | (r=246 & c=26) | (r=253 & c=193) | (r=143 & c=41))-> p/3:(r'=min(r+1, N))+ p/3: (c'=max(c-1, 1))+ p/3: (r'=max(r-1, 1)) + (1-p): (c'=min(c+1, N));
+	[south] (r<N | r=N) & !((r=78 & c=42) | (r=178 & c=23) | (r=104 & c=56) | (r=226 & c=10) | (r=198 & c=82) | (r=110 & c=33) | (r=83 & c=187) | (r=66 & c=141) | (r=112 & c=182) | (r=246 & c=26) | (r=253 & c=193) | (r=143 & c=41))-> (1-p):(r'=min(r+1, N)) + p/3: (c'=min(c+1, N)) + p/3:(r'=min(r+1, N))+ p/3: (c'=max(c-1, 1));
+	[west]  (c>1 | c=1) & !((r=78 & c=42) | (r=178 & c=23) | (r=104 & c=56) | (r=226 & c=10) | (r=198 & c=82) | (r=110 & c=33) | (r=83 & c=187) | (r=66 & c=141) | (r=112 & c=182) | (r=246 & c=26) | (r=253 & c=193) | (r=143 & c=41))-> p/3:(r'=max(r-1, 1))+ p/3:(r'=min(r+1, N))+ p/3: (c'=min(c+1, N)) + (1-p): (c'=max(c-1, 1));
+	[north] (r=1 | r>1) & !((r=78 & c=42) | (r=178 & c=23) | (r=104 & c=56) | (r=226 & c=10) | (r=198 & c=82) | (r=110 & c=33) | (r=83 & c=187) | (r=66 & c=141) | (r=112 & c=182) | (r=246 & c=26) | (r=253 & c=193) | (r=143 & c=41))-> (1-p):(r'=max(r-1, 1)) + p/3: (c'=max(c-1, 1)) + p/3: (c'=min(c+1, N)) + p/3:(r'=min(r+1, N));
+
+	// terminal state self-loop to avoid deadlock
+	[] r=315 & c=1 -> true;
+endmodule
+
+label "goal" = r=315 & c=1;
+
+rewards
+	[east] true : 1;
+	[south] true : 1;
+	[west] true : 1;
+	[north] true : 1;
+	[obstacle] true : 60.0;
+endrewards

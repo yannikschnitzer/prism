@@ -60,6 +60,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         for (int i = 0; i < b_atoms; i++) {
             this.b[i] = (vmin + i *this.delta_b);
         }
+        log.println(" b: "+ Arrays.toString(b));
 
     }
 
@@ -113,6 +114,9 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
         // Update to augmented states
         numStates = prod_mdp.getProductModel().getNumStates();
+
+        mainLog.println("#b: "+b_atoms+ " atoms: "+atoms+" Max Choices: "+n_actions);
+        mainLog.println("Size of probability array: "+numStates*n_actions*atoms);
 
         this.p = new double[numStates][n_actions][atoms];
         double [] temp2 = new double[atoms];
@@ -378,7 +382,6 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         mainLog.println("b :"+b[idx_b] + " cvar = " + cvar_info[1]+" start="+cvar_info[2]);
 
         //  Update product mdp initial state to correct b
-        // FIXME double check that this is working
         if (prod_mdp.productModel instanceof ModelExplicit) {
             ((ModelExplicit) prod_mdp.productModel).clearInitialStates();
             ((ModelExplicit) prod_mdp.productModel).addInitialState((int)cvar_info[2]);
@@ -421,4 +424,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     public double getBVal(int idx){
         return b[idx];
     }
+
+    @Override
+    public double [] getB() {return b;}
 }

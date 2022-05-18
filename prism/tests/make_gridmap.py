@@ -1,6 +1,7 @@
 import os, sys
 import math
 import argparse, random
+import numpy as np
 
 
 def init_argparse() -> argparse.ArgumentParser:
@@ -30,8 +31,8 @@ def compute_obstacles(N, obs, goal):
     for i, z in enumerate(zones):
         print(i, ((i+1)*(N/ranges))-1,len(obstacles), math.ceil(z/100*obs))
         while len(obstacles) < prev+ math.ceil(z/100*obs)+1:
-            tempr = random.randint(N/ranges,(N-N/ranges))
-            tempc = random.randint(0,((i+1)*(N/ranges))-1)
+            tempr = random.randint(math.floor(N/ranges),math.floor((N-N/ranges)))
+            tempc = random.randint(0,math.floor(((i+1)*(N/ranges))-1))
             temp = (tempr-1)*(N)+ (tempc-1)
             if  (temp not in obstacles):
                 r.append(tempr)
@@ -91,6 +92,9 @@ def write_gridmap(N, obs, p, goal=None, obs_cost=30):
 
         f.write(f'endmodule\n')
         f.write(f'\nlabel "goal" = r={goal[0]} & c={goal[1]};\n')
+        f.write(f'\nlabel "obs" = ')
+        f.write(str); f.write(';\n')
+
         f.write(f'\nrewards\n')
 
         f.write(f'\t[east] true : 1;\n')
@@ -112,6 +116,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     goal = [args.N, 1]
+
+    if args.N <0:
+        print(f'Error N cannot be < 0: {args.N}.')
+        sys.exit()
 
     if args.obs >= (args.N*args.N):
         print(f' Too many obstacles {args.obs} for an {args.N}*{args.N} grid')
