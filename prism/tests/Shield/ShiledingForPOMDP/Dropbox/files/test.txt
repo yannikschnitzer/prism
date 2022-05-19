@@ -1,0 +1,1564 @@
+PRISM
+=====
+
+Version: 4.7.dev
+Date: Wed May 18 22:02:29 EDT 2022
+Hostname: YEW
+Memory limits: cudd=1g, java(heap)=1g
+Command line: prism 'E:/Downloads/prism3/prism812/prism/prism/tests/Shield/rocks2.prism' -const N=6 'E:/Downloads/prism3/prism812/prism/prism/tests/Shield/samplerocks.props' -prop 7 -ex
+
+Parsing model file "E:/Downloads/prism3/prism812/prism/prism/tests/Shield/rocks2.prism"...
+
+Type:        POMDP
+Modules:     master rock1 rock2 robot 
+Variables:   started done r1qual r1taken r1lastobs r2qual r2taken r2lastobs x y 
+Observables: started r1taken r1lastobs r2taken r2lastobs done seefinish seebad seegood atr1 atr2 nearr1 nearr2
+
+Parsing properties file "E:/Downloads/prism3/prism812/prism/prism/tests/Shield/samplerocks.props"...
+
+7 properties:
+(1) Rmin=? [ F "goal" ]
+(2) Rmax=? [ F "goal" ]
+(3) R{"rew"}max=? [ F "goal" ]
+(4) R{"cos"}min=? [ F "goal" ]
+(5) <<*>> (1*R{"rew"}max=? [ F "goal" ]+1*R{"cos"}min=? [ F "goal" ])
+(6) R{"cost"}min=? [ F "goal" ]
+(7) R{"cost2"}min=? [ F "goal" ]
+
+---------------------------------------------------------------------
+
+Model checking: R{"cost2"}min=? [ F "goal" ]
+Model constants: N=6
+
+Building model...
+Model constants: N=6
+
+Computing reachable states... 816 states
+Reachable states exploration and model construction done in 0.097 secs.
+Sorting reachable states list...
+
+Time for model construction: 0.119 seconds.
+
+Type:        POMDP
+States:      816 (1 initial)
+Obs/unobs:   74/144
+Transitions: 7325
+Choices:     4295
+Max/avg:     7/5.26
+Building reward structure...
+Calling Perseus pomdp solver
+Starting Prob1 (max)...
+Prob1 (max) took 18 iterations and 0.032 seconds.
+endS 
+762 763 764 765 766 767 768 769 770 771 772 773 774 775 776 777 778 779 780 781 782 783 784 785 786 787 788 789 790 791 792 793 794 795 796 797 798 799 800 801 802 803 804 805 806 807 808 809 810 811 812 813 814 815  
+start Episode0 out of 50
+start running episode
+
+ =============== Step 0 Cur state 0
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief = 
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[10000.0], 
+
+MCTS layer2
+Id=1 a=placement vmean=-19.730977265128754 v=-19.730977265128754 n=1.0 | Id=0 o=-1 vmean=-19.730977265128754 v=-19.730977265128754 n=1.0
+Action = placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 284
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief = 
+s=1(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[2480.0], 
+s=61(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[2482.0], 
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[2544.0], 
+s=345(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[2494.0], 
+
+MCTS layer2
+Id=3 a=south vmean=-27.470529421516463 v=-5768.811178518457 n=210.0 | Id=2 o=-1 vmean=-23.059717065879322 v=-755620.8088147336 n=32768.0
+Id=4 a=east vmean=-22.941895285753937 v=-725537.4384119683 n=31625.0 | Id=2 o=-1 vmean=-23.059717065879322 v=-755620.8088147336 n=32768.0
+Id=5 a=r1sense vmean=-26.528692591318812 v=-9125.870251413671 n=344.0 | Id=2 o=-1 vmean=-23.059717065879322 v=-755620.8088147336 n=32768.0
+Id=6 a=r2sense vmean=-25.787247831632047 v=-15188.688972831276 n=589.0 | Id=2 o=-1 vmean=-23.059717065879322 v=-755620.8088147336 n=32768.0
+reach tree print depth 2
+Action = east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 290
+s=290(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+Belief = 
+s=7(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[7021.0], 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[796.0], 
+s=67(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[7076.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[754.0], 
+s=290(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[7237.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[828.0], 
+s=351(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[7069.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[844.0], 
+
+MCTS layer2
+Id=75083 a=south vmean=-28.59419481662461 v=-3316.926598728455 n=116.0 | Id=23 o=-1 vmean=-22.98106566818895 v=-753043.5598152155 n=32768.0
+Id=75084 a=east vmean=-22.876116815616758 v=-730342.9054553806 n=31926.0 | Id=23 o=-1 vmean=-22.98106566818895 v=-753043.5598152155 n=32768.0
+Id=75085 a=west vmean=-27.19964877029802 v=-5331.131158978412 n=196.0 | Id=23 o=-1 vmean=-22.98106566818895 v=-753043.5598152155 n=32768.0
+Id=75086 a=r1sense vmean=-26.511309125326697 v=-7105.030845587555 n=268.0 | Id=23 o=-1 vmean=-22.98106566818895 v=-753043.5598152155 n=32768.0
+Id=75087 a=r2sense vmean=-26.51742655167094 v=-6947.565756537786 n=262.0 | Id=23 o=-1 vmean=-22.98106566818895 v=-753043.5598152155 n=32768.0
+reach tree print depth 2
+Action = east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 296
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+Belief = 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[6432.0], 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[1451.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[83.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[6392.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[1473.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[97.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[6604.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[1466.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[89.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[6315.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[1445.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[79.0], 
+
+MCTS layer2
+Id=148756 a=south vmean=-25.001728483953976 v=-18251.2617932864 n=730.0 | Id=75093 o=-1 vmean=-23.140878829677735 v=-758280.31749088 n=32768.0
+Id=148757 a=east vmean=-22.954524599122006 v=-666048.4857681241 n=29016.0 | Id=75093 o=-1 vmean=-23.140878829677735 v=-758280.31749088 n=32768.0
+Id=148758 a=west vmean=-27.953714456095526 v=-4444.640598519189 n=159.0 | Id=75093 o=-1 vmean=-23.140878829677735 v=-758280.31749088 n=32768.0
+Id=148759 a=r1sense vmean=-24.23168068748679 v=-37050.239771167304 n=1529.0 | Id=75093 o=-1 vmean=-23.140878829677735 v=-758280.31749088 n=32768.0
+Id=148760 a=r2sense vmean=-24.352091124265858 v=-32485.689559770653 n=1334.0 | Id=75093 o=-1 vmean=-23.140878829677735 v=-758280.31749088 n=32768.0
+reach tree print depth 2
+Action = east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 302
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+Belief = 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[5198.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[1763.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[5274.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[1724.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[5425.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[1819.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[5260.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[1693.0], 
+
+MCTS layer2
+Id=222396 a=south vmean=-23.19709646178386 v=-127352.0595751934 n=5490.0 | Id=148784 o=-1 vmean=-23.092239153338497 v=-756686.4925765959 n=32768.0
+Id=222397 a=east vmean=-22.93877727996909 v=-242187.61052191368 n=10558.0 | Id=148784 o=-1 vmean=-23.092239153338497 v=-756686.4925765959 n=32768.0
+Id=222398 a=west vmean=-23.86897344183324 v=-41722.9655763245 n=1748.0 | Id=148784 o=-1 vmean=-23.092239153338497 v=-756686.4925765959 n=32768.0
+Id=222399 a=r1sense vmean=-23.125800233933962 v=-151127.10452875844 n=6535.0 | Id=148784 o=-1 vmean=-23.092239153338497 v=-756686.4925765959 n=32768.0
+Id=222400 a=r2sense vmean=-23.02912793343103 v=-194296.7523743576 n=8437.0 | Id=148784 o=-1 vmean=-23.092239153338497 v=-756686.4925765959 n=32768.0
+reach tree print depth 2
+Action = east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 308
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2489.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2497.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2566.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2448.0], 
+
+MCTS layer2
+Id=295753 a=south vmean=-23.07003890816051 v=-119202.89103846534 n=5167.0 | Id=222430 o=-1 vmean=-22.931619997797444 v=-751423.3240878267 n=32768.0
+Id=295754 a=east vmean=-23.24350845279281 v=-70915.94428947086 n=3051.0 | Id=222430 o=-1 vmean=-22.931619997797444 v=-751423.3240878267 n=32768.0
+Id=295755 a=west vmean=-23.315187039366418 v=-74422.07702965761 n=3192.0 | Id=222430 o=-1 vmean=-22.931619997797444 v=-751423.3240878267 n=32768.0
+Id=295756 a=r1sense vmean=-22.760016055009935 v=-275532.75436195027 n=12106.0 | Id=222430 o=-1 vmean=-22.931619997797444 v=-751423.3240878267 n=32768.0
+Id=295757 a=r2sense vmean=-22.843672434957636 v=-211349.65736822804 n=9252.0 | Id=222430 o=-1 vmean=-22.931619997797444 v=-751423.3240878267 n=32768.0
+reach tree print depth 2
+Action = r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 6 Cur state 471
+s=471(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=181(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2482.0], 
+s=227(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2490.0], 
+s=471(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2613.0], 
+s=526(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2415.0], 
+
+MCTS layer2
+Id=368506 a=south vmean=-23.00828412189614 v=-122358.05496024367 n=5318.0 | Id=296740 o=-1 vmean=-22.902346980295334 v=-750464.1058503175 n=32768.0
+Id=368507 a=east vmean=-22.87147816304519 v=-159688.66053438152 n=6982.0 | Id=296740 o=-1 vmean=-22.902346980295334 v=-750464.1058503175 n=32768.0
+Id=368508 a=west vmean=-23.352256609009597 v=-64685.75080695659 n=2770.0 | Id=296740 o=-1 vmean=-22.902346980295334 v=-750464.1058503175 n=32768.0
+Id=368509 a=r1sense vmean=-22.801549679161372 v=-208999.00435919315 n=9166.0 | Id=296740 o=-1 vmean=-22.902346980295334 v=-750464.1058503175 n=32768.0
+Id=368510 a=r2sense vmean=-22.82379690453636 v=-194732.63518950422 n=8532.0 | Id=296740 o=-1 vmean=-22.902346980295334 v=-750464.1058503175 n=32768.0
+reach tree print depth 2
+Action = r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 7 Cur state 308
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2488.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2504.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2568.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2440.0], 
+
+MCTS layer2
+Id=441638 a=south vmean=-22.984656957767864 v=-119887.97069171719 n=5216.0 | Id=368545 o=-1 vmean=-22.848112655274395 v=-748686.9554880314 n=32768.0
+Id=441639 a=east vmean=-22.77163219618163 v=-176093.03177307255 n=7733.0 | Id=368545 o=-1 vmean=-22.848112655274395 v=-748686.9554880314 n=32768.0
+Id=441640 a=west vmean=-23.45508736075519 v=-51577.737106300665 n=2199.0 | Id=368545 o=-1 vmean=-22.848112655274395 v=-748686.9554880314 n=32768.0
+Id=441641 a=r1sense vmean=-22.76547854207506 v=-200563.86595568128 n=8810.0 | Id=368545 o=-1 vmean=-22.848112655274395 v=-748686.9554880314 n=32768.0
+Id=441642 a=r2sense vmean=-22.765533480274108 v=-200564.3499612149 n=8810.0 | Id=368545 o=-1 vmean=-22.848112655274395 v=-748686.9554880314 n=32768.0
+reach tree print depth 2
+Action = r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 8 Cur state 471
+s=471(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=181(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2500.0], 
+s=227(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2483.0], 
+s=471(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2656.0], 
+s=526(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2361.0], 
+
+MCTS layer2
+Id=514457 a=south vmean=-22.966651636995437 v=-126729.98373294082 n=5518.0 | Id=441678 o=-1 vmean=-22.881872524513604 v=-749793.1988832618 n=32768.0
+Id=514458 a=east vmean=-23.10760178991744 v=-93470.24924021604 n=4045.0 | Id=441678 o=-1 vmean=-22.881872524513604 v=-749793.1988832618 n=32768.0
+Id=514459 a=west vmean=-22.955127156525148 v=-129168.50050976701 n=5627.0 | Id=441678 o=-1 vmean=-22.881872524513604 v=-749793.1988832618 n=32768.0
+Id=514460 a=r1sense vmean=-22.78780356436014 v=-194539.4790289425 n=8537.0 | Id=441678 o=-1 vmean=-22.881872524513604 v=-749793.1988832618 n=32768.0
+Id=514461 a=r2sense vmean=-22.772368805589963 v=-205884.98637133886 n=9041.0 | Id=441678 o=-1 vmean=-22.881872524513604 v=-749793.1988832618 n=32768.0
+reach tree print depth 2
+Action = r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 9 Cur state 471
+s=471(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=181(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2498.0], 
+s=227(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2451.0], 
+s=471(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2686.0], 
+s=526(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2365.0], 
+
+MCTS layer2
+Id=587294 a=south vmean=-23.3365104626107 v=-75260.2462419195 n=3225.0 | Id=514497 o=-1 vmean=-22.97985644239759 v=-753003.9359044842 n=32768.0
+Id=587295 a=east vmean=-23.03322500942511 v=-138475.74875666376 n=6012.0 | Id=514497 o=-1 vmean=-22.97985644239759 v=-753003.9359044842 n=32768.0
+Id=587296 a=west vmean=-23.10074363037925 v=-119176.73638912654 n=5159.0 | Id=514497 o=-1 vmean=-22.97985644239759 v=-753003.9359044842 n=32768.0
+Id=587297 a=r1sense vmean=-22.800416576177767 v=-261087.57021381162 n=11451.0 | Id=514497 o=-1 vmean=-22.97985644239759 v=-753003.9359044842 n=32768.0
+Id=587298 a=r2sense vmean=-22.974083846686174 v=-159003.63430291502 n=6921.0 | Id=514497 o=-1 vmean=-22.97985644239759 v=-753003.9359044842 n=32768.0
+reach tree print depth 2
+Action = r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 10 Cur state 471
+s=471(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=181(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2508.0], 
+s=227(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2457.0], 
+s=471(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2605.0], 
+s=526(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2430.0], 
+
+MCTS layer2
+Id=660189 a=south vmean=-22.88943609339963 v=-182772.14720579606 n=7985.0 | Id=587310 o=-1 vmean=-22.945245211176395 v=-751869.7950798281 n=32768.0
+Id=660190 a=east vmean=-23.06669437244199 v=-118724.27593495893 n=5147.0 | Id=587310 o=-1 vmean=-22.945245211176395 v=-751869.7950798281 n=32768.0
+Id=660191 a=west vmean=-23.431859270368623 v=-61039.99339931026 n=2605.0 | Id=587310 o=-1 vmean=-22.945245211176395 v=-751869.7950798281 n=32768.0
+Id=660192 a=r1sense vmean=-22.840219104019514 v=-202272.98038519683 n=8856.0 | Id=587310 o=-1 vmean=-22.945245211176395 v=-751869.7950798281 n=32768.0
+Id=660193 a=r2sense vmean=-22.88200589046125 v=-187060.39815452072 n=8175.0 | Id=587310 o=-1 vmean=-22.945245211176395 v=-751869.7950798281 n=32768.0
+reach tree print depth 2
+Action = r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 11 Cur state 471
+s=471(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=181(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2532.0], 
+s=227(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2470.0], 
+s=471(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2506.0], 
+s=526(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2492.0], 
+
+MCTS layer2
+Id=733637 a=south vmean=-23.014914970683034 v=-97537.2096457547 n=4238.0 | Id=660217 o=-1 vmean=-22.785527853450418 v=-746636.1767018633 n=32768.0
+Id=733638 a=east vmean=-23.015308640822397 v=-97653.95456300944 n=4243.0 | Id=660217 o=-1 vmean=-22.785527853450418 v=-746636.1767018633 n=32768.0
+Id=733639 a=west vmean=-23.06711289252077 v=-87355.15652397615 n=3787.0 | Id=660217 o=-1 vmean=-22.785527853450418 v=-746636.1767018633 n=32768.0
+Id=733640 a=r1sense vmean=-22.55075834367458 v=-324618.1663571956 n=14395.0 | Id=660217 o=-1 vmean=-22.785527853450418 v=-746636.1767018633 n=32768.0
+Id=733641 a=r2sense vmean=-22.845485603911275 v=-139471.68961187833 n=6105.0 | Id=660217 o=-1 vmean=-22.785527853450418 v=-746636.1767018633 n=32768.0
+reach tree print depth 2
+Action = r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 12 Cur state 471
+s=471(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=181(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2576.0], 
+s=227(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2451.0], 
+s=471(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2461.0], 
+s=526(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2512.0], 
+
+MCTS layer2
+Id=806070 a=south vmean=-23.03112661767902 v=-100530.86768616893 n=4365.0 | Id=733694 o=-1 vmean=-22.82470000899053 v=-747919.7698946017 n=32768.0
+Id=806071 a=east vmean=-22.65338417876028 v=-256391.00213520887 n=11318.0 | Id=733694 o=-1 vmean=-22.82470000899053 v=-747919.7698946017 n=32768.0
+Id=806072 a=west vmean=-23.23202818913722 v=-69394.06820095288 n=2987.0 | Id=733694 o=-1 vmean=-22.82470000899053 v=-747919.7698946017 n=32768.0
+Id=806073 a=r1sense vmean=-22.775138613849283 v=-179445.3171385185 n=7879.0 | Id=733694 o=-1 vmean=-22.82470000899053 v=-747919.7698946017 n=32768.0
+Id=806074 a=r2sense vmean=-22.8587417163069 v=-142158.5147337126 n=6219.0 | Id=733694 o=-1 vmean=-22.82470000899053 v=-747919.7698946017 n=32768.0
+reach tree print depth 2
+Action = east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 13 Cur state 314
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief = 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[2924.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[2675.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[2795.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[2924.0], 
+
+MCTS layer2
+Id=877566 a=south vmean=-22.95160822277565 v=-132660.29552764326 n=5780.0 | Id=806110 o=-1 vmean=-22.714756209852816 v=-744317.1314844571 n=32768.0
+Id=877567 a=east vmean=-22.58801985057409 v=-391224.5038119432 n=17320.0 | Id=806110 o=-1 vmean=-22.714756209852816 v=-744317.1314844571 n=32768.0
+Id=877568 a=west vmean=-22.749097474473743 v=-218482.33214484583 n=9604.0 | Id=806110 o=-1 vmean=-22.714756209852816 v=-744317.1314844571 n=32768.0
+Id=877569 a=finish vmean=-30.46875 v=-1950.0 n=64.0 | Id=806110 o=-1 vmean=-22.714756209852816 v=-744317.1314844571 n=32768.0
+reach tree print depth 2
+Action = east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 14 Cur state 314
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief = 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[4531.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[4043.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[4255.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[4491.0], 
+
+MCTS layer2
+Id=948179 a=south vmean=-23.378539743406368 v=-57861.88586493076 n=2475.0 | Id=877580 o=-1 vmean=-22.675597026371186 v=-743033.963360131 n=32768.0
+Id=948180 a=east vmean=-22.55525950389864 v=-400536.29827023204 n=17758.0 | Id=877580 o=-1 vmean=-22.675597026371186 v=-743033.963360131 n=32768.0
+Id=948181 a=west vmean=-22.650942328945003 v=-280735.77922494436 n=12394.0 | Id=877580 o=-1 vmean=-22.675597026371186 v=-743033.963360131 n=32768.0
+Id=948182 a=finish vmean=-27.659574468085108 v=-3900.0 n=141.0 | Id=877580 o=-1 vmean=-22.675597026371186 v=-743033.963360131 n=32768.0
+reach tree print depth 2
+Action = east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 15 Cur state 314
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief = 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[4644.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[4112.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[4341.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[4661.0], 
+
+MCTS layer2
+Id=1018392 a=south vmean=-23.269059883273815 v=-66037.59194873109 n=2838.0 | Id=948187 o=-1 vmean=-22.651309462381523 v=-742238.1084633177 n=32768.0
+Id=1018393 a=east vmean=-22.660439791335087 v=-258759.56197725536 n=11419.0 | Id=948187 o=-1 vmean=-22.651309462381523 v=-742238.1084633177 n=32768.0
+Id=1018394 a=west vmean=-22.528339263564902 v=-416120.9545373073 n=18471.0 | Id=948187 o=-1 vmean=-22.651309462381523 v=-742238.1084633177 n=32768.0
+Id=1018395 a=finish vmean=-33.0 v=-1320.0 n=40.0 | Id=948187 o=-1 vmean=-22.651309462381523 v=-742238.1084633177 n=32768.0
+reach tree print depth 2
+Action = west reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 16 Cur state 308
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[472.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[4335.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[413.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[3823.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[458.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[4179.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[478.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[4313.0], 
+
+MCTS layer2
+Id=1088710 a=south vmean=-22.7529166501244 v=-141454.8828138234 n=6217.0 | Id=1018401 o=-1 vmean=-22.70361262424006 v=-743951.9784710982 n=32768.0
+Id=1088711 a=east vmean=-22.81603628253504 v=-121883.2658213022 n=5342.0 | Id=1018401 o=-1 vmean=-22.70361262424006 v=-743951.9784710982 n=32768.0
+Id=1088712 a=west vmean=-23.16714305215381 v=-63454.80481984929 n=2739.0 | Id=1018401 o=-1 vmean=-22.70361262424006 v=-743951.9784710982 n=32768.0
+Id=1088713 a=r1sense vmean=-22.485462565359672 v=-301889.82040251896 n=13426.0 | Id=1018401 o=-1 vmean=-22.70361262424006 v=-743951.9784710982 n=32768.0
+Id=1088714 a=r2sense vmean=-22.8527368385342 v=-115269.2046135665 n=5044.0 | Id=1018401 o=-1 vmean=-22.70361262424006 v=-743951.9784710982 n=32768.0
+reach tree print depth 2
+Action = r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 17 Cur state 308
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[248.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2382.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[221.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2079.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[247.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2249.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[254.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2320.0], 
+
+MCTS layer2
+Id=1161679 a=south vmean=-22.884021697137815 v=-100346.43514194932 n=4385.0 | Id=1088726 o=-1 vmean=-22.691780805665342 v=-743564.2734400419 n=32768.0
+Id=1161680 a=east vmean=-22.780565820212736 v=-124837.5006947658 n=5480.0 | Id=1088726 o=-1 vmean=-22.691780805665342 v=-743564.2734400419 n=32768.0
+Id=1161681 a=west vmean=-22.87170315308771 v=-102648.20375105765 n=4488.0 | Id=1088726 o=-1 vmean=-22.691780805665342 v=-743564.2734400419 n=32768.0
+Id=1161682 a=r1sense vmean=-22.590277387474973 v=-202770.32982997535 n=8976.0 | Id=1088726 o=-1 vmean=-22.691780805665342 v=-743564.2734400419 n=32768.0
+Id=1161683 a=r2sense vmean=-22.561903170066334 v=-212961.8040222561 n=9439.0 | Id=1088726 o=-1 vmean=-22.691780805665342 v=-743564.2734400419 n=32768.0
+reach tree print depth 2
+Action = r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 18 Cur state 339
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=49(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[241.0], 
+s=55(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2392.0], 
+s=114(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[226.0], 
+s=120(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2070.0], 
+s=333(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[216.0], 
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2295.0], 
+s=399(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[237.0], 
+s=405(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2323.0], 
+
+MCTS layer2
+Id=1235242 a=south vmean=-22.76371938111855 v=-122354.9916735122 n=5375.0 | Id=1161725 o=-1 vmean=-22.656675961711183 v=-742413.9579133521 n=32768.0
+Id=1235243 a=east vmean=-22.585471241225196 v=-182468.02215785836 n=8079.0 | Id=1161725 o=-1 vmean=-22.656675961711183 v=-742413.9579133521 n=32768.0
+Id=1235244 a=west vmean=-23.218085103638824 v=-54121.3563765821 n=2331.0 | Id=1161725 o=-1 vmean=-22.656675961711183 v=-742413.9579133521 n=32768.0
+Id=1235245 a=r1sense vmean=-22.587012335848033 v=-188443.44391798016 n=8343.0 | Id=1161725 o=-1 vmean=-22.656675961711183 v=-742413.9579133521 n=32768.0
+Id=1235246 a=r2sense vmean=-22.572470345761324 v=-195026.14378737783 n=8640.0 | Id=1161725 o=-1 vmean=-22.656675961711183 v=-742413.9579133521 n=32768.0
+reach tree print depth 2
+Action = r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 19 Cur state 339
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=49(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[212.0], 
+s=55(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2397.0], 
+s=114(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[219.0], 
+s=120(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2055.0], 
+s=333(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[207.0], 
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2318.0], 
+s=399(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[220.0], 
+s=405(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2372.0], 
+
+MCTS layer2
+Id=1307419 a=south vmean=-22.7783124860968 v=-136852.10141646958 n=6008.0 | Id=1235276 o=-1 vmean=-22.703955790466726 v=-743963.2233420137 n=32768.0
+Id=1307420 a=east vmean=-22.97224307843314 v=-90901.16586135994 n=3957.0 | Id=1235276 o=-1 vmean=-22.703955790466726 v=-743963.2233420137 n=32768.0
+Id=1307421 a=west vmean=-23.36528791730735 v=-48459.60714049544 n=2074.0 | Id=1235276 o=-1 vmean=-22.703955790466726 v=-743963.2233420137 n=32768.0
+Id=1307422 a=r1sense vmean=-22.628515612374937 v=-202027.38738728344 n=8928.0 | Id=1235276 o=-1 vmean=-22.703955790466726 v=-743963.2233420137 n=32768.0
+Id=1307423 a=r2sense vmean=-22.516986826231747 v=-265722.96153636085 n=11801.0 | Id=1235276 o=-1 vmean=-22.703955790466726 v=-743963.2233420137 n=32768.0
+reach tree print depth 2
+Action = r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 20 Cur state 308
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[198.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2380.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[236.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2080.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[181.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2269.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[232.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2424.0], 
+
+MCTS layer2
+Id=1380110 a=south vmean=-22.90762894989353 v=-93188.23456816688 n=4068.0 | Id=1307435 o=-1 vmean=-22.655211574225202 v=-742365.9728642114 n=32768.0
+Id=1380111 a=east vmean=-22.6114933328795 v=-182994.8155429938 n=8093.0 | Id=1307435 o=-1 vmean=-22.655211574225202 v=-742365.9728642114 n=32768.0
+Id=1380112 a=west vmean=-23.28881166893093 v=-50420.27726323546 n=2165.0 | Id=1307435 o=-1 vmean=-22.655211574225202 v=-742365.9728642114 n=32768.0
+Id=1380113 a=r1sense vmean=-22.776583170091765 v=-121945.8262926713 n=5354.0 | Id=1307435 o=-1 vmean=-22.655211574225202 v=-742365.9728642114 n=32768.0
+Id=1380114 a=r2sense vmean=-22.449329095133063 v=-293816.8191971015 n=13088.0 | Id=1307435 o=-1 vmean=-22.655211574225202 v=-742365.9728642114 n=32768.0
+reach tree print depth 2
+Action = r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 21 Cur state 339
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=49(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[205.0], 
+s=55(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2383.0], 
+s=114(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[238.0], 
+s=120(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2072.0], 
+s=333(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[201.0], 
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2228.0], 
+s=399(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[216.0], 
+s=405(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2457.0], 
+
+MCTS layer2
+Id=1454055 a=south vmean=-22.64092619293748 v=-186538.5909036119 n=8239.0 | Id=1380145 o=-1 vmean=-22.689150146802046 v=-743478.0720104094 n=32768.0
+Id=1454056 a=east vmean=-22.7436419087204 v=-142784.58390294667 n=6278.0 | Id=1380145 o=-1 vmean=-22.689150146802046 v=-743478.0720104094 n=32768.0
+Id=1454057 a=west vmean=-23.561429177865268 v=-37132.812384315665 n=1576.0 | Id=1380145 o=-1 vmean=-22.689150146802046 v=-743478.0720104094 n=32768.0
+Id=1454058 a=r1sense vmean=-22.57652245359311 v=-193006.6904557675 n=8549.0 | Id=1380145 o=-1 vmean=-22.689150146802046 v=-743478.0720104094 n=32768.0
+Id=1454059 a=r2sense vmean=-22.645261427974205 v=-184015.3943637184 n=8126.0 | Id=1380145 o=-1 vmean=-22.689150146802046 v=-743478.0720104094 n=32768.0
+reach tree print depth 2
+Action = r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 22 Cur state 496
+s=496(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=196(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[212.0], 
+s=202(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2444.0], 
+s=246(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[228.0], 
+s=252(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2039.0], 
+s=490(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[205.0], 
+s=496(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2222.0], 
+s=550(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[218.0], 
+s=556(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2432.0], 
+
+MCTS layer2
+Id=1526165 a=south vmean=-22.721346887020946 v=-136668.901525431 n=6015.0 | Id=1454089 o=-1 vmean=-22.672834515937716 v=-742943.4414182471 n=32768.0
+Id=1526166 a=east vmean=-22.598579915889193 v=-211703.49665204997 n=9368.0 | Id=1454089 o=-1 vmean=-22.672834515937716 v=-742943.4414182471 n=32768.0
+Id=1526167 a=west vmean=-23.777419434193792 v=-29127.338806887397 n=1225.0 | Id=1454089 o=-1 vmean=-22.672834515937716 v=-742943.4414182471 n=32768.0
+Id=1526168 a=r1sense vmean=-22.501560242501753 v=-284802.2479893447 n=12657.0 | Id=1454089 o=-1 vmean=-22.672834515937716 v=-742943.4414182471 n=32768.0
+Id=1526169 a=r2sense vmean=-23.020684112045647 v=-80641.4564444959 n=3503.0 | Id=1454089 o=-1 vmean=-22.672834515937716 v=-742943.4414182471 n=32768.0
+reach tree print depth 2
+Action = r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 23 Cur state 496
+s=496(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=196(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[219.0], 
+s=202(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2435.0], 
+s=246(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[228.0], 
+s=252(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2051.0], 
+s=490(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[214.0], 
+s=496(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2169.0], 
+s=550(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[227.0], 
+s=556(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2457.0], 
+
+MCTS layer2
+Id=1599383 a=south vmean=-23.363584486794206 v=-43830.08449722593 n=1876.0 | Id=1526182 o=-1 vmean=-22.618901131786327 v=-741176.1522863744 n=32768.0
+Id=1599384 a=east vmean=-22.558590134538377 v=-187890.49723057015 n=8329.0 | Id=1526182 o=-1 vmean=-22.618901131786327 v=-741176.1522863744 n=32768.0
+Id=1599385 a=west vmean=-22.866584717323718 v=-92472.46859685711 n=4044.0 | Id=1526182 o=-1 vmean=-22.618901131786327 v=-741176.1522863744 n=32768.0
+Id=1599386 a=r1sense vmean=-22.48654041655208 v=-225022.80994843668 n=10007.0 | Id=1526182 o=-1 vmean=-22.618901131786327 v=-741176.1522863744 n=32768.0
+Id=1599387 a=r2sense vmean=-22.5517260353913 v=-191960.29201325076 n=8512.0 | Id=1526182 o=-1 vmean=-22.618901131786327 v=-741176.1522863744 n=32768.0
+reach tree print depth 2
+Action = r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 24 Cur state 339
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=49(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[213.0], 
+s=55(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2437.0], 
+s=114(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[214.0], 
+s=120(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2088.0], 
+s=333(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[230.0], 
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2146.0], 
+s=399(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[211.0], 
+s=405(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2461.0], 
+
+MCTS layer2
+Id=1671812 a=south vmean=-22.97088258468473 v=-97097.92068546236 n=4227.0 | Id=1599418 o=-1 vmean=-22.71558235129668 v=-744344.2024872896 n=32768.0
+Id=1671813 a=east vmean=-22.51134981247885 v=-277024.67079236475 n=12306.0 | Id=1599418 o=-1 vmean=-22.71558235129668 v=-744344.2024872896 n=32768.0
+Id=1671814 a=west vmean=-23.46130421711803 v=-44036.86801553054 n=1877.0 | Id=1599418 o=-1 vmean=-22.71558235129668 v=-744344.2024872896 n=32768.0
+Id=1671815 a=r1sense vmean=-22.927861668673955 v=-104619.83279415926 n=4563.0 | Id=1599418 o=-1 vmean=-22.71558235129668 v=-744344.2024872896 n=32768.0
+Id=1671816 a=r2sense vmean=-22.620205227130434 v=-221564.9101997426 n=9795.0 | Id=1599418 o=-1 vmean=-22.71558235129668 v=-744344.2024872896 n=32768.0
+reach tree print depth 2
+Action = east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 25 Cur state 314
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief = 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[3061.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[2632.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[2598.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[3043.0], 
+
+MCTS layer2
+Id=1745253 a=south vmean=-22.866973668473747 v=-129358.47004255599 n=5657.0 | Id=1671851 o=-1 vmean=-22.60797062686849 v=-740817.9815012267 n=32768.0
+Id=1745254 a=east vmean=-22.470261303221058 v=-348266.5799386232 n=15499.0 | Id=1671851 o=-1 vmean=-22.60797062686849 v=-740817.9815012267 n=32768.0
+Id=1745255 a=west vmean=-22.61110515736658 v=-260072.9315200304 n=11502.0 | Id=1671851 o=-1 vmean=-22.60797062686849 v=-740817.9815012267 n=32768.0
+Id=1745256 a=finish vmean=-28.363636363636363 v=-3120.0 n=110.0 | Id=1671851 o=-1 vmean=-22.60797062686849 v=-740817.9815012267 n=32768.0
+reach tree print depth 2
+Action = east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 26 Cur state 314
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief = 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[4199.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[3582.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[3543.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[4175.0], 
+
+MCTS layer2
+Id=1815273 a=south vmean=-23.024193574592232 v=-87561.00816417426 n=3803.0 | Id=1745272 o=-1 vmean=-22.58382798008413 v=-740026.8752513968 n=32768.0
+Id=1815274 a=east vmean=-22.556271947897525 v=-281502.2739097611 n=12480.0 | Id=1745272 o=-1 vmean=-22.58382798008413 v=-740026.8752513968 n=32768.0
+Id=1815275 a=west vmean=-22.457639577099954 v=-366553.59317742544 n=16322.0 | Id=1745272 o=-1 vmean=-22.58382798008413 v=-740026.8752513968 n=32768.0
+Id=1815276 a=finish vmean=-27.05521472392638 v=-4410.0 n=163.0 | Id=1745272 o=-1 vmean=-22.58382798008413 v=-740026.8752513968 n=32768.0
+reach tree print depth 2
+Action = west reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 27 Cur state 308
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[470.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[3915.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[400.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[3391.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[380.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[3445.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[442.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[3879.0], 
+
+MCTS layer2
+Id=1885769 a=south vmean=-22.67650260901664 v=-167987.53132759526 n=7408.0 | Id=1815288 o=-1 vmean=-22.693558015499097 v=-743622.5090518744 n=32768.0
+Id=1885770 a=east vmean=-22.620227502611115 v=-196230.47358515143 n=8675.0 | Id=1815288 o=-1 vmean=-22.693558015499097 v=-743622.5090518744 n=32768.0
+Id=1885771 a=west vmean=-23.67704451024738 v=-32200.78053393644 n=1360.0 | Id=1815288 o=-1 vmean=-22.693558015499097 v=-743622.5090518744 n=32768.0
+Id=1885772 a=r1sense vmean=-22.771353963412256 v=-131390.71236888872 n=5770.0 | Id=1815288 o=-1 vmean=-22.693558015499097 v=-743622.5090518744 n=32768.0
+Id=1885773 a=r2sense vmean=-22.58639573377983 v=-215813.0112362663 n=9555.0 | Id=1815288 o=-1 vmean=-22.693558015499097 v=-743622.5090518744 n=32768.0
+reach tree print depth 2
+Action = r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 28 Cur state 308
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[279.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2330.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[240.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2090.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[263.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2072.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[276.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2450.0], 
+
+MCTS layer2
+Id=1958604 a=south vmean=-22.804887040417544 v=-109417.84801992337 n=4798.0 | Id=1885785 o=-1 vmean=-22.66329896465521 v=-742630.9804738219 n=32768.0
+Id=1958605 a=east vmean=-22.7158695298334 v=-138475.9406538644 n=6096.0 | Id=1885785 o=-1 vmean=-22.66329896465521 v=-742630.9804738219 n=32768.0
+Id=1958606 a=west vmean=-22.873898230478282 v=-94903.80375825439 n=4149.0 | Id=1885785 o=-1 vmean=-22.66329896465521 v=-742630.9804738219 n=32768.0
+Id=1958607 a=r1sense vmean=-22.57197990302319 v=-192358.41273356363 n=8522.0 | Id=1885785 o=-1 vmean=-22.66329896465521 v=-742630.9804738219 n=32768.0
+Id=1958608 a=r2sense vmean=-22.544276356424067 v=-207474.9753081707 n=9203.0 | Id=1885785 o=-1 vmean=-22.66329896465521 v=-742630.9804738219 n=32768.0
+reach tree print depth 2
+Action = r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 29 Cur state 308
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[266.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2362.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[238.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2065.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[256.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2154.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[269.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2390.0], 
+
+MCTS layer2
+Id=2032884 a=south vmean=-22.806297248540627 v=-111135.08649213848 n=4873.0 | Id=1958620 o=-1 vmean=-22.625099782679012 v=-741379.2696788259 n=32768.0
+Id=2032885 a=east vmean=-22.77091945890144 v=-119683.95267598596 n=5256.0 | Id=1958620 o=-1 vmean=-22.625099782679012 v=-741379.2696788259 n=32768.0
+Id=2032886 a=west vmean=-23.73634506677474 v=-28744.71387586421 n=1211.0 | Id=1958620 o=-1 vmean=-22.625099782679012 v=-741379.2696788259 n=32768.0
+Id=2032887 a=r1sense vmean=-22.704513616634117 v=-139405.71360613347 n=6140.0 | Id=1958620 o=-1 vmean=-22.625099782679012 v=-741379.2696788259 n=32768.0
+Id=2032888 a=r2sense vmean=-22.39729219182735 v=-342409.8030286565 n=15288.0 | Id=1958620 o=-1 vmean=-22.625099782679012 v=-741379.2696788259 n=32768.0
+reach tree print depth 2
+Action = r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 30 Cur state 339
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=49(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[277.0], 
+s=55(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2412.0], 
+s=114(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[256.0], 
+s=120(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2084.0], 
+s=333(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[252.0], 
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2082.0], 
+s=399(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[284.0], 
+s=405(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2353.0], 
+
+MCTS layer2
+Id=2105236 a=south vmean=-23.26595651305924 v=-53116.178719314245 n=2283.0 | Id=2032917 o=-1 vmean=-22.669561940859776 v=-742836.2056780931 n=32768.0
+Id=2105237 a=east vmean=-22.682634650420688 v=-156646.27489580528 n=6906.0 | Id=2032917 o=-1 vmean=-22.669561940859776 v=-742836.2056780931 n=32768.0
+Id=2105238 a=west vmean=-23.271634925170062 v=-52477.53675625849 n=2255.0 | Id=2032917 o=-1 vmean=-22.669561940859776 v=-742836.2056780931 n=32768.0
+Id=2105239 a=r1sense vmean=-22.534927685679467 v=-242746.2410301392 n=10772.0 | Id=2032917 o=-1 vmean=-22.669561940859776 v=-742836.2056780931 n=32768.0
+Id=2105240 a=r2sense vmean=-22.54074813083138 v=-237849.9742765327 n=10552.0 | Id=2032917 o=-1 vmean=-22.669561940859776 v=-742836.2056780931 n=32768.0
+reach tree print depth 2
+Action = r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 31 Cur state 339
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=49(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[298.0], 
+s=55(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2447.0], 
+s=114(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[278.0], 
+s=120(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2141.0], 
+s=333(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[248.0], 
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2056.0], 
+s=399(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[287.0], 
+s=405(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2245.0], 
+
+MCTS layer2
+Id=2178420 a=south vmean=-23.193199748826718 v=-55570.90659818881 n=2396.0 | Id=2105282 o=-1 vmean=-22.592389378461476 v=-740307.4151534257 n=32768.0
+Id=2178421 a=east vmean=-22.45242027516144 v=-257461.90329527625 n=11467.0 | Id=2105282 o=-1 vmean=-22.592389378461476 v=-740307.4151534257 n=32768.0
+Id=2178422 a=west vmean=-23.78002480764146 v=-26538.50768532787 n=1116.0 | Id=2105282 o=-1 vmean=-22.592389378461476 v=-740307.4151534257 n=32768.0
+Id=2178423 a=r1sense vmean=-22.523586415670522 v=-197261.56982844244 n=8758.0 | Id=2105282 o=-1 vmean=-22.592389378461476 v=-740307.4151534257 n=32768.0
+Id=2178424 a=r2sense vmean=-22.530675201655452 v=-203474.5277461504 n=9031.0 | Id=2105282 o=-1 vmean=-22.592389378461476 v=-740307.4151534257 n=32768.0
+reach tree print depth 2
+Action = east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 32 Cur state 314
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief = 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[2900.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[2472.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[2371.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[2583.0], 
+
+MCTS layer2
+Id=2250969 a=south vmean=-22.741489405097454 v=-161532.79924440722 n=7103.0 | Id=2178435 o=-1 vmean=-22.58937527338406 v=-740208.6489582489 n=32768.0
+Id=2250970 a=east vmean=-22.544350129787002 v=-290686.8505734736 n=12894.0 | Id=2178435 o=-1 vmean=-22.58937527338406 v=-740208.6489582489 n=32768.0
+Id=2250971 a=west vmean=-22.537328565636287 v=-287688.9991403472 n=12765.0 | Id=2178435 o=-1 vmean=-22.58937527338406 v=-740208.6489582489 n=32768.0
+Id=2250972 a=finish vmean=-50.0 v=-300.0 n=6.0 | Id=2178435 o=-1 vmean=-22.58937527338406 v=-740208.6489582489 n=32768.0
+reach tree print depth 2
+Action = west reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 33 Cur state 308
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[342.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[3198.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[259.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2855.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[301.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2653.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[302.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2855.0], 
+
+MCTS layer2
+Id=2321360 a=south vmean=-22.814661522335392 v=-115350.92865692775 n=5056.0 | Id=2250978 o=-1 vmean=-22.685807189293648 v=-743368.5299787743 n=32768.0
+Id=2321361 a=east vmean=-22.543728737432595 v=-232403.2995541926 n=10309.0 | Id=2250978 o=-1 vmean=-22.685807189293648 v=-743368.5299787743 n=32768.0
+Id=2321362 a=west vmean=-23.098903818758 v=-69042.62351426766 n=2989.0 | Id=2250978 o=-1 vmean=-22.685807189293648 v=-743368.5299787743 n=32768.0
+Id=2321363 a=r1sense vmean=-22.827547116048834 v=-111877.80841575534 n=4901.0 | Id=2250978 o=-1 vmean=-22.685807189293648 v=-743368.5299787743 n=32768.0
+Id=2321364 a=r2sense vmean=-22.568471548154736 v=-214693.86983759602 n=9513.0 | Id=2250978 o=-1 vmean=-22.685807189293648 v=-743368.5299787743 n=32768.0
+reach tree print depth 2
+Action = east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 34 Cur state 314
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief = 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[2786.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[2506.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[2223.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[2485.0], 
+
+MCTS layer2
+Id=2393884 a=south vmean=-23.060840811580746 v=-76700.35653931757 n=3326.0 | Id=2321405 o=-1 vmean=-22.573730293181285 v=-739695.9942469643 n=32768.0
+Id=2393885 a=east vmean=-22.43946124210543 v=-451773.67318730865 n=20133.0 | Id=2321405 o=-1 vmean=-22.573730293181285 v=-739695.9942469643 n=32768.0
+Id=2393886 a=west vmean=-22.654240038808783 v=-210321.96452030074 n=9284.0 | Id=2321405 o=-1 vmean=-22.573730293181285 v=-739695.9942469643 n=32768.0
+Id=2393887 a=finish vmean=-36.0 v=-900.0 n=25.0 | Id=2321405 o=-1 vmean=-22.573730293181285 v=-739695.9942469643 n=32768.0
+reach tree print depth 2
+Action = east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 35 Cur state 314
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief = 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[5738.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[5021.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[4429.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[4945.0], 
+
+MCTS layer2
+Id=2464125 a=south vmean=-22.68773182908515 v=-151848.9891320669 n=6693.0 | Id=2393897 o=-1 vmean=-22.51430332672653 v=-737748.691410175 n=32768.0
+Id=2464126 a=east vmean=-22.545852725768597 v=-206948.38216982994 n=9179.0 | Id=2393897 o=-1 vmean=-22.51430332672653 v=-737748.691410175 n=32768.0
+Id=2464127 a=west vmean=-22.398319573845605 v=-376941.3201082477 n=16829.0 | Id=2393897 o=-1 vmean=-22.51430332672653 v=-737748.691410175 n=32768.0
+Id=2464128 a=finish vmean=-30.0 v=-2010.0 n=67.0 | Id=2393897 o=-1 vmean=-22.51430332672653 v=-737748.691410175 n=32768.0
+reach tree print depth 2
+Action = west reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 36 Cur state 308
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[475.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[4403.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[424.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[3778.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[393.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[3272.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[426.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[3658.0], 
+
+MCTS layer2
+Id=2534462 a=south vmean=-22.723506671178328 v=-117435.0824766496 n=5168.0 | Id=2464139 o=-1 vmean=-22.592169477330394 v=-740300.2094331624 n=32768.0
+Id=2534463 a=east vmean=-22.584885121471448 v=-162317.5693680153 n=7187.0 | Id=2464139 o=-1 vmean=-22.592169477330394 v=-740300.2094331624 n=32768.0
+Id=2534464 a=west vmean=-23.48265505392804 v=-35505.77444153919 n=1512.0 | Id=2464139 o=-1 vmean=-22.592169477330394 v=-740300.2094331624 n=32768.0
+Id=2534465 a=r1sense vmean=-22.52033033778333 v=-195386.38601060817 n=8676.0 | Id=2464139 o=-1 vmean=-22.592169477330394 v=-740300.2094331624 n=32768.0
+Id=2534466 a=r2sense vmean=-22.4601855390036 v=-229655.3971363118 n=10225.0 | Id=2464139 o=-1 vmean=-22.592169477330394 v=-740300.2094331624 n=32768.0
+reach tree print depth 2
+Action = r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 37 Cur state 339
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=49(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[271.0], 
+s=55(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2622.0], 
+s=114(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[239.0], 
+s=120(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2208.0], 
+s=333(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[238.0], 
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[1981.0], 
+s=399(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[260.0], 
+s=405(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2181.0], 
+
+MCTS layer2
+Id=2606875 a=south vmean=-22.679868276462464 v=-114556.01466441191 n=5051.0 | Id=2534507 o=-1 vmean=-22.552809756759565 v=-739010.4701094974 n=32768.0
+Id=2606876 a=east vmean=-22.58307616963456 v=-136379.1969884231 n=6039.0 | Id=2534507 o=-1 vmean=-22.552809756759565 v=-739010.4701094974 n=32768.0
+Id=2606877 a=west vmean=-22.704612099659872 v=-110866.62088263915 n=4883.0 | Id=2534507 o=-1 vmean=-22.552809756759565 v=-739010.4701094974 n=32768.0
+Id=2606878 a=r1sense vmean=-22.364705349217967 v=-263165.48784424784 n=11767.0 | Id=2534507 o=-1 vmean=-22.552809756759565 v=-739010.4701094974 n=32768.0
+Id=2606879 a=r2sense vmean=-22.681612913631216 v=-114043.14972973775 n=5028.0 | Id=2534507 o=-1 vmean=-22.552809756759565 v=-739010.4701094974 n=32768.0
+reach tree print depth 2
+Action = r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 38 Cur state 339
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=49(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[268.0], 
+s=55(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2591.0], 
+s=114(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[256.0], 
+s=120(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2174.0], 
+s=333(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[249.0], 
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[1924.0], 
+s=399(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[269.0], 
+s=405(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2269.0], 
+
+MCTS layer2
+Id=2678613 a=south vmean=-22.783929816593844 v=-102687.17168338846 n=4507.0 | Id=2606915 o=-1 vmean=-22.584369159293406 v=-740044.6086117263 n=32768.0
+Id=2678614 a=east vmean=-22.537410076079922 v=-185911.0957175833 n=8249.0 | Id=2606915 o=-1 vmean=-22.584369159293406 v=-740044.6086117263 n=32768.0
+Id=2678615 a=west vmean=-23.72044727454229 v=-27610.600627567226 n=1164.0 | Id=2606915 o=-1 vmean=-22.584369159293406 v=-740044.6086117263 n=32768.0
+Id=2678616 a=r1sense vmean=-22.506920580229643 v=-199613.8786260567 n=8869.0 | Id=2606915 o=-1 vmean=-22.584369159293406 v=-740044.6086117263 n=32768.0
+Id=2678617 a=r2sense vmean=-22.46937187665069 v=-224221.86195709725 n=9979.0 | Id=2606915 o=-1 vmean=-22.584369159293406 v=-740044.6086117263 n=32768.0
+reach tree print depth 2
+Action = r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 39 Cur state 339
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=49(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[275.0], 
+s=55(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2548.0], 
+s=114(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[265.0], 
+s=120(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2194.0], 
+s=333(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[223.0], 
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[1935.0], 
+s=399(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[254.0], 
+s=405(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2306.0], 
+
+MCTS layer2
+Id=2751159 a=south vmean=-23.011177377002266 v=-62337.27951429914 n=2709.0 | Id=2678628 o=-1 vmean=-22.516369003957923 v=-737816.3795216932 n=32768.0
+Id=2751160 a=east vmean=-22.329858260078193 v=-295022.0873321531 n=13212.0 | Id=2678628 o=-1 vmean=-22.516369003957923 v=-737816.3795216932 n=32768.0
+Id=2751161 a=west vmean=-23.443227099847338 v=-35657.1484188678 n=1521.0 | Id=2678628 o=-1 vmean=-22.516369003957923 v=-737816.3795216932 n=32768.0
+Id=2751162 a=r1sense vmean=-22.512307545326895 v=-160400.19126045413 n=7125.0 | Id=2678628 o=-1 vmean=-22.516369003957923 v=-737816.3795216932 n=32768.0
+Id=2751163 a=r2sense vmean=-22.485022923533176 v=-184399.67299589558 n=8201.0 | Id=2678628 o=-1 vmean=-22.516369003957923 v=-737816.3795216932 n=32768.0
+reach tree print depth 2
+Action = east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 40 Cur state 314
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief = 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[3486.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[2838.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[2516.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[3122.0], 
+
+MCTS layer2
+Id=2823214 a=south vmean=-22.479029621049044 v=-235805.02072480446 n=10490.0 | Id=2751174 o=-1 vmean=-22.4757812815145 v=-736486.4010326671 n=32768.0
+Id=2823215 a=east vmean=-22.429457516668627 v=-251479.07767688864 n=11212.0 | Id=2751174 o=-1 vmean=-22.4757812815145 v=-736486.4010326671 n=32768.0
+Id=2823216 a=west vmean=-22.464401298326734 v=-246232.30263095934 n=10961.0 | Id=2751174 o=-1 vmean=-22.4757812815145 v=-736486.4010326671 n=32768.0
+Id=2823217 a=finish vmean=-28.285714285714285 v=-2970.0 n=105.0 | Id=2751174 o=-1 vmean=-22.4757812815145 v=-736486.4010326671 n=32768.0
+reach tree print depth 2
+Action = east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 41 Cur state 314
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief = 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[3334.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[2662.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[2355.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[2861.0], 
+
+MCTS layer2
+Id=2892526 a=south vmean=-22.98350802729312 v=-74282.69794421137 n=3232.0 | Id=2823221 o=-1 vmean=-22.434471741941703 v=-735132.7700399457 n=32768.0
+Id=2892527 a=east vmean=-22.317508771051454 v=-381830.25756391935 n=17109.0 | Id=2823221 o=-1 vmean=-22.434471741941703 v=-735132.7700399457 n=32768.0
+Id=2892528 a=west vmean=-22.411183310283697 v=-276979.8145317962 n=12359.0 | Id=2823221 o=-1 vmean=-22.434471741941703 v=-735132.7700399457 n=32768.0
+Id=2892529 a=finish vmean=-30.0 v=-2040.0 n=68.0 | Id=2823221 o=-1 vmean=-22.434471741941703 v=-735132.7700399457 n=32768.0
+reach tree print depth 2
+Action = east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 42 Cur state 314
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief = 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[5115.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[3991.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[3633.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[4370.0], 
+
+MCTS layer2
+Id=2962597 a=south vmean=-22.478987883176025 v=-161151.86413448892 n=7169.0 | Id=2892545 o=-1 vmean=-22.37465921773818 v=-733172.8332468447 n=32768.0
+Id=2962598 a=east vmean=-22.304698466175996 v=-312377.3020187948 n=14005.0 | Id=2892545 o=-1 vmean=-22.37465921773818 v=-733172.8332468447 n=32768.0
+Id=2962599 a=west vmean=-22.358505853775068 v=-258173.6670935407 n=11547.0 | Id=2892545 o=-1 vmean=-22.37465921773818 v=-733172.8332468447 n=32768.0
+Id=2962600 a=finish vmean=-31.27659574468085 v=-1470.0 n=47.0 | Id=2892545 o=-1 vmean=-22.37465921773818 v=-733172.8332468447 n=32768.0
+reach tree print depth 2
+Action = east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 43 Cur state 314
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief = 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[4128.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[3311.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[2992.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[3574.0], 
+
+MCTS layer2
+Id=3031824 a=south vmean=-22.459376189080483 v=-198832.8574019295 n=8853.0 | Id=2962604 o=-1 vmean=-22.42217532757697 v=-734729.8411340421 n=32768.0
+Id=3031825 a=east vmean=-22.469915533762173 v=-208970.2144639882 n=9300.0 | Id=2962604 o=-1 vmean=-22.42217532757697 v=-734729.8411340421 n=32768.0
+Id=3031826 a=west vmean=-22.336271590278518 v=-325126.7692680941 n=14556.0 | Id=2962604 o=-1 vmean=-22.42217532757697 v=-734729.8411340421 n=32768.0
+Id=3031827 a=finish vmean=-30.508474576271187 v=-1800.0 n=59.0 | Id=2962604 o=-1 vmean=-22.42217532757697 v=-734729.8411340421 n=32768.0
+reach tree print depth 2
+Action = west reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 44 Cur state 302
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+Belief = 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[458.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[3928.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[326.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[3086.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[295.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2778.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[373.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[3312.0], 
+
+MCTS layer2
+Id=3101933 a=south vmean=-22.640333016310443 v=-107405.73982937675 n=4744.0 | Id=3031833 o=-1 vmean=-22.45644772934267 v=-735852.8791951006 n=32768.0
+Id=3101934 a=east vmean=-22.45905148860461 v=-164467.63405105157 n=7323.0 | Id=3031833 o=-1 vmean=-22.45644772934267 v=-735852.8791951006 n=32768.0
+Id=3101935 a=west vmean=-23.819854012133245 v=-22104.824523259653 n=928.0 | Id=3031833 o=-1 vmean=-22.45644772934267 v=-735852.8791951006 n=32768.0
+Id=3101936 a=r1sense vmean=-22.36156396518358 v=-214693.37562972755 n=9601.0 | Id=3031833 o=-1 vmean=-22.45644772934267 v=-735852.8791951006 n=32768.0
+Id=3101937 a=r2sense vmean=-22.333985957693038 v=-227181.30516165358 n=10172.0 | Id=3031833 o=-1 vmean=-22.45644772934267 v=-735852.8791951006 n=32768.0
+reach tree print depth 2
+Action = r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 45 Cur state 302
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+Belief = 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[314.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2730.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[233.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2112.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[216.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[1876.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[242.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2277.0], 
+
+MCTS layer2
+Id=3173615 a=south vmean=-22.604760437356106 v=-114018.4116460242 n=5044.0 | Id=3101947 o=-1 vmean=-22.458208196708437 v=-735910.5661897421 n=32768.0
+Id=3173616 a=east vmean=-22.245819513490535 v=-305145.90626654966 n=13717.0 | Id=3101947 o=-1 vmean=-22.458208196708437 v=-735910.5661897421 n=32768.0
+Id=3173617 a=west vmean=-23.28464147440885 v=-38838.781979313964 n=1668.0 | Id=3101947 o=-1 vmean=-22.458208196708437 v=-735910.5661897421 n=32768.0
+Id=3173618 a=r1sense vmean=-22.51116842911399 v=-141730.3164297017 n=6296.0 | Id=3101947 o=-1 vmean=-22.458208196708437 v=-735910.5661897421 n=32768.0
+Id=3173619 a=r2sense vmean=-22.534693011438385 v=-136177.14986812216 n=6043.0 | Id=3101947 o=-1 vmean=-22.458208196708437 v=-735910.5661897421 n=32768.0
+reach tree print depth 2
+Action = east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 46 Cur state 308
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[3209.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2313.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2169.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2309.0], 
+
+MCTS layer2
+Id=3245338 a=south vmean=-22.53273361097203 v=-117711.00038371788 n=5224.0 | Id=3173678 o=-1 vmean=-22.446995620195413 v=-735543.1524825633 n=32768.0
+Id=3245339 a=east vmean=-22.383558968198674 v=-184127.1560724023 n=8226.0 | Id=3173678 o=-1 vmean=-22.446995620195413 v=-735543.1524825633 n=32768.0
+Id=3245340 a=west vmean=-22.885334980919467 v=-65108.77802071588 n=2845.0 | Id=3173678 o=-1 vmean=-22.446995620195413 v=-735543.1524825633 n=32768.0
+Id=3245341 a=r1sense vmean=-22.299036546182645 v=-235968.40473170474 n=10582.0 | Id=3173678 o=-1 vmean=-22.446995620195413 v=-735543.1524825633 n=32768.0
+Id=3245342 a=r2sense vmean=-22.513633215751135 v=-132627.81327398994 n=5891.0 | Id=3173678 o=-1 vmean=-22.446995620195413 v=-735543.1524825633 n=32768.0
+reach tree print depth 2
+Action = r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 47 Cur state 471
+s=471(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=181(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[3210.0], 
+s=227(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2334.0], 
+s=471(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2142.0], 
+s=526(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2314.0], 
+
+MCTS layer2
+Id=3315595 a=south vmean=-22.417670745307856 v=-129551.7192371341 n=5779.0 | Id=3245360 o=-1 vmean=-22.392443081101554 v=-733755.5748815357 n=32768.0
+Id=3315596 a=east vmean=-22.34237582552576 v=-174315.216190752 n=7802.0 | Id=3245360 o=-1 vmean=-22.392443081101554 v=-733755.5748815357 n=32768.0
+Id=3315597 a=west vmean=-22.57133675242636 v=-102541.58286627296 n=4543.0 | Id=3245360 o=-1 vmean=-22.392443081101554 v=-733755.5748815357 n=32768.0
+Id=3315598 a=r1sense vmean=-22.258352820798393 v=-222338.68632695515 n=9989.0 | Id=3245360 o=-1 vmean=-22.392443081101554 v=-733755.5748815357 n=32768.0
+Id=3315599 a=r2sense vmean=-22.55818909997518 v=-105008.37026038446 n=4655.0 | Id=3245360 o=-1 vmean=-22.392443081101554 v=-733755.5748815357 n=32768.0
+reach tree print depth 2
+Action = r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 48 Cur state 308
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[3234.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2365.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2150.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2251.0], 
+
+MCTS layer2
+Id=3386873 a=south vmean=-22.601172634007998 v=-73770.2274774021 n=3264.0 | Id=3315617 o=-1 vmean=-22.239010042000622 v=-728727.8810562764 n=32768.0
+Id=3386874 a=east vmean=-22.160896454268553 v=-185043.48539314241 n=8350.0 | Id=3315617 o=-1 vmean=-22.239010042000622 v=-728727.8810562764 n=32768.0
+Id=3386875 a=west vmean=-22.6277447305939 v=-69942.35896226575 n=3091.0 | Id=3315617 o=-1 vmean=-22.239010042000622 v=-728727.8810562764 n=32768.0
+Id=3386876 a=r1sense vmean=-22.21828510029093 v=-164126.47203584912 n=7387.0 | Id=3315617 o=-1 vmean=-22.239010042000622 v=-728727.8810562764 n=32768.0
+Id=3386877 a=r2sense vmean=-22.09117058707141 v=-235845.3371875744 n=10676.0 | Id=3315617 o=-1 vmean=-22.239010042000622 v=-728727.8810562764 n=32768.0
+reach tree print depth 2
+Action = r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 49 Cur state 339
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=55(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[3215.0], 
+s=120(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2441.0], 
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2203.0], 
+s=405(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2141.0], 
+
+MCTS layer2
+Id=3456623 a=south vmean=-22.537304599719445 v=-116427.71556215065 n=5166.0 | Id=3386906 o=-1 vmean=-22.410724510913184 v=-734354.6207736032 n=32768.0
+Id=3456624 a=east vmean=-22.5913025880476 v=-103965.17451019505 n=4602.0 | Id=3386906 o=-1 vmean=-22.410724510913184 v=-734354.6207736032 n=32768.0
+Id=3456625 a=west vmean=-22.884727661425508 v=-61537.03268157319 n=2689.0 | Id=3386906 o=-1 vmean=-22.410724510913184 v=-734354.6207736032 n=32768.0
+Id=3456626 a=r1sense vmean=-22.28817554091115 v=-221544.46487665683 n=9940.0 | Id=3386906 o=-1 vmean=-22.410724510913184 v=-734354.6207736032 n=32768.0
+Id=3456627 a=r2sense vmean=-22.262099425607186 v=-230880.23314297214 n=10371.0 | Id=3386906 o=-1 vmean=-22.410724510913184 v=-734354.6207736032 n=32768.0
+reach tree print depth 2
+Action = r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 50 Cur state 308
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[3166.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2403.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2266.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2165.0], 
+
+MCTS layer2
+Id=3525975 a=south vmean=-22.877455204592223 v=-72956.2046474446 n=3189.0 | Id=3456640 o=-1 vmean=-22.4859455171849 v=-736819.4627071148 n=32768.0
+Id=3525976 a=east vmean=-22.453448630688882 v=-165706.45089448395 n=7380.0 | Id=3456640 o=-1 vmean=-22.4859455171849 v=-736819.4627071148 n=32768.0
+Id=3525977 a=west vmean=-22.82393353736923 v=-77783.96549535434 n=3408.0 | Id=3456640 o=-1 vmean=-22.4859455171849 v=-736819.4627071148 n=32768.0
+Id=3525978 a=r1sense vmean=-22.332653735712086 v=-237463.1071718266 n=10633.0 | Id=3456640 o=-1 vmean=-22.4859455171849 v=-736819.4627071148 n=32768.0
+Id=3525979 a=r2sense vmean=-22.420903959052993 v=-182909.7344979543 n=8158.0 | Id=3456640 o=-1 vmean=-22.4859455171849 v=-736819.4627071148 n=32768.0
+reach tree print depth 2
+Action = r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 51 Cur state 308
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[3136.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2368.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2316.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2180.0], 
+
+MCTS layer2
+Id=3594941 a=south vmean=-22.626982759329753 v=-115556.00095189705 n=5107.0 | Id=3526009 o=-1 vmean=-22.5078194329866 v=-737536.2271801049 n=32768.0
+Id=3594942 a=east vmean=-22.608039464940088 v=-120071.2975982968 n=5311.0 | Id=3526009 o=-1 vmean=-22.5078194329866 v=-737536.2271801049 n=32768.0
+Id=3594943 a=west vmean=-22.779457096523682 v=-85832.99433970124 n=3768.0 | Id=3526009 o=-1 vmean=-22.5078194329866 v=-737536.2271801049 n=32768.0
+Id=3594944 a=r1sense vmean=-22.44145572646382 v=-181304.52081410118 n=8079.0 | Id=3526009 o=-1 vmean=-22.5078194329866 v=-737536.2271801049 n=32768.0
+Id=3594945 a=r2sense vmean=-22.352795722751978 v=-234771.41347606402 n=10503.0 | Id=3526009 o=-1 vmean=-22.5078194329866 v=-737536.2271801049 n=32768.0
+reach tree print depth 2
+Action = r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 52 Cur state 339
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=55(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[3195.0], 
+s=120(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2366.0], 
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2254.0], 
+s=405(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2185.0], 
+
+MCTS layer2
+Id=3665734 a=south vmean=-22.720853919836507 v=-81408.8195947742 n=3583.0 | Id=3594993 o=-1 vmean=-22.417923082784117 v=-734590.50357667 n=32768.0
+Id=3665735 a=east vmean=-22.583192122677726 v=-107360.49535120992 n=4754.0 | Id=3594993 o=-1 vmean=-22.417923082784117 v=-734590.50357667 n=32768.0
+Id=3665736 a=west vmean=-22.66939451387083 v=-89476.10014624817 n=3947.0 | Id=3594993 o=-1 vmean=-22.417923082784117 v=-734590.50357667 n=32768.0
+Id=3665737 a=r1sense vmean=-22.315520291668324 v=-205012.6849195569 n=9187.0 | Id=3594993 o=-1 vmean=-22.417923082784117 v=-734590.50357667 n=32768.0
+Id=3665738 a=r2sense vmean=-22.247712097445547 v=-251332.40356484233 n=11297.0 | Id=3594993 o=-1 vmean=-22.417923082784117 v=-734590.50357667 n=32768.0
+reach tree print depth 2
+Action = r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 53 Cur state 339
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=55(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[3196.0], 
+s=120(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2364.0], 
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2257.0], 
+s=405(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2183.0], 
+
+MCTS layer2
+Id=3736189 a=south vmean=-22.78340241551009 v=-82043.03209825183 n=3601.0 | Id=3665762 o=-1 vmean=-22.47880642138921 v=-736585.5288160816 n=32768.0
+Id=3736190 a=east vmean=-22.454960580763228 v=-167379.2761690091 n=7454.0 | Id=3665762 o=-1 vmean=-22.47880642138921 v=-736585.5288160816 n=32768.0
+Id=3736191 a=west vmean=-22.549717799277477 v=-132389.39319955808 n=5871.0 | Id=3665762 o=-1 vmean=-22.47880642138921 v=-736585.5288160816 n=32768.0
+Id=3736192 a=r1sense vmean=-22.515536214985655 v=-144257.0405294131 n=6407.0 | Id=3665762 o=-1 vmean=-22.47880642138921 v=-736585.5288160816 n=32768.0
+Id=3736193 a=r2sense vmean=-22.312325047144892 v=-210516.78681981206 n=9435.0 | Id=3665762 o=-1 vmean=-22.47880642138921 v=-736585.5288160816 n=32768.0
+reach tree print depth 2
+Action = r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 54 Cur state 339
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=55(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[3112.0], 
+s=120(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2419.0], 
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2306.0], 
+s=405(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2163.0], 
+
+MCTS layer2
+Id=3805976 a=south vmean=-22.56023880940135 v=-105333.7550010949 n=4669.0 | Id=3736212 o=-1 vmean=-22.39436940372827 v=-733818.6966213679 n=32768.0
+Id=3805977 a=east vmean=-22.35838695046681 v=-161472.27055627128 n=7222.0 | Id=3736212 o=-1 vmean=-22.39436940372827 v=-733818.6966213679 n=32768.0
+Id=3805978 a=west vmean=-22.7454465224443 v=-74195.64655621331 n=3262.0 | Id=3736212 o=-1 vmean=-22.39436940372827 v=-733818.6966213679 n=32768.0
+Id=3805979 a=r1sense vmean=-22.256321479432405 v=-224877.872228185 n=10104.0 | Id=3736212 o=-1 vmean=-22.39436940372827 v=-733818.6966213679 n=32768.0
+Id=3805980 a=r2sense vmean=-22.35909363327881 v=-167939.15227955714 n=7511.0 | Id=3736212 o=-1 vmean=-22.39436940372827 v=-733818.6966213679 n=32768.0
+reach tree print depth 2
+Action = r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 55 Cur state 496
+s=496(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=202(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[3076.0], 
+s=252(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2436.0], 
+s=496(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2297.0], 
+s=556(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2191.0], 
+
+MCTS layer2
+Id=3876164 a=south vmean=-22.956526837361867 v=-68594.10219003726 n=2988.0 | Id=3806021 o=-1 vmean=-22.537794942272484 v=-738518.4646683848 n=32768.0
+Id=3876165 a=east vmean=-22.530889920926704 v=-159563.76242000292 n=7082.0 | Id=3806021 o=-1 vmean=-22.537794942272484 v=-738518.4646683848 n=32768.0
+Id=3876166 a=west vmean=-22.939239549117094 v=-69460.01735472656 n=3028.0 | Id=3806021 o=-1 vmean=-22.537794942272484 v=-738518.4646683848 n=32768.0
+Id=3876167 a=r1sense vmean=-22.395667933595885 v=-234818.57828375287 n=10485.0 | Id=3806021 o=-1 vmean=-22.537794942272484 v=-738518.4646683848 n=32768.0
+Id=3876168 a=r2sense vmean=-22.436799610214933 v=-206082.00441982417 n=9185.0 | Id=3806021 o=-1 vmean=-22.537794942272484 v=-738518.4646683848 n=32768.0
+reach tree print depth 2
+Action = r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 56 Cur state 339
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=55(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[3011.0], 
+s=120(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2349.0], 
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2398.0], 
+s=405(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2242.0], 
+
+MCTS layer2
+Id=3946155 a=south vmean=-22.63164620234476 v=-127031.43013376114 n=5613.0 | Id=3876192 o=-1 vmean=-22.54947359860197 v=-738901.1508789894 n=32768.0
+Id=3946156 a=east vmean=-22.664383522747578 v=-118829.36280976555 n=5243.0 | Id=3876192 o=-1 vmean=-22.54947359860197 v=-738901.1508789894 n=32768.0
+Id=3946157 a=west vmean=-22.949289784775026 v=-69100.3115419576 n=3011.0 | Id=3876192 o=-1 vmean=-22.54947359860197 v=-738901.1508789894 n=32768.0
+Id=3946158 a=r1sense vmean=-22.36724589363015 v=-260667.8836443658 n=11654.0 | Id=3876192 o=-1 vmean=-22.54947359860197 v=-738901.1508789894 n=32768.0
+Id=3946159 a=r2sense vmean=-22.529620911976995 v=-163272.16274909728 n=7247.0 | Id=3876192 o=-1 vmean=-22.54947359860197 v=-738901.1508789894 n=32768.0
+reach tree print depth 2
+Action = r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 57 Cur state 339
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=55(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[3006.0], 
+s=120(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2477.0], 
+s=339(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2350.0], 
+s=405(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2167.0], 
+
+MCTS layer2
+Id=4015277 a=south vmean=-22.889904228229486 v=-81098.93068061706 n=3543.0 | Id=3946190 o=-1 vmean=-22.575153255527635 v=-739742.6218771295 n=32768.0
+Id=4015278 a=east vmean=-22.612582714766017 v=-143476.83732519037 n=6345.0 | Id=3946190 o=-1 vmean=-22.575153255527635 v=-739742.6218771295 n=32768.0
+Id=4015279 a=west vmean=-22.987795871875512 v=-68135.82696423902 n=2964.0 | Id=3946190 o=-1 vmean=-22.575153255527635 v=-739742.6218771295 n=32768.0
+Id=4015280 a=r1sense vmean=-22.435309604682548 v=-226529.3210784797 n=10097.0 | Id=3946190 o=-1 vmean=-22.575153255527635 v=-739742.6218771295 n=32768.0
+Id=4015281 a=r2sense vmean=-22.45663568882405 v=-220501.70582856334 n=9819.0 | Id=3946190 o=-1 vmean=-22.575153255527635 v=-739742.6218771295 n=32768.0
+reach tree print depth 2
+Action = r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 58 Cur state 496
+s=496(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=202(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[3063.0], 
+s=252(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2445.0], 
+s=496(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2324.0], 
+s=556(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2168.0], 
+
+MCTS layer2
+Id=4086434 a=south vmean=-23.200459784844917 v=-46331.318190335296 n=1997.0 | Id=4015298 o=-1 vmean=-22.500067995372657 v=-737282.2280723712 n=32768.0
+Id=4086435 a=east vmean=-22.5253273908852 v=-159163.9633439948 n=7066.0 | Id=4015298 o=-1 vmean=-22.500067995372657 v=-737282.2280723712 n=32768.0
+Id=4086436 a=west vmean=-23.149995538647868 v=-49656.740430399674 n=2145.0 | Id=4015298 o=-1 vmean=-22.500067995372657 v=-737282.2280723712 n=32768.0
+Id=4086437 a=r1sense vmean=-22.485176720023826 v=-177453.01467442804 n=7892.0 | Id=4015298 o=-1 vmean=-22.500067995372657 v=-737282.2280723712 n=32768.0
+Id=4086438 a=r2sense vmean=-22.291278272839254 v=-304677.1914331669 n=13668.0 | Id=4015298 o=-1 vmean=-22.500067995372657 v=-737282.2280723712 n=32768.0
+reach tree print depth 2
+Action = r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 59 Cur state 496
+s=496(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+Belief = 
+s=202(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[3118.0], 
+s=252(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2344.0], 
+s=496(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[2328.0], 
+s=556(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[2210.0], 
+
+MCTS layer2
+Id=4156888 a=south vmean=-22.615799025959305 v=-98152.56777266339 n=4340.0 | Id=4086462 o=-1 vmean=-22.415468514304788 v=-734510.0722767393 n=32768.0
+Id=4156889 a=east vmean=-22.39905290843963 v=-164991.42372356632 n=7366.0 | Id=4086462 o=-1 vmean=-22.415468514304788 v=-734510.0722767393 n=32768.0
+Id=4156890 a=west vmean=-23.13520454458082 v=-43632.995771079426 n=1886.0 | Id=4086462 o=-1 vmean=-22.415468514304788 v=-734510.0722767393 n=32768.0
+Id=4156891 a=r1sense vmean=-22.32048568776612 v=-205348.4683274483 n=9200.0 | Id=4086462 o=-1 vmean=-22.415468514304788 v=-734510.0722767393 n=32768.0
+Id=4156892 a=r2sense vmean=-22.29196237790168 v=-222384.61668194717 n=9976.0 | Id=4086462 o=-1 vmean=-22.415468514304788 v=-734510.0722767393 n=32768.0
+reach tree print depth 2
+Action = r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 60 Cur state 471
+s=471(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief = 
+s=181(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[3108.0], 
+s=227(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2270.0], 
+s=471(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2397.0], 
+s=526(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2225.0], 
+

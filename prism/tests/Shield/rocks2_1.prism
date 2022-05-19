@@ -134,30 +134,3 @@ rewards "cost"
     [east] true : 1;
     [finish] true : (!r1taken & r1qual ? 30 : 0) + (!r2taken & r2qual ? 30 : 0) ;//+ (!r3taken & r3qual ? 30 : 0) ;
 endrewards
-rewards "cost2"
-    [north] bad : 30;
-    [south] bad : 30;
-    [west] bad : 30;
-    [east] bad : 30;
-    [r1sense] bad : 30;
-    [r2sense] bad : 30;
-
-    [r1sense] true : 1;
-    [r1sample] !r1qual : 20;
-    [r2sense] true : 1;
-    [r2sample] !r2qual : 20;
-    
-    [r1sample] r1taken : 100;
-    [r2sample] r2taken : 100;
-    [west] x = xMIN : 100;
-    [north] y = yMIN  : 100;
-    [south] y = yMAX : 100;
-
-    //[r3sense] true : 1;
-    //[r3sample] !r3qual : 20;
-    [north] true : 1;
-    [south] true : 1;
-    [west] true : 1;
-    [east] true : 1;
-    [finish] true : (!r1taken & r1qual ? 30 : 0) + (!r2taken & r2qual ? 30 : 0) ;//+ (!r3taken & r3qual ? 30 : 0) ;
-endrewards

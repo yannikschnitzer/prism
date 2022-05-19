@@ -53,16 +53,3 @@ label "notbad" =  !crash;
 // mapping to abstract POMDP
 label "s1" = ax=1 & ay=1;
 label "s2" = done;
-
-rewards "cost"
-
-    //[west] ax = axMIN : 100;
-    //[north] ay = ayMIN  : 100;
-    //[south] ay = ayMAX : 100;
-
-    [north] true : 1;
-    [south] true : 1;
-    [west] true : 1;
-    [east] true : 1;
-    crash: 10;
-endrewards

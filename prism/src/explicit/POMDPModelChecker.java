@@ -1804,8 +1804,10 @@ public class POMDPModelChecker extends ProbModelChecker
 		
 		ArrayList<Double> discountedReward = new ArrayList<Double> ();
 		double discountedRewardAverage = 0;
-		int numEpisode = 100;
+		int numEpisode = 50;
 		
+		long timer = System.currentTimeMillis();
+
 		for (int n = 0; n < numEpisode; n++) {
 			mainLog.println("start Episode"+n+" out of "+numEpisode);
 			double[] reward = computeReachRewardsPOMCPEpisode(pomdp,  mdpRewards,  target,  min,  statesOfInterest, endStates);
@@ -1822,6 +1824,8 @@ public class POMDPModelChecker extends ProbModelChecker
 		}
 		undiscountedRewardAverage = undiscountedRewardAverage / undiscountedReward.size();
 		discountedRewardAverage = undiscountedRewardAverage / undiscountedReward.size();
+		timer = System.currentTimeMillis() -timer;
+		mainLog.println("average time over " +  (timer / numEpisode) + "ms episodes");
 
 //		double std = 0;
 //		mainLog.println("rewards from POMCP");
@@ -1839,7 +1843,8 @@ public class POMDPModelChecker extends ProbModelChecker
 	public double[] computeReachRewardsPOMCPEpisode(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest, ArrayList<Integer> endStates) throws PrismException
 	{
 		//pomdp.exportToDotFile(mainLog);;
-		
+		long timer = System.currentTimeMillis();
+
 		mainLog.println("start running episode");
 		double[] initialBelief = pomdp.getInitialBeliefInDist();
 		int initialState = POMCPDrawStateFromBelief(initialBelief);
@@ -1869,10 +1874,10 @@ public class POMDPModelChecker extends ProbModelChecker
 				break;
 			}
 			step += 1;
-			pomcp.setVerbose(0);
+			pomcp.setVerbose(1);
 			if(step >= 2) {
 //				mainLog.println("step = " + step);
-				pomcp.setVerbose(0);
+				pomcp.setVerbose(1);
 				pomcp.setNumSimulations(Math.pow(2, 15));
 			}
 						
@@ -1892,9 +1897,9 @@ public class POMDPModelChecker extends ProbModelChecker
 //			pomcp.displayState(nextState);
 			if (pomdp.hasLabel("notbad") && !pomdp.getLabelStates("notbad").get(nextState)) {
 				mainLog.println("violated !");
-				return null;
+//				return null;
 			} else {
-				mainLog.println("safe");
+				mainLog.println("so far is ... safe");
 			}
 			
 //			mainLog.println("Updated Belief=");
@@ -1902,8 +1907,9 @@ public class POMDPModelChecker extends ProbModelChecker
 		    //pomcp.display();
 			state = nextState;
 		}
-		mainLog.println("UndiscountedReward "+ totalUndiscountedReward+ " DiscountedReward "+ totalDiscountedReward );
-
+		timer = System.currentTimeMillis() - timer;
+		mainLog.println("UndiscountedReward "+ totalUndiscountedReward+ " DiscountedReward "+ totalDiscountedReward + " Time(ms) " + timer);
+		
 
 		totalReward[0] = totalUndiscountedReward;
 		totalReward[1] = totalDiscountedReward;
