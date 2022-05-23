@@ -2808,8 +2808,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 
 	// alternative version to be integrated with cvar focused iteration
-	public ModelCheckerResult computeReachRewardsCvar(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException
-	{
+	public ModelCheckerResult computeReachRewardsCvar(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException {
 		// Start expected reachability
 		long timer = System.currentTimeMillis();
 		mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
@@ -2820,7 +2819,7 @@ public class MDPModelChecker extends ProbModelChecker
 		// Store num states
 		int n = mdp.getNumStates();
 		int n_actions = mdp.getMaxNumChoices();
-		
+
 		// Precomputation (not optional)
 		long timerProb1 = System.currentTimeMillis();
 		BitSet inf = prob1(mdp, null, target, !min, null);
@@ -2841,7 +2840,7 @@ public class MDPModelChecker extends ProbModelChecker
 		double error_thresh = 0.01;
 		double error_thresh_cvar = 2;
 		double gamma = 1;
-		double alpha=0.5;
+		double alpha = 0.5;
 
 		String c51 = "C51";
 		String qr = "QR";
@@ -2862,12 +2861,12 @@ public class MDPModelChecker extends ProbModelChecker
 		unknown_original.andNot(inf);
 
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
-			atoms = 51;
+			atoms = 31;
 			b_atoms = 6;
-			double v_max = 200;
+			double v_max = 50;
 			double v_min = 0;
 			operator = new DistributionalBellmanCategoricalAugmented(atoms, b_atoms, v_min, v_max, n, n_actions, mainLog);
-			operator.initialize( mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
+			operator.initialize(mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
 		}
 //		else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
 //			atoms = 1000;
@@ -2876,13 +2875,13 @@ public class MDPModelChecker extends ProbModelChecker
 //			operator = new DistributionalBellmanQRAugmented(atoms, b_atoms, n, n_actions, mainLog);
 //			operator.initialize(n); // initialization based on parameters.
 //		}
-		else{
-			atoms=101;
+		else {
+			atoms = 101;
 			b_atoms = 11;
 			double v_max = 100;
 			double v_min = 0;
 			operator = new DistributionalBellmanCategoricalAugmented(atoms, b_atoms, v_min, v_max, n, n_actions, mainLog);
-			operator.initialize( mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
+			operator.initialize(mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
 		}
 
 		// TODO double check that this is copying properly
@@ -2901,19 +2900,21 @@ public class MDPModelChecker extends ProbModelChecker
 		// Create/initialise solution vector(s)
 		// adjust dimensions to augmented
 		DistributionalBellmanAugmented temp_p;
-		double [][] action_val = new double[product_n][nactions];
-		Object [] policy = new Object[product_n]; // policy is now state x slack variable b
+		double[][] action_val = new double[product_n][nactions];
+		Object[] policy = new Object[product_n]; // policy is now state x slack variable b
 		int[] choices = new int[product_n];
 		double min_v;
-		double max_dist ;
-		double max_cvar_dist ;
+		double max_dist;
+		double max_cvar_dist;
 		int iters;
-		double reward=  0;
-		int numChoices; int numTransitions; int b; int model_s;
+		double reward = 0;
+		int numChoices;
+		int numTransitions;
+		int b;
+		int model_s;
 
 		// Start iterations - number of episodes
-		for (iters = 0; (iters < iterations) ; iters++)
-		{
+		for (iters = 0; (iters < iterations); iters++) {
 			temp_p = operator.copy();
 
 			PrimitiveIterator.OfInt states = unknownStates.iterator();
@@ -2932,17 +2933,17 @@ public class MDPModelChecker extends ProbModelChecker
 					Iterator<Entry<Integer, Double>> it = cvar_mdp.getProductModel().getTransitionsIterator(s, choice);
 
 					reward = mdpRewards.getStateReward(model_s) + mdpRewards.getTransitionReward(model_s, choice);
-					m = operator.step(it,  choices, numTransitions, gamma, reward);
+					m = operator.step(it, choices, numTransitions, gamma, reward);
 
 					action_val[s][choice] = operator.getMagic(m, cvar_mdp.getAutomatonState(s));
-					if(action_val[s][choice]< min_magic) {
+					if (action_val[s][choice] < min_magic) {
 						min_a = choice;
-						min_magic= action_val[s][choice];
+						min_magic = action_val[s][choice];
 					}
 
 					temp_p.update(m, s, choice);
 				}
-				policy[s] =cvar_mdp.getProductModel().getAction(s, min_a);
+				policy[s] = cvar_mdp.getProductModel().getAction(s, min_a);
 				choices[s] = min_a;
 
 			}
@@ -2954,7 +2955,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 			while (states.hasNext()) {
 				final int s = states.nextInt(); // fIXME right now checking only policy action
-				for (int choice = 0; choice <cvar_mdp.getProductModel().getNumChoices(s); choice++){
+				for (int choice = 0; choice < cvar_mdp.getProductModel().getNumChoices(s); choice++) {
 
 					operator.update(temp_p.getDist(s, choice), s, choice);
 //					action = choices[s][b];
@@ -2973,7 +2974,7 @@ public class MDPModelChecker extends ProbModelChecker
 //				operator.display(cvar_mdp.getProductModel());
 //			}
 
-		//mainLog.println("Max Wp dist :"+(max_dist - error_thresh) + " dist:"+(max_cvar_dist- error_thresh)+" at iter:"+iters);
+			//mainLog.println("Max Wp dist :"+(max_dist - error_thresh) + " dist:"+(max_cvar_dist- error_thresh)+" at iter:"+iters);
 
 //			if ((max_cvar_dist < error_thresh_cvar) & (max_dist <error_thresh)&(iters>5)) {
 //				break;
@@ -2983,7 +2984,7 @@ public class MDPModelChecker extends ProbModelChecker
 		// Print to file
 		// FIXME create a new printToFile function
 
-		mainLog.println("\nV[0] at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
+		mainLog.println("\nV[0] at " + (iters + 1) + " with method " + settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
 		operator.display(0, choices);
 
 		// Policy
@@ -2998,14 +2999,73 @@ public class MDPModelChecker extends ProbModelChecker
 
 		StateRewardsArray mcRewards = new StateRewardsArray(cvar_mdp.getProductModel().getNumStates());
 
-		int [] pol = operator.getStrategy(mdpRewards, mcRewards, choices, alpha);
-		MDStrategyArray strat = new MDStrategyArray(cvar_mdp.productModel, pol);
+		// Make fixed policy for cliffs
+		int [] pol = new int [product_n];
+		MDStrategyArray strat;
+		int[] fixed_policy = new int[product_n];
+
+		boolean fixed = true;
+		if (fixed) {
+
+			int row = 0;
+			int col = 0;
+
+			PrimitiveIterator.OfInt states = unknownStates.iterator();
+			// Loop over augmented state
+			while (states.hasNext()) {
+				final int s = states.nextInt();
+				model_s = cvar_mdp.getModelState(s);
+
+				row = (int) mdp.getStatesList().get(model_s).varValues[0];
+				col = (int) mdp.getStatesList().get(model_s).varValues[1];
+				List<Object> available = mdp.getAvailableActions(model_s);
+
+				for (int i = 0; i < available.size(); i++) {
+
+					if (available.size() == 1) {
+						fixed_policy[s] = 0;
+					} else if (row == 1) {
+						if (col != 12 && available.get(i).equals("east")) {
+							fixed_policy[s] = i;
+
+						} else if (col == 12 && available.get(i).equals("south")) {
+								fixed_policy[s] = i;
+						}
+					} else if (row == 4) {
+						if (col == 1 && available.get(i).equals("north")) {
+							fixed_policy[s] = i;
+						}
+					} else {
+						if (col <12 && available.get(i).equals("north")) {
+							fixed_policy[s] = i;
+						} else if (col == 12 && available.get(i).equals("south")) {
+							fixed_policy[s] = i;
+						}
+					}
+				}
+			}
+
+			pol = operator.getStrategy(mdpRewards, mcRewards, fixed_policy, alpha);
+			strat = new MDStrategyArray(cvar_mdp.productModel, fixed_policy);
+			mainLog.println("Currently returning policy "+ Arrays.toString(fixed_policy));
+
+		} else {
+			pol = operator.getStrategy(mdpRewards, mcRewards, choices, alpha);
+			strat = new MDStrategyArray(cvar_mdp.productModel, pol);
+			mainLog.println("Currently returning policy "+ Arrays.toString(pol));
+		}
+
+
 		DTMC dtmc = new DTMCFromMDPAndMDStrategy(cvar_mdp.productModel, strat);
-
-		mainLog.println("Currently returning policy "+ Arrays.toString(pol));
-
 		DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
 		mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, product_target);
+
+		boolean check_reach_dtmc = true;
+		if (check_reach_dtmc){
+			BitSet obs_states= cvar_mdp.getProductModel().getLabelStates("obs");
+			ModelCheckerResult result_obs = mcDTMC.computeReachProbs(dtmc, obs_states);
+			mainLog.println("Probs of reaching obstacle :" + result_obs);
+		}
 
 		int starting = 0;
 		if (dtmc.getInitialStates().iterator().hasNext()) {
@@ -3019,7 +3079,7 @@ public class MDPModelChecker extends ProbModelChecker
 			}
 		}
 
-		boolean print= true;
+		boolean print= false;
 		if (print) {
 			printToFile(policy, action_val, alpha, b_atoms, operator.getB(), starting, "gridmap/cvar_out_"+n+"_"+ settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) +"_"+alpha+".out", n, mdp.getMaxNumChoices());
 		}
