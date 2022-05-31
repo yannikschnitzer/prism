@@ -19,6 +19,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     int n_actions = 4;
     double v_min ;
     double v_max ;
+    double b_min; double b_max;
     double alpha=1;
     int numStates;
 
@@ -32,7 +33,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
     // new constructor to take b into account
     // should this have its own bounds? b_min and b_max?
-    public DistributionalBellmanCategoricalAugmented(int atoms, int b_atoms, double vmin, double vmax, int numStates, int n_actions, prism.PrismLog log){
+    public DistributionalBellmanCategoricalAugmented(int atoms, int b_atoms, double vmin, double vmax, double bmin, double bmax, int numStates, int n_actions, prism.PrismLog log){
         super();
         this.atoms = atoms;
         this.z = new double[atoms];
@@ -40,6 +41,8 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         this.delta_z = (vmax - vmin) / (atoms -1);
         this.v_min = vmin;
         this.v_max = vmax;
+        this.b_min = bmin;
+        this.b_max = bmax;
         this.numStates = numStates;
         this.n_actions = n_actions;
         this.mainLog = log;
@@ -56,9 +59,9 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
         // Initialize slack variable atoms 
         this.b_atoms = b_atoms;
-        this.delta_b = (vmax - vmin) / (b_atoms -1);
+        this.delta_b = (bmax - bmin) / (b_atoms -1);
         for (int i = 0; i < b_atoms; i++) {
-            this.b[i] = (vmin + i *this.delta_b);
+            this.b[i] = (bmin + i *this.delta_b);
         }
         log.println(" b: "+ Arrays.toString(b));
 
@@ -74,6 +77,8 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         delta_z = (el.v_max - el.v_min) / (atoms -1);
         v_min = el.v_min;
         v_max = el.v_max;
+        b_min = el.b_min;
+        b_max = el.b_max;
         numStates = el.numStates;
         n_actions = el.n_actions;
         mainLog = el.mainLog;
@@ -178,7 +183,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
     // Interpolate to find the closest b index
     public int getClosestB(double temp_b){
-        double new_b = max(b[0], min(temp_b,b[b_atoms-1]));
+        double new_b = max(b_min, min(temp_b,b_max));
         double index = new_b/delta_b;
         int l= (int) floor(index); int u= (int) ceil(index);
 
@@ -312,7 +317,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         return res;
     }
 
-    // Wp with p=2
+    // Wp with p=2 -> cramer distance
     @Override
     public double getW(double[] dist1, double[] dist2)
     {

@@ -1,7 +1,7 @@
 mdp
 const int N=4;
 const int M=12;
-const double p=0.25; // with probability p, a move to a neighboring state state occurs due to seeing and control noise
+const double p=0.15; // with probability p, a move to a neighboring state state occurs due to seeing and control noise
 
 module robot
 	//define robot position
@@ -30,5 +30,5 @@ rewards
 	[south] true : 1;
 	[west] true : 1;
 	[north] true : 1;
-	[obstacle] true : 25;
+	[obstacle] true : 35;
 endrewards

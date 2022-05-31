@@ -26,6 +26,7 @@ module robot
 endmodule
 
 label "goal" = r=N & c=2;
+label "obs" = flat | (r=2 & c=2) | (r=3 & c=2);
 
 rewards
 	[east] true : 1;
