@@ -1161,6 +1161,9 @@ public class ProbModelChecker extends NonProbModelChecker
 		case MDP:
 			if (modifier != null && modifier.equals("cvar")) {
 				res = ((MDPModelChecker) this).computeReachRewardsCvar((MDP) model, (MDPRewards) modelRewards, target, minMax.isMin());
+
+			} else if (modifier != null && modifier.equals("dist")){
+				res = ((MDPModelChecker) this).computeReachRewardsDistr((MDP) model, (MDPRewards) modelRewards, target, minMax.isMin());
 			} else {
 				res = ((MDPModelChecker) this).computeReachRewards((MDP) model, (MDPRewards) modelRewards, target, minMax.isMin());
 			}
