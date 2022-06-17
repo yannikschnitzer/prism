@@ -9,6 +9,7 @@ import prism.PrismLog;
 import java.util.BitSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugmented {
     int atoms = 1;
@@ -124,6 +125,11 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
     }
 
     @Override
+    public double[] adjust_support(TreeMap distr) {
+        return new double[0];
+    }
+
+    @Override
     public CVaRProduct getProductMDP() {
         return prod_mdp;
     }
@@ -142,5 +148,11 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
     public double[] getB() {
         return new double[0];
     }
+
+    @Override
+    public void writeToFile(int state, int action, String filename) {
+
+    }
+
 
 }

@@ -3,6 +3,9 @@ package explicit;
 import edu.jas.util.MapEntry;
 import prism.PrismLog;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.*;
 
 import static java.lang.Math.*;
@@ -173,8 +176,31 @@ public class DistributionalBellmanQR extends DistributionalBellman {
     }
 
     @Override
+    public double[] adjust_support(TreeMap distr) {
+        //TODO
+        return new double[0];
+    }
+
+    @Override
+    public void writeToFile(int state, String filename) {
+        if (filename == null) {filename="distr_exp_qr.csv";}
+        try (PrintWriter pw = new PrintWriter(new File("prism/"+filename))) {
+            pw.println("r,p,z");
+            for (int r = 0; r < atoms; r++) {
+                Double prob = p[r];
+                prob = (prob == null) ? 0.0 : prob;
+                pw.println(z[state][r] + "," + prob+","+tau_hat[r]);
+            }
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public void initialize(int n) {
 
     }
+
 
 }

@@ -7,6 +7,7 @@ import prism.PrismException;
 import java.util.BitSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
 
 public abstract class DistributionalBellmanAugmented {
     public int b_atoms;
@@ -61,6 +62,8 @@ public abstract class DistributionalBellmanAugmented {
 
     public abstract int[] getStrategy(MDPRewards mdpRewards, StateRewardsArray rewardsArray, int [] choices, double alpha) throws PrismException;
 
+    public abstract double [] adjust_support(TreeMap distr);
+
     public abstract CVaRProduct getProductMDP();
 
     public abstract int getB_atoms();
@@ -68,4 +71,6 @@ public abstract class DistributionalBellmanAugmented {
     public abstract double getBVal(int idx);
 
     public abstract double [] getB();
+
+    public abstract void writeToFile(int state, int action, String filename);
 }

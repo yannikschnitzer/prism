@@ -126,7 +126,7 @@ public class CVaRProduct extends Product<MDP>
                 queue.add(new Point(s_0, i));
                 mdpProd.addState();
 
-                mdpProd.addInitialState(mdpProd.getNumStates() -1);
+//                mdpProd.addInitialState(mdpProd.getNumStates() -1);
                 map[s_0 * b_atoms + i] = mdpProd.getNumStates() -1;
                 if (prodStatesList != null) {
                     // Store state information for the product
@@ -212,7 +212,7 @@ public class CVaRProduct extends Product<MDP>
         if(initialStatesList != null){
             mdpProd.clearInitialStates();
             for (int state :initialStatesList){
-                mdpProd.addInitialState(state);
+                mdpProd.addInitialState(map[state]);
             }
         }
 

@@ -5,6 +5,9 @@ import explicit.rewards.MDPRewards;
 import explicit.rewards.StateRewardsArray;
 import prism.PrismException;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.*;
 
@@ -103,12 +106,6 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     @Override
     public DistributionalBellmanAugmented copy() {
         return new DistributionalBellmanCategoricalAugmented(this);
-    }
-
-
-    public double [] getZ()
-    {
-        return this.z;
     }
 
     //  Initializing with augmented state and actions.
@@ -371,7 +368,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
                 }
             }
             cvar = b[idx_b] + 1/(1-alpha) * expected_cost;
-            if (cvar < res[1]){
+            if (cvar <= res[1]){
                 res[0] = idx_b;
                 res[1] = cvar;
                 res[2] = prod_state;
@@ -421,6 +418,34 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     }
 
     @Override
+    public double [] adjust_support(TreeMap distr)
+    {
+        int entry_key; double entry_val; double temp; double index;
+        double [] m = new double[atoms];
+
+        for(Object e: distr.entrySet())
+        {
+            entry_key = (int) ((Map.Entry<?, ?>) e).getKey();
+            entry_val = (double) ((Map.Entry<?, ?>) e).getValue();
+
+            temp = max(v_min, min(v_max, entry_key));
+            index = (temp - v_min)/delta_z;
+
+            int l= (int) floor(index); int u= (int) ceil(index);
+
+            if ( l- u != 0){
+                m[l] += entry_val * (u -index);
+                m[u] += entry_val * (index-l);
+            } else{
+                m[l] += entry_val;
+            }
+
+        }
+
+        return m;
+    }
+
+    @Override
     public CVaRProduct getProductMDP() {
         return prod_mdp;
     }
@@ -437,4 +462,20 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
     @Override
     public double [] getB() {return b;}
+
+    @Override
+    public void writeToFile(int state, int action, String filename){
+        if (filename == null) {filename="distr_cvar_c51.csv";}
+        try (PrintWriter pw = new PrintWriter(new File("prism/"+filename))) {
+            pw.println("r,p,z");
+            for (int r = 0; r < atoms; r++) {
+                Double prob = p[state][action][r];
+                prob = (prob == null) ? 0.0 : prob;
+                pw.println(r + "," + prob+","+z[r]);
+            }
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 }

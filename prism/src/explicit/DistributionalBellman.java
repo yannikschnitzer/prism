@@ -2,6 +2,7 @@ package explicit;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
 
 abstract class DistributionalBellman {
 
@@ -37,5 +38,8 @@ abstract class DistributionalBellman {
 
     public abstract double[] getDist(int i);
 
+    public abstract double [] adjust_support(TreeMap distr);
+
+    public abstract void writeToFile(int state, String filename);
 //    public abstract double [][] getDist();
 }
