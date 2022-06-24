@@ -338,6 +338,13 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         return sqrt(sum);
     }
 
+//    // Kolmogorov-Smirnov test
+//    @Override
+//    public double getKSTest(double [] dist, int state, int idx_a)
+//    {
+//        KolmogorovSmirnovTest test = new KolmogorovSmirnovTest();
+//    }
+
     public double [][][] getP ()
     {
         return p;

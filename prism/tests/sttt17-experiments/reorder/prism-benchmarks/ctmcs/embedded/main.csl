@@ -1,0 +1,2 @@
+// Probability of main failure
+"main": P=? [ !"down" U "fail_main" ];

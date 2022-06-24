@@ -1,0 +1,65 @@
+mdp
+const int cols =9;
+const int rows = 3;
+const double p=0.3; // with probability p, staying in place occurs due to seeing and control noise
+const double flat_p=0.20;
+
+formula mud = ((r=1 & c>1 & c<5)|(r=3 & c>5 & c<9)) ;
+formula nails = ((r=3 & c>1 & c<5)|(r=1 & c>5 & c<9));
+formula wall = ((r=1 & c=1) | (r=3 & c=1) | (r=2 & c=3) | (r=2 & c=4) | (r=2 & c=6) | (r=2 & c=7) | (r=1 & c=9) | (r=3 & c=9));
+
+module robot
+	//define robot position
+	r:[1..rows] init 2; //grid row
+	c:[1..cols] init 1; //grid column
+	flat: bool init false;
+
+	// go to the terminal state when hitting an obstacle
+	[obstacle] wall -> (r'=2) & (c'=cols);
+
+	// transitions normal + mud
+	[east] ( c< cols | c=cols) & !nails & !wall-> p:(r'=r) +           (1-p): (c'=min(c+1, cols));
+	[south] (r<rows | r=rows) & !nails & !wall -> (1-p):(r'=min(r+1, rows)) + p: (c'=c);
+	[west]  (c>1 | c=1) & !nails & !wall -> p:(r'=r) +                 (1-p): (c'=max(c-1, 1));
+	[north] (r=1 | r>1) & !nails & !wall -> (1-p):(r'=max(r-1, 1)) +       p: (c'=c);
+
+
+	// transitions nails
+	[east] ( c< cols | c=cols) & nails & !wall & !mud-> p:(r'=r) + (1-(p+flat_p)): (c'=min(c+1, cols)) + flat_p: (r'=r) & (flat'=!flat);
+	[south] (r<rows | r=rows) & nails & !wall & !mud -> (1-(p+flat_p)):(r'=min(r+1, rows)) + p: (c'=c) + flat_p: (c'=c) & (flat'=!flat);
+	[west]  (c>1 | c=1) & nails & !wall & !mud       -> p:(r'=r) + (1-(p+flat_p)): (c'=max(c-1, 1)) + flat_p: (r'=r) & (flat'=!flat);
+	[north] (r=1 | r>1) & nails & !wall & !mud       -> (1-(p+flat_p)):(r'=max(r-1, 1)) + p: (c'=c) + flat_p: (c'=c) & (flat'=!flat);
+
+	// terminal state self-loop to avoid deadlock
+	[] r=2 & c=cols-> true;
+
+endmodule
+
+label "goal" = (r=2) & (c=cols);
+label "obs" = flat | wall;
+
+rewards
+
+	[east] !mud & !nails : 1;
+	[south] !mud & !nails : 1;
+	[west] !mud & !nails : 1;
+	[north] !mud & !nails : 1;
+
+	// mud
+	[east]  mud & !nails : 3;
+	[south]  mud & !nails : 3;
+	[west]  mud & !nails : 3;
+    [north]  mud & !nails : 3;
+
+	// nails
+	[east] nails & !flat : 1;
+	[east] nails & flat : 5;
+    [south]  nails & !flat : 1;
+    [south]  nails & flat : 5;
+    [west]  nails & !flat : 1;
+    [west]  nails & flat : 5;
+    [north]  nails & !flat : 1;
+    [north]  nails & flat : 5;
+
+	[obstacle] true : 50;
+endrewards

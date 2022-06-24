@@ -1,0 +1,2 @@
+// Probability of IO failure
+"io": P=? [ !"down" U "fail_io" ];

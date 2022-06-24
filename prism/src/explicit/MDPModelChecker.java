@@ -2624,11 +2624,11 @@ public class MDPModelChecker extends ProbModelChecker
 		// Set up CVAR variables
 		int atoms;
 		int iterations = 150;
-		double error_thresh = 0.1;
+		double error_thresh = 0.05;
 		double error_thresh_cvar = 2;
 		double gamma = 1;
 		double alpha=0.5;
-		boolean check_reach_dtmc = false;
+		boolean check_reach_dtmc = true;
 		String bad_states_label = "obs";
 
 		String c51 = "C51";
@@ -2697,11 +2697,8 @@ public class MDPModelChecker extends ProbModelChecker
 					double [] m ; numTransitions = mdp.getNumTransitions(s, choice);
 					Iterator<Entry<Integer, Double>>it = mdp.getTransitionsIterator(s,choice);
 
-					if (mdpRewards.hasTransitionRewards()) {
-						m = operator.step(it, numTransitions, gamma, mdpRewards.getTransitionReward(s, choice));
-					} else {
-						m = operator.step(it, numTransitions, gamma, mdpRewards.getStateReward(s));
-					}
+					double reward = mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choice);
+					m = operator.step(it, numTransitions, gamma, reward);
 
 					action_val[s][choice] = operator.getExpValue(m);
 					save_p[choice] = Arrays.copyOf(m, m.length);
@@ -2824,12 +2821,12 @@ public class MDPModelChecker extends ProbModelChecker
 		// Set up CVAR variables
 		int atoms;
 		int iterations = 500;
-		double error_thresh = 0.05;
+		double error_thresh = 0.08;
 		double error_thresh_cvar = 2;
 		double gamma = 1;
-		double alpha = 0.7;
+		double alpha = 0.8;
 		String bad_states_label = "obs";
-		boolean check_reach_dtmc = false;
+		boolean check_reach_dtmc = true;
 
 		String c51 = "C51";
 		String qr = "QR";
@@ -2851,10 +2848,10 @@ public class MDPModelChecker extends ProbModelChecker
 		mainLog.println(" Starting Cvar iteration with method:"+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
 
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
-			atoms = 101;
-			b_atoms = 16;
+			atoms = 51;
+			b_atoms = 26;
 			// TODO make this a point variable or something to be a bit cleaner
-			double b_max = 30;
+			double b_max = 100;
 			double b_min = 0;
 			double v_max = 100;
 			double v_min = 0;
@@ -2932,6 +2929,7 @@ public class MDPModelChecker extends ProbModelChecker
 					reward = mdpRewards.getStateReward(model_s) + mdpRewards.getTransitionReward(model_s, choice);
 					m = operator.step(it, choices, numTransitions, gamma, reward);
 
+//					action_val[s][choice] = operator.getValueCvar(m, alpha, cvar_mdp.getAutomatonState(s));
 					action_val[s][choice] = operator.getMagic(m, cvar_mdp.getAutomatonState(s));
 					if (action_val[s][choice] < min_magic) {
 						min_a = choice;

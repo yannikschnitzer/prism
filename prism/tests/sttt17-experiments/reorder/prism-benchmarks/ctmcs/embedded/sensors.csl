@@ -1,0 +1,2 @@
+// Probability of sensor failure
+"sensors": P=? [ !"down" U "fail_sensors" ];
