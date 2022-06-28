@@ -1,0 +1,16 @@
+prism_state;prism_belief_support;stompy_state;stompy_belief_support;selected_action;available_actions;allowed_actions;state_meaning;safe?
+0;[0];0;[0];placement;[placement];[placement];(start=false,ax=0,ay=0);true
+8;[23, 8, 10, 14];2;[1, 2, 3, 4];north;[north, south, east, west];[north, south, east, west];(start=true,ax=1,ay=1);false
+7;[7];12;[12];south;[north, south, east, west];[north, south, east, west];(start=true,ax=1,ay=0);false
+8;[8, 9];2;[2, 13];west;[north, south, east, west];[north, south, east, west];(start=true,ax=1,ay=1);false
+2;[2, 3];15;[15, 31];south;[north, south, east, west];[north, south, east, west];(start=true,ax=0,ay=1);false
+3;[3, 4, 5];31;[21, 30, 31];south;[north, south, east, west];[north, south, east, west];(start=true,ax=0,ay=2);false
+4;[4, 5, 6];21;[35, 21, 30];west;[north, south, east, west];[north, south, east, west];(start=true,ax=0,ay=3);false
+4;[4, 5, 6];21;[35, 21, 30];south;[north, south, east, west];[north, south, east, west];(start=true,ax=0,ay=3);false
+5;[5, 6];30;[35, 30];south;[north, south, east, west];[north, south, east, west];(start=true,ax=0,ay=4);false
+6;[6];35;[35];east;[north, south, east, west];[north, south, east, west];(start=true,ax=0,ay=5);false
+12;[18, 12];20;[20, 29];east;[north, south, east, west];[north, south, east, west];(start=true,ax=1,ay=5);false
+18;[18, 24, 30];29;[7, 27, 29];east;[north, south, east, west];[north, south, east, west];(start=true,ax=2,ay=5);false
+24;[24, 30];7;[7, 27];east;[north, south, east, west];[north, south, east, west];(start=true,ax=3,ay=5);false
+30;[30];27;[27];east;[north, south, east, west];[north, south, east, west];(start=true,ax=4,ay=5);false
+36;[36];28;[28];notApplicable;notApplicable;notApplicable;(start=true,ax=5,ay=5);true

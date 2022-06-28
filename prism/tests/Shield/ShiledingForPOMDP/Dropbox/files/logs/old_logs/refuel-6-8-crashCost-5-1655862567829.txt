@@ -1,0 +1,4 @@
+modelName;nStates;shieldLevel;numEpisode;numEpisodes;undiscounted reward;discounted reward;timeSpent;average undiscounted reward;average discounted reward;average time spent ;isSafeTrace
+refuel-;270;3;1;10;-13.0;-9.66298202799726;6674;-13.0;-9.66298202799726;6674;1.0
+refuel-;270;3;2;10;-6.0;-5.033254078125;2086;-9.5;-7.34811805306113;4380;1.0
+refuel-;270;3;3;10;-6.0;-5.033254078125;2087;-8.333333333333334;-6.576496728082421;3615;1.0

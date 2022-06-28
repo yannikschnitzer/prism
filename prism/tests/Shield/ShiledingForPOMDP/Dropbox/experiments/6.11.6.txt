@@ -1,0 +1,129 @@
+SSSSSSSSSSSS
+actt {'placement', 'south', 'west', 'east', 'north'} <class 'set'>
+sssssssssss ['placement', 'south', 'west', 'east', 'north']
+(0, [])	[0]	['placement']	['placement']	placement	9
+4	[1, 2, 3, 4]	['north', 'south', 'east', 'west']	['south']	south	9
+11	[4, 7, 11, 13, 17, 18, 20]	['north', 'south', 'east', 'west']	['west']	west	9
+30	[4, 13, 20, 21, 29, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+30	[20, 21, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+35	[20, 21, 30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	west	9
+35	[21, 30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	north	9
+30	[15, 21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+30	[15, 21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+30	[15, 21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+35	[21, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+35	[21, 30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	west	9
+35	[21, 30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	south	9
+35	[30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	west	9
+35	[30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	west	9
+35	[30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	south	9
+35	[35]	['north', 'south', 'east', 'west']	['north', 'south', 'east', 'west']	west	9
+35	[35]	['north', 'south', 'east', 'west']	['north', 'south', 'east', 'west']	south	9
+35	[35]	['north', 'south', 'east', 'west']	['north', 'south', 'east', 'west']	south	9
+35	[35]	['north', 'south', 'east', 'west']	['north', 'south', 'east', 'west']	south	9
+35	[35]	['north', 'south', 'east', 'west']	['north', 'south', 'east', 'west']	west	9
+35	[35]	['north', 'south', 'east', 'west']	['north', 'south', 'east', 'west']	north	9
+21	[21, 30]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	west	9
+21	[21, 30]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	north	9
+31	[15, 21, 31]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+21	[21, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+30	[21, 30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	south	9
+35	[30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	north	9
+30	[21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+30	[21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+30	[21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+30	[21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+30	[21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+30	[21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+30	[21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+35	[21, 30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	south	9
+35	[30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	north	9
+21	[21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+30	[21, 30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	north	9
+21	[15, 21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+21	[15, 21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+30	[21, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+30	[21, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+30	[21, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+30	[21, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+30	[21, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+30	[21, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+30	[21, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+30	[21, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+35	[21, 30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	south	9
+35	[30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	west	9
+35	[30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	north	9
+30	[21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+30	[21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+35	[21, 30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	west	9
+35	[21, 30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	south	9
+35	[30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	west	9
+35	[30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	west	9
+35	[30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	west	9
+35	[30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	north	9
+30	[21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+35	[21, 30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	west	9
+35	[21, 30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	west	9
+35	[21, 30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	south	9
+35	[30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	south	9
+35	[35]	['north', 'south', 'east', 'west']	['north', 'south', 'east', 'west']	north	9
+30	[21, 30]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	north	9
+21	[15, 21, 31]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+21	[15, 21, 31]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+21	[15, 21, 31]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+30	[21, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+30	[21, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+35	[21, 30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	south	9
+35	[30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	north	9
+30	[21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+35	[21, 30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	south	9
+35	[30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	south	9
+35	[35]	['north', 'south', 'east', 'west']	['north', 'south', 'east', 'west']	west	9
+35	[35]	['north', 'south', 'east', 'west']	['north', 'south', 'east', 'west']	north	9
+30	[21, 30]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	north	9
+31	[15, 21, 31]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+21	[21, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+21	[21, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+21	[21, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+21	[21, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+30	[21, 30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	north	9
+21	[15, 21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	west	9
+21	[15, 21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+30	[21, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+35	[21, 30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	north	9
+30	[15, 21, 30, 31]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+35	[21, 30, 31, 35]	['north', 'south', 'east', 'west']	['south', 'west']	south	9
+35	[21, 30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	south	9
+35	[30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	south	9
+35	[35]	['north', 'south', 'east', 'west']	['north', 'south', 'east', 'west']	east	9
+20	[20, 29]	['north', 'south', 'east', 'west']	['south', 'east', 'west']	south	9
+20	[20, 29]	['north', 'south', 'east', 'west']	['south', 'east', 'west']	west	9
+35	[20, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'east', 'west']	north	9
+30	[4, 11, 21, 30]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	south	9
+35	[11, 20, 30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	south	9
+35	[20, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'east', 'west']	east	9
+20	[7, 20, 29]	['north', 'south', 'east', 'west']	['south', 'east', 'west']	south	9
+20	[7, 20, 29]	['north', 'south', 'east', 'west']	['south', 'east', 'west']	east	9
+29	[7, 27, 29]	['north', 'south', 'east', 'west']	['south', 'east', 'west']	east	9
+7	[7, 27]	['north', 'south', 'east', 'west']	['south', 'east', 'west']	east	9
+27	[27]	['north', 'south', 'east', 'west']	['south', 'east', 'west']	west	9
+7	[7, 29]	['north', 'south', 'east', 'west']	['south', 'east', 'west']	east	9
+27	[7, 27]	['north', 'south', 'east', 'west']	['south', 'east', 'west']	west	9
+7	[7, 20, 29]	['north', 'south', 'east', 'west']	['south', 'east', 'west']	west	9
+29	[20, 29, 35]	['north', 'south', 'east', 'west']	['south', 'east', 'west']	west	9
+20	[20, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'east', 'west']	north	9
+11	[4, 11, 21, 30]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	west	9
+30	[21, 30]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	west	9
+30	[21, 30]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	south	9
+35	[30, 35]	['north', 'south', 'east', 'west']	['north', 'south', 'west']	south	9
+35	[35]	['north', 'south', 'east', 'west']	['north', 'south', 'east', 'west']	south	9
+35	[35]	['north', 'south', 'east', 'west']	['north', 'south', 'east', 'west']	east	9
+20	[20, 29]	['north', 'south', 'east', 'west']	['south', 'east', 'west']	east	9
+29	[7, 27, 29]	['north', 'south', 'east', 'west']	['south', 'east', 'west']	east	9
+7	[7, 27]	['north', 'south', 'east', 'west']	['south', 'east', 'west']	west	9
+29	[7, 20, 29]	['north', 'south', 'east', 'west']	['south', 'east', 'west']	east	9
+7	[7, 27, 29]	['north', 'south', 'east', 'west']	['south', 'east', 'west']	west	9
+29	[7, 20, 29, 35]	['north', 'south', 'east', 'west']	['south', 'east', 'west']	east	9
+27	[7, 20, 27, 29]	['north', 'south', 'east', 'west']	['south', 'east', 'west']	south	9
+27	[7, 20, 27, 29]	['north', 'south', 'east', 'west']	['south', 'east', 'west']	east	9
+28	[28]	

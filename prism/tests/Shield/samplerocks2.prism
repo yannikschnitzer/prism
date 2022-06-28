@@ -126,3 +126,6 @@ endrewards
 
 label "goal" = finish;
 label "rockposition" = (r1x = x & r1y = y) | (r2x = x & r2y = y) | (r3x = x & r3y = y);
+
+
+

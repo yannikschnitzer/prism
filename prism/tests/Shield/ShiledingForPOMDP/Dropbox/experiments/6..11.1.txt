@@ -1,0 +1,628 @@
+SSSSSSSSSSSS
+state (0, []) <class 'tuple'>
+self._shield.list_support() [0] <class 'list'>
+actions range(0, 1) <class 'range'>
+safe_actions [0] <class 'list'>
+action 0 <class 'int'>
+state 4 <class 'int'>
+self._shield.list_support() [1, 2, 3, 4] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1] <class 'list'>
+action 1 <class 'int'>
+state 11 <class 'int'>
+self._shield.list_support() [4, 7, 11, 13, 17, 18, 20] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [4, 13, 20, 21, 29, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [20, 21, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [20, 21, 30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 3 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [21, 30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 0 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [15, 21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [15, 21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [15, 21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [21, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [21, 30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 3 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [21, 30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 3 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 3 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 2, 3] <class 'list'>
+action 3 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 2, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 2, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 2, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 2, 3] <class 'list'>
+action 3 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 2, 3] <class 'list'>
+action 0 <class 'int'>
+state 21 <class 'int'>
+self._shield.list_support() [21, 30] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 3 <class 'int'>
+state 21 <class 'int'>
+self._shield.list_support() [21, 30] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 0 <class 'int'>
+state 31 <class 'int'>
+self._shield.list_support() [15, 21, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 21 <class 'int'>
+self._shield.list_support() [21, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 0 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [21, 30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 0 <class 'int'>
+state 21 <class 'int'>
+self._shield.list_support() [21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 0 <class 'int'>
+state 21 <class 'int'>
+self._shield.list_support() [15, 21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 21 <class 'int'>
+self._shield.list_support() [15, 21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [21, 30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 3 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 0 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [21, 30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 3 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [21, 30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 3 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 3 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 3 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 0 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [21, 30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 3 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [21, 30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 3 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [21, 30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 2, 3] <class 'list'>
+action 0 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 0 <class 'int'>
+state 21 <class 'int'>
+self._shield.list_support() [15, 21, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 21 <class 'int'>
+self._shield.list_support() [15, 21, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 21 <class 'int'>
+self._shield.list_support() [15, 21, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [21, 30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 0 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [21, 30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 2, 3] <class 'list'>
+action 3 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 2, 3] <class 'list'>
+action 0 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 0 <class 'int'>
+state 31 <class 'int'>
+self._shield.list_support() [15, 21, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 21 <class 'int'>
+self._shield.list_support() [21, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 21 <class 'int'>
+self._shield.list_support() [21, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 21 <class 'int'>
+self._shield.list_support() [21, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 21 <class 'int'>
+self._shield.list_support() [21, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 0 <class 'int'>
+state 21 <class 'int'>
+self._shield.list_support() [15, 21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 3 <class 'int'>
+state 21 <class 'int'>
+self._shield.list_support() [15, 21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [21, 30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 0 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [15, 21, 30, 31] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [21, 30, 31, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [21, 30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 2, 3] <class 'list'>
+action 2 <class 'int'>
+state 20 <class 'int'>
+self._shield.list_support() [20, 29] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 2, 3] <class 'list'>
+action 1 <class 'int'>
+state 20 <class 'int'>
+self._shield.list_support() [20, 29] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 2, 3] <class 'list'>
+action 3 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [20, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 2, 3] <class 'list'>
+action 0 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [4, 11, 21, 30] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [11, 20, 30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [20, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 2, 3] <class 'list'>
+action 2 <class 'int'>
+state 20 <class 'int'>
+self._shield.list_support() [7, 20, 29] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 2, 3] <class 'list'>
+action 1 <class 'int'>
+state 20 <class 'int'>
+self._shield.list_support() [7, 20, 29] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 2, 3] <class 'list'>
+action 2 <class 'int'>
+state 29 <class 'int'>
+self._shield.list_support() [7, 27, 29] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 2, 3] <class 'list'>
+action 2 <class 'int'>
+state 7 <class 'int'>
+self._shield.list_support() [7, 27] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 2, 3] <class 'list'>
+action 2 <class 'int'>
+state 27 <class 'int'>
+self._shield.list_support() [27] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 2, 3] <class 'list'>
+action 3 <class 'int'>
+state 7 <class 'int'>
+self._shield.list_support() [7, 29] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 2, 3] <class 'list'>
+action 2 <class 'int'>
+state 27 <class 'int'>
+self._shield.list_support() [7, 27] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 2, 3] <class 'list'>
+action 3 <class 'int'>
+state 7 <class 'int'>
+self._shield.list_support() [7, 20, 29] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 2, 3] <class 'list'>
+action 3 <class 'int'>
+state 29 <class 'int'>
+self._shield.list_support() [20, 29, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 2, 3] <class 'list'>
+action 3 <class 'int'>
+state 20 <class 'int'>
+self._shield.list_support() [20, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 2, 3] <class 'list'>
+action 0 <class 'int'>
+state 11 <class 'int'>
+self._shield.list_support() [4, 11, 21, 30] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 3 <class 'int'>
+state 30 <class 'int'>
+self._shield.list_support() [21, 30] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [30, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 2, 3] <class 'list'>
+action 1 <class 'int'>
+state 35 <class 'int'>
+self._shield.list_support() [35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [0, 1, 2, 3] <class 'list'>
+action 2 <class 'int'>
+state 20 <class 'int'>
+self._shield.list_support() [20, 29] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 2, 3] <class 'list'>
+action 2 <class 'int'>
+state 29 <class 'int'>
+self._shield.list_support() [7, 27, 29] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 2, 3] <class 'list'>
+action 2 <class 'int'>
+state 7 <class 'int'>
+self._shield.list_support() [7, 27] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 2, 3] <class 'list'>
+action 3 <class 'int'>
+state 29 <class 'int'>
+self._shield.list_support() [7, 20, 29] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 2, 3] <class 'list'>
+action 2 <class 'int'>
+state 7 <class 'int'>
+self._shield.list_support() [7, 27, 29] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 2, 3] <class 'list'>
+action 3 <class 'int'>
+state 29 <class 'int'>
+self._shield.list_support() [7, 20, 29, 35] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 2, 3] <class 'list'>
+action 2 <class 'int'>
+state 27 <class 'int'>
+self._shield.list_support() [7, 20, 27, 29] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 2, 3] <class 'list'>
+action 1 <class 'int'>
+state 27 <class 'int'>
+self._shield.list_support() [7, 20, 27, 29] <class 'list'>
+actions range(0, 4) <class 'range'>
+safe_actions [1, 2, 3] <class 'list'>
+action 2 <class 'int'>
+state 28 <class 'int'>
+self._shield.list_support() [28] <class 'list'>

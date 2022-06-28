@@ -1,0 +1,32 @@
+INFO:__main__:Look up problem definition....
+INFO:__main__:Load winning region...
+INFO:__main__:Loading problem definition....
+INFO:__main__:Construct POMDP representation...
+INFO:__main__:-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	5
+Transitions: 	12
+Choices: 	11
+Observations: 	4
+Reward Models:  none
+State Labels: 	7 labels
+   * deadlock -> 0 item(s)
+   * traps -> 1 item(s)
+   * s2 -> 1 item(s)
+   * s1 -> 1 item(s)
+   * init -> 1 item(s)
+   * notbad -> 4 item(s)
+   * goal -> 1 item(s)
+Choice Labels: 	5 labels
+   * placement -> 1 item(s)
+   * north -> 2 item(s)
+   * south -> 2 item(s)
+   * east -> 2 item(s)
+   * west -> 2 item(s)
+-------------------------------------------------------------- 
+
+INFO:rlshield.model_simulator:Start new episode.
+INFO:rlshield.model_simulator:Done after 10 steps!
+INFO:rlshield.recorder:Rendering newvideos/obstacle-2-fixpoint-0.mp4
+INFO:matplotlib.animation:figure size in inches has been adjusted from 6.3999999999999995 x 4.8 to 6.4 x 4.8
+INFO:matplotlib.animation:MovieWriter._run: running command: ffmpeg -f rawvideo -vcodec rawvideo -s 640x480 -pix_fmt rgba -r 3 -loglevel error -i pipe: -vcodec h264 -pix_fmt yuv420p -y newvideos/obstacle-2-fixpoint-0.mp4

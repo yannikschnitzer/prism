@@ -1,0 +1,155 @@
+prism_state;prism_belief_support;stompy_state;stompy_belief_support;selected_action;available_actions;allowed_actions;state_meaning;safe?
+0;[0];0;[0];placement;[placement];[placement];(start=false,fuel=8,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+229;[224, 229, 223];10;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=2,ay=1);true
+193;[193, 187];32;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=2,ay=0);true
+151;[151];55;[55];west;[south, east, west];[south, east, west];(start=true,fuel=4,ax=1,ay=0);true
+109;[109];81;[81];refuel;[refuel];[refuel];(start=true,fuel=3,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+252;[251, 252];3;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=2);true
+224;[224, 229, 223];13;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=1,ay=2);true
+188;[188];34;[34];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=5,ax=1,ay=1);true
+151;[151];55;[55];west;[south, east, west];[south, east, west];(start=true,fuel=4,ax=1,ay=0);true
+109;[109];81;[81];refuel;[refuel];[refuel];(start=true,fuel=3,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+223;[224, 229, 223];9;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=1,ay=1);true
+187;[193, 187];29;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=1,ay=0);true
+145;[145];43;[43];refuel;[refuel];[refuel];(start=true,fuel=4,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+223;[224, 229, 223];9;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=1,ay=1);true
+187;[193, 187];29;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=1,ay=0);true
+145;[145];43;[43];refuel;[refuel];[refuel];(start=true,fuel=4,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+229;[224, 229, 223];10;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=2,ay=1);true
+193;[193, 187];32;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=2,ay=0);true
+151;[151];55;[55];west;[south, east, west];[south, east, west];(start=true,fuel=4,ax=1,ay=0);true
+109;[109];81;[81];refuel;[refuel];[refuel];(start=true,fuel=3,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+223;[224, 229, 223];9;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=1,ay=1);true
+187;[193, 187];29;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=1,ay=0);true
+145;[145];43;[43];refuel;[refuel];[refuel];(start=true,fuel=4,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+229;[224, 229, 223];10;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=2,ay=1);true
+193;[193, 187];32;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=2,ay=0);true
+151;[151];55;[55];west;[south, east, west];[south, east, west];(start=true,fuel=4,ax=1,ay=0);true
+109;[109];81;[81];refuel;[refuel];[refuel];(start=true,fuel=3,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+229;[224, 229, 223];10;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=2,ay=1);true
+193;[193, 187];32;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=2,ay=0);true
+151;[151];55;[55];west;[south, east, west];[south, east, west];(start=true,fuel=4,ax=1,ay=0);true
+109;[109];81;[81];refuel;[refuel];[refuel];(start=true,fuel=3,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+223;[224, 229, 223];9;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=1,ay=1);true
+187;[193, 187];29;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=1,ay=0);true
+145;[145];43;[43];refuel;[refuel];[refuel];(start=true,fuel=4,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+252;[251, 252];3;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=2);true
+224;[224, 229, 223];13;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=1,ay=2);true
+187;[193, 187];29;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=1,ay=0);true
+145;[145];43;[43];refuel;[refuel];[refuel];(start=true,fuel=4,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+223;[224, 229, 223];9;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=1,ay=1);true
+187;[193, 187];29;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=1,ay=0);true
+145;[145];43;[43];refuel;[refuel];[refuel];(start=true,fuel=4,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+223;[224, 229, 223];9;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=1,ay=1);true
+187;[193, 187];29;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=1,ay=0);true
+145;[145];43;[43];refuel;[refuel];[refuel];(start=true,fuel=4,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+223;[224, 229, 223];9;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=1,ay=1);true
+187;[193, 187];29;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=1,ay=0);true
+145;[145];43;[43];refuel;[refuel];[refuel];(start=true,fuel=4,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+223;[224, 229, 223];9;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=1,ay=1);true
+187;[193, 187];29;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=1,ay=0);true
+145;[145];43;[43];refuel;[refuel];[refuel];(start=true,fuel=4,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+229;[224, 229, 223];10;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=2,ay=1);true
+193;[193, 187];32;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=2,ay=0);true
+151;[151];55;[55];west;[south, east, west];[south, east, west];(start=true,fuel=4,ax=1,ay=0);true
+109;[109];81;[81];refuel;[refuel];[refuel];(start=true,fuel=3,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+223;[224, 229, 223];9;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=1,ay=1);true
+187;[193, 187];29;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=1,ay=0);true
+145;[145];43;[43];refuel;[refuel];[refuel];(start=true,fuel=4,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+223;[224, 229, 223];9;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=1,ay=1);true
+187;[193, 187];29;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=1,ay=0);true
+145;[145];43;[43];refuel;[refuel];[refuel];(start=true,fuel=4,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+229;[224, 229, 223];10;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=2,ay=1);true
+193;[193, 187];32;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=2,ay=0);true
+151;[151];55;[55];west;[south, east, west];[south, east, west];(start=true,fuel=4,ax=1,ay=0);true
+109;[109];81;[81];refuel;[refuel];[refuel];(start=true,fuel=3,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+252;[251, 252];3;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=2);true
+224;[224, 229, 223];13;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=1,ay=2);true
+188;[188];34;[34];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=5,ax=1,ay=1);true
+151;[151];55;[55];west;[south, east, west];[south, east, west];(start=true,fuel=4,ax=1,ay=0);true
+109;[109];81;[81];refuel;[refuel];[refuel];(start=true,fuel=3,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+252;[251, 252];3;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=2);true
+224;[224, 229, 223];13;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=1,ay=2);true
+188;[188];34;[34];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=5,ax=1,ay=1);true
+151;[151];55;[55];west;[south, east, west];[south, east, west];(start=true,fuel=4,ax=1,ay=0);true
+109;[109];81;[81];refuel;[refuel];[refuel];(start=true,fuel=3,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+229;[224, 229, 223];10;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=2,ay=1);true
+193;[193, 187];32;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=2,ay=0);true
+145;[145];43;[43];refuel;[refuel];[refuel];(start=true,fuel=4,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+223;[224, 229, 223];9;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=1,ay=1);true
+187;[193, 187];29;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=1,ay=0);true
+145;[145];43;[43];refuel;[refuel];[refuel];(start=true,fuel=4,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+223;[224, 229, 223];9;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=1,ay=1);true
+187;[193, 187];29;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=1,ay=0);true
+145;[145];43;[43];refuel;[refuel];[refuel];(start=true,fuel=4,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+229;[224, 229, 223];10;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=2,ay=1);true
+193;[193, 187];32;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=2,ay=0);true
+151;[151];55;[55];west;[south, east, west];[south, east, west];(start=true,fuel=4,ax=1,ay=0);true
+109;[109];81;[81];refuel;[refuel];[refuel];(start=true,fuel=3,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+229;[224, 229, 223];10;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=2,ay=1);true
+193;[193, 187];32;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=2,ay=0);true
+145;[145];43;[43];refuel;[refuel];[refuel];(start=true,fuel=4,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+251;[251, 252];2;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true
+223;[224, 229, 223];9;[9, 10, 13];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=1,ay=1);true
+187;[193, 187];29;[32, 29];west;[south, east, west];[south, east, west];(start=true,fuel=5,ax=1,ay=0);true
+145;[145];43;[43];refuel;[refuel];[refuel];(start=true,fuel=4,ax=0,ay=0);true
+267;[267];1;[1];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true
+252;[251, 252];3;[2, 3];east;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=2);true
+230;[230];14;[14];refuel;[refuel];[refuel];(start=true,fuel=6,ax=2,ay=2);true
+268;[268];38;[38];north;[north, south, east, west];[north, south, east, west];(start=true,fuel=8,ax=2,ay=2);true
+256;[256];5;[5];south;[south, east, west];[south, east, west];(start=true,fuel=7,ax=2,ay=0);true
+230;[230];14;[14];refuel;[refuel];[refuel];(start=true,fuel=6,ax=2,ay=2);true
+268;[268];38;[38];south;[north, south, east, west];[north, south, east, west];(start=true,fuel=8,ax=2,ay=2);true
+258;[258, 259];74;[74, 75];south;[north, south, east, west];[north, south, east, west];(start=true,fuel=7,ax=2,ay=3);true
+232;[232];119;[119];south;[north, south, east, west];[north, south, east, west];(start=true,fuel=6,ax=2,ay=4);true
+198;[198];172;[172];east;[north, east, west];[north, east, west];(start=true,fuel=5,ax=2,ay=5);true
+168;[168, 174];227;[227, 228];east;[north, east, west];[north, east, west];(start=true,fuel=4,ax=3,ay=5);true
+138;[138];109;[109];east;[north, east, west];[north, east, west];(start=true,fuel=3,ax=4,ay=5);true
+108;[108];165;[165];notApplicable;notApplicable;notApplicable;(start=true,fuel=2,ax=5,ay=5);true

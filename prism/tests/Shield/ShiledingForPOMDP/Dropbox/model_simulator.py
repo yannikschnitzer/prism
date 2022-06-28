@@ -79,13 +79,8 @@ class SimulationExecutor:
             recorder.start_path()
             recorder.record_state(state)
             recorder.record_belief(self._shield.list_support())
-            n_states= self._model.state_valuations.get_nr_of_states()
-            file = open("/opt/experiments/translate.txt", "w")
-            for s in range(n_states):
-                meaning = self._model.state_valuations.get_json(s)
-                meaning += ", state=" + str(s) + ", obs=" + str(self._model.get_observation(s)) +"\n"
-                file.write(meaning)
-            file.close()
+
+            
 
 
             for s in range(n_states):
@@ -164,12 +159,18 @@ class SimulationExecutor:
                 is_safe = "\tsafe=" + str(self._shield.monitor())
                 obs_info = '\tobs' + str(self._model.get_observation(state))
                 info += step_info + select_info + state_info + support_info + is_safe + ava_info + safe_info
-                print( step_info + select_info + shield_info + safe_info + state_info + support_info + obs_info + is_safe)
+                #print( step_info + select_info + shield_info + safe_info + state_info + support_info + obs_info + is_safe)
                 #print( step_info + select_info +  shield_info + safe_info + ava_info)
-                print("get cur support", self._shield._tracker.get_current_belief_support())
-                print("get curp", self._shield.list_support())
+                #print("get cur support", self._shield._tracker.get_current_belief_support())
+                #print("get curp", self._shield.list_support())
                 #print( step_info + state_info + support_info + is_safe)
-                recorder.record_available_actions(actions)
+			
+		print("actions", actions, type(actions))
+		print("safe_actions", safe_actions, type(safe_actions))
+		print("action", action, type(action))
+		print("state", state, type(state))
+		print("self._shield.list_support()", self._shield.list_support(), type(self._shield.list_support()))                
+		recorder.record_available_actions(actions)
                 recorder.record_allowed_actions(safe_actions)
                 recorder.record_selected_action(action)
                 recorder.record_state(state)

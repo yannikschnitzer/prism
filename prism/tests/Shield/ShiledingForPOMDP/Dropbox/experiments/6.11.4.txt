@@ -1,0 +1,5 @@
+SSSSSSSSSSSS
+actt {'east', 'west', 'placement', 'south', 'north'} <class 'set'>
+actt ['east', 'west', 'placement', 'south', 'north']
+state (0, []) <class 'tuple'>
+self._shield.list_support() [0] <class 'list'>

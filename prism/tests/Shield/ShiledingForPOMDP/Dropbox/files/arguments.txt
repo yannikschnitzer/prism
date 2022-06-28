@@ -1,0 +1,1 @@
+refuel.prism -const N=6 -const ENERGY=8 -const crashCost=5 safe.props -prop 1 

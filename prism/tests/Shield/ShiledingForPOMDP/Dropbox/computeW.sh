@@ -44,13 +44,16 @@ echo "Time out is $TO seconds"
 TIMEOUTCOMMAND="timeout $TO"
 
 #concrete
-echo "Running concrete benchmarks..."
-$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/obstacle.nm -const N=4 --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative -stats --exportwinningregion "winningregion/obstacle-4-initial.wr" &> logfiles/iterative/obstacle-4-initial.log
+#echo "Running test benchmarks..."
+#$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/test.nm -const N=6 --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative -stats --exportwinningregion "winningregion/test-6-initial.wr" &> logfiles/iterative/test-6-initial.log
 
-$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/obstacle.nm -const N=4 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/obstacle-4-fixpoint.wr" &> logfiles/iterative/obstacle-4-fixpoint.log
+#$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/concrete.prism --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative -stats --exportwinningregion "winningregion/concrete-initial.wr" &> logfiles/iterative/concrete-initial.log
 
+$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/$1.nm -const N=$2 --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative -stats --exportwinningregion "winningregion/$1-$2-initial.wr" &> logfiles/iterative/$1-$2-initial.log
 
-$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/obstacle.nm -const N=2 --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative -stats --exportwinningregion "winningregion/obstacle-2-initial.wr" &> logfiles/iterative/obstacle-2-initial.log
+#$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/abstract_1.nm --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative -stats --exportwinningregion "winningregion/abstract_1-initial.wr" &> logfiles/iterative/abstract_1-initial.log
 
-$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/obstacle.nm -const N=2 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/obstacle-2-fixpoint.wr" &> logfiles/iterative/obstacle-2-fixpoint.log
+#$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/abstract_2.nm --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative -stats --exportwinningregion "winningregion/abstract_2-initial.wr" &> logfiles/iterative/abstract_2-initial.log
+
+#$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/obstacle.nm -const N=6 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/obstacle-6-fixpoint.wr" &> logfiles/iterative/obstacle-6-fixpoint.log
 

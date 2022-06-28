@@ -1,0 +1,5024 @@
+run=================0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=0	 obs=53
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=1	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=2	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=3	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=4	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=5	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=6	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=7	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=8	 obs=47
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=9	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=10	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=11	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=12	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=13	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=14	 obs=47
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=15	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=16	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=17	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=18	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=19	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=20	 obs=47
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=21	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=22	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=23	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=24	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=25	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=26	 obs=47
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=27	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=28	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=29	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=30	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=31	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=32	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=33	 obs=47
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=34	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=35	 obs=20
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=36	 obs=15
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=37	 obs=8
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=38	 obs=59
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=39	 obs=47
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=40	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=41	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=42	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=43	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=44	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=45	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=46	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=47	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=48	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=49	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=50	 obs=47
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=51	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=52	 obs=20
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=53	 obs=8
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=54	 obs=44
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=55	 obs=47
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=56	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=57	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=58	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=59	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=60	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=61	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=62	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=63	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=64	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=65	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=66	 obs=47
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=67	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=68	 obs=20
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=69	 obs=15
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=70	 obs=8
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=71	 obs=59
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=72	 obs=47
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=73	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=74	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=75	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=76	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=77	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=78	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=79	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=80	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=81	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=82	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=83	 obs=47
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=84	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=85	 obs=20
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=86	 obs=8
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=87	 obs=44
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=88	 obs=47
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=89	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=90	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=91	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=92	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=93	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=94	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=95	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=96	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=97	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=98	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=99	 obs=52
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=100	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=101	 obs=20
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=102	 obs=15
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=103	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=104	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=105	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=106	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=107	 obs=55
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=108	 obs=38
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=109	 obs=11
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=110	 obs=68
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=111	 obs=8
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=112	 obs=54
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=113	 obs=57
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=114	 obs=19
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=115	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=116	 obs=20
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=117	 obs=15
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=118	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=119	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=120	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=121	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=122	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=123	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=124	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=125	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=126	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=127	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=128	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=129	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=130	 obs=52
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=131	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=132	 obs=20
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=133	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=134	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=135	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=136	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=137	 obs=38
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=138	 obs=11
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=139	 obs=68
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=140	 obs=8
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=141	 obs=20
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=142	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=143	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=144	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=145	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=146	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=147	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=148	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=149	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=150	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=151	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=152	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=153	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=154	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=155	 obs=52
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=156	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=157	 obs=20
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=158	 obs=15
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=159	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=160	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=161	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=162	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=163	 obs=55
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=164	 obs=11
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=165	 obs=37
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=166	 obs=8
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=167	 obs=54
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=168	 obs=57
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=169	 obs=19
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=170	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=171	 obs=20
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=172	 obs=15
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=173	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=174	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=175	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=176	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=177	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=178	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=179	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=180	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=181	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=182	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=183	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=184	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=185	 obs=52
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=186	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=187	 obs=20
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=188	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=189	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=190	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=191	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=192	 obs=11
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=193	 obs=37
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=194	 obs=8
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=195	 obs=20
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=196	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=197	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=198	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=199	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=200	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=201	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=202	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=203	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=204	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=205	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=206	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=207	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=208	 obs=8
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=209	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=210	 obs=49
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=211	 obs=58
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=212	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=213	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=214	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=215	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=216	 obs=55
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=217	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=218	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=219	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=220	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=221	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=222	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=223	 obs=36
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=224	 obs=51
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=225	 obs=43
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=226	 obs=72
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=227	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=228	 obs=38
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=229	 obs=11
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=230	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=231	 obs=46
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=232	 obs=48
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=233	 obs=29
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=234	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=235	 obs=56
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=236	 obs=65
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=237	 obs=29
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=238	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=239	 obs=29
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=240	 obs=69
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=241	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=242	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=243	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=244	 obs=55
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=245	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=246	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=247	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=248	 obs=26
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=249	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=250	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=251	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=252	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=253	 obs=8
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=254	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=255	 obs=49
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=256	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=257	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=258	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=259	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=260	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=261	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=262	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=263	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=264	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=265	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=266	 obs=36
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=267	 obs=51
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=268	 obs=43
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=269	 obs=72
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=270	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=271	 obs=38
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=272	 obs=11
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=273	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=274	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=275	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=276	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=277	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=278	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=279	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=280	 obs=26
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=281	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=282	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=283	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=284	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=285	 obs=8
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=286	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=287	 obs=58
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=288	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=289	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=290	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=291	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=292	 obs=55
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=293	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=294	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=295	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=296	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=297	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=298	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=299	 obs=11
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=300	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=301	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=302	 obs=46
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=303	 obs=48
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=304	 obs=29
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=305	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=306	 obs=56
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=307	 obs=60
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=308	 obs=29
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=309	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=310	 obs=29
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=311	 obs=69
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=312	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=313	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=314	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=315	 obs=55
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=316	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=317	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=318	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=319	 obs=26
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=320	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=321	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=322	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=323	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=324	 obs=8
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=325	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=326	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=327	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=328	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=329	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=330	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=331	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=332	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=333	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=334	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=335	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=336	 obs=11
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=337	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=338	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=339	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=340	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=341	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=342	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=343	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=344	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=345	 obs=2
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=346	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=347	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=348	 obs=38
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=349	 obs=11
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=350	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=351	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=352	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=353	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=354	 obs=71
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=355	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=356	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=357	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=358	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=359	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=360	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=361	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=362	 obs=26
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=363	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=364	 obs=23
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=365	 obs=50
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=366	 obs=73
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=367	 obs=21
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=368	 obs=21
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=369	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=370	 obs=21
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=371	 obs=16
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=372	 obs=61
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=373	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=374	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=375	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=376	 obs=36
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=377	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=378	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=379	 obs=70
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=380	 obs=5
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=381	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=382	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=383	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=384	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=385	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=386	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=387	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=388	 obs=67
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=389	 obs=30
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=390	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=391	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=392	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=393	 obs=31
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=394	 obs=42
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=395	 obs=30
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=396	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=397	 obs=30
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=398	 obs=5
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=399	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=400	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=401	 obs=17
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=402	 obs=5
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=403	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=404	 obs=26
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=405	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=406	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=407	 obs=38
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=408	 obs=11
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=409	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=410	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=411	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=412	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=413	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=414	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=415	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=416	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=417	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=418	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=419	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=420	 obs=26
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=421	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=422	 obs=23
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=423	 obs=50
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=424	 obs=64
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=425	 obs=21
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=426	 obs=21
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=427	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=428	 obs=21
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=429	 obs=16
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=430	 obs=61
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=431	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=432	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=433	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=434	 obs=36
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=435	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=436	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=437	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=438	 obs=26
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=439	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=440	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=441	 obs=11
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=442	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=443	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=444	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=445	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=446	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=447	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=448	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=449	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=450	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=451	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=452	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=453	 obs=26
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=454	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=455	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=456	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=457	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=458	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=459	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=460	 obs=70
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=461	 obs=5
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=462	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=463	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=464	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=465	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=466	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=467	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=468	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=469	 obs=30
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=470	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=471	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=472	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=473	 obs=5
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=474	 obs=30
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=475	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=476	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=477	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=478	 obs=17
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=479	 obs=5
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=480	 obs=30
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=481	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=482	 obs=26
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=483	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=484	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=485	 obs=11
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=486	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=487	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=488	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=489	 obs=6
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=490	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=491	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=492	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=493	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=494	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=495	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=496	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=497	 obs=2
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=498	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=499	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=500	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=501	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=502	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=503	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=504	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=505	 obs=2
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=506	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=507	 obs=36
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=508	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=509	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=510	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=511	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=512	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=513	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=514	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=515	 obs=26
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=516	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=517	 obs=41
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=518	 obs=34
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=519	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=520	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=521	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=522	 obs=63
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=523	 obs=62
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=524	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=525	 obs=34
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=526	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=527	 obs=34
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=528	 obs=35
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=529	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=530	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=531	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=532	 obs=35
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=533	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=534	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=535	 obs=39
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=536	 obs=35
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=537	 obs=33
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=538	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=539	 obs=26
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=540	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=541	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=542	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=543	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=544	 obs=17
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=545	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=546	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=547	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=548	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=549	 obs=17
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=550	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=551	 obs=7
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=552	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=553	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=554	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=555	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=556	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=557	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=558	 obs=17
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=559	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=560	 obs=22
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=561	 obs=27
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=562	 obs=27
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=563	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=564	 obs=27
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=565	 obs=66
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=566	 obs=7
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=567	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=568	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=569	 obs=17
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=570	 obs=7
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=571	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=572	 obs=24
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=573	 obs=36
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=574	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=575	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=576	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=577	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=578	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=579	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=580	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=581	 obs=26
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=582	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=583	 obs=34
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=584	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=585	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=586	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=587	 obs=35
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=588	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=589	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=590	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=591	 obs=35
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=592	 obs=34
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=593	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=594	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=595	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=596	 obs=39
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=597	 obs=35
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=598	 obs=34
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=599	 obs=33
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=600	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=601	 obs=26
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=602	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=603	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=604	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=605	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=606	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=607	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=608	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=609	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=610	 obs=26
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=611	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=612	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=613	 obs=26
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=614	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=615	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=616	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=617	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=618	 obs=17
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=619	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=620	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=621	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=622	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=623	 obs=17
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=624	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=625	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=626	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=627	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=628	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=629	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=630	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=631	 obs=17
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=632	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=633	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=634	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=635	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=636	 obs=17
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=637	 obs=24
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=638	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=639	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=640	 obs=14
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=641	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=642	 obs=0
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=643	 obs=10
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=644	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=645	 obs=2
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=646	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=647	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=648	 obs=2
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=649	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=650	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=651	 obs=26
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=652	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=653	 obs=28
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=654	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=655	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=656	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=657	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=658	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=659	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=660	 obs=39
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=661	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=662	 obs=40
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=663	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=664	 obs=40
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=665	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=666	 obs=40
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=667	 obs=45
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=668	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=669	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=670	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=671	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=672	 obs=28
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=673	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=674	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=675	 obs=39
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=676	 obs=28
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=677	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=678	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=679	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=680	 obs=39
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=681	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=682	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=683	 obs=18
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=684	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=685	 obs=24
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=686	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=687	 obs=24
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=688	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=689	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=690	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=691	 obs=17
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=692	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=693	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=694	 obs=24
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=695	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=696	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=697	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=698	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=699	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=700	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=701	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=702	 obs=25
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=703	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=704	 obs=24
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=705	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=706	 obs=26
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=707	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=708	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=709	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=710	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=711	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=712	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=713	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=714	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=715	 obs=39
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=716	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=717	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=718	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=719	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=720	 obs=39
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=721	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=722	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=723	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=724	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=725	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=726	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=727	 obs=39
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=728	 obs=18
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=729	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=730	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=731	 obs=26
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=732	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=733	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=734	 obs=24
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=735	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=736	 obs=24
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=737	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=738	 obs=1
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=739	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=740	 obs=17
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=741	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=742	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=743	 obs=24
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=744	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=745	 obs=24
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=746	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=747	 obs=2
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=748	 obs=4
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=749	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=750	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=751	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=752	 obs=39
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=753	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=754	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=755	 obs=18
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=756	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=757	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=758	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=759	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=760	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=761	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=762	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=763	 obs=25
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=764	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=765	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=766	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=767	 obs=39
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=768	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=769	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=770	 obs=18
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=771	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=772	 obs=18
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=773	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=774	 obs=24
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=775	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=776	 obs=25
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=777	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=778	 obs=25
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=779	 obs=32
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=780	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=781	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=782	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=783	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=784	 obs=39
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=785	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=786	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=787	 obs=18
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=788	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=789	 obs=18
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=790	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=791	 obs=3
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=792	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=793	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=794	 obs=39
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=795	 obs=18
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=796	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=797	 obs=9
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=798	 obs=24
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=799	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=800	 obs=18
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=801	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=802	 obs=25
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=803	 obs=13
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=804	 obs=25
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=805	 obs=32
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=806	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=807	 obs=18
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=808	 obs=32
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=809	 obs=32
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=810	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=811	 obs=18
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=812	 obs=12
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=813	 obs=18
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=814	 obs=32
+!started	& !done	& !r1qual	& !r1taken	& !r1lastobs	& !r2qual	& !r2taken	& !r2lastobs	& x=0	& y=0	s=815	 obs=32
+s 0 a 0 next 4
+s 0 a 1 next 4
+s 0 a 2 next 4
+s 0 a 3 next 25
+s 0 a 4 next 83
+s 1 a 0 next 83
+s 1 a 1 next 83
+s 1 a 2 next 27
+s 1 a 3 next 83
+s 1 a 4 next 84
+s 2 a 0 next 84
+s 2 a 1 next 190
+s 2 a 2 next 28
+s 2 a 3 next 84
+s 2 a 4 next 191
+s 3 a 0 next 334
+s 3 a 1 next 498
+s 3 a 2 next 94
+s 3 a 3 next 191
+s 3 a 4 next 332
+s 4 a 0 next 201
+s 4 a 1 next 332
+s 4 a 2 next 332
+s 4 a 3 next 191
+s 4 a 4 next 332
+s 5 a 0 next 201
+s 5 a 1 next 332
+s 5 a 2 next 332
+s 5 a 3 next 191
+s 5 a 4 next 332
+s 6 a 0 next 201
+s 6 a 1 next 332
+s 6 a 2 next 332
+s 6 a 3 next 191
+s 6 a 4 next 332
+s 7 a 0 next 201
+s 7 a 1 next 332
+s 7 a 2 next 332
+s 7 a 3 next 191
+s 7 a 4 next 332
+s 8 a 0 next 201
+s 8 a 1 next 332
+s 8 a 2 next 332
+s 8 a 3 next 191
+s 8 a 4 next 332
+s 9 a 0 next 201
+s 9 a 1 next 332
+s 9 a 2 next 332
+s 9 a 3 next 191
+s 9 a 4 next 332
+s 10 a 0 next 201
+s 10 a 1 next 332
+s 10 a 2 next 332
+s 10 a 3 next 191
+s 10 a 4 next 332
+s 11 a 0 next 201
+s 11 a 1 next 332
+s 11 a 2 next 332
+s 11 a 3 next 191
+s 11 a 4 next 332
+s 12 a 0 next 201
+s 12 a 1 next 332
+s 12 a 2 next 332
+s 12 a 3 next 191
+s 12 a 4 next 332
+s 13 a 0 next 201
+s 13 a 1 next 332
+s 13 a 2 next 332
+s 13 a 3 next 188
+s 13 a 4 next 191
+s 14 a 0 next 191
+s 14 a 1 next 191
+s 14 a 2 next 94
+s 14 a 3 next 191
+s 14 a 4 next 332
+s 15 a 0 next 201
+s 15 a 1 next 332
+s 15 a 2 next 332
+s 15 a 3 next 191
+s 15 a 4 next 332
+s 16 a 0 next 201
+s 16 a 1 next 332
+s 16 a 2 next 332
+s 16 a 3 next 191
+s 16 a 4 next 332
+s 17 a 0 next 201
+s 17 a 1 next 332
+s 17 a 2 next 332
+s 17 a 3 next 191
+s 17 a 4 next 332
+s 18 a 0 next 201
+s 18 a 1 next 332
+s 18 a 2 next 332
+s 18 a 3 next 191
+s 18 a 4 next 332
+s 19 a 0 next 201
+s 19 a 1 next 332
+s 19 a 2 next 332
+s 19 a 3 next 191
+s 19 a 4 next 332
+s 20 a 0 next 201
+s 20 a 1 next 332
+s 20 a 2 next 332
+s 20 a 3 next 191
+s 20 a 4 next 332
+s 21 a 0 next 201
+s 21 a 1 next 332
+s 21 a 2 next 332
+s 21 a 3 next 191
+s 21 a 4 next 332
+s 22 a 0 next 201
+s 22 a 1 next 332
+s 22 a 2 next 332
+s 22 a 3 next 191
+s 22 a 4 next 332
+s 23 a 0 next 201
+s 23 a 1 next 332
+s 23 a 2 next 332
+s 23 a 3 next 191
+s 23 a 4 next 332
+s 24 a 0 next 201
+s 24 a 1 next 332
+s 24 a 2 next 332
+s 24 a 3 next 191
+s 24 a 4 next 332
+s 25 a 0 next 201
+s 25 a 1 next 332
+s 25 a 2 next 332
+s 25 a 3 next 191
+s 25 a 4 next 332
+s 26 a 0 next 201
+s 26 a 1 next 332
+s 26 a 2 next 332
+s 26 a 3 next 191
+s 26 a 4 next 332
+s 27 a 0 next 201
+s 27 a 1 next 332
+s 27 a 2 next 332
+s 27 a 3 next 188
+s 27 a 4 next 191
+s 28 a 0 next 191
+s 28 a 1 next 335
+s 28 a 2 next 94
+s 28 a 3 next 191
+s 28 a 4 next 332
+s 29 a 0 next 201
+s 29 a 1 next 341
+s 29 a 2 next 341
+s 29 a 3 next 196
+s 29 a 4 next 197
+s 30 a 0 next 342
+s 30 a 1 next 506
+s 30 a 2 next 191
+s 30 a 3 next 197
+s 30 a 4 next 341
+s 31 a 0 next 332
+s 31 a 1 next 341
+s 31 a 2 next 341
+s 31 a 3 next 197
+s 31 a 4 next 341
+s 32 a 0 next 332
+s 32 a 1 next 492
+s 32 a 2 next 492
+s 32 a 3 next 329
+s 32 a 4 next 492
+s 33 a 0 next 341
+s 33 a 1 next 492
+s 33 a 2 next 492
+s 33 a 3 next 329
+s 33 a 4 next 492
+s 34 a 0 next 341
+s 34 a 1 next 492
+s 34 a 2 next 492
+s 34 a 3 next 329
+s 34 a 4 next 492
+s 35 a 0 next 341
+s 35 a 1 next 492
+s 35 a 2 next 492
+s 35 a 3 next 329
+s 35 a 4 next 492
+s 36 a 0 next 341
+s 36 a 1 next 492
+s 36 a 2 next 492
+s 36 a 3 next 329
+s 36 a 4 next 492
+s 37 a 0 next 341
+s 37 a 1 next 501
+s 37 a 2 next 501
+s 37 a 3 next 338
+s 37 a 4 next 501
+s 38 a 0 next 492
+s 38 a 1 next 501
+s 38 a 2 next 501
+s 38 a 3 next 338
+s 38 a 4 next 501
+s 39 a 0 next 492
+s 39 a 1 next 501
+s 39 a 2 next 501
+s 39 a 3 next 338
+s 39 a 4 next 501
+s 40 a 0 next 492
+s 40 a 1 next 640
+s 40 a 2 next 640
+s 40 a 3 next 489
+s 40 a 4 next 640
+s 41 a 0 next 501
+s 41 a 1 next 640
+s 41 a 2 next 640
+s 41 a 3 next 489
+s 41 a 4 next 640
+s 42 a 0 next 501
+s 42 a 1 next 640
+s 42 a 2 next 640
+s 42 a 3 next 489
+s 42 a 4 next 640
+s 43 a 0 next 501
+s 43 a 1 next 640
+s 43 a 2 next 640
+s 43 a 3 next 489
+s 43 a 4 next 640
+s 44 a 0 next 501
+s 44 a 1 next 640
+s 44 a 2 next 640
+s 44 a 3 next 489
+s 44 a 4 next 640
+s 45 a 0 next 501
+s 45 a 1 next 640
+s 45 a 2 next 640
+s 45 a 3 next 489
+s 45 a 4 next 640
+s 46 a 0 next 501
+s 46 a 1 next 640
+s 46 a 2 next 640
+s 46 a 3 next 489
+s 46 a 4 next 640
+s 47 a 0 next 501
+s 47 a 1 next 640
+s 47 a 2 next 640
+s 47 a 3 next 486
+s 47 a 4 next 640
+s 48 a 0 next 501
+s 48 a 1 next 640
+s 48 a 2 next 640
+s 48 a 3 next 489
+s 48 a 4 next 640
+s 49 a 0 next 501
+s 49 a 1 next 640
+s 49 a 2 next 640
+s 49 a 3 next 489
+s 49 a 4 next 640
+s 50 a 0 next 501
+s 50 a 1 next 640
+s 50 a 2 next 640
+s 50 a 3 next 489
+s 50 a 4 next 640
+s 51 a 0 next 501
+s 51 a 1 next 640
+s 51 a 2 next 640
+s 51 a 3 next 486
+s 51 a 4 next 489
+s 52 a 0 next 642
+s 52 a 1 next 642
+s 52 a 2 next 338
+s 52 a 3 next 489
+s 52 a 4 next 640
+s 53 a 0 next 501
+s 53 a 1 next 640
+s 53 a 2 next 640
+s 53 a 3 next 489
+s 53 a 4 next 640
+s 54 a 0 next 501
+s 54 a 1 next 640
+s 54 a 2 next 640
+s 54 a 3 next 486
+s 54 a 4 next 489
+s 55 a 0 next 642
+s 55 a 1 next 642
+s 55 a 2 next 329
+s 55 a 3 next 338
+s 55 a 4 next 501
+s 56 a 0 next 492
+s 56 a 1 next 501
+s 56 a 2 next 501
+s 56 a 3 next 338
+s 56 a 4 next 501
+s 57 a 0 next 492
+s 57 a 1 next 501
+s 57 a 2 next 501
+s 57 a 3 next 338
+s 57 a 4 next 501
+s 58 a 0 next 492
+s 58 a 1 next 501
+s 58 a 2 next 501
+s 58 a 3 next 338
+s 58 a 4 next 501
+s 59 a 0 next 492
+s 59 a 1 next 501
+s 59 a 2 next 501
+s 59 a 3 next 338
+s 59 a 4 next 501
+s 60 a 0 next 492
+s 60 a 1 next 501
+s 60 a 2 next 501
+s 60 a 3 next 338
+s 60 a 4 next 501
+s 61 a 0 next 492
+s 61 a 1 next 501
+s 61 a 2 next 501
+s 61 a 3 next 338
+s 61 a 4 next 501
+s 62 a 0 next 492
+s 62 a 1 next 501
+s 62 a 2 next 501
+s 62 a 3 next 337
+s 62 a 4 next 338
+s 63 a 0 next 502
+s 63 a 1 next 502
+s 63 a 2 next 329
+s 63 a 3 next 338
+s 63 a 4 next 501
+s 64 a 0 next 341
+s 64 a 1 next 492
+s 64 a 2 next 492
+s 64 a 3 next 329
+s 64 a 4 next 492
+s 65 a 0 next 341
+s 65 a 1 next 492
+s 65 a 2 next 492
+s 65 a 3 next 326
+s 65 a 4 next 329
+s 66 a 0 next 329
+s 66 a 1 next 329
+s 66 a 2 next 197
+s 66 a 3 next 329
+s 66 a 4 next 492
+s 67 a 0 next 341
+s 67 a 1 next 501
+s 67 a 2 next 501
+s 67 a 3 next 337
+s 67 a 4 next 338
+s 68 a 0 next 502
+s 68 a 1 next 502
+s 68 a 2 next 329
+s 68 a 3 next 338
+s 68 a 4 next 501
+s 69 a 0 next 492
+s 69 a 1 next 501
+s 69 a 2 next 501
+s 69 a 3 next 337
+s 69 a 4 next 501
+s 70 a 0 next 492
+s 70 a 1 next 501
+s 70 a 2 next 501
+s 70 a 3 next 338
+s 70 a 4 next 501
+s 71 a 0 next 492
+s 71 a 1 next 501
+s 71 a 2 next 501
+s 71 a 3 next 338
+s 71 a 4 next 501
+s 72 a 0 next 492
+s 72 a 1 next 501
+s 72 a 2 next 501
+s 72 a 3 next 338
+s 72 a 4 next 501
+s 73 a 0 next 492
+s 73 a 1 next 501
+s 73 a 2 next 501
+s 73 a 3 next 338
+s 73 a 4 next 501
+s 74 a 0 next 492
+s 74 a 1 next 501
+s 74 a 2 next 501
+s 74 a 3 next 338
+s 74 a 4 next 501
+s 75 a 0 next 492
+s 75 a 1 next 501
+s 75 a 2 next 501
+s 75 a 3 next 338
+s 75 a 4 next 501
+s 76 a 0 next 492
+s 76 a 1 next 501
+s 76 a 2 next 501
+s 76 a 3 next 337
+s 76 a 4 next 338
+s 77 a 0 next 502
+s 77 a 1 next 649
+s 77 a 2 next 329
+s 77 a 3 next 338
+s 77 a 4 next 501
+s 78 a 0 next 492
+s 78 a 1 next 501
+s 78 a 2 next 501
+s 78 a 3 next 338
+s 78 a 4 next 501
+s 79 a 0 next 492
+s 79 a 1 next 501
+s 79 a 2 next 501
+s 79 a 3 next 338
+s 79 a 4 next 501
+s 80 a 0 next 492
+s 80 a 1 next 501
+s 80 a 2 next 501
+s 80 a 3 next 338
+s 80 a 4 next 501
+s 81 a 0 next 341
+s 81 a 1 next 492
+s 81 a 2 next 492
+s 81 a 3 next 329
+s 81 a 4 next 492
+s 82 a 0 next 341
+s 82 a 1 next 492
+s 82 a 2 next 492
+s 82 a 3 next 329
+s 82 a 4 next 492
+s 83 a 0 next 332
+s 83 a 1 next 341
+s 83 a 2 next 341
+s 83 a 3 next 197
+s 83 a 4 next 341
+s 84 a 0 next 332
+s 84 a 1 next 341
+s 84 a 2 next 341
+s 84 a 3 next 197
+s 84 a 4 next 341
+s 85 a 0 next 201
+s 85 a 1 next 332
+s 85 a 2 next 332
+s 85 a 3 next 191
+s 85 a 4 next 332
+s 86 a 0 next 201
+s 86 a 1 next 332
+s 86 a 2 next 332
+s 86 a 3 next 191
+s 86 a 4 next 332
+s 87 a 0 next 201
+s 87 a 1 next 332
+s 87 a 2 next 332
+s 87 a 3 next 191
+s 87 a 4 next 332
+s 88 a 0 next 201
+s 88 a 1 next 332
+s 88 a 2 next 332
+s 88 a 3 next 191
+s 88 a 4 next 332
+s 89 a 0 next 201
+s 89 a 1 next 332
+s 89 a 2 next 332
+s 89 a 3 next 191
+s 89 a 4 next 332
+s 90 a 0 next 201
+s 90 a 1 next 332
+s 90 a 2 next 332
+s 90 a 3 next 191
+s 90 a 4 next 332
+s 91 a 0 next 201
+s 91 a 1 next 332
+s 91 a 2 next 332
+s 91 a 3 next 191
+s 91 a 4 next 332
+s 92 a 0 next 201
+s 92 a 1 next 332
+s 92 a 2 next 332
+s 92 a 3 next 191
+s 92 a 4 next 332
+s 93 a 0 next 201
+s 93 a 1 next 332
+s 93 a 2 next 332
+s 93 a 3 next 191
+s 93 a 4 next 332
+s 94 a 0 next 201
+s 94 a 1 next 332
+s 94 a 2 next 332
+s 94 a 3 next 188
+s 94 a 4 next 332
+s 95 a 0 next 201
+s 95 a 1 next 332
+s 95 a 2 next 332
+s 95 a 3 next 188
+s 95 a 4 next 191
+s 96 a 0 next 191
+s 96 a 1 next 191
+s 96 a 2 next 94
+s 96 a 3 next 191
+s 96 a 4 next 332
+s 97 a 0 next 201
+s 97 a 1 next 341
+s 97 a 2 next 341
+s 97 a 3 next 196
+s 97 a 4 next 197
+s 98 a 0 next 197
+s 98 a 1 next 197
+s 98 a 2 next 191
+s 98 a 3 next 197
+s 98 a 4 next 341
+s 99 a 0 next 332
+s 99 a 1 next 341
+s 99 a 2 next 341
+s 99 a 3 next 197
+s 99 a 4 next 341
+s 100 a 0 next 201
+s 100 a 1 next 332
+s 100 a 2 next 332
+s 100 a 3 next 191
+s 100 a 4 next 332
+s 101 a 0 next 201
+s 101 a 1 next 332
+s 101 a 2 next 332
+s 101 a 3 next 191
+s 101 a 4 next 332
+s 102 a 0 next 201
+s 102 a 1 next 332
+s 102 a 2 next 332
+s 102 a 3 next 191
+s 102 a 4 next 332
+s 103 a 0 next 201
+s 103 a 1 next 332
+s 103 a 2 next 332
+s 103 a 3 next 191
+s 103 a 4 next 332
+s 104 a 0 next 201
+s 104 a 1 next 332
+s 104 a 2 next 332
+s 104 a 3 next 191
+s 104 a 4 next 332
+s 105 a 0 next 201
+s 105 a 1 next 332
+s 105 a 2 next 332
+s 105 a 3 next 188
+s 105 a 4 next 191
+s 106 a 0 next 334
+s 106 a 1 next 498
+s 106 a 2 next 94
+s 106 a 3 next 191
+s 106 a 4 next 332
+s 107 a 0 next 201
+s 107 a 1 next 332
+s 107 a 2 next 332
+s 107 a 3 next 191
+s 107 a 4 next 332
+s 108 a 0 next 201
+s 108 a 1 next 332
+s 108 a 2 next 332
+s 108 a 3 next 191
+s 108 a 4 next 332
+s 109 a 0 next 201
+s 109 a 1 next 332
+s 109 a 2 next 332
+s 109 a 3 next 191
+s 109 a 4 next 332
+s 110 a 0 next 201
+s 110 a 1 next 332
+s 110 a 2 next 332
+s 110 a 3 next 188
+s 110 a 4 next 191
+s 111 a 0 next 334
+s 111 a 1 next 334
+s 111 a 2 next 94
+s 111 a 3 next 191
+s 111 a 4 next 332
+s 112 a 0 next 201
+s 112 a 1 next 341
+s 112 a 2 next 341
+s 112 a 3 next 197
+s 112 a 4 next 341
+s 113 a 0 next 332
+s 113 a 1 next 341
+s 113 a 2 next 341
+s 113 a 3 next 197
+s 113 a 4 next 341
+s 114 a 0 next 332
+s 114 a 1 next 492
+s 114 a 2 next 492
+s 114 a 3 next 329
+s 114 a 4 next 492
+s 115 a 0 next 341
+s 115 a 1 next 492
+s 115 a 2 next 492
+s 115 a 3 next 329
+s 115 a 4 next 492
+s 116 a 0 next 332
+s 116 a 1 next 341
+s 116 a 2 next 341
+s 116 a 3 next 197
+s 116 a 4 next 341
+s 117 a 0 next 332
+s 117 a 1 next 341
+s 117 a 2 next 341
+s 117 a 3 next 197
+s 117 a 4 next 341
+s 118 a 0 next 332
+s 118 a 1 next 341
+s 118 a 2 next 341
+s 118 a 3 next 197
+s 118 a 4 next 341
+s 119 a 0 next 332
+s 119 a 1 next 492
+s 119 a 2 next 492
+s 119 a 3 next 329
+s 119 a 4 next 492
+s 120 a 0 next 341
+s 120 a 1 next 492
+s 120 a 2 next 492
+s 120 a 3 next 329
+s 120 a 4 next 492
+s 121 a 0 next 341
+s 121 a 1 next 492
+s 121 a 2 next 492
+s 121 a 3 next 329
+s 121 a 4 next 492
+s 122 a 0 next 332
+s 122 a 1 next 341
+s 122 a 2 next 341
+s 122 a 3 next 197
+s 122 a 4 next 341
+s 123 a 0 next 332
+s 123 a 1 next 341
+s 123 a 2 next 341
+s 123 a 3 next 196
+s 123 a 4 next 197
+s 124 a 0 next 342
+s 124 a 1 next 506
+s 124 a 2 next 191
+s 124 a 3 next 197
+s 124 a 4 next 341
+s 125 a 0 next 332
+s 125 a 1 next 341
+s 125 a 2 next 341
+s 125 a 3 next 197
+s 125 a 4 next 341
+s 126 a 0 next 332
+s 126 a 1 next 341
+s 126 a 2 next 341
+s 126 a 3 next 196
+s 126 a 4 next 197
+s 127 a 0 next 197
+s 127 a 1 next 197
+s 127 a 2 next 191
+s 127 a 3 next 197
+s 127 a 4 next 341
+s 128 a 0 next 332
+s 128 a 1 next 341
+s 128 a 2 next 341
+s 128 a 3 next 197
+s 128 a 4 next 341
+s 129 a 0 next 332
+s 129 a 1 next 341
+s 129 a 2 next 341
+s 129 a 3 next 197
+s 129 a 4 next 341
+s 130 a 0 next 332
+s 130 a 1 next 341
+s 130 a 2 next 341
+s 130 a 3 next 197
+s 130 a 4 next 341
+s 131 a 0 next 332
+s 131 a 1 next 341
+s 131 a 2 next 341
+s 131 a 3 next 197
+s 131 a 4 next 341
+s 132 a 0 next 332
+s 132 a 1 next 341
+s 132 a 2 next 341
+s 132 a 3 next 196
+s 132 a 4 next 197
+s 133 a 0 next 197
+s 133 a 1 next 197
+s 133 a 2 next 191
+s 133 a 3 next 197
+s 133 a 4 next 341
+s 134 a 0 next 201
+s 134 a 1 next 332
+s 134 a 2 next 332
+s 134 a 3 next 188
+s 134 a 4 next 191
+s 135 a 0 next 334
+s 135 a 1 next 498
+s 135 a 2 next 94
+s 135 a 3 next 197
+s 135 a 4 next 341
+s 136 a 0 next 332
+s 136 a 1 next 341
+s 136 a 2 next 341
+s 136 a 3 next 197
+s 136 a 4 next 341
+s 137 a 0 next 332
+s 137 a 1 next 341
+s 137 a 2 next 341
+s 137 a 3 next 197
+s 137 a 4 next 341
+s 138 a 0 next 332
+s 138 a 1 next 341
+s 138 a 2 next 341
+s 138 a 3 next 197
+s 138 a 4 next 341
+s 139 a 0 next 332
+s 139 a 1 next 341
+s 139 a 2 next 341
+s 139 a 3 next 197
+s 139 a 4 next 341
+s 140 a 0 next 332
+s 140 a 1 next 341
+s 140 a 2 next 341
+s 140 a 3 next 197
+s 140 a 4 next 341
+s 141 a 0 next 332
+s 141 a 1 next 341
+s 141 a 2 next 341
+s 141 a 3 next 197
+s 141 a 4 next 341
+s 142 a 0 next 332
+s 142 a 1 next 341
+s 142 a 2 next 341
+s 142 a 3 next 197
+s 142 a 4 next 341
+s 143 a 0 next 332
+s 143 a 1 next 341
+s 143 a 2 next 341
+s 143 a 3 next 197
+s 143 a 4 next 341
+s 144 a 0 next 332
+s 144 a 1 next 341
+s 144 a 2 next 341
+s 144 a 3 next 197
+s 144 a 4 next 341
+s 145 a 0 next 332
+s 145 a 1 next 341
+s 145 a 2 next 341
+s 145 a 3 next 197
+s 145 a 4 next 341
+s 146 a 0 next 332
+s 146 a 1 next 341
+s 146 a 2 next 341
+s 146 a 3 next 197
+s 146 a 4 next 341
+s 147 a 0 next 332
+s 147 a 1 next 341
+s 147 a 2 next 341
+s 147 a 3 next 197
+s 147 a 4 next 341
+s 148 a 0 next 332
+s 148 a 1 next 341
+s 148 a 2 next 341
+s 148 a 3 next 197
+s 148 a 4 next 341
+s 149 a 0 next 332
+s 149 a 1 next 341
+s 149 a 2 next 341
+s 149 a 3 next 197
+s 149 a 4 next 341
+s 150 a 0 next 332
+s 150 a 1 next 341
+s 150 a 2 next 341
+s 150 a 3 next 197
+s 150 a 4 next 341
+s 151 a 0 next 332
+s 151 a 1 next 341
+s 151 a 2 next 341
+s 151 a 3 next 197
+s 151 a 4 next 341
+s 152 a 0 next 332
+s 152 a 1 next 341
+s 152 a 2 next 341
+s 152 a 3 next 197
+s 152 a 4 next 341
+s 153 a 0 next 332
+s 153 a 1 next 341
+s 153 a 2 next 341
+s 153 a 3 next 197
+s 153 a 4 next 341
+s 154 a 0 next 332
+s 154 a 1 next 341
+s 154 a 2 next 341
+s 154 a 3 next 197
+s 154 a 4 next 341
+s 155 a 0 next 332
+s 155 a 1 next 341
+s 155 a 2 next 341
+s 155 a 3 next 196
+s 155 a 4 next 197
+s 156 a 0 next 342
+s 156 a 1 next 506
+s 156 a 2 next 191
+s 156 a 3 next 197
+s 156 a 4 next 341
+s 157 a 0 next 332
+s 157 a 1 next 341
+s 157 a 2 next 341
+s 157 a 3 next 197
+s 157 a 4 next 341
+s 158 a 0 next 332
+s 158 a 1 next 341
+s 158 a 2 next 341
+s 158 a 3 next 197
+s 158 a 4 next 341
+s 159 a 0 next 332
+s 159 a 1 next 341
+s 159 a 2 next 341
+s 159 a 3 next 197
+s 159 a 4 next 341
+s 160 a 0 next 332
+s 160 a 1 next 341
+s 160 a 2 next 341
+s 160 a 3 next 196
+s 160 a 4 next 197
+s 161 a 0 next 197
+s 161 a 1 next 343
+s 161 a 2 next 191
+s 161 a 3 next 197
+s 161 a 4 next 341
+s 162 a 0 next 332
+s 162 a 1 next 341
+s 162 a 2 next 341
+s 162 a 3 next 197
+s 162 a 4 next 341
+s 163 a 0 next 332
+s 163 a 1 next 341
+s 163 a 2 next 341
+s 163 a 3 next 197
+s 163 a 4 next 341
+s 164 a 0 next 332
+s 164 a 1 next 341
+s 164 a 2 next 341
+s 164 a 3 next 197
+s 164 a 4 next 341
+s 165 a 0 next 332
+s 165 a 1 next 341
+s 165 a 2 next 341
+s 165 a 3 next 197
+s 165 a 4 next 341
+s 166 a 0 next 201
+s 166 a 1 next 341
+s 166 a 2 next 341
+s 166 a 3 next 197
+s 166 a 4 next 341
+s 167 a 0 next 201
+s 167 a 1 next 332
+s 167 a 2 next 332
+s 167 a 3 next 191
+s 167 a 4 next 332
+s 168 a 0 next 201
+s 168 a 1 next 332
+s 168 a 2 next 332
+s 168 a 3 next 191
+s 168 a 4 next 332
+s 169 a 0 next 201
+s 169 a 1 next 332
+s 169 a 2 next 332
+s 169 a 3 next 191
+s 169 a 4 next 332
+s 170 a 0 next 201
+s 170 a 1 next 332
+s 170 a 2 next 332
+s 170 a 3 next 191
+s 170 a 4 next 332
+s 171 a 0 next 201
+s 171 a 1 next 332
+s 171 a 2 next 332
+s 171 a 3 next 191
+s 171 a 4 next 332
+s 172 a 0 next 201
+s 172 a 1 next 332
+s 172 a 2 next 332
+s 172 a 3 next 191
+s 172 a 4 next 332
+s 173 a 0 next 201
+s 173 a 1 next 332
+s 173 a 2 next 332
+s 173 a 3 next 188
+s 173 a 4 next 191
+s 174 a 0 next 191
+s 174 a 1 next 335
+s 174 a 2 next 94
+s 174 a 3 next 191
+s 174 a 4 next 332
+s 175 a 0 next 201
+s 175 a 1 next 332
+s 175 a 2 next 332
+s 175 a 3 next 191
+s 175 a 4 next 332
+s 176 a 0 next 201
+s 176 a 1 next 332
+s 176 a 2 next 332
+s 176 a 3 next 191
+s 176 a 4 next 332
+s 177 a 0 next 201
+s 177 a 1 next 332
+s 177 a 2 next 332
+s 177 a 3 next 191
+s 177 a 4 next 332
+s 178 a 0 next 201
+s 178 a 1 next 332
+s 178 a 2 next 332
+s 178 a 3 next 191
+s 178 a 4 next 332
+s 179 a 0 next 201
+s 179 a 1 next 332
+s 179 a 2 next 332
+s 179 a 3 next 191
+s 179 a 4 next 332
+s 180 a 0 next 201
+s 180 a 1 next 332
+s 180 a 2 next 332
+s 180 a 3 next 191
+s 180 a 4 next 332
+s 181 a 0 next 201
+s 181 a 1 next 332
+s 181 a 2 next 332
+s 181 a 3 next 191
+s 181 a 4 next 332
+s 182 a 0 next 201
+s 182 a 1 next 332
+s 182 a 2 next 332
+s 182 a 3 next 191
+s 182 a 4 next 332
+s 183 a 0 next 201
+s 183 a 1 next 332
+s 183 a 2 next 332
+s 183 a 3 next 191
+s 183 a 4 next 332
+s 184 a 0 next 201
+s 184 a 1 next 341
+s 184 a 2 next 341
+s 184 a 3 next 197
+s 184 a 4 next 341
+s 185 a 0 next 332
+s 185 a 1 next 341
+s 185 a 2 next 341
+s 185 a 3 next 197
+s 185 a 4 next 341
+s 186 a 0 next 332
+s 186 a 1 next 341
+s 186 a 2 next 341
+s 186 a 3 next 197
+s 186 a 4 next 341
+s 187 a 0 next 332
+s 187 a 1 next 341
+s 187 a 2 next 341
+s 187 a 3 next 197
+s 187 a 4 next 341
+s 188 a 0 next 201
+s 188 a 1 next 332
+s 188 a 2 next 332
+s 188 a 3 next 191
+s 188 a 4 next 332
+s 189 a 0 next 201
+s 189 a 1 next 332
+s 189 a 2 next 332
+s 189 a 3 next 191
+s 189 a 4 next 332
+s 190 a 0 next 201
+s 190 a 1 next 332
+s 190 a 2 next 332
+s 190 a 3 next 191
+s 190 a 4 next 332
+s 191 a 0 next 201
+s 191 a 1 next 332
+s 191 a 2 next 332
+s 191 a 3 next 191
+s 191 a 4 next 332
+s 192 a 0 next 201
+s 192 a 1 next 332
+s 192 a 2 next 332
+s 192 a 3 next 191
+s 192 a 4 next 332
+s 193 a 0 next 201
+s 193 a 1 next 332
+s 193 a 2 next 332
+s 193 a 3 next 191
+s 193 a 4 next 332
+s 194 a 0 next 201
+s 194 a 1 next 332
+s 194 a 2 next 332
+s 194 a 3 next 191
+s 194 a 4 next 332
+s 195 a 0 next 201
+s 195 a 1 next 332
+s 195 a 2 next 332
+s 195 a 3 next 191
+s 195 a 4 next 332
+s 196 a 0 next 201
+s 196 a 1 next 332
+s 196 a 2 next 332
+s 196 a 3 next 191
+s 196 a 4 next 332
+s 197 a 0 next 201
+s 197 a 1 next 332
+s 197 a 2 next 332
+s 197 a 3 next 188
+s 197 a 4 next 191
+s 198 a 0 next 191
+s 198 a 1 next 335
+s 198 a 2 next 94
+s 198 a 3 next 191
+s 198 a 4 next 332
+s 199 a 0 next 201
+s 199 a 1 next 341
+s 199 a 2 next 341
+s 199 a 3 next 197
+s 199 a 4 next 341
+s 200 a 0 next 201
+s 200 a 1 next 341
+s 200 a 2 next 341
+s 200 a 3 next 197
+s 200 a 4 next 341
+s 201 a 0 next 332
+s 201 a 1 next 341
+s 201 a 2 next 341
+s 201 a 3 next 197
+s 201 a 4 next 341
+s 202 a 0 next 332
+s 202 a 1 next 341
+s 202 a 2 next 341
+s 202 a 3 next 196
+s 202 a 4 next 197
+s 203 a 0 next 342
+s 203 a 1 next 506
+s 203 a 2 next 191
+s 203 a 3 next 197
+s 203 a 4 next 341
+s 204 a 0 next 332
+s 204 a 1 next 341
+s 204 a 2 next 341
+s 204 a 3 next 197
+s 204 a 4 next 341
+s 205 a 0 next 332
+s 205 a 1 next 341
+s 205 a 2 next 341
+s 205 a 3 next 197
+s 205 a 4 next 341
+s 206 a 0 next 332
+s 206 a 1 next 341
+s 206 a 2 next 341
+s 206 a 3 next 197
+s 206 a 4 next 341
+s 207 a 0 next 332
+s 207 a 1 next 341
+s 207 a 2 next 341
+s 207 a 3 next 197
+s 207 a 4 next 341
+s 208 a 0 next 332
+s 208 a 1 next 341
+s 208 a 2 next 341
+s 208 a 3 next 197
+s 208 a 4 next 341
+s 209 a 0 next 332
+s 209 a 1 next 341
+s 209 a 2 next 341
+s 209 a 3 next 197
+s 209 a 4 next 341
+s 210 a 0 next 332
+s 210 a 1 next 341
+s 210 a 2 next 341
+s 210 a 3 next 196
+s 210 a 4 next 197
+s 211 a 0 next 197
+s 211 a 1 next 197
+s 211 a 2 next 94
+s 211 a 3 next 191
+s 211 a 4 next 332
+s 212 a 0 next 201
+s 212 a 1 next 332
+s 212 a 2 next 332
+s 212 a 3 next 191
+s 212 a 4 next 332
+s 213 a 0 next 201
+s 213 a 1 next 332
+s 213 a 2 next 332
+s 213 a 3 next 191
+s 213 a 4 next 332
+s 214 a 0 next 201
+s 214 a 1 next 332
+s 214 a 2 next 332
+s 214 a 3 next 191
+s 214 a 4 next 332
+s 215 a 0 next 201
+s 215 a 1 next 332
+s 215 a 2 next 332
+s 215 a 3 next 191
+s 215 a 4 next 332
+s 216 a 0 next 201
+s 216 a 1 next 332
+s 216 a 2 next 332
+s 216 a 3 next 191
+s 216 a 4 next 332
+s 217 a 0 next 201
+s 217 a 1 next 341
+s 217 a 2 next 341
+s 217 a 3 next 196
+s 217 a 4 next 197
+s 218 a 0 next 342
+s 218 a 1 next 342
+s 218 a 2 next 191
+s 218 a 3 next 197
+s 218 a 4 next 341
+s 219 a 0 next 332
+s 219 a 1 next 341
+s 219 a 2 next 341
+s 219 a 3 next 197
+s 219 a 4 next 341
+s 220 a 0 next 332
+s 220 a 1 next 341
+s 220 a 2 next 341
+s 220 a 3 next 197
+s 220 a 4 next 341
+s 221 a 0 next 332
+s 221 a 1 next 341
+s 221 a 2 next 341
+s 221 a 3 next 197
+s 221 a 4 next 341
+s 222 a 0 next 332
+s 222 a 1 next 341
+s 222 a 2 next 341
+s 222 a 3 next 196
+s 222 a 4 next 197
+s 223 a 0 next 342
+s 223 a 1 next 342
+s 223 a 2 next 191
+s 223 a 3 next 197
+s 223 a 4 next 341
+s 224 a 0 next 201
+s 224 a 1 next 332
+s 224 a 2 next 332
+s 224 a 3 next 191
+s 224 a 4 next 332
+s 225 a 0 next 201
+s 225 a 1 next 332
+s 225 a 2 next 332
+s 225 a 3 next 188
+s 225 a 4 next 191
+s 226 a 0 next 191
+s 226 a 1 next 335
+s 226 a 2 next 94
+s 226 a 3 next 191
+s 226 a 4 next 332
+s 227 a 0 next 201
+s 227 a 1 next 332
+s 227 a 2 next 332
+s 227 a 3 next 191
+s 227 a 4 next 332
+s 228 a 0 next 201
+s 228 a 1 next 332
+s 228 a 2 next 332
+s 228 a 3 next 191
+s 228 a 4 next 332
+s 229 a 0 next 201
+s 229 a 1 next 332
+s 229 a 2 next 332
+s 229 a 3 next 191
+s 229 a 4 next 332
+s 230 a 0 next 201
+s 230 a 1 next 332
+s 230 a 2 next 332
+s 230 a 3 next 191
+s 230 a 4 next 332
+s 231 a 0 next 201
+s 231 a 1 next 332
+s 231 a 2 next 332
+s 231 a 3 next 191
+s 231 a 4 next 332
+s 232 a 0 next 201
+s 232 a 1 next 332
+s 232 a 2 next 332
+s 232 a 3 next 191
+s 232 a 4 next 332
+s 233 a 0 next 201
+s 233 a 1 next 332
+s 233 a 2 next 332
+s 233 a 3 next 191
+s 233 a 4 next 332
+s 234 a 0 next 201
+s 234 a 1 next 332
+s 234 a 2 next 332
+s 234 a 3 next 191
+s 234 a 4 next 332
+s 235 a 0 next 201
+s 235 a 1 next 332
+s 235 a 2 next 332
+s 235 a 3 next 188
+s 235 a 4 next 191
+s 236 a 0 next 334
+s 236 a 1 next 334
+s 236 a 2 next 94
+s 236 a 3 next 191
+s 236 a 4 next 332
+s 237 a 0 next 201
+s 237 a 1 next 332
+s 237 a 2 next 332
+s 237 a 3 next 191
+s 237 a 4 next 332
+s 238 a 0 next 201
+s 238 a 1 next 332
+s 238 a 2 next 332
+s 238 a 3 next 188
+s 238 a 4 next 191
+s 239 a 0 next 334
+s 239 a 1 next 498
+s 239 a 2 next 94
+s 239 a 3 next 191
+s 239 a 4 next 332
+s 240 a 0 next 201
+s 240 a 1 next 332
+s 240 a 2 next 332
+s 240 a 3 next 191
+s 240 a 4 next 332
+s 241 a 0 next 201
+s 241 a 1 next 332
+s 241 a 2 next 332
+s 241 a 3 next 191
+s 241 a 4 next 332
+s 242 a 0 next 201
+s 242 a 1 next 332
+s 242 a 2 next 332
+s 242 a 3 next 191
+s 242 a 4 next 332
+s 243 a 0 next 201
+s 243 a 1 next 332
+s 243 a 2 next 332
+s 243 a 3 next 191
+s 243 a 4 next 332
+s 244 a 0 next 201
+s 244 a 1 next 332
+s 244 a 2 next 332
+s 244 a 3 next 191
+s 244 a 4 next 332
+s 245 a 0 next 201
+s 245 a 1 next 332
+s 245 a 2 next 332
+s 245 a 3 next 191
+s 245 a 4 next 332
+s 246 a 0 next 201
+s 246 a 1 next 332
+s 246 a 2 next 332
+s 246 a 3 next 191
+s 246 a 4 next 332
+s 247 a 0 next 201
+s 247 a 1 next 332
+s 247 a 2 next 332
+s 247 a 3 next 191
+s 247 a 4 next 332
+s 248 a 0 next 201
+s 248 a 1 next 332
+s 248 a 2 next 332
+s 248 a 3 next 191
+s 248 a 4 next 332
+s 249 a 0 next 201
+s 249 a 1 next 332
+s 249 a 2 next 332
+s 249 a 3 next 191
+s 249 a 4 next 332
+s 250 a 0 next 201
+s 250 a 1 next 332
+s 250 a 2 next 332
+s 250 a 3 next 191
+s 250 a 4 next 332
+s 251 a 0 next 201
+s 251 a 1 next 332
+s 251 a 2 next 332
+s 251 a 3 next 191
+s 251 a 4 next 332
+s 252 a 0 next 201
+s 252 a 1 next 332
+s 252 a 2 next 332
+s 252 a 3 next 191
+s 252 a 4 next 332
+s 253 a 0 next 201
+s 253 a 1 next 332
+s 253 a 2 next 332
+s 253 a 3 next 191
+s 253 a 4 next 332
+s 254 a 0 next 201
+s 254 a 1 next 341
+s 254 a 2 next 341
+s 254 a 3 next 197
+s 254 a 4 next 341
+s 255 a 0 next 332
+s 255 a 1 next 341
+s 255 a 2 next 341
+s 255 a 3 next 196
+s 255 a 4 next 197
+s 256 a 0 next 197
+s 256 a 1 next 197
+s 256 a 2 next 191
+s 256 a 3 next 329
+s 256 a 4 next 492
+s 257 a 0 next 341
+s 257 a 1 next 492
+s 257 a 2 next 492
+s 257 a 3 next 329
+s 257 a 4 next 492
+s 258 a 0 next 341
+s 258 a 1 next 501
+s 258 a 2 next 501
+s 258 a 3 next 338
+s 258 a 4 next 501
+s 259 a 0 next 341
+s 259 a 1 next 492
+s 259 a 2 next 492
+s 259 a 3 next 329
+s 259 a 4 next 492
+s 260 a 0 next 341
+s 260 a 1 next 492
+s 260 a 2 next 492
+s 260 a 3 next 329
+s 260 a 4 next 492
+s 261 a 0 next 341
+s 261 a 1 next 492
+s 261 a 2 next 492
+s 261 a 3 next 329
+s 261 a 4 next 492
+s 262 a 0 next 341
+s 262 a 1 next 492
+s 262 a 2 next 492
+s 262 a 3 next 329
+s 262 a 4 next 492
+s 263 a 0 next 332
+s 263 a 1 next 341
+s 263 a 2 next 341
+s 263 a 3 next 197
+s 263 a 4 next 341
+s 264 a 0 next 332
+s 264 a 1 next 341
+s 264 a 2 next 341
+s 264 a 3 next 197
+s 264 a 4 next 341
+s 265 a 0 next 332
+s 265 a 1 next 341
+s 265 a 2 next 341
+s 265 a 3 next 196
+s 265 a 4 next 197
+s 266 a 0 next 197
+s 266 a 1 next 343
+s 266 a 2 next 191
+s 266 a 3 next 197
+s 266 a 4 next 341
+s 267 a 0 next 201
+s 267 a 1 next 332
+s 267 a 2 next 332
+s 267 a 3 next 191
+s 267 a 4 next 332
+s 268 a 0 next 201
+s 268 a 1 next 332
+s 268 a 2 next 332
+s 268 a 3 next 191
+s 268 a 4 next 332
+s 269 a 0 next 201
+s 269 a 1 next 332
+s 269 a 2 next 332
+s 269 a 3 next 191
+s 269 a 4 next 332
+s 270 a 0 next 201
+s 270 a 1 next 332
+s 270 a 2 next 332
+s 270 a 3 next 191
+s 270 a 4 next 332
+s 271 a 0 next 201
+s 271 a 1 next 332
+s 271 a 2 next 332
+s 271 a 3 next 191
+s 271 a 4 next 332
+s 272 a 0 next 201
+s 272 a 1 next 332
+s 272 a 2 next 332
+s 272 a 3 next 191
+s 272 a 4 next 332
+s 273 a 0 next 201
+s 273 a 1 next 332
+s 273 a 2 next 332
+s 273 a 3 next 191
+s 273 a 4 next 332
+s 274 a 0 next 201
+s 274 a 1 next 332
+s 274 a 2 next 332
+s 274 a 3 next 191
+s 274 a 4 next 332
+s 275 a 0 next 201
+s 275 a 1 next 332
+s 275 a 2 next 332
+s 275 a 3 next 191
+s 275 a 4 next 332
+s 276 a 0 next 201
+s 276 a 1 next 332
+s 276 a 2 next 332
+s 276 a 3 next 191
+s 276 a 4 next 332
+s 277 a 0 next 201
+s 277 a 1 next 332
+s 277 a 2 next 332
+s 277 a 3 next 191
+s 277 a 4 next 332
+s 278 a 0 next 201
+s 278 a 1 next 332
+s 278 a 2 next 332
+s 278 a 3 next 191
+s 278 a 4 next 332
+s 279 a 0 next 201
+s 279 a 1 next 332
+s 279 a 2 next 332
+s 279 a 3 next 191
+s 279 a 4 next 332
+s 280 a 0 next 201
+s 280 a 1 next 332
+s 280 a 2 next 332
+s 280 a 3 next 191
+s 280 a 4 next 332
+s 281 a 0 next 201
+s 281 a 1 next 332
+s 281 a 2 next 332
+s 281 a 3 next 191
+s 281 a 4 next 332
+s 282 a 0 next 201
+s 282 a 1 next 332
+s 282 a 2 next 332
+s 282 a 3 next 191
+s 282 a 4 next 332
+s 283 a 0 next 201
+s 283 a 1 next 332
+s 283 a 2 next 332
+s 283 a 3 next 191
+s 283 a 4 next 332
+s 284 a 0 next 201
+s 284 a 1 next 332
+s 284 a 2 next 332
+s 284 a 3 next 191
+s 284 a 4 next 332
+s 285 a 0 next 201
+s 285 a 1 next 332
+s 285 a 2 next 332
+s 285 a 3 next 191
+s 285 a 4 next 332
+s 286 a 0 next 201
+s 286 a 1 next 332
+s 286 a 2 next 332
+s 286 a 3 next 191
+s 286 a 4 next 332
+s 287 a 0 next 201
+s 287 a 1 next 332
+s 287 a 2 next 332
+s 287 a 3 next 191
+s 287 a 4 next 332
+s 288 a 0 next 201
+s 288 a 1 next 332
+s 288 a 2 next 332
+s 288 a 3 next 191
+s 288 a 4 next 332
+s 289 a 0 next 201
+s 289 a 1 next 332
+s 289 a 2 next 332
+s 289 a 3 next 191
+s 289 a 4 next 332
+s 290 a 0 next 201
+s 290 a 1 next 332
+s 290 a 2 next 332
+s 290 a 3 next 191
+s 290 a 4 next 332
+s 291 a 0 next 201
+s 291 a 1 next 341
+s 291 a 2 next 341
+s 291 a 3 next 197
+s 291 a 4 next 341
+s 292 a 0 next 332
+s 292 a 1 next 341
+s 292 a 2 next 341
+s 292 a 3 next 197
+s 292 a 4 next 341
+s 293 a 0 next 332
+s 293 a 1 next 341
+s 293 a 2 next 341
+s 293 a 3 next 197
+s 293 a 4 next 341
+s 294 a 0 next 332
+s 294 a 1 next 341
+s 294 a 2 next 341
+s 294 a 3 next 197
+s 294 a 4 next 341
+s 295 a 0 next 332
+s 295 a 1 next 492
+s 295 a 2 next 492
+s 295 a 3 next 329
+s 295 a 4 next 492
+s 296 a 0 next 341
+s 296 a 1 next 492
+s 296 a 2 next 492
+s 296 a 3 next 329
+s 296 a 4 next 492
+s 297 a 0 next 341
+s 297 a 1 next 492
+s 297 a 2 next 492
+s 297 a 3 next 329
+s 297 a 4 next 492
+s 298 a 0 next 341
+s 298 a 1 next 492
+s 298 a 2 next 492
+s 298 a 3 next 329
+s 298 a 4 next 492
+s 299 a 0 next 341
+s 299 a 1 next 492
+s 299 a 2 next 492
+s 299 a 3 next 329
+s 299 a 4 next 492
+s 300 a 0 next 341
+s 300 a 1 next 501
+s 300 a 2 next 501
+s 300 a 3 next 338
+s 300 a 4 next 501
+s 301 a 0 next 492
+s 301 a 1 next 501
+s 301 a 2 next 501
+s 301 a 3 next 338
+s 301 a 4 next 501
+s 302 a 0 next 492
+s 302 a 1 next 501
+s 302 a 2 next 501
+s 302 a 3 next 338
+s 302 a 4 next 501
+s 303 a 0 next 492
+s 303 a 1 next 501
+s 303 a 2 next 501
+s 303 a 3 next 338
+s 303 a 4 next 501
+s 304 a 0 next 492
+s 304 a 1 next 501
+s 304 a 2 next 501
+s 304 a 3 next 338
+s 304 a 4 next 501
+s 305 a 0 next 492
+s 305 a 1 next 501
+s 305 a 2 next 501
+s 305 a 3 next 338
+s 305 a 4 next 501
+s 306 a 0 next 341
+s 306 a 1 next 492
+s 306 a 2 next 492
+s 306 a 3 next 329
+s 306 a 4 next 492
+s 307 a 0 next 341
+s 307 a 1 next 492
+s 307 a 2 next 492
+s 307 a 3 next 329
+s 307 a 4 next 492
+s 308 a 0 next 341
+s 308 a 1 next 492
+s 308 a 2 next 492
+s 308 a 3 next 329
+s 308 a 4 next 492
+s 309 a 0 next 332
+s 309 a 1 next 341
+s 309 a 2 next 341
+s 309 a 3 next 197
+s 309 a 4 next 341
+s 310 a 0 next 201
+s 310 a 1 next 332
+s 310 a 2 next 332
+s 310 a 3 next 191
+s 310 a 4 next 332
+s 311 a 0 next 201
+s 311 a 1 next 332
+s 311 a 2 next 332
+s 311 a 3 next 191
+s 311 a 4 next 332
+s 312 a 0 next 201
+s 312 a 1 next 332
+s 312 a 2 next 332
+s 312 a 3 next 191
+s 312 a 4 next 332
+s 313 a 0 next 201
+s 313 a 1 next 332
+s 313 a 2 next 332
+s 313 a 3 next 191
+s 313 a 4 next 332
+s 314 a 0 next 201
+s 314 a 1 next 332
+s 314 a 2 next 332
+s 314 a 3 next 191
+s 314 a 4 next 332
+s 315 a 0 next 201
+s 315 a 1 next 332
+s 315 a 2 next 332
+s 315 a 3 next 191
+s 315 a 4 next 332
+s 316 a 0 next 201
+s 316 a 1 next 332
+s 316 a 2 next 332
+s 316 a 3 next 191
+s 316 a 4 next 332
+s 317 a 0 next 201
+s 317 a 1 next 332
+s 317 a 2 next 332
+s 317 a 3 next 191
+s 317 a 4 next 332
+s 318 a 0 next 201
+s 318 a 1 next 332
+s 318 a 2 next 332
+s 318 a 3 next 191
+s 318 a 4 next 332
+s 319 a 0 next 201
+s 319 a 1 next 332
+s 319 a 2 next 332
+s 319 a 3 next 191
+s 319 a 4 next 332
+s 320 a 0 next 201
+s 320 a 1 next 332
+s 320 a 2 next 332
+s 320 a 3 next 191
+s 320 a 4 next 332
+s 321 a 0 next 201
+s 321 a 1 next 332
+s 321 a 2 next 332
+s 321 a 3 next 191
+s 321 a 4 next 332
+s 322 a 0 next 201
+s 322 a 1 next 332
+s 322 a 2 next 332
+s 322 a 3 next 191
+s 322 a 4 next 332
+s 323 a 0 next 201
+s 323 a 1 next 332
+s 323 a 2 next 332
+s 323 a 3 next 191
+s 323 a 4 next 332
+s 324 a 0 next 201
+s 324 a 1 next 332
+s 324 a 2 next 332
+s 324 a 3 next 191
+s 324 a 4 next 332
+s 325 a 0 next 201
+s 325 a 1 next 332
+s 325 a 2 next 332
+s 325 a 3 next 191
+s 325 a 4 next 332
+s 326 a 0 next 201
+s 326 a 1 next 332
+s 326 a 2 next 332
+s 326 a 3 next 191
+s 326 a 4 next 332
+s 327 a 0 next 201
+s 327 a 1 next 341
+s 327 a 2 next 341
+s 327 a 3 next 197
+s 327 a 4 next 341
+s 328 a 0 next 332
+s 328 a 1 next 341
+s 328 a 2 next 341
+s 328 a 3 next 197
+s 328 a 4 next 341
+s 329 a 0 next 332
+s 329 a 1 next 341
+s 329 a 2 next 341
+s 329 a 3 next 197
+s 329 a 4 next 341
+s 330 a 0 next 332
+s 330 a 1 next 341
+s 330 a 2 next 341
+s 330 a 3 next 197
+s 330 a 4 next 341
+s 331 a 0 next 332
+s 331 a 1 next 341
+s 331 a 2 next 341
+s 331 a 3 next 197
+s 331 a 4 next 341
+s 332 a 0 next 332
+s 332 a 1 next 341
+s 332 a 2 next 341
+s 332 a 3 next 197
+s 332 a 4 next 341
+s 333 a 0 next 332
+s 333 a 1 next 341
+s 333 a 2 next 341
+s 333 a 3 next 197
+s 333 a 4 next 341
+s 334 a 0 next 332
+s 334 a 1 next 341
+s 334 a 2 next 341
+s 334 a 3 next 197
+s 334 a 4 next 341
+s 335 a 0 next 332
+s 335 a 1 next 341
+s 335 a 2 next 341
+s 335 a 3 next 197
+s 335 a 4 next 341
+s 336 a 0 next 332
+s 336 a 1 next 341
+s 336 a 2 next 341
+s 336 a 3 next 197
+s 336 a 4 next 341
+s 337 a 0 next 332
+s 337 a 1 next 341
+s 337 a 2 next 341
+s 337 a 3 next 197
+s 337 a 4 next 341
+s 338 a 0 next 332
+s 338 a 1 next 492
+s 338 a 2 next 492
+s 338 a 3 next 329
+s 338 a 4 next 492
+s 339 a 0 next 341
+s 339 a 1 next 492
+s 339 a 2 next 492
+s 339 a 3 next 326
+s 339 a 4 next 329
+s 340 a 0 next 329
+s 340 a 1 next 495
+s 340 a 2 next 197
+s 340 a 3 next 329
+s 340 a 4 next 492
+s 341 a 0 next 341
+s 341 a 1 next 492
+s 341 a 2 next 492
+s 341 a 3 next 329
+s 341 a 4 next 492
+s 342 a 0 next 341
+s 342 a 1 next 492
+s 342 a 2 next 492
+s 342 a 3 next 329
+s 342 a 4 next 492
+s 343 a 0 next 341
+s 343 a 1 next 492
+s 343 a 2 next 492
+s 343 a 3 next 329
+s 343 a 4 next 492
+s 344 a 0 next 332
+s 344 a 1 next 341
+s 344 a 2 next 341
+s 344 a 3 next 197
+s 344 a 4 next 341
+s 345 a 0 next 332
+s 345 a 1 next 341
+s 345 a 2 next 341
+s 345 a 3 next 197
+s 345 a 4 next 341
+s 346 a 0 next 332
+s 346 a 1 next 341
+s 346 a 2 next 341
+s 346 a 3 next 197
+s 346 a 4 next 341
+s 347 a 0 next 332
+s 347 a 1 next 341
+s 347 a 2 next 341
+s 347 a 3 next 197
+s 347 a 4 next 341
+s 348 a 0 next 332
+s 348 a 1 next 341
+s 348 a 2 next 341
+s 348 a 3 next 197
+s 348 a 4 next 341
+s 349 a 0 next 332
+s 349 a 1 next 341
+s 349 a 2 next 341
+s 349 a 3 next 197
+s 349 a 4 next 341
+s 350 a 0 next 332
+s 350 a 1 next 341
+s 350 a 2 next 341
+s 350 a 3 next 197
+s 350 a 4 next 341
+s 351 a 0 next 201
+s 351 a 1 next 332
+s 351 a 2 next 332
+s 351 a 3 next 191
+s 351 a 4 next 332
+s 352 a 0 next 201
+s 352 a 1 next 332
+s 352 a 2 next 332
+s 352 a 3 next 191
+s 352 a 4 next 332
+s 353 a 0 next 201
+s 353 a 1 next 332
+s 353 a 2 next 332
+s 353 a 3 next 191
+s 353 a 4 next 332
+s 354 a 0 next 201
+s 354 a 1 next 341
+s 354 a 2 next 341
+s 354 a 3 next 197
+s 354 a 4 next 341
+s 355 a 0 next 332
+s 355 a 1 next 341
+s 355 a 2 next 341
+s 355 a 3 next 197
+s 355 a 4 next 341
+s 356 a 0 next 332
+s 356 a 1 next 341
+s 356 a 2 next 341
+s 356 a 3 next 197
+s 356 a 4 next 341
+s 357 a 0 next 332
+s 357 a 1 next 341
+s 357 a 2 next 341
+s 357 a 3 next 197
+s 357 a 4 next 341
+s 358 a 0 next 332
+s 358 a 1 next 492
+s 358 a 2 next 492
+s 358 a 3 next 326
+s 358 a 4 next 329
+s 359 a 0 next 494
+s 359 a 1 next 646
+s 359 a 2 next 197
+s 359 a 3 next 329
+s 359 a 4 next 492
+s 360 a 0 next 341
+s 360 a 1 next 492
+s 360 a 2 next 492
+s 360 a 3 next 329
+s 360 a 4 next 492
+s 361 a 0 next 341
+s 361 a 1 next 492
+s 361 a 2 next 492
+s 361 a 3 next 329
+s 361 a 4 next 492
+s 362 a 0 next 341
+s 362 a 1 next 492
+s 362 a 2 next 492
+s 362 a 3 next 326
+s 362 a 4 next 329
+s 363 a 0 next 494
+s 363 a 1 next 646
+s 363 a 2 next 197
+s 363 a 3 next 338
+s 363 a 4 next 501
+s 364 a 0 next 341
+s 364 a 1 next 492
+s 364 a 2 next 492
+s 364 a 3 next 326
+s 364 a 4 next 492
+s 365 a 0 next 341
+s 365 a 1 next 492
+s 365 a 2 next 492
+s 365 a 3 next 329
+s 365 a 4 next 492
+s 366 a 0 next 341
+s 366 a 1 next 492
+s 366 a 2 next 492
+s 366 a 3 next 329
+s 366 a 4 next 492
+s 367 a 0 next 341
+s 367 a 1 next 492
+s 367 a 2 next 492
+s 367 a 3 next 329
+s 367 a 4 next 492
+s 368 a 0 next 341
+s 368 a 1 next 492
+s 368 a 2 next 492
+s 368 a 3 next 329
+s 368 a 4 next 492
+s 369 a 0 next 341
+s 369 a 1 next 492
+s 369 a 2 next 492
+s 369 a 3 next 326
+s 369 a 4 next 492
+s 370 a 0 next 341
+s 370 a 1 next 492
+s 370 a 2 next 492
+s 370 a 3 next 329
+s 370 a 4 next 492
+s 371 a 0 next 341
+s 371 a 1 next 492
+s 371 a 2 next 492
+s 371 a 3 next 329
+s 371 a 4 next 492
+s 372 a 0 next 341
+s 372 a 1 next 492
+s 372 a 2 next 492
+s 372 a 3 next 329
+s 372 a 4 next 492
+s 373 a 0 next 341
+s 373 a 1 next 492
+s 373 a 2 next 492
+s 373 a 3 next 329
+s 373 a 4 next 492
+s 374 a 0 next 341
+s 374 a 1 next 492
+s 374 a 2 next 492
+s 374 a 3 next 329
+s 374 a 4 next 492
+s 375 a 0 next 341
+s 375 a 1 next 492
+s 375 a 2 next 492
+s 375 a 3 next 329
+s 375 a 4 next 492
+s 376 a 0 next 332
+s 376 a 1 next 341
+s 376 a 2 next 341
+s 376 a 3 next 197
+s 376 a 4 next 341
+s 377 a 0 next 332
+s 377 a 1 next 341
+s 377 a 2 next 341
+s 377 a 3 next 197
+s 377 a 4 next 341
+s 378 a 0 next 332
+s 378 a 1 next 341
+s 378 a 2 next 341
+s 378 a 3 next 197
+s 378 a 4 next 341
+s 379 a 0 next 332
+s 379 a 1 next 341
+s 379 a 2 next 341
+s 379 a 3 next 197
+s 379 a 4 next 341
+s 380 a 0 next 332
+s 380 a 1 next 341
+s 380 a 2 next 341
+s 380 a 3 next 197
+s 380 a 4 next 341
+s 381 a 0 next 332
+s 381 a 1 next 341
+s 381 a 2 next 341
+s 381 a 3 next 197
+s 381 a 4 next 341
+s 382 a 0 next 332
+s 382 a 1 next 341
+s 382 a 2 next 341
+s 382 a 3 next 197
+s 382 a 4 next 341
+s 383 a 0 next 332
+s 383 a 1 next 341
+s 383 a 2 next 341
+s 383 a 3 next 197
+s 383 a 4 next 341
+s 384 a 0 next 332
+s 384 a 1 next 341
+s 384 a 2 next 341
+s 384 a 3 next 197
+s 384 a 4 next 341
+s 385 a 0 next 332
+s 385 a 1 next 341
+s 385 a 2 next 341
+s 385 a 3 next 197
+s 385 a 4 next 341
+s 386 a 0 next 332
+s 386 a 1 next 341
+s 386 a 2 next 341
+s 386 a 3 next 197
+s 386 a 4 next 341
+s 387 a 0 next 332
+s 387 a 1 next 341
+s 387 a 2 next 341
+s 387 a 3 next 197
+s 387 a 4 next 341
+s 388 a 0 next 332
+s 388 a 1 next 341
+s 388 a 2 next 341
+s 388 a 3 next 197
+s 388 a 4 next 341
+s 389 a 0 next 332
+s 389 a 1 next 341
+s 389 a 2 next 341
+s 389 a 3 next 197
+s 389 a 4 next 341
+s 390 a 0 next 332
+s 390 a 1 next 341
+s 390 a 2 next 341
+s 390 a 3 next 197
+s 390 a 4 next 341
+s 391 a 0 next 332
+s 391 a 1 next 341
+s 391 a 2 next 341
+s 391 a 3 next 197
+s 391 a 4 next 341
+s 392 a 0 next 332
+s 392 a 1 next 492
+s 392 a 2 next 492
+s 392 a 3 next 329
+s 392 a 4 next 492
+s 393 a 0 next 341
+s 393 a 1 next 492
+s 393 a 2 next 492
+s 393 a 3 next 329
+s 393 a 4 next 492
+s 394 a 0 next 341
+s 394 a 1 next 492
+s 394 a 2 next 492
+s 394 a 3 next 329
+s 394 a 4 next 492
+s 395 a 0 next 332
+s 395 a 1 next 341
+s 395 a 2 next 341
+s 395 a 3 next 197
+s 395 a 4 next 341
+s 396 a 0 next 332
+s 396 a 1 next 341
+s 396 a 2 next 341
+s 396 a 3 next 197
+s 396 a 4 next 341
+s 397 a 0 next 201
+s 397 a 1 next 341
+s 397 a 2 next 341
+s 397 a 3 next 197
+s 397 a 4 next 341
+s 398 a 0 next 201
+s 398 a 1 next 332
+s 398 a 2 next 332
+s 398 a 3 next 191
+s 398 a 4 next 332
+s 399 a 0 next 201
+s 399 a 1 next 332
+s 399 a 2 next 332
+s 399 a 3 next 188
+s 399 a 4 next 191
+s 400 a 0 next 191
+s 400 a 1 next 191
+s 400 a 2 next 94
+s 400 a 3 next 197
+s 400 a 4 next 341
+s 401 a 0 next 332
+s 401 a 1 next 341
+s 401 a 2 next 341
+s 401 a 3 next 197
+s 401 a 4 next 341
+s 402 a 0 next 201
+s 402 a 1 next 332
+s 402 a 2 next 332
+s 402 a 3 next 191
+s 402 a 4 next 332
+s 403 a 0 next 201
+s 403 a 1 next 332
+s 403 a 2 next 332
+s 403 a 3 next 191
+s 403 a 4 next 332
+s 404 a 0 next 201
+s 404 a 1 next 332
+s 404 a 2 next 332
+s 404 a 3 next 191
+s 404 a 4 next 332
+s 405 a 0 next 201
+s 405 a 1 next 332
+s 405 a 2 next 332
+s 405 a 3 next 191
+s 405 a 4 next 332
+s 406 a 0 next 201
+s 406 a 1 next 332
+s 406 a 2 next 332
+s 406 a 3 next 191
+s 406 a 4 next 332
+s 407 a 0 next 201
+s 407 a 1 next 332
+s 407 a 2 next 332
+s 407 a 3 next 191
+s 407 a 4 next 332
+s 408 a 0 next 201
+s 408 a 1 next 332
+s 408 a 2 next 332
+s 408 a 3 next 191
+s 408 a 4 next 332
+s 409 a 0 next 201
+s 409 a 1 next 332
+s 409 a 2 next 332
+s 409 a 3 next 191
+s 409 a 4 next 332
+s 410 a 0 next 201
+s 410 a 1 next 332
+s 410 a 2 next 332
+s 410 a 3 next 191
+s 410 a 4 next 332
+s 411 a 0 next 201
+s 411 a 1 next 332
+s 411 a 2 next 332
+s 411 a 3 next 191
+s 411 a 4 next 332
+s 412 a 0 next 201
+s 412 a 1 next 332
+s 412 a 2 next 332
+s 412 a 3 next 191
+s 412 a 4 next 332
+s 413 a 0 next 201
+s 413 a 1 next 332
+s 413 a 2 next 332
+s 413 a 3 next 191
+s 413 a 4 next 332
+s 414 a 0 next 201
+s 414 a 1 next 332
+s 414 a 2 next 332
+s 414 a 3 next 191
+s 414 a 4 next 332
+s 415 a 0 next 201
+s 415 a 1 next 341
+s 415 a 2 next 341
+s 415 a 3 next 197
+s 415 a 4 next 341
+s 416 a 0 next 332
+s 416 a 1 next 341
+s 416 a 2 next 341
+s 416 a 3 next 197
+s 416 a 4 next 341
+s 417 a 0 next 332
+s 417 a 1 next 341
+s 417 a 2 next 341
+s 417 a 3 next 197
+s 417 a 4 next 341
+s 418 a 0 next 332
+s 418 a 1 next 341
+s 418 a 2 next 341
+s 418 a 3 next 196
+s 418 a 4 next 197
+s 419 a 0 next 342
+s 419 a 1 next 342
+s 419 a 2 next 191
+s 419 a 3 next 197
+s 419 a 4 next 341
+s 420 a 0 next 332
+s 420 a 1 next 341
+s 420 a 2 next 341
+s 420 a 3 next 197
+s 420 a 4 next 341
+s 421 a 0 next 332
+s 421 a 1 next 341
+s 421 a 2 next 341
+s 421 a 3 next 197
+s 421 a 4 next 341
+s 422 a 0 next 332
+s 422 a 1 next 341
+s 422 a 2 next 341
+s 422 a 3 next 197
+s 422 a 4 next 341
+s 423 a 0 next 332
+s 423 a 1 next 341
+s 423 a 2 next 341
+s 423 a 3 next 197
+s 423 a 4 next 341
+s 424 a 0 next 332
+s 424 a 1 next 341
+s 424 a 2 next 341
+s 424 a 3 next 197
+s 424 a 4 next 341
+s 425 a 0 next 332
+s 425 a 1 next 341
+s 425 a 2 next 341
+s 425 a 3 next 197
+s 425 a 4 next 341
+s 426 a 0 next 332
+s 426 a 1 next 341
+s 426 a 2 next 341
+s 426 a 3 next 196
+s 426 a 4 next 197
+s 427 a 0 next 197
+s 427 a 1 next 197
+s 427 a 2 next 191
+s 427 a 3 next 197
+s 427 a 4 next 341
+s 428 a 0 next 332
+s 428 a 1 next 341
+s 428 a 2 next 341
+s 428 a 3 next 197
+s 428 a 4 next 341
+s 429 a 0 next 332
+s 429 a 1 next 341
+s 429 a 2 next 341
+s 429 a 3 next 197
+s 429 a 4 next 341
+s 430 a 0 next 332
+s 430 a 1 next 341
+s 430 a 2 next 341
+s 430 a 3 next 196
+s 430 a 4 next 197
+s 431 a 0 next 197
+s 431 a 1 next 343
+s 431 a 2 next 191
+s 431 a 3 next 197
+s 431 a 4 next 341
+s 432 a 0 next 332
+s 432 a 1 next 341
+s 432 a 2 next 341
+s 432 a 3 next 197
+s 432 a 4 next 341
+s 433 a 0 next 332
+s 433 a 1 next 341
+s 433 a 2 next 341
+s 433 a 3 next 197
+s 433 a 4 next 341
+s 434 a 0 next 201
+s 434 a 1 next 332
+s 434 a 2 next 332
+s 434 a 3 next 191
+s 434 a 4 next 332
+s 435 a 0 next 201
+s 435 a 1 next 332
+s 435 a 2 next 332
+s 435 a 3 next 191
+s 435 a 4 next 332
+s 436 a 0 next 201
+s 436 a 1 next 332
+s 436 a 2 next 332
+s 436 a 3 next 191
+s 436 a 4 next 332
+s 437 a 0 next 201
+s 437 a 1 next 332
+s 437 a 2 next 332
+s 437 a 3 next 188
+s 437 a 4 next 191
+s 438 a 0 next 334
+s 438 a 1 next 498
+s 438 a 2 next 94
+s 438 a 3 next 191
+s 438 a 4 next 332
+s 439 a 0 next 201
+s 439 a 1 next 332
+s 439 a 2 next 332
+s 439 a 3 next 191
+s 439 a 4 next 332
+s 440 a 0 next 201
+s 440 a 1 next 332
+s 440 a 2 next 332
+s 440 a 3 next 191
+s 440 a 4 next 332
+s 441 a 0 next 201
+s 441 a 1 next 332
+s 441 a 2 next 332
+s 441 a 3 next 191
+s 441 a 4 next 332
+s 442 a 0 next 201
+s 442 a 1 next 332
+s 442 a 2 next 332
+s 442 a 3 next 191
+s 442 a 4 next 332
+s 443 a 0 next 201
+s 443 a 1 next 332
+s 443 a 2 next 332
+s 443 a 3 next 191
+s 443 a 4 next 332
+s 444 a 0 next 201
+s 444 a 1 next 332
+s 444 a 2 next 332
+s 444 a 3 next 188
+s 444 a 4 next 191
+s 445 a 0 next 191
+s 445 a 1 next 335
+s 445 a 2 next 94
+s 445 a 3 next 191
+s 445 a 4 next 332
+s 446 a 0 next 201
+s 446 a 1 next 332
+s 446 a 2 next 332
+s 446 a 3 next 191
+s 446 a 4 next 332
+s 447 a 0 next 201
+s 447 a 1 next 341
+s 447 a 2 next 341
+s 447 a 3 next 197
+s 447 a 4 next 341
+s 448 a 0 next 332
+s 448 a 1 next 341
+s 448 a 2 next 341
+s 448 a 3 next 197
+s 448 a 4 next 341
+s 449 a 0 next 332
+s 449 a 1 next 341
+s 449 a 2 next 341
+s 449 a 3 next 197
+s 449 a 4 next 341
+s 450 a 0 next 332
+s 450 a 1 next 341
+s 450 a 2 next 341
+s 450 a 3 next 196
+s 450 a 4 next 341
+s 451 a 0 next 201
+s 451 a 1 next 332
+s 451 a 2 next 332
+s 451 a 3 next 191
+s 451 a 4 next 332
+s 452 a 0 next 201
+s 452 a 1 next 332
+s 452 a 2 next 332
+s 452 a 3 next 191
+s 452 a 4 next 332
+s 453 a 0 next 201
+s 453 a 1 next 332
+s 453 a 2 next 332
+s 453 a 3 next 191
+s 453 a 4 next 332
+s 454 a 0 next 201
+s 454 a 1 next 332
+s 454 a 2 next 332
+s 454 a 3 next 191
+s 454 a 4 next 332
+s 455 a 0 next 201
+s 455 a 1 next 341
+s 455 a 2 next 341
+s 455 a 3 next 197
+s 455 a 4 next 341
+s 456 a 0 next 201
+s 456 a 1 next 332
+s 456 a 2 next 332
+s 456 a 3 next 191
+s 456 a 4 next 332
+s 457 a 0 next 201
+s 457 a 1 next 332
+s 457 a 2 next 332
+s 457 a 3 next 191
+s 457 a 4 next 332
+s 458 a 0 next 201
+s 458 a 1 next 332
+s 458 a 2 next 332
+s 458 a 3 next 191
+s 458 a 4 next 332
+s 459 a 0 next 201
+s 459 a 1 next 332
+s 459 a 2 next 332
+s 459 a 3 next 191
+s 459 a 4 next 332
+s 460 a 0 next 201
+s 460 a 1 next 332
+s 460 a 2 next 332
+s 460 a 3 next 188
+s 460 a 4 next 191
+s 461 a 0 next 334
+s 461 a 1 next 334
+s 461 a 2 next 94
+s 461 a 3 next 191
+s 461 a 4 next 332
+s 462 a 0 next 201
+s 462 a 1 next 332
+s 462 a 2 next 332
+s 462 a 3 next 188
+s 462 a 4 next 191
+s 463 a 0 next 334
+s 463 a 1 next 334
+s 463 a 2 next 94
+s 463 a 3 next 191
+s 463 a 4 next 332
+s 464 a 0 next 201
+s 464 a 1 next 332
+s 464 a 2 next 332
+s 464 a 3 next 191
+s 464 a 4 next 332
+s 465 a 0 next 201
+s 465 a 1 next 332
+s 465 a 2 next 332
+s 465 a 3 next 188
+s 465 a 4 next 191
+s 466 a 0 next 334
+s 466 a 1 next 334
+s 466 a 2 next 94
+s 466 a 3 next 191
+s 466 a 4 next 332
+s 467 a 0 next 201
+s 467 a 1 next 332
+s 467 a 2 next 332
+s 467 a 3 next 191
+s 467 a 4 next 332
+s 468 a 0 next 201
+s 468 a 1 next 332
+s 468 a 2 next 332
+s 468 a 3 next 191
+s 468 a 4 next 332
+s 469 a 0 next 201
+s 469 a 1 next 332
+s 469 a 2 next 332
+s 469 a 3 next 191
+s 469 a 4 next 332
+s 470 a 0 next 201
+s 470 a 1 next 332
+s 470 a 2 next 332
+s 470 a 3 next 191
+s 470 a 4 next 332
+s 471 a 0 next 201
+s 471 a 1 next 332
+s 471 a 2 next 332
+s 471 a 3 next 191
+s 471 a 4 next 332
+s 472 a 0 next 201
+s 472 a 1 next 332
+s 472 a 2 next 332
+s 472 a 3 next 188
+s 472 a 4 next 191
+s 473 a 0 next 334
+s 473 a 1 next 498
+s 473 a 2 next 94
+s 473 a 3 next 191
+s 473 a 4 next 332
+s 474 a 0 next 201
+s 474 a 1 next 332
+s 474 a 2 next 332
+s 474 a 3 next 191
+s 474 a 4 next 332
+s 475 a 0 next 201
+s 475 a 1 next 332
+s 475 a 2 next 332
+s 475 a 3 next 191
+s 475 a 4 next 332
+s 476 a 0 next 201
+s 476 a 1 next 332
+s 476 a 2 next 332
+s 476 a 3 next 188
+s 476 a 4 next 191
+s 477 a 0 next 191
+s 477 a 1 next 191
+s 477 a 2 next 94
+s 477 a 3 next 191
+s 477 a 4 next 332
+s 478 a 0 next 201
+s 478 a 1 next 332
+s 478 a 2 next 332
+s 478 a 3 next 188
+s 478 a 4 next 191
+s 479 a 0 next 334
+s 479 a 1 next 334
+s 479 a 2 next 94
+s 479 a 3 next 191
+s 479 a 4 next 332
+s 480 a 0 next 201
+s 480 a 1 next 332
+s 480 a 2 next 332
+s 480 a 3 next 191
+s 480 a 4 next 332
+s 481 a 0 next 201
+s 481 a 1 next 332
+s 481 a 2 next 332
+s 481 a 3 next 191
+s 481 a 4 next 332
+s 482 a 0 next 201
+s 482 a 1 next 341
+s 482 a 2 next 341
+s 482 a 3 next 197
+s 482 a 4 next 341
+s 483 a 0 next 332
+s 483 a 1 next 341
+s 483 a 2 next 341
+s 483 a 3 next 197
+s 483 a 4 next 341
+s 484 a 0 next 332
+s 484 a 1 next 341
+s 484 a 2 next 341
+s 484 a 3 next 197
+s 484 a 4 next 341
+s 485 a 0 next 332
+s 485 a 1 next 341
+s 485 a 2 next 341
+s 485 a 3 next 197
+s 485 a 4 next 341
+s 486 a 0 next 332
+s 486 a 1 next 341
+s 486 a 2 next 341
+s 486 a 3 next 197
+s 486 a 4 next 341
+s 487 a 0 next 201
+s 487 a 1 next 341
+s 487 a 2 next 341
+s 487 a 3 next 197
+s 487 a 4 next 341
+s 488 a 0 next 332
+s 488 a 1 next 341
+s 488 a 2 next 341
+s 488 a 3 next 197
+s 488 a 4 next 341
+s 489 a 0 next 332
+s 489 a 1 next 341
+s 489 a 2 next 341
+s 489 a 3 next 197
+s 489 a 4 next 341
+s 490 a 0 next 332
+s 490 a 1 next 341
+s 490 a 2 next 341
+s 490 a 3 next 197
+s 490 a 4 next 341
+s 491 a 0 next 332
+s 491 a 1 next 341
+s 491 a 2 next 341
+s 491 a 3 next 197
+s 491 a 4 next 341
+s 492 a 0 next 332
+s 492 a 1 next 341
+s 492 a 2 next 341
+s 492 a 3 next 197
+s 492 a 4 next 341
+s 493 a 0 next 332
+s 493 a 1 next 341
+s 493 a 2 next 341
+s 493 a 3 next 197
+s 493 a 4 next 341
+s 494 a 0 next 332
+s 494 a 1 next 341
+s 494 a 2 next 341
+s 494 a 3 next 197
+s 494 a 4 next 341
+s 495 a 0 next 201
+s 495 a 1 next 332
+s 495 a 2 next 332
+s 495 a 3 next 188
+s 495 a 4 next 191
+s 496 a 0 next 191
+s 496 a 1 next 191
+s 496 a 2 next 94
+s 496 a 3 next 197
+s 496 a 4 next 341
+s 497 a 0 next 201
+s 497 a 1 next 332
+s 497 a 2 next 332
+s 497 a 3 next 191
+s 497 a 4 next 332
+s 498 a 0 next 201
+s 498 a 1 next 332
+s 498 a 2 next 332
+s 498 a 3 next 191
+s 498 a 4 next 332
+s 499 a 0 next 201
+s 499 a 1 next 332
+s 499 a 2 next 332
+s 499 a 3 next 191
+s 499 a 4 next 332
+s 500 a 0 next 201
+s 500 a 1 next 332
+s 500 a 2 next 332
+s 500 a 3 next 191
+s 500 a 4 next 332
+s 501 a 0 next 201
+s 501 a 1 next 332
+s 501 a 2 next 332
+s 501 a 3 next 191
+s 501 a 4 next 332
+s 502 a 0 next 201
+s 502 a 1 next 332
+s 502 a 2 next 332
+s 502 a 3 next 191
+s 502 a 4 next 332
+s 503 a 0 next 201
+s 503 a 1 next 332
+s 503 a 2 next 332
+s 503 a 3 next 188
+s 503 a 4 next 191
+s 504 a 0 next 334
+s 504 a 1 next 498
+s 504 a 2 next 94
+s 504 a 3 next 191
+s 504 a 4 next 332
+s 505 a 0 next 201
+s 505 a 1 next 332
+s 505 a 2 next 332
+s 505 a 3 next 191
+s 505 a 4 next 332
+s 506 a 0 next 201
+s 506 a 1 next 332
+s 506 a 2 next 332
+s 506 a 3 next 188
+s 506 a 4 next 191
+s 507 a 0 next 334
+s 507 a 1 next 334
+s 507 a 2 next 94
+s 507 a 3 next 197
+s 507 a 4 next 341
+s 508 a 0 next 332
+s 508 a 1 next 341
+s 508 a 2 next 341
+s 508 a 3 next 197
+s 508 a 4 next 341
+s 509 a 0 next 332
+s 509 a 1 next 341
+s 509 a 2 next 341
+s 509 a 3 next 196
+s 509 a 4 next 197
+s 510 a 0 next 342
+s 510 a 1 next 506
+s 510 a 2 next 191
+s 510 a 3 next 197
+s 510 a 4 next 341
+s 511 a 0 next 332
+s 511 a 1 next 341
+s 511 a 2 next 341
+s 511 a 3 next 197
+s 511 a 4 next 341
+s 512 a 0 next 332
+s 512 a 1 next 341
+s 512 a 2 next 341
+s 512 a 3 next 197
+s 512 a 4 next 341
+s 513 a 0 next 332
+s 513 a 1 next 341
+s 513 a 2 next 341
+s 513 a 3 next 197
+s 513 a 4 next 341
+s 514 a 0 next 332
+s 514 a 1 next 341
+s 514 a 2 next 341
+s 514 a 3 next 197
+s 514 a 4 next 341
+s 515 a 0 next 332
+s 515 a 1 next 341
+s 515 a 2 next 341
+s 515 a 3 next 197
+s 515 a 4 next 341
+s 516 a 0 next 332
+s 516 a 1 next 341
+s 516 a 2 next 341
+s 516 a 3 next 197
+s 516 a 4 next 341
+s 517 a 0 next 332
+s 517 a 1 next 341
+s 517 a 2 next 341
+s 517 a 3 next 197
+s 517 a 4 next 341
+s 518 a 0 next 332
+s 518 a 1 next 341
+s 518 a 2 next 341
+s 518 a 3 next 197
+s 518 a 4 next 341
+s 519 a 0 next 332
+s 519 a 1 next 341
+s 519 a 2 next 341
+s 519 a 3 next 197
+s 519 a 4 next 341
+s 520 a 0 next 332
+s 520 a 1 next 341
+s 520 a 2 next 341
+s 520 a 3 next 197
+s 520 a 4 next 341
+s 521 a 0 next 332
+s 521 a 1 next 341
+s 521 a 2 next 341
+s 521 a 3 next 197
+s 521 a 4 next 341
+s 522 a 0 next 332
+s 522 a 1 next 341
+s 522 a 2 next 341
+s 522 a 3 next 196
+s 522 a 4 next 341
+s 523 a 0 next 332
+s 523 a 1 next 341
+s 523 a 2 next 341
+s 523 a 3 next 197
+s 523 a 4 next 341
+s 524 a 0 next 332
+s 524 a 1 next 492
+s 524 a 2 next 492
+s 524 a 3 next 329
+s 524 a 4 next 492
+s 525 a 0 next 341
+s 525 a 1 next 492
+s 525 a 2 next 492
+s 525 a 3 next 329
+s 525 a 4 next 492
+s 526 a 0 next 341
+s 526 a 1 next 492
+s 526 a 2 next 492
+s 526 a 3 next 329
+s 526 a 4 next 492
+s 527 a 0 next 341
+s 527 a 1 next 492
+s 527 a 2 next 492
+s 527 a 3 next 329
+s 527 a 4 next 492
+s 528 a 0 next 341
+s 528 a 1 next 492
+s 528 a 2 next 492
+s 528 a 3 next 329
+s 528 a 4 next 492
+s 529 a 0 next 341
+s 529 a 1 next 492
+s 529 a 2 next 492
+s 529 a 3 next 329
+s 529 a 4 next 492
+s 530 a 0 next 341
+s 530 a 1 next 492
+s 530 a 2 next 492
+s 530 a 3 next 329
+s 530 a 4 next 492
+s 531 a 0 next 341
+s 531 a 1 next 492
+s 531 a 2 next 492
+s 531 a 3 next 329
+s 531 a 4 next 492
+s 532 a 0 next 341
+s 532 a 1 next 492
+s 532 a 2 next 492
+s 532 a 3 next 329
+s 532 a 4 next 492
+s 533 a 0 next 341
+s 533 a 1 next 501
+s 533 a 2 next 501
+s 533 a 3 next 338
+s 533 a 4 next 501
+s 534 a 0 next 341
+s 534 a 1 next 492
+s 534 a 2 next 492
+s 534 a 3 next 329
+s 534 a 4 next 492
+s 535 a 0 next 332
+s 535 a 1 next 341
+s 535 a 2 next 341
+s 535 a 3 next 197
+s 535 a 4 next 341
+s 536 a 0 next 201
+s 536 a 1 next 332
+s 536 a 2 next 332
+s 536 a 3 next 191
+s 536 a 4 next 332
+s 537 a 0 next 201
+s 537 a 1 next 341
+s 537 a 2 next 341
+s 537 a 3 next 197
+s 537 a 4 next 341
+s 538 a 0 next 332
+s 538 a 1 next 341
+s 538 a 2 next 341
+s 538 a 3 next 197
+s 538 a 4 next 341
+s 539 a 0 next 332
+s 539 a 1 next 341
+s 539 a 2 next 341
+s 539 a 3 next 197
+s 539 a 4 next 341
+s 540 a 0 next 332
+s 540 a 1 next 341
+s 540 a 2 next 341
+s 540 a 3 next 196
+s 540 a 4 next 197
+s 541 a 0 next 197
+s 541 a 1 next 197
+s 541 a 2 next 191
+s 541 a 3 next 197
+s 541 a 4 next 341
+s 542 a 0 next 332
+s 542 a 1 next 341
+s 542 a 2 next 341
+s 542 a 3 next 197
+s 542 a 4 next 341
+s 543 a 0 next 332
+s 543 a 1 next 341
+s 543 a 2 next 341
+s 543 a 3 next 197
+s 543 a 4 next 341
+s 544 a 0 next 332
+s 544 a 1 next 341
+s 544 a 2 next 341
+s 544 a 3 next 197
+s 544 a 4 next 341
+s 545 a 0 next 332
+s 545 a 1 next 341
+s 545 a 2 next 341
+s 545 a 3 next 197
+s 545 a 4 next 341
+s 546 a 0 next 201
+s 546 a 1 next 332
+s 546 a 2 next 332
+s 546 a 3 next 191
+s 546 a 4 next 332
+s 547 a 0 next 201
+s 547 a 1 next 332
+s 547 a 2 next 332
+s 547 a 3 next 191
+s 547 a 4 next 332
+s 548 a 0 next 201
+s 548 a 1 next 332
+s 548 a 2 next 332
+s 548 a 3 next 191
+s 548 a 4 next 332
+s 549 a 0 next 201
+s 549 a 1 next 332
+s 549 a 2 next 332
+s 549 a 3 next 191
+s 549 a 4 next 332
+s 550 a 0 next 201
+s 550 a 1 next 332
+s 550 a 2 next 332
+s 550 a 3 next 191
+s 550 a 4 next 332
+s 551 a 0 next 201
+s 551 a 1 next 332
+s 551 a 2 next 332
+s 551 a 3 next 191
+s 551 a 4 next 332
+s 552 a 0 next 201
+s 552 a 1 next 332
+s 552 a 2 next 332
+s 552 a 3 next 188
+s 552 a 4 next 191
+s 553 a 0 next 191
+s 553 a 1 next 335
+s 553 a 2 next 94
+s 553 a 3 next 197
+s 553 a 4 next 341
+s 554 a 0 next 332
+s 554 a 1 next 492
+s 554 a 2 next 492
+s 554 a 3 next 329
+s 554 a 4 next 492
+s 555 a 0 next 341
+s 555 a 1 next 492
+s 555 a 2 next 492
+s 555 a 3 next 329
+s 555 a 4 next 492
+s 556 a 0 next 341
+s 556 a 1 next 492
+s 556 a 2 next 492
+s 556 a 3 next 329
+s 556 a 4 next 492
+s 557 a 0 next 341
+s 557 a 1 next 492
+s 557 a 2 next 492
+s 557 a 3 next 329
+s 557 a 4 next 492
+s 558 a 0 next 341
+s 558 a 1 next 492
+s 558 a 2 next 492
+s 558 a 3 next 329
+s 558 a 4 next 492
+s 559 a 0 next 341
+s 559 a 1 next 492
+s 559 a 2 next 492
+s 559 a 3 next 326
+s 559 a 4 next 329
+s 560 a 0 next 494
+s 560 a 1 next 494
+s 560 a 2 next 197
+s 560 a 3 next 329
+s 560 a 4 next 492
+s 561 a 0 next 341
+s 561 a 1 next 492
+s 561 a 2 next 492
+s 561 a 3 next 329
+s 561 a 4 next 492
+s 562 a 0 next 341
+s 562 a 1 next 492
+s 562 a 2 next 492
+s 562 a 3 next 329
+s 562 a 4 next 492
+s 563 a 0 next 341
+s 563 a 1 next 492
+s 563 a 2 next 492
+s 563 a 3 next 329
+s 563 a 4 next 492
+s 564 a 0 next 341
+s 564 a 1 next 492
+s 564 a 2 next 492
+s 564 a 3 next 329
+s 564 a 4 next 492
+s 565 a 0 next 341
+s 565 a 1 next 492
+s 565 a 2 next 492
+s 565 a 3 next 329
+s 565 a 4 next 492
+s 566 a 0 next 341
+s 566 a 1 next 492
+s 566 a 2 next 492
+s 566 a 3 next 329
+s 566 a 4 next 492
+s 567 a 0 next 341
+s 567 a 1 next 492
+s 567 a 2 next 492
+s 567 a 3 next 329
+s 567 a 4 next 492
+s 568 a 0 next 332
+s 568 a 1 next 341
+s 568 a 2 next 341
+s 568 a 3 next 197
+s 568 a 4 next 341
+s 569 a 0 next 332
+s 569 a 1 next 492
+s 569 a 2 next 492
+s 569 a 3 next 329
+s 569 a 4 next 492
+s 570 a 0 next 341
+s 570 a 1 next 501
+s 570 a 2 next 501
+s 570 a 3 next 338
+s 570 a 4 next 501
+s 571 a 0 next 492
+s 571 a 1 next 501
+s 571 a 2 next 501
+s 571 a 3 next 338
+s 571 a 4 next 501
+s 572 a 0 next 492
+s 572 a 1 next 501
+s 572 a 2 next 501
+s 572 a 3 next 338
+s 572 a 4 next 501
+s 573 a 0 next 492
+s 573 a 1 next 501
+s 573 a 2 next 501
+s 573 a 3 next 338
+s 573 a 4 next 501
+s 574 a 0 next 492
+s 574 a 1 next 501
+s 574 a 2 next 501
+s 574 a 3 next 338
+s 574 a 4 next 501
+s 575 a 0 next 492
+s 575 a 1 next 501
+s 575 a 2 next 501
+s 575 a 3 next 338
+s 575 a 4 next 501
+s 576 a 0 next 492
+s 576 a 1 next 501
+s 576 a 2 next 501
+s 576 a 3 next 338
+s 576 a 4 next 501
+s 577 a 0 next 492
+s 577 a 1 next 501
+s 577 a 2 next 501
+s 577 a 3 next 338
+s 577 a 4 next 501
+s 578 a 0 next 492
+s 578 a 1 next 501
+s 578 a 2 next 501
+s 578 a 3 next 338
+s 578 a 4 next 501
+s 579 a 0 next 492
+s 579 a 1 next 501
+s 579 a 2 next 501
+s 579 a 3 next 338
+s 579 a 4 next 501
+s 580 a 0 next 492
+s 580 a 1 next 501
+s 580 a 2 next 501
+s 580 a 3 next 337
+s 580 a 4 next 338
+s 581 a 0 next 502
+s 581 a 1 next 502
+s 581 a 2 next 329
+s 581 a 3 next 338
+s 581 a 4 next 501
+s 582 a 0 next 492
+s 582 a 1 next 501
+s 582 a 2 next 501
+s 582 a 3 next 338
+s 582 a 4 next 501
+s 583 a 0 next 492
+s 583 a 1 next 501
+s 583 a 2 next 501
+s 583 a 3 next 338
+s 583 a 4 next 501
+s 584 a 0 next 492
+s 584 a 1 next 501
+s 584 a 2 next 501
+s 584 a 3 next 338
+s 584 a 4 next 501
+s 585 a 0 next 492
+s 585 a 1 next 501
+s 585 a 2 next 501
+s 585 a 3 next 338
+s 585 a 4 next 501
+s 586 a 0 next 492
+s 586 a 1 next 501
+s 586 a 2 next 501
+s 586 a 3 next 338
+s 586 a 4 next 501
+s 587 a 0 next 492
+s 587 a 1 next 501
+s 587 a 2 next 501
+s 587 a 3 next 338
+s 587 a 4 next 501
+s 588 a 0 next 492
+s 588 a 1 next 640
+s 588 a 2 next 640
+s 588 a 3 next 489
+s 588 a 4 next 640
+s 589 a 0 next 501
+s 589 a 1 next 640
+s 589 a 2 next 640
+s 589 a 3 next 489
+s 589 a 4 next 640
+s 590 a 0 next 501
+s 590 a 1 next 640
+s 590 a 2 next 640
+s 590 a 3 next 489
+s 590 a 4 next 640
+s 591 a 0 next 501
+s 591 a 1 next 640
+s 591 a 2 next 640
+s 591 a 3 next 486
+s 591 a 4 next 489
+s 592 a 0 next 489
+s 592 a 1 next 489
+s 592 a 2 next 338
+s 592 a 3 next 489
+s 592 a 4 next 640
+s 593 a 0 next 501
+s 593 a 1 next 640
+s 593 a 2 next 640
+s 593 a 3 next 489
+s 593 a 4 next 640
+s 594 a 0 next 501
+s 594 a 1 next 640
+s 594 a 2 next 640
+s 594 a 3 next 489
+s 594 a 4 next 640
+s 595 a 0 next 501
+s 595 a 1 next 640
+s 595 a 2 next 640
+s 595 a 3 next 489
+s 595 a 4 next 640
+s 596 a 0 next 492
+s 596 a 1 next 501
+s 596 a 2 next 501
+s 596 a 3 next 338
+s 596 a 4 next 501
+s 597 a 0 next 492
+s 597 a 1 next 501
+s 597 a 2 next 501
+s 597 a 3 next 338
+s 597 a 4 next 501
+s 598 a 0 next 492
+s 598 a 1 next 501
+s 598 a 2 next 501
+s 598 a 3 next 338
+s 598 a 4 next 501
+s 599 a 0 next 492
+s 599 a 1 next 501
+s 599 a 2 next 501
+s 599 a 3 next 338
+s 599 a 4 next 501
+s 600 a 0 next 492
+s 600 a 1 next 501
+s 600 a 2 next 501
+s 600 a 3 next 338
+s 600 a 4 next 501
+s 601 a 0 next 492
+s 601 a 1 next 501
+s 601 a 2 next 501
+s 601 a 3 next 338
+s 601 a 4 next 501
+s 602 a 0 next 341
+s 602 a 1 next 492
+s 602 a 2 next 492
+s 602 a 3 next 329
+s 602 a 4 next 492
+s 603 a 0 next 341
+s 603 a 1 next 492
+s 603 a 2 next 492
+s 603 a 3 next 329
+s 603 a 4 next 492
+s 604 a 0 next 332
+s 604 a 1 next 341
+s 604 a 2 next 341
+s 604 a 3 next 196
+s 604 a 4 next 197
+s 605 a 0 next 197
+s 605 a 1 next 343
+s 605 a 2 next 191
+s 605 a 3 next 197
+s 605 a 4 next 341
+s 606 a 0 next 332
+s 606 a 1 next 341
+s 606 a 2 next 341
+s 606 a 3 next 197
+s 606 a 4 next 341
+s 607 a 0 next 332
+s 607 a 1 next 492
+s 607 a 2 next 492
+s 607 a 3 next 329
+s 607 a 4 next 492
+s 608 a 0 next 341
+s 608 a 1 next 492
+s 608 a 2 next 492
+s 608 a 3 next 329
+s 608 a 4 next 492
+s 609 a 0 next 341
+s 609 a 1 next 492
+s 609 a 2 next 492
+s 609 a 3 next 326
+s 609 a 4 next 329
+s 610 a 0 next 494
+s 610 a 1 next 646
+s 610 a 2 next 197
+s 610 a 3 next 329
+s 610 a 4 next 492
+s 611 a 0 next 341
+s 611 a 1 next 492
+s 611 a 2 next 492
+s 611 a 3 next 329
+s 611 a 4 next 492
+s 612 a 0 next 341
+s 612 a 1 next 492
+s 612 a 2 next 492
+s 612 a 3 next 326
+s 612 a 4 next 329
+s 613 a 0 next 494
+s 613 a 1 next 646
+s 613 a 2 next 197
+s 613 a 3 next 329
+s 613 a 4 next 492
+s 614 a 0 next 341
+s 614 a 1 next 492
+s 614 a 2 next 492
+s 614 a 3 next 329
+s 614 a 4 next 492
+s 615 a 0 next 341
+s 615 a 1 next 492
+s 615 a 2 next 492
+s 615 a 3 next 329
+s 615 a 4 next 492
+s 616 a 0 next 341
+s 616 a 1 next 492
+s 616 a 2 next 492
+s 616 a 3 next 329
+s 616 a 4 next 492
+s 617 a 0 next 332
+s 617 a 1 next 341
+s 617 a 2 next 341
+s 617 a 3 next 197
+s 617 a 4 next 341
+s 618 a 0 next 332
+s 618 a 1 next 341
+s 618 a 2 next 341
+s 618 a 3 next 197
+s 618 a 4 next 341
+s 619 a 0 next 332
+s 619 a 1 next 341
+s 619 a 2 next 341
+s 619 a 3 next 197
+s 619 a 4 next 341
+s 620 a 0 next 332
+s 620 a 1 next 341
+s 620 a 2 next 341
+s 620 a 3 next 197
+s 620 a 4 next 341
+s 621 a 0 next 332
+s 621 a 1 next 341
+s 621 a 2 next 341
+s 621 a 3 next 197
+s 621 a 4 next 341
+s 622 a 0 next 332
+s 622 a 1 next 341
+s 622 a 2 next 341
+s 622 a 3 next 197
+s 622 a 4 next 341
+s 623 a 0 next 201
+s 623 a 1 next 341
+s 623 a 2 next 341
+s 623 a 3 next 197
+s 623 a 4 next 341
+s 624 a 0 next 201
+s 624 a 1 next 341
+s 624 a 2 next 341
+s 624 a 3 next 197
+s 624 a 4 next 341
+s 625 a 0 next 332
+s 625 a 1 next 341
+s 625 a 2 next 341
+s 625 a 3 next 197
+s 625 a 4 next 341
+s 626 a 0 next 332
+s 626 a 1 next 341
+s 626 a 2 next 341
+s 626 a 3 next 197
+s 626 a 4 next 341
+s 627 a 0 next 332
+s 627 a 1 next 341
+s 627 a 2 next 341
+s 627 a 3 next 197
+s 627 a 4 next 341
+s 628 a 0 next 332
+s 628 a 1 next 341
+s 628 a 2 next 341
+s 628 a 3 next 197
+s 628 a 4 next 341
+s 629 a 0 next 332
+s 629 a 1 next 341
+s 629 a 2 next 341
+s 629 a 3 next 197
+s 629 a 4 next 341
+s 630 a 0 next 332
+s 630 a 1 next 341
+s 630 a 2 next 341
+s 630 a 3 next 197
+s 630 a 4 next 341
+s 631 a 0 next 332
+s 631 a 1 next 341
+s 631 a 2 next 341
+s 631 a 3 next 197
+s 631 a 4 next 341
+s 632 a 0 next 332
+s 632 a 1 next 341
+s 632 a 2 next 341
+s 632 a 3 next 197
+s 632 a 4 next 341
+s 633 a 0 next 201
+s 633 a 1 next 332
+s 633 a 2 next 332
+s 633 a 3 next 191
+s 633 a 4 next 332
+s 634 a 0 next 201
+s 634 a 1 next 341
+s 634 a 2 next 341
+s 634 a 3 next 197
+s 634 a 4 next 341
+s 635 a 0 next 332
+s 635 a 1 next 341
+s 635 a 2 next 341
+s 635 a 3 next 197
+s 635 a 4 next 341
+s 636 a 0 next 332
+s 636 a 1 next 341
+s 636 a 2 next 341
+s 636 a 3 next 197
+s 636 a 4 next 341
+s 637 a 0 next 332
+s 637 a 1 next 341
+s 637 a 2 next 341
+s 637 a 3 next 197
+s 637 a 4 next 341
+s 638 a 0 next 332
+s 638 a 1 next 341
+s 638 a 2 next 341
+s 638 a 3 next 197
+s 638 a 4 next 341
+s 639 a 0 next 332
+s 639 a 1 next 341
+s 639 a 2 next 341
+s 639 a 3 next 197
+s 639 a 4 next 341
+s 640 a 0 next 332
+s 640 a 1 next 341
+s 640 a 2 next 341
+s 640 a 3 next 197
+s 640 a 4 next 341
+s 641 a 0 next 332
+s 641 a 1 next 341
+s 641 a 2 next 341
+s 641 a 3 next 196
+s 641 a 4 next 197
+s 642 a 0 next 197
+s 642 a 1 next 197
+s 642 a 2 next 191
+s 642 a 3 next 197
+s 642 a 4 next 341
+s 643 a 0 next 332
+s 643 a 1 next 341
+s 643 a 2 next 341
+s 643 a 3 next 197
+s 643 a 4 next 341
+s 644 a 0 next 332
+s 644 a 1 next 341
+s 644 a 2 next 341
+s 644 a 3 next 197
+s 644 a 4 next 341
+s 645 a 0 next 332
+s 645 a 1 next 341
+s 645 a 2 next 341
+s 645 a 3 next 197
+s 645 a 4 next 341
+s 646 a 0 next 332
+s 646 a 1 next 341
+s 646 a 2 next 341
+s 646 a 3 next 197
+s 646 a 4 next 341
+s 647 a 0 next 332
+s 647 a 1 next 341
+s 647 a 2 next 341
+s 647 a 3 next 197
+s 647 a 4 next 341
+s 648 a 0 next 332
+s 648 a 1 next 341
+s 648 a 2 next 341
+s 648 a 3 next 197
+s 648 a 4 next 341
+s 649 a 0 next 332
+s 649 a 1 next 341
+s 649 a 2 next 341
+s 649 a 3 next 197
+s 649 a 4 next 341
+s 650 a 0 next 332
+s 650 a 1 next 341
+s 650 a 2 next 341
+s 650 a 3 next 197
+s 650 a 4 next 341
+s 651 a 0 next 332
+s 651 a 1 next 341
+s 651 a 2 next 341
+s 651 a 3 next 197
+s 651 a 4 next 341
+s 652 a 0 next 332
+s 652 a 1 next 492
+s 652 a 2 next 492
+s 652 a 3 next 329
+s 652 a 4 next 492
+s 653 a 0 next 341
+s 653 a 1 next 492
+s 653 a 2 next 492
+s 653 a 3 next 329
+s 653 a 4 next 492
+s 654 a 0 next 341
+s 654 a 1 next 492
+s 654 a 2 next 492
+s 654 a 3 next 329
+s 654 a 4 next 492
+s 655 a 0 next 341
+s 655 a 1 next 492
+s 655 a 2 next 492
+s 655 a 3 next 329
+s 655 a 4 next 492
+s 656 a 0 next 341
+s 656 a 1 next 492
+s 656 a 2 next 492
+s 656 a 3 next 329
+s 656 a 4 next 492
+s 657 a 0 next 341
+s 657 a 1 next 492
+s 657 a 2 next 492
+s 657 a 3 next 329
+s 657 a 4 next 492
+s 658 a 0 next 332
+s 658 a 1 next 341
+s 658 a 2 next 341
+s 658 a 3 next 197
+s 658 a 4 next 341
+s 659 a 0 next 332
+s 659 a 1 next 492
+s 659 a 2 next 492
+s 659 a 3 next 329
+s 659 a 4 next 492
+s 660 a 0 next 341
+s 660 a 1 next 501
+s 660 a 2 next 501
+s 660 a 3 next 338
+s 660 a 4 next 501
+s 661 a 0 next 492
+s 661 a 1 next 501
+s 661 a 2 next 501
+s 661 a 3 next 338
+s 661 a 4 next 501
+s 662 a 0 next 341
+s 662 a 1 next 492
+s 662 a 2 next 492
+s 662 a 3 next 329
+s 662 a 4 next 492
+s 663 a 0 next 341
+s 663 a 1 next 492
+s 663 a 2 next 492
+s 663 a 3 next 326
+s 663 a 4 next 329
+s 664 a 0 next 329
+s 664 a 1 next 495
+s 664 a 2 next 197
+s 664 a 3 next 329
+s 664 a 4 next 492
+s 665 a 0 next 341
+s 665 a 1 next 492
+s 665 a 2 next 492
+s 665 a 3 next 326
+s 665 a 4 next 329
+s 666 a 0 next 494
+s 666 a 1 next 494
+s 666 a 2 next 197
+s 666 a 3 next 329
+s 666 a 4 next 492
+s 667 a 0 next 341
+s 667 a 1 next 492
+s 667 a 2 next 492
+s 667 a 3 next 329
+s 667 a 4 next 492
+s 668 a 0 next 341
+s 668 a 1 next 492
+s 668 a 2 next 492
+s 668 a 3 next 329
+s 668 a 4 next 492
+s 669 a 0 next 341
+s 669 a 1 next 492
+s 669 a 2 next 492
+s 669 a 3 next 329
+s 669 a 4 next 492
+s 670 a 0 next 341
+s 670 a 1 next 492
+s 670 a 2 next 492
+s 670 a 3 next 329
+s 670 a 4 next 492
+s 671 a 0 next 341
+s 671 a 1 next 492
+s 671 a 2 next 492
+s 671 a 3 next 329
+s 671 a 4 next 492
+s 672 a 0 next 341
+s 672 a 1 next 492
+s 672 a 2 next 492
+s 672 a 3 next 329
+s 672 a 4 next 492
+s 673 a 0 next 341
+s 673 a 1 next 492
+s 673 a 2 next 492
+s 673 a 3 next 329
+s 673 a 4 next 492
+s 674 a 0 next 341
+s 674 a 1 next 492
+s 674 a 2 next 492
+s 674 a 3 next 329
+s 674 a 4 next 492
+s 675 a 0 next 341
+s 675 a 1 next 501
+s 675 a 2 next 501
+s 675 a 3 next 338
+s 675 a 4 next 501
+s 676 a 0 next 492
+s 676 a 1 next 501
+s 676 a 2 next 501
+s 676 a 3 next 338
+s 676 a 4 next 501
+s 677 a 0 next 492
+s 677 a 1 next 501
+s 677 a 2 next 501
+s 677 a 3 next 338
+s 677 a 4 next 501
+s 678 a 0 next 492
+s 678 a 1 next 501
+s 678 a 2 next 501
+s 678 a 3 next 338
+s 678 a 4 next 501
+s 679 a 0 next 492
+s 679 a 1 next 501
+s 679 a 2 next 501
+s 679 a 3 next 338
+s 679 a 4 next 501
+s 680 a 0 next 492
+s 680 a 1 next 501
+s 680 a 2 next 501
+s 680 a 3 next 338
+s 680 a 4 next 501
+s 681 a 0 next 492
+s 681 a 1 next 501
+s 681 a 2 next 501
+s 681 a 3 next 338
+s 681 a 4 next 501
+s 682 a 0 next 492
+s 682 a 1 next 640
+s 682 a 2 next 640
+s 682 a 3 next 489
+s 682 a 4 next 640
+s 683 a 0 next 492
+s 683 a 1 next 501
+s 683 a 2 next 501
+s 683 a 3 next 337
+s 683 a 4 next 338
+s 684 a 0 next 502
+s 684 a 1 next 649
+s 684 a 2 next 329
+s 684 a 3 next 338
+s 684 a 4 next 501
+s 685 a 0 next 341
+s 685 a 1 next 501
+s 685 a 2 next 501
+s 685 a 3 next 338
+s 685 a 4 next 501
+s 686 a 0 next 341
+s 686 a 1 next 492
+s 686 a 2 next 492
+s 686 a 3 next 329
+s 686 a 4 next 492
+s 687 a 0 next 341
+s 687 a 1 next 492
+s 687 a 2 next 492
+s 687 a 3 next 329
+s 687 a 4 next 492
+s 688 a 0 next 341
+s 688 a 1 next 492
+s 688 a 2 next 492
+s 688 a 3 next 329
+s 688 a 4 next 492
+s 689 a 0 next 341
+s 689 a 1 next 492
+s 689 a 2 next 492
+s 689 a 3 next 329
+s 689 a 4 next 492
+s 690 a 0 next 341
+s 690 a 1 next 492
+s 690 a 2 next 492
+s 690 a 3 next 329
+s 690 a 4 next 492
+s 691 a 0 next 341
+s 691 a 1 next 492
+s 691 a 2 next 492
+s 691 a 3 next 329
+s 691 a 4 next 492
+s 692 a 0 next 341
+s 692 a 1 next 492
+s 692 a 2 next 492
+s 692 a 3 next 329
+s 692 a 4 next 492
+s 693 a 0 next 332
+s 693 a 1 next 341
+s 693 a 2 next 341
+s 693 a 3 next 197
+s 693 a 4 next 341
+s 694 a 0 next 332
+s 694 a 1 next 341
+s 694 a 2 next 341
+s 694 a 3 next 197
+s 694 a 4 next 341
+s 695 a 0 next 332
+s 695 a 1 next 492
+s 695 a 2 next 492
+s 695 a 3 next 329
+s 695 a 4 next 492
+s 696 a 0 next 341
+s 696 a 1 next 492
+s 696 a 2 next 492
+s 696 a 3 next 326
+s 696 a 4 next 329
+s 697 a 0 next 329
+s 697 a 1 next 495
+s 697 a 2 next 197
+s 697 a 3 next 329
+s 697 a 4 next 492
+s 698 a 0 next 341
+s 698 a 1 next 492
+s 698 a 2 next 492
+s 698 a 3 next 329
+s 698 a 4 next 492
+s 699 a 0 next 341
+s 699 a 1 next 501
+s 699 a 2 next 501
+s 699 a 3 next 338
+s 699 a 4 next 501
+s 700 a 0 next 492
+s 700 a 1 next 501
+s 700 a 2 next 501
+s 700 a 3 next 338
+s 700 a 4 next 501
+s 701 a 0 next 492
+s 701 a 1 next 501
+s 701 a 2 next 501
+s 701 a 3 next 338
+s 701 a 4 next 501
+s 702 a 0 next 492
+s 702 a 1 next 501
+s 702 a 2 next 501
+s 702 a 3 next 338
+s 702 a 4 next 501
+s 703 a 0 next 492
+s 703 a 1 next 501
+s 703 a 2 next 501
+s 703 a 3 next 338
+s 703 a 4 next 501
+s 704 a 0 next 492
+s 704 a 1 next 501
+s 704 a 2 next 501
+s 704 a 3 next 337
+s 704 a 4 next 338
+s 705 a 0 next 502
+s 705 a 1 next 649
+s 705 a 2 next 329
+s 705 a 3 next 338
+s 705 a 4 next 501
+s 706 a 0 next 492
+s 706 a 1 next 501
+s 706 a 2 next 501
+s 706 a 3 next 338
+s 706 a 4 next 501
+s 707 a 0 next 492
+s 707 a 1 next 501
+s 707 a 2 next 501
+s 707 a 3 next 338
+s 707 a 4 next 501
+s 708 a 0 next 492
+s 708 a 1 next 501
+s 708 a 2 next 501
+s 708 a 3 next 337
+s 708 a 4 next 501
+s 709 a 0 next 492
+s 709 a 1 next 501
+s 709 a 2 next 501
+s 709 a 3 next 338
+s 709 a 4 next 501
+s 710 a 0 next 492
+s 710 a 1 next 501
+s 710 a 2 next 501
+s 710 a 3 next 338
+s 710 a 4 next 501
+s 711 a 0 next 341
+s 711 a 1 next 492
+s 711 a 2 next 492
+s 711 a 3 next 329
+s 711 a 4 next 492
+s 712 a 0 next 341
+s 712 a 1 next 492
+s 712 a 2 next 492
+s 712 a 3 next 329
+s 712 a 4 next 492
+s 713 a 0 next 341
+s 713 a 1 next 492
+s 713 a 2 next 492
+s 713 a 3 next 329
+s 713 a 4 next 492
+s 714 a 0 next 332
+s 714 a 1 next 341
+s 714 a 2 next 341
+s 714 a 3 next 197
+s 714 a 4 next 341
+s 715 a 0 next 201
+s 715 a 1 next 332
+s 715 a 2 next 332
+s 715 a 3 next 191
+s 715 a 4 next 332
+s 716 a 0 next 201
+s 716 a 1 next 332
+s 716 a 2 next 332
+s 716 a 3 next 191
+s 716 a 4 next 332
+s 717 a 0 next 201
+s 717 a 1 next 332
+s 717 a 2 next 332
+s 717 a 3 next 191
+s 717 a 4 next 332
+s 718 a 0 next 201
+s 718 a 1 next 332
+s 718 a 2 next 332
+s 718 a 3 next 191
+s 718 a 4 next 332
+s 719 a 0 next 201
+s 719 a 1 next 341
+s 719 a 2 next 341
+s 719 a 3 next 197
+s 719 a 4 next 341
+s 720 a 0 next 332
+s 720 a 1 next 341
+s 720 a 2 next 341
+s 720 a 3 next 197
+s 720 a 4 next 341
+s 721 a 0 next 332
+s 721 a 1 next 492
+s 721 a 2 next 492
+s 721 a 3 next 329
+s 721 a 4 next 492
+s 722 a 0 next 341
+s 722 a 1 next 492
+s 722 a 2 next 492
+s 722 a 3 next 329
+s 722 a 4 next 492
+s 723 a 0 next 341
+s 723 a 1 next 492
+s 723 a 2 next 492
+s 723 a 3 next 329
+s 723 a 4 next 492
+s 724 a 0 next 332
+s 724 a 1 next 341
+s 724 a 2 next 341
+s 724 a 3 next 197
+s 724 a 4 next 341
+s 725 a 0 next 332
+s 725 a 1 next 341
+s 725 a 2 next 341
+s 725 a 3 next 196
+s 725 a 4 next 197
+s 726 a 0 next 197
+s 726 a 1 next 197
+s 726 a 2 next 191
+s 726 a 3 next 197
+s 726 a 4 next 341
+s 727 a 0 next 332
+s 727 a 1 next 492
+s 727 a 2 next 492
+s 727 a 3 next 329
+s 727 a 4 next 492
+s 728 a 0 next 341
+s 728 a 1 next 492
+s 728 a 2 next 492
+s 728 a 3 next 329
+s 728 a 4 next 492
+s 729 a 0 next 341
+s 729 a 1 next 492
+s 729 a 2 next 492
+s 729 a 3 next 329
+s 729 a 4 next 492
+s 730 a 0 next 341
+s 730 a 1 next 492
+s 730 a 2 next 492
+s 730 a 3 next 329
+s 730 a 4 next 492
+s 731 a 0 next 332
+s 731 a 1 next 341
+s 731 a 2 next 341
+s 731 a 3 next 197
+s 731 a 4 next 341
+s 732 a 0 next 332
+s 732 a 1 next 341
+s 732 a 2 next 341
+s 732 a 3 next 197
+s 732 a 4 next 341
+s 733 a 0 next 332
+s 733 a 1 next 492
+s 733 a 2 next 492
+s 733 a 3 next 329
+s 733 a 4 next 492
+s 734 a 0 next 341
+s 734 a 1 next 492
+s 734 a 2 next 492
+s 734 a 3 next 329
+s 734 a 4 next 492
+s 735 a 0 next 341
+s 735 a 1 next 492
+s 735 a 2 next 492
+s 735 a 3 next 329
+s 735 a 4 next 492
+s 736 a 0 next 341
+s 736 a 1 next 492
+s 736 a 2 next 492
+s 736 a 3 next 329
+s 736 a 4 next 492
+s 737 a 0 next 341
+s 737 a 1 next 501
+s 737 a 2 next 501
+s 737 a 3 next 338
+s 737 a 4 next 501
+s 738 a 0 next 492
+s 738 a 1 next 501
+s 738 a 2 next 501
+s 738 a 3 next 338
+s 738 a 4 next 501
+s 739 a 0 next 492
+s 739 a 1 next 501
+s 739 a 2 next 501
+s 739 a 3 next 338
+s 739 a 4 next 501
+s 740 a 0 next 492
+s 740 a 1 next 501
+s 740 a 2 next 501
+s 740 a 3 next 338
+s 740 a 4 next 501
+s 741 a 0 next 492
+s 741 a 1 next 501
+s 741 a 2 next 501
+s 741 a 3 next 338
+s 741 a 4 next 501
+s 742 a 0 next 492
+s 742 a 1 next 501
+s 742 a 2 next 501
+s 742 a 3 next 338
+s 742 a 4 next 501
+s 743 a 0 next 492
+s 743 a 1 next 501
+s 743 a 2 next 501
+s 743 a 3 next 338
+s 743 a 4 next 501
+s 744 a 0 next 492
+s 744 a 1 next 501
+s 744 a 2 next 501
+s 744 a 3 next 338
+s 744 a 4 next 501
+s 745 a 0 next 492
+s 745 a 1 next 501
+s 745 a 2 next 501
+s 745 a 3 next 338
+s 745 a 4 next 501
+s 746 a 0 next 492
+s 746 a 1 next 501
+s 746 a 2 next 501
+s 746 a 3 next 338
+s 746 a 4 next 501
+s 747 a 0 next 341
+s 747 a 1 next 501
+s 747 a 2 next 501
+s 747 a 3 next 338
+s 747 a 4 next 501
+s 748 a 0 next 492
+s 748 a 1 next 501
+s 748 a 2 next 501
+s 748 a 3 next 338
+s 748 a 4 next 501
+s 749 a 0 next 492
+s 749 a 1 next 501
+s 749 a 2 next 501
+s 749 a 3 next 338
+s 749 a 4 next 501
+s 750 a 0 next 492
+s 750 a 1 next 501
+s 750 a 2 next 501
+s 750 a 3 next 338
+s 750 a 4 next 501
+s 751 a 0 next 492
+s 751 a 1 next 640
+s 751 a 2 next 640
+s 751 a 3 next 489
+s 751 a 4 next 640
+s 752 a 0 next 501
+s 752 a 1 next 640
+s 752 a 2 next 640
+s 752 a 3 next 489
+s 752 a 4 next 640
+s 753 a 0 next 501
+s 753 a 1 next 640
+s 753 a 2 next 640
+s 753 a 3 next 489
+s 753 a 4 next 640
+s 754 a 0 next 501
+s 754 a 1 next 640
+s 754 a 2 next 640
+s 754 a 3 next 486
+s 754 a 4 next 489
+s 755 a 0 next 489
+s 755 a 1 next 643
+s 755 a 2 next 338
+s 755 a 3 next 489
+s 755 a 4 next 640
+s 756 a 0 next 501
+s 756 a 1 next 640
+s 756 a 2 next 640
+s 756 a 3 next 489
+s 756 a 4 next 640
+s 757 a 0 next 492
+s 757 a 1 next 501
+s 757 a 2 next 501
+s 757 a 3 next 337
+s 757 a 4 next 338
+s 758 a 0 next 338
+s 758 a 1 next 503
+s 758 a 2 next 329
+s 758 a 3 next 338
+s 758 a 4 next 501
+s 759 a 0 next 492
+s 759 a 1 next 501
+s 759 a 2 next 501
+s 759 a 3 next 338
+s 759 a 4 next 501
+s 760 a 0 next 492
+s 760 a 1 next 501
+s 760 a 2 next 501
+s 760 a 3 next 338
+s 760 a 4 next 501
+s 761 a 0 next 492
+s 761 a 1 next 501
+s 761 a 2 next 501
+s 761 a 3 next 338
+s 761 a 4 next 501
+s 762 a 0 next 492
+s 762 a 1 next 501
+s 762 a 2 next 501
+s 762 a 3 next 338
+s 762 a 4 next 501
+s 763 a 0 next 492
+s 763 a 1 next 501
+s 763 a 2 next 501
+s 763 a 3 next 337
+s 763 a 4 next 338
+s 764 a 0 next 502
+s 764 a 1 next 502
+s 764 a 2 next 197
+s 764 a 3 next 329
+s 764 a 4 next 492
+s 765 a 0 next 341
+s 765 a 1 next 492
+s 765 a 2 next 492
+s 765 a 3 next 329
+s 765 a 4 next 492
+s 766 a 0 next 341
+s 766 a 1 next 492
+s 766 a 2 next 492
+s 766 a 3 next 329
+s 766 a 4 next 492
+s 767 a 0 next 341
+s 767 a 1 next 492
+s 767 a 2 next 492
+s 767 a 3 next 326
+s 767 a 4 next 329
+s 768 a 0 next 494
+s 768 a 1 next 646
+s 768 a 2 next 197
+s 768 a 3 next 329
+s 768 a 4 next 492
+s 769 a 0 next 341
+s 769 a 1 next 492
+s 769 a 2 next 492
+s 769 a 3 next 329
+s 769 a 4 next 492
+s 770 a 0 next 341
+s 770 a 1 next 492
+s 770 a 2 next 492
+s 770 a 3 next 326
+s 770 a 4 next 329
+s 771 a 0 next 494
+s 771 a 1 next 494
+s 771 a 2 next 197
+s 771 a 3 next 338
+s 771 a 4 next 501
+s 772 a 0 next 492
+s 772 a 1 next 501
+s 772 a 2 next 501
+s 772 a 3 next 338
+s 772 a 4 next 501
+s 773 a 0 next 492
+s 773 a 1 next 501
+s 773 a 2 next 501
+s 773 a 3 next 338
+s 773 a 4 next 501
+s 774 a 0 next 492
+s 774 a 1 next 501
+s 774 a 2 next 501
+s 774 a 3 next 338
+s 774 a 4 next 501
+s 775 a 0 next 492
+s 775 a 1 next 501
+s 775 a 2 next 501
+s 775 a 3 next 337
+s 775 a 4 next 338
+s 776 a 0 next 502
+s 776 a 1 next 502
+s 776 a 2 next 329
+s 776 a 3 next 338
+s 776 a 4 next 501
+s 777 a 0 next 492
+s 777 a 1 next 501
+s 777 a 2 next 501
+s 777 a 3 next 338
+s 777 a 4 next 501
+s 778 a 0 next 492
+s 778 a 1 next 501
+s 778 a 2 next 501
+s 778 a 3 next 338
+s 778 a 4 next 501
+s 779 a 0 next 492
+s 779 a 1 next 501
+s 779 a 2 next 501
+s 779 a 3 next 338
+s 779 a 4 next 501
+s 780 a 0 next 492
+s 780 a 1 next 501
+s 780 a 2 next 501
+s 780 a 3 next 338
+s 780 a 4 next 501
+s 781 a 0 next 492
+s 781 a 1 next 501
+s 781 a 2 next 501
+s 781 a 3 next 338
+s 781 a 4 next 501
+s 782 a 0 next 492
+s 782 a 1 next 501
+s 782 a 2 next 501
+s 782 a 3 next 338
+s 782 a 4 next 501
+s 783 a 0 next 492
+s 783 a 1 next 501
+s 783 a 2 next 501
+s 783 a 3 next 338
+s 783 a 4 next 501
+s 784 a 0 next 492
+s 784 a 1 next 501
+s 784 a 2 next 501
+s 784 a 3 next 338
+s 784 a 4 next 501
+s 785 a 0 next 492
+s 785 a 1 next 501
+s 785 a 2 next 501
+s 785 a 3 next 338
+s 785 a 4 next 501
+s 786 a 0 next 492
+s 786 a 1 next 501
+s 786 a 2 next 501
+s 786 a 3 next 338
+s 786 a 4 next 501
+s 787 a 0 next 492
+s 787 a 1 next 501
+s 787 a 2 next 501
+s 787 a 3 next 338
+s 787 a 4 next 501
+s 788 a 0 next 492
+s 788 a 1 next 501
+s 788 a 2 next 501
+s 788 a 3 next 338
+s 788 a 4 next 501
+s 789 a 0 next 341
+s 789 a 1 next 492
+s 789 a 2 next 492
+s 789 a 3 next 326
+s 789 a 4 next 329
+s 790 a 0 next 494
+s 790 a 1 next 646
+s 790 a 2 next 197
+s 790 a 3 next 329
+s 790 a 4 next 492
+s 791 a 0 next 341
+s 791 a 1 next 492
+s 791 a 2 next 492
+s 791 a 3 next 329
+s 791 a 4 next 492
+s 792 a 0 next 332
+s 792 a 1 next 341
+s 792 a 2 next 341
+s 792 a 3 next 197
+s 792 a 4 next 341
+s 793 a 0 next 332
+s 793 a 1 next 341
+s 793 a 2 next 341
+s 793 a 3 next 197
+s 793 a 4 next 341
+s 794 a 0 next 201
+s 794 a 1 next 332
+s 794 a 2 next 332
+s 794 a 3 next 191
+s 794 a 4 next 332
+s 795 a 0 next 201
+s 795 a 1 next 332
+s 795 a 2 next 332
+s 795 a 3 next 188
+s 795 a 4 next 191
+s 796 a 0 next 191
+s 796 a 1 next 191
+s 796 a 2 next 94
+s 796 a 3 next 191
+s 796 a 4 next 332
+s 797 a 0 next 201
+s 797 a 1 next 332
+s 797 a 2 next 332
+s 797 a 3 next 191
+s 797 a 4 next 332
+s 798 a 0 next 201
+s 798 a 1 next 332
+s 798 a 2 next 332
+s 798 a 3 next 191
+s 798 a 4 next 332
+s 799 a 0 next 201
+s 799 a 1 next 332
+s 799 a 2 next 332
+s 799 a 3 next 191
+s 799 a 4 next 332
+s 800 a 0 next 201
+s 800 a 1 next 332
+s 800 a 2 next 332
+s 800 a 3 next 191
+s 800 a 4 next 332
+s 801 a 0 next 201
+s 801 a 1 next 332
+s 801 a 2 next 332
+s 801 a 3 next 191
+s 801 a 4 next 332
+s 802 a 0 next 201
+s 802 a 1 next 332
+s 802 a 2 next 332
+s 802 a 3 next 191
+s 802 a 4 next 332
+s 803 a 0 next 201
+s 803 a 1 next 332
+s 803 a 2 next 332
+s 803 a 3 next 191
+s 803 a 4 next 332
+s 804 a 0 next 201
+s 804 a 1 next 332
+s 804 a 2 next 332
+s 804 a 3 next 191
+s 804 a 4 next 332
+s 805 a 0 next 201
+s 805 a 1 next 332
+s 805 a 2 next 332
+s 805 a 3 next 191
+s 805 a 4 next 332
+s 806 a 0 next 201
+s 806 a 1 next 341
+s 806 a 2 next 341
+s 806 a 3 next 197
+s 806 a 4 next 341
+s 807 a 0 next 332
+s 807 a 1 next 341
+s 807 a 2 next 341
+s 807 a 3 next 197
+s 807 a 4 next 341
+s 808 a 0 next 332
+s 808 a 1 next 492
+s 808 a 2 next 492
+s 808 a 3 next 329
+s 808 a 4 next 492
+s 809 a 0 next 341
+s 809 a 1 next 492
+s 809 a 2 next 492
+s 809 a 3 next 329
+s 809 a 4 next 492
+s 810 a 0 next 341
+s 810 a 1 next 492
+s 810 a 2 next 492
+s 810 a 3 next 326
+s 810 a 4 next 329
+s 811 a 0 next 494
+s 811 a 1 next 494
+s 811 a 2 next 197
+s 811 a 3 next 329
+s 811 a 4 next 492
+s 812 a 0 next 341
+s 812 a 1 next 492
+s 812 a 2 next 492
+s 812 a 3 next 329
+s 812 a 4 next 492
+s 813 a 0 next 332
+s 813 a 1 next 341
+s 813 a 2 next 341
+s 813 a 3 next 197
+s 813 a 4 next 341
+s 814 a 0 next 332
+s 814 a 1 next 341
+s 814 a 2 next 341
+s 814 a 3 next 197
+s 814 a 4 next 341
+s 815 a 0 next 201
+s 815 a 1 next 332
+s 815 a 2 next 332
+s 815 a 3 next 188
+s 815 a 4 next 191
+start state (0, []) start belief support [0]
+ step=0  selected=r1sense 	shielded actions=]	safe actions=[r1sense]	state=4	belief support=[1, 2, 3, 4]	obs6	safe=True
+ step=1  selected=north 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=4	belief support=[1, 2, 3, 4]	obs6	safe=True
+ step=2  selected=south 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=25	belief support=[7, 13, 19, 25]	obs6	safe=True
+ step=3  selected=west 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=25	belief support=[7, 13, 19, 25]	obs6	safe=True
+ step=4  selected=r2sense 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=25	belief support=[7, 13, 19, 25]	obs6	safe=True
+ step=5  selected=r2sense 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=81	belief support=[31, 48, 64, 81]	obs10	safe=True
+ step=6  selected=west 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=25	belief support=[7, 13, 19, 25]	obs6	safe=True
+ step=7  selected=south 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=26	belief support=[8, 14, 20, 26]	obs47	safe=True
+ step=8  selected=north 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=25	belief support=[1, 2, 3, 4, 7, 13, 19, 25]	obs6	safe=True
+ step=9  selected=north 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=4	belief support=[1, 2, 3, 4]	obs6	safe=True
+ step=10  selected=west 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=4	belief support=[1, 2, 3, 4]	obs6	safe=True
+ step=11  selected=west 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=4	belief support=[1, 2, 3, 4]	obs6	safe=True
+ step=12  selected=west 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=4	belief support=[1, 2, 3, 4]	obs6	safe=True
+ step=13  selected=north 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=4	belief support=[1, 2, 3, 4]	obs6	safe=True
+ step=14  selected=north 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=4	belief support=[1, 2, 3, 4]	obs6	safe=True
+ step=15  selected=north 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=4	belief support=[1, 2, 3, 4]	obs6	safe=True
+ step=16  selected=west 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=4	belief support=[1, 2, 3, 4]	obs6	safe=True
+ step=17  selected=r2sense 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=24	belief support=[6, 12, 18, 24]	obs10	safe=True
+ step=18  selected=r2sense 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=24	belief support=[6, 12, 18, 24]	obs10	safe=True
+ step=19  selected=north 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=4	belief support=[1, 2, 3, 4]	obs6	safe=True
+ step=20  selected=r2sense 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=24	belief support=[6, 12, 18, 24]	obs10	safe=True
+ step=21  selected=south 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=25	belief support=[7, 13, 19, 25]	obs6	safe=True
+ step=22  selected=r2sense 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=81	belief support=[31, 48, 64, 81]	obs10	safe=True
+ step=23  selected=south 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=26	belief support=[8, 14, 20, 26]	obs47	safe=True
+ step=24  selected=west 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=26	belief support=[8, 14, 20, 26]	obs47	safe=True
+ step=25  selected=west 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=26	belief support=[8, 14, 20, 26]	obs47	safe=True
+ step=26  selected=west 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=26	belief support=[8, 14, 20, 26]	obs47	safe=True
+ step=27  selected=west 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=26	belief support=[8, 14, 20, 26]	obs47	safe=True
+ step=28  selected=west 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=26	belief support=[8, 14, 20, 26]	obs47	safe=True
+ step=29  selected=north 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=25	belief support=[1, 2, 3, 4, 7, 13, 19, 25]	obs6	safe=True
+ step=30  selected=south 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=26	belief support=[8, 14, 20, 26]	obs47	safe=True
+ step=31  selected=r2sense 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=26	belief support=[14, 26]	obs47	safe=True
+ step=32  selected=r2sense 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=26	belief support=[14, 26]	obs47	safe=True
+ step=33  selected=north 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=25	belief support=[2, 4, 13, 25]	obs6	safe=True
+ step=34  selected=west 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=25	belief support=[2, 4, 13, 25]	obs6	safe=True
+ step=35  selected=north 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=4	belief support=[2, 4]	obs6	safe=True
+ step=36  selected=south 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=25	belief support=[13, 25]	obs6	safe=True
+ step=37  selected=west 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=25	belief support=[13, 25]	obs6	safe=True
+ step=38  selected=south 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=26	belief support=[14, 26]	obs47	safe=True
+ step=39  selected=west 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=26	belief support=[14, 26]	obs47	safe=True
+ step=40  selected=west 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=26	belief support=[14, 26]	obs47	safe=True
+ step=41  selected=south 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=82	belief support=[49, 82]	obs6	safe=True
+ step=42  selected=west 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=82	belief support=[49, 82]	obs6	safe=True
+ step=43  selected=north 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=26	belief support=[14, 26]	obs47	safe=True
+ step=44  selected=south 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=82	belief support=[49, 82]	obs6	safe=True
+ step=45  selected=r2sense 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=183	belief support=[128, 183]	obs10	safe=True
+ step=46  selected=south 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=86	belief support=[53, 86]	obs8	safe=True
+ step=47  selected=west 	shielded actions=[east]	safe actions=[r1sense r2sense north south west]	state=86	belief support=[53, 86]	obs8	safe=True
+ step=48  selected=r2sense 	shielded actions=[east]	safe actions=[r1sense r2sense north south west]	state=86	belief support=[53, 86]	obs8	safe=True
+ step=49  selected=north 	shielded actions=[east]	safe actions=[r1sense r2sense north south west]	state=82	belief support=[49, 82]	obs6	safe=True
+ step=50  selected=r2sense 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=82	belief support=[49, 82]	obs6	safe=True
+ step=51  selected=north 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=26	belief support=[14, 26]	obs47	safe=True
+ step=52  selected=south 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=82	belief support=[49, 82]	obs6	safe=True
+ step=53  selected=south 	shielded actions=[r1sense east]	safe actions=[r2sense north south west]	state=86	belief support=[53, 86]	obs8	safe=True
+ step=54  selected=r1sense 	shielded actions=[east]	safe actions=[r1sense r2sense north south west]	state=86	belief support=[86]	obs8	safe=True
+ step=55  selected=r1sense 	shielded actions=[east]	safe actions=[r1sense r2sense north south west]	state=86	belief support=[86]	obs8	safe=True
+ step=56  selected=south 	shielded actions=[east]	safe actions=[r1sense r2sense north south west]	state=184	belief support=[184]	obs6	safe=True
+ step=57  selected=west 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=184	belief support=[184]	obs6	safe=True
+ step=58  selected=south 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=184	belief support=[184]	obs6	safe=True
+ step=59  selected=r1sense 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=184	belief support=[184]	obs6	safe=True
+ step=60  selected=north 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=86	belief support=[86]	obs8	safe=True
+ step=61  selected=r1sense 	shielded actions=[east]	safe actions=[r1sense r2sense north south west]	state=86	belief support=[86]	obs8	safe=True
+ step=62  selected=south 	shielded actions=[east]	safe actions=[r1sense r2sense north south west]	state=184	belief support=[184]	obs6	safe=True
+ step=63  selected=r2sense 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=184	belief support=[184]	obs6	safe=True
+ step=64  selected=r1sense 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=184	belief support=[184]	obs6	safe=True
+ step=65  selected=north 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=86	belief support=[86]	obs8	safe=True
+ step=66  selected=south 	shielded actions=[east]	safe actions=[r1sense r2sense north south west]	state=184	belief support=[184]	obs6	safe=True
+ step=67  selected=south 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=184	belief support=[184]	obs6	safe=True
+ step=68  selected=r1sense 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=184	belief support=[184]	obs6	safe=True
+ step=69  selected=r1sense 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=184	belief support=[184]	obs6	safe=True
+ step=70  selected=east 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=324	belief support=[324]	obs8	safe=True
+ step=71  selected=west 	shielded actions=[north]	safe actions=[r1sense r2sense south east west]	state=184	belief support=[184]	obs6	safe=True
+ step=72  selected=r1sense 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=184	belief support=[184]	obs6	safe=True
+ step=73  selected=south 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=184	belief support=[184]	obs6	safe=True
+ step=74  selected=west 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=184	belief support=[184]	obs6	safe=True
+ step=75  selected=east 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=324	belief support=[324]	obs8	safe=True
+ step=76  selected=south 	shielded actions=[north]	safe actions=[r1sense r2sense south east west]	state=324	belief support=[324]	obs8	safe=True
+ step=77  selected=west 	shielded actions=[north]	safe actions=[r1sense r2sense south east west]	state=184	belief support=[184]	obs6	safe=True
+ step=78  selected=north 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=86	belief support=[86]	obs8	safe=True
+ step=79  selected=west 	shielded actions=[east]	safe actions=[r1sense r2sense north south west]	state=86	belief support=[86]	obs8	safe=True
+ step=80  selected=r2sense 	shielded actions=[east]	safe actions=[r1sense r2sense north south west]	state=192	belief support=[192]	obs11	safe=True
+ step=81  selected=r1sense 	shielded actions=[east]	safe actions=[r1sense r2sense north south west]	state=192	belief support=[192]	obs11	safe=True
+ step=82  selected=north 	shielded actions=[east]	safe actions=[r1sense r2sense north south west]	state=82	belief support=[82]	obs6	safe=True
+ step=83  selected=r1sense 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=182	belief support=[182]	obs0	safe=True
+ step=84  selected=r1sense 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=182	belief support=[182]	obs0	safe=True
+ step=85  selected=r1sense 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=82	belief support=[82]	obs6	safe=True
+ step=86  selected=east 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=185	belief support=[185]	obs52	safe=True
+ step=87  selected=r1sense 	shielded actions=[north south]	safe actions=[r1sense r2sense east west]	state=185	belief support=[185]	obs52	safe=True
+ step=88  selected=r2sense 	shielded actions=[north south]	safe actions=[r1sense r2sense east west]	state=185	belief support=[185]	obs52	safe=True
+ step=89  selected=west 	shielded actions=[north south]	safe actions=[r1sense r2sense east west]	state=82	belief support=[82]	obs6	safe=True
+ step=90  selected=north 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=26	belief support=[26]	obs47	safe=True
+ step=91  selected=west 	shielded actions=[east]	safe actions=[r1sense r2sense north south west]	state=26	belief support=[26]	obs47	safe=True
+ step=92  selected=north 	shielded actions=[east]	safe actions=[r1sense r2sense north south west]	state=25	belief support=[4, 25]	obs6	safe=True
+ step=93  selected=r2sense 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=25	belief support=[4, 25]	obs6	safe=True
+ step=94  selected=west 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=25	belief support=[4, 25]	obs6	safe=True
+ step=95  selected=r1sense 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=80	belief support=[23, 80]	obs0	safe=True
+ step=96  selected=north 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=4	belief support=[4]	obs6	safe=True
+ step=97  selected=north 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=4	belief support=[4]	obs6	safe=True
+ step=98  selected=north 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=4	belief support=[4]	obs6	safe=True
+ step=99  selected=r2sense 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=4	belief support=[4]	obs6	safe=True
+ step=100  selected=south 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=25	belief support=[25]	obs6	safe=True
+ step=101  selected=south 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=26	belief support=[26]	obs47	safe=True
+ step=102  selected=south 	shielded actions=[east]	safe actions=[r1sense r2sense north south west]	state=82	belief support=[82]	obs6	safe=True
+ step=103  selected=east 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=185	belief support=[185]	obs52	safe=True
+ step=104  selected=west 	shielded actions=[north south]	safe actions=[r1sense r2sense east west]	state=82	belief support=[82]	obs6	safe=True
+ step=105  selected=west 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=82	belief support=[82]	obs6	safe=True
+ step=106  selected=east 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=185	belief support=[185]	obs52	safe=True
+ step=107  selected=r1sense 	shielded actions=[north south]	safe actions=[r1sense r2sense east west]	state=185	belief support=[185]	obs52	safe=True
+ step=108  selected=east 	shielded actions=[north south]	safe actions=[r1sense r2sense east west]	state=186	belief support=[186, 326]	obs6	safe=True
+ step=109  selected=south 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=194	belief support=[194]	obs8	safe=True
+ step=110  selected=r2sense 	shielded actions=[west]	safe actions=[r1sense r2sense north south east]	state=336	belief support=[336]	obs11	safe=True
+ step=111  selected=north 	shielded actions=[west]	safe actions=[r1sense r2sense north south east]	state=186	belief support=[186]	obs6	safe=True
+ step=112  selected=south 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=325	belief support=[325]	obs6	safe=True
+ step=113  selected=north 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=186	belief support=[186]	obs6	safe=True
+ step=114  selected=east 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=326	belief support=[326, 329]	obs6	safe=True
+ step=115  selected=north 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=196	belief support=[188, 191, 196, 197]	obs6	safe=True
+ step=116  selected=east 	shielded actions=[west]	safe actions=[r1sense r2sense north south east]	state=197	belief support=[191, 197]	obs6	safe=True
+ step=117  selected=north 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=191	belief support=[94, 191]	obs6	safe=True
+ step=118  selected=r1sense 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=191	belief support=[94, 191]	obs6	safe=True
+ step=119  selected=south 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=197	belief support=[191, 197, 329]	obs6	safe=True
+ step=120  selected=east 	shielded actions=]	safe actions=[r1sense r2sense north south east west]	state=341	belief support=[332, 341, 492]	obs14	safe=True
+ step=121  selected=north 	shielded actions=]	safe actions=[r1sense r2sense north south east]	state=341	belief support=[332, 341, 492]	obs14	safe=True
+ step=122  selected=r1sense 	shielded actions=]	safe actions=[r1sense r2sense north south east]	state=332	belief support=[201, 332, 341]	obs14	safe=True
+ step=123  selected=south 	shielded actions=]	safe actions=[r1sense r2sense north south east]	state=191	belief support=[91, 94, 188, 191, 196, 197]	obs6	safe=True
+ step=124  selected=east 	shielded actions=[west]	safe actions=[r1sense r2sense north south east]	state=332	belief support=[201, 332, 341]	obs14	safe=True
+ step=125  selected=east 	shielded actions=]	safe actions=[r1sense r2sense north south east]	state=497	belief support=[345, 497, 505]	obs2	safe=True
