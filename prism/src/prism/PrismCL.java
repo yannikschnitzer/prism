@@ -614,6 +614,9 @@ public class PrismCL implements PrismModelListener
 
 			// print command line for reference
 			printArguments(args);
+			
+			// print command line for reference
+			storeArguments(args);
 
 			// do some processing of the options
 			processOptions();
@@ -2218,7 +2221,23 @@ public class PrismCL implements PrismModelListener
 		}
 		mainLog.println();
 	}
-
+	
+	// store command line arguments //  to be deleted
+	public void storeArguments(String[] args)
+	{
+//		String path = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\files\\";
+		PrismFileLog out = new PrismFileLog( "arguments.txt");
+		String s;
+		int i;
+		for (i = 0; i < args.length; i++) {
+			s = args[i];
+			// If necessary add quotes so can be pasted back into a shell
+			s = shellQuoteSingleIfNecessary(s);
+			out.print(s + " ");
+		}
+		out.close();
+	}
+	
 	/**
 	 * For a command-line argument, returns a quoted version
 	 * with single quotes if it contains unsafe characters.
@@ -2719,6 +2738,7 @@ public class PrismCL implements PrismModelListener
 
 	public static void main(String[] args)
 	{
+
 		// Normal operation: just run PrismCL
 		if (!(args.length > 0 && "-ng".equals(args[0]))) {
 			new PrismCL().go(args);
