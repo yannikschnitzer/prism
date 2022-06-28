@@ -11,8 +11,8 @@ const int ayMIN = 0;
 const double slippery = 0.2;
 const int ob1x = 1;
 const int ob1y = 2;
-const int ob2x = 3;
-const int ob2y = 1;
+const int ob2x = 4;
+const int ob2y = 2;
 
 formula done = start & ax = axMAX & ay = ayMAX;
 observable "amdone" = done;
@@ -39,10 +39,10 @@ module robot
 
     [placement] true -> (ax'=0) & (ay'=0); 
 
-    [west] true -> (1-slippery): (ax'=max(ax-1,axMIN)) + slippery: (ax'=max(ax-2,axMIN));
-    [east] true -> (1-slippery): (ax'=min(ax+1,axMAX)) + slippery: (ax'=min(ax+2,axMAX));
-    [south]  true -> (1-slippery): (ay'=min(ay+1,ayMAX)) + slippery: (ay'=min(ay+2,ayMAX));
-    [north]  true -> (1-slippery): (ay'=max(ay-1,ayMIN)) + slippery: (ay'=max(ay-2,ayMIN));
+    [west] true -> (1-slippery): (ax'=max(ax-1,axMIN)) + slippery: (ax'=max(ax,axMIN));
+    [east] true -> (1-slippery): (ax'=min(ax+1,axMAX)) + slippery: (ax'=min(ax,axMAX));
+    [south]  true -> (1-slippery): (ay'=min(ay+1,ayMAX)) + slippery: (ay'=min(ay,ayMAX));
+    [north]  true -> (1-slippery): (ay'=max(ay-1,ayMIN)) + slippery: (ay'=max(ay,ayMIN));
 endmodule
 
 
