@@ -1888,16 +1888,17 @@ public class POMDPModelChecker extends ProbModelChecker
 					+ "average undiscounted reward" + ";" + "average discounted reward" + ";" + "average time spent " + ";" + "isSafeTrace");
 
 		int numEpisodes = 10;
-		for (int shieldLevel = 0; shieldLevel < 5; shieldLevel ++) {
+		for (int shieldLevel = 2; shieldLevel < 3; shieldLevel ++) {
 			ArrayList<Double>  undiscountedReward = new ArrayList<Double> ();
 			double totalUndiscountedReward = 0;
 			ArrayList<Double> discountedReward = new ArrayList<Double> ();
 			double totalDiscountedReward = 0;
 			long totalTime = 0;
+			boolean useLocalShield = true;
 			for (int numEpisode = 1; numEpisode <= numEpisodes; numEpisode++) {
 				long episodeTime = System.currentTimeMillis();
 				double[] reward = computeReachRewardsPOMCPEpisode(pomdp,  mdpRewards,  target,  minMax,  statesOfInterest, endStates, numEpisode,
-																modelName, modelArgs, crashCost, timeStamp, shieldLevel);
+																modelName, modelArgs, crashCost, timeStamp, shieldLevel, useLocalShield);
 				if (reward == null) {
 					break;
 				}
@@ -1938,7 +1939,8 @@ public class POMDPModelChecker extends ProbModelChecker
 	
 
 	   public double[] computeReachRewardsPOMCPEpisode(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest, 
-			   											ArrayList<Integer> endStates, int episode, String modelName, String modelArgs, String crashCost, String timeStamp, int shield) throws PrismException
+			   											ArrayList<Integer> endStates, int episode, String modelName, String modelArgs, String crashCost,
+			   											String timeStamp, int shield, boolean useLocalShield) throws PrismException
 	{
 		//pomdp.exportToDotFile(mainLog);;
 		long timer = System.currentTimeMillis();
@@ -1955,7 +1957,8 @@ public class POMDPModelChecker extends ProbModelChecker
 		double threshold = 0.001;
 		double timeout = 10000;
 		double noParticles = 1200; 
-		PartiallyObservableMonteCarloPlanning pomcp = new PartiallyObservableMonteCarloPlanning(pomdp, mdpRewards, target, min, statesOfInterest, endStates,  discount, c, threshold, timeout, noParticles);
+		PartiallyObservableMonteCarloPlanning pomcp = new PartiallyObservableMonteCarloPlanning(pomdp, mdpRewards, target, min, statesOfInterest, endStates,
+																								discount, c, threshold, timeout, noParticles, useLocalShield);
 		pomcp.setTranslationFile("E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\translation\\" + modelName + modelArgs +"translate.txt");
 
 		pomcp.setWinningFile("E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\winningregion\\" + modelName + modelArgs +"initial.wr");
@@ -1976,7 +1979,7 @@ public class POMDPModelChecker extends ProbModelChecker
 		List<Object> allowedActions;
 		boolean isSafeTrace = true;
 
-		out.println("prism_state;prism_belief_support;stompy_state;stompy_belief_support;selected_action;available_actions;allowed_actions;state_meaning;safe?");
+		out.println("prism_state;prism_belief_support;stompy_state;stompy_belief_support;selected_action;available_actions;allowed_actions;state_meaning;safe?;unsafeActions");
 		while (! endStates.contains(state)) {
 			if (verbose >= 0) {
 				mainLog.println("\n =============== Step "+ step + " Cur state " + state + "shield" + shield);
@@ -2009,6 +2012,7 @@ public class POMDPModelChecker extends ProbModelChecker
 			}
 			availableActions = pomdp.getAvailableActions(state);
 			unsafeActions = pomcp.getRoot().getIllegalActions();
+			
 			allowedActions = pomdp.getAvailableActions(state);
 			if (unsafeActions != null) {
 				for (int a = availableActions.size() -1 ; a >= 0; a--) {
@@ -2023,7 +2027,8 @@ public class POMDPModelChecker extends ProbModelChecker
 							+ ";" + Arrays.toString(availableActions.toArray()) 
 							+ ";" + Arrays.toString(allowedActions.toArray())
 							+ ";" + pomcp.getStateMeaning(state)
-							+ ";" + isSafeTrace);
+							+ ";" + isSafeTrace
+							+";" + unsafeActions);
 
 			pomcp.update(action,  obsSample);
 			totalUndiscountedReward += reward;

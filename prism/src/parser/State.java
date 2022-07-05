@@ -258,7 +258,7 @@ public class State implements Comparable<State>
 		}
 		return s;
 	}
-
+		
 	/**
 	 * Get string representation, e.g. "(a=0,b=true,c=5)", 
 	 * with variables names (taken from a String list). 
@@ -274,6 +274,8 @@ public class State implements Comparable<State>
 			s += varNames.get(i) + "=" + varValues[i];
 		}
 		s += ")";
+//		System.out.println(varValues.hashCode());
+//		System.out.println(hashCode());
 		return s;
 	}
 
