@@ -1127,7 +1127,7 @@ public class ProbModelChecker extends NonProbModelChecker
 			return checkRewardReach(model, modelRewards, (ExpressionTemporal) expr, minMax, statesOfInterest, modifier);
 		}
 		else if (Expression.isCoSafeLTLSyntactic(expr, true)) {
-			return checkRewardCoSafeLTL(model, modelRewards, expr, minMax, statesOfInterest);
+			return checkRewardCoSafeLTL(model, modelRewards, expr, minMax, statesOfInterest, modifier);
 		}
 		throw new PrismException("R operator contains a path formula that is not syntactically co-safe: " + expr);
 	}
@@ -1189,7 +1189,7 @@ public class ProbModelChecker extends NonProbModelChecker
 	/**
 	 * Compute rewards for a co-safe LTL reward operator.
 	 */
-	protected StateValues checkRewardCoSafeLTL(Model model, Rewards modelRewards, Expression expr, MinMax minMax, BitSet statesOfInterest) throws PrismException
+	protected StateValues checkRewardCoSafeLTL(Model model, Rewards modelRewards, Expression expr, MinMax minMax, BitSet statesOfInterest, String modifier) throws PrismException
 	{
 		// To be overridden by subclasses
 		throw new PrismException("Computation not implemented yet");

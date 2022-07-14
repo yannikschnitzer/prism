@@ -135,7 +135,7 @@ public class MDPModelChecker extends ProbModelChecker
 	/**
 	 * Compute rewards for a co-safe LTL reward operator.
 	 */
-	protected StateValues checkRewardCoSafeLTL(Model model, Rewards modelRewards, Expression expr, MinMax minMax, BitSet statesOfInterest) throws PrismException
+	protected StateValues checkRewardCoSafeLTL(Model model, Rewards modelRewards, Expression expr, MinMax minMax, BitSet statesOfInterest, String modifier) throws PrismException
 	{
 		// Build product of MDP and DFA for the LTL formula, convert rewards and do any required exports
 		LTLModelChecker mcLtl = new LTLModelChecker(this);
@@ -149,7 +149,16 @@ public class MDPModelChecker extends ProbModelChecker
 		mainLog.println("\nComputing reachability rewards...");
 		MDPModelChecker mcProduct = new MDPModelChecker(this);
 		mcProduct.inheritSettings(this);
-		ModelCheckerResult res = mcProduct.computeReachRewards((MDP)product.getProductModel(), productRewards, acc, minMax.isMin());
+		
+		ModelCheckerResult res = null;
+		
+		if (modifier != null && modifier.equals("cvar")) {
+			res = mcProduct.computeReachRewardsCvar((MDP)product.getProductModel(), productRewards, acc, minMax.isMin());
+		} else if (modifier != null && modifier.equals("dist")){
+			res = mcProduct.computeReachRewardsDistr((MDP)product.getProductModel(), productRewards, acc, minMax.isMin());
+		} else {
+			res = mcProduct.computeReachRewards((MDP)product.getProductModel(), productRewards, acc, minMax.isMin());
+		}
 		StateValues rewardsProduct = StateValues.createFromDoubleArrayResult(res, product.getProductModel());
 
 		// Output vector over product, if required
