@@ -62,15 +62,28 @@ import java.math.BigInteger;
 	private List<String> varNames;
 	private int numLocalObservations;
 	private ArrayList<Integer> endStates;
-	public POMDPShield(POMDP pomdp, String winningFile, String translateFile, List<String> varNames, ArrayList<Integer> concreteModelEndStates) {
+	private int xMIN;
+	private int yMIN;
+	private int xMAX;
+	private int yMAX;
+	public POMDPShield(POMDP pomdp, String winningFile, String translateFile, List<String> varNames, ArrayList<Integer> concreteModelEndStates, int [] primaryStates) {
 		winningRegion = new HashMap<Integer, ArrayList<ArrayList<BigInteger>>> ();
 		this.pomdp = pomdp;
 		this.varNames = varNames;
 		loadWinningRegionFromFile(winningFile);
 		loadTranslationFromFile(translateFile);
 		this.endStates = concreteModelEndStates;
+		xMIN = primaryStates[0];
+		yMIN= primaryStates[1];
+		xMAX = primaryStates[2];
+		yMAX = primaryStates[3];
+		
 	}
-	
+	public int getStompyState(int PrismState) {
+		int stompyState = -1;
+		stompyState = PrismStateToStompyState[PrismState];
+		return stompyState;
+	}
 	public void loadTranslationFromFile(String translateFrile) 
 	{
 		StompyStateToObs = new ArrayList<Integer> ();
@@ -83,6 +96,8 @@ import java.math.BigInteger;
 			BufferedReader in = new BufferedReader(new FileReader(translateFrile));
 			String str;
 			while((str = in.readLine()) != null) {
+//				System.out.println(str + translateFrile);
+
 				if (str.startsWith("Actions")) {
 					str = str.substring("Actions".length()).replace("{", "").replace("}", "");
 					stompyActions = str.split(",", 0);
@@ -92,8 +107,9 @@ import java.math.BigInteger;
 					continue;
 				}
 				str = str.replace("\"", "").replace(":", "").replace("}", ",");
-				int state = Integer.parseInt(getValueFromLine(str, "state="));
-				int obs= Integer.parseInt(getValueFromLine(str, "obs="));
+				str = str.replace("=", "").replace("[", "").replace("]", "");
+				int state = Integer.parseInt(getValueFromLine(str, "state"));
+				int obs= Integer.parseInt(getValueFromLine(str, "obs"));
 				StompyStateToObs.add(obs);
 				String meaning = "";
 				int numberVariables = varNames.size();
@@ -129,16 +145,33 @@ import java.math.BigInteger;
 	public String getValueFromLine(String str, String feature) 
 	{
 		String value = "";
-		int startIndex = str.indexOf(feature) + feature.length();
-		int endIndex = startIndex + 1;
-		while ((endIndex < str.length()) &&  (str.charAt(endIndex) != ',' || str.charAt(endIndex) != ',')   ) {
-			endIndex++;
+		int startIndex = str.indexOf(feature) ;
+		
+		if (startIndex + feature.length() < str.length() && str.charAt( startIndex + feature.length()) != ' ' ){
+			// int type
+			int endIndex = startIndex + feature.length()  + 1;
+			while (endIndex < str.length()) {
+				char end = str.charAt(endIndex);
+				if ( end == ',' || end == ' ')  {
+					break;
+				}
+				endIndex++;
+			}
+			value = str.substring(startIndex + feature.length() , endIndex);
 		}
-		value = str.substring(startIndex, endIndex);
+		else {
+			//boolean type:
+			if (startIndex > 0 && str.charAt(startIndex - 1) == '!') {
+				value = "false";
+			}
+			value =  "true";
+		}
 		return value;
+		
 	}
 	public void translate(HashMap<String, Integer> StompyMeaning2State) 
 	{
+//		System.out.println("translating");
 		int nStompyStates = StompyStateToObs.size();
 		int nPrismStates= pomdp.getNumStates();
 		//		int StompyState = PrismStateToStompyState[sPrime];
@@ -148,7 +181,7 @@ import java.math.BigInteger;
 		for (int s = 0; s < nStompyStates; s++) {
 			StompyStateToPrismState.put(s, new ArrayList<Integer>());
 		}
-		
+
 		for (int PrismState = 0; PrismState < pomdp.getNumStates(); PrismState++) {
 			String meaning = "";
 			
@@ -172,7 +205,7 @@ import java.math.BigInteger;
 			
 			PrismStateToStompyState[PrismState] =  StompyState; //key
 			
-//			System.out.println("Prism state= " + PrismState + " " + getStateMeaning(PrismState)+ " to StompyState => "+ StompyState + " " + meaning);
+			System.out.println("Prism state= " + PrismState + " " + getStateMeaning(PrismState)+ " to StompyState => "+ StompyState + " " + meaning);
 			
 			ArrayList<Integer> tp = StompyStateToPrismState.get(StompyState);
 			tp.add(PrismState);
@@ -211,10 +244,12 @@ import java.math.BigInteger;
 ////				asddddddd
 //			}
 //		}
+
 	}
 	
 	public void loadWinningRegionFromFile(String winngingFile) 
 	{
+//		System.out.println("loadWinningRegionFromFile");
 
 		try {
 			BufferedReader in = new BufferedReader(new FileReader(winngingFile));
@@ -226,6 +261,7 @@ import java.math.BigInteger;
 			//winningregion
 
 			while((str = in.readLine()) != null) {
+
 				if(str.length()>0 && str.charAt(0)=='#') {
 					continue;
 				}
@@ -333,11 +369,32 @@ import java.math.BigInteger;
 		}
 		return true;
 	}
+	
+	public HashSet<Integer> filterPrimaryStates(HashSet<Integer> PrismStates) {
+		HashSet<Integer> primaryStates = new HashSet<Integer>();
+		for (int s : PrismStates) {
+			int x = getAX(s);
+			int y = getAY(s);
+			if ((xMIN <= x && x <= xMAX && yMIN <= y && y <= yMAX )) {
+//				System.out.println(xMIN +" " + yMIN +" "  + xMAX +" "  + yMAX + " " + x + y);
+				primaryStates.add(s);
+			}
+		}
+		return primaryStates;
+	}
+	
 	public boolean isSetOfStatesWinning(HashSet<Integer> PrismStates) 
 	{
+		System.out.println(PrismStates+ "before Paiyipai");
+
+		PrismStates = filterPrimaryStates(PrismStates);
+		System.out.println(PrismStates+ "after Paiyipai");
+
 		// convert to Stompy obs 
 		HashMap<Integer, HashSet<Integer>> StompyObs2StompyStates = new HashMap<Integer, HashSet<Integer>> ();
 		for (int state : PrismStates) {
+//			System.out.println( getStateMeaning(state)+ "Paiyipai");
+
 			int StompyState = PrismStateToStompyState[state];
 			if(StompyState < 0) {
 				// this state is not modeled in this shield
@@ -362,17 +419,20 @@ import java.math.BigInteger;
 			StompyStates.add(index); 
 			StompyObs2StompyStates.put(StompyObs, StompyStates);
 		}
-		
+
 		for (int StompyObs : StompyObs2StompyStates.keySet()) {
 			if (winningRegion.get(StompyObs) == null) { // if not winning support for this obs
+
 					return true; // all states are in end states; other wise it would return false above
+
 			}
 			ArrayList<BigInteger> nextSupport = getBigIntegerFromStateIndices(StompyObs2StompyStates.get(StompyObs), StompyObs);
-//			System.out.println("Big Integer = "+ nextSupport.toString() + "obs" + StompyObs + "IsWinning" + isSupportWinning(nextSupport, StompyObs));
+			System.out.println("Big Integer = "+ nextSupport.toString() + "obs" + StompyObs + " IsWinning" + isSupportWinning(nextSupport, StompyObs));
 			if (!isSupportWinning(nextSupport, StompyObs)) {
 				return false;
 			}
 		}
+		
 		return true;
 	}
 	public ArrayList<BigInteger> getBigIntegerFromStateIndices( HashSet<Integer> stateIndices, int StompyObs)
@@ -397,7 +457,7 @@ import java.math.BigInteger;
 		boolean isThisObsWinning = false;
 		ArrayList<ArrayList<BigInteger>> beliefSupports = winningRegion.get(StompyObs);
 		for (ArrayList<BigInteger> winning : beliefSupports) {
-//			System.out.println("next Support " + nextSupport +   " winning" + winning + " < " + isFirstBeliefSupportSubsetOfSecond(nextSupport, winning));
+//			System.out.println("next Support " + nextSupport +   " winning" + winning + " is first belong to second " + isFirstBeliefSupportSubsetOfSecond(nextSupport, winning));
 			if (isFirstBeliefSupportSubsetOfSecond(nextSupport, winning)) {
 				isThisObsWinning = true;
 				break;
@@ -409,6 +469,32 @@ import java.math.BigInteger;
 	public String getStateMeaning(int state) 
 	{
 		return pomdp.getStatesList().get(state).toString(varNames);
+	}
+	public int getAX(int state) {
+		int ax = -1;
+		String meaning = getStateMeaning(state);
+		String [] meanings = meaning.split(",");
+		for (int i = 0; i < meanings.length; i++) {
+			if(meanings[i].contains("ax")){
+				String [] values = meanings[i].split("=");
+				ax  = Integer.parseInt(values[1]);
+				break;
+			}
+		}
+		return ax;
+	}
+	public int getAY(int state) {
+		int ay = -1;
+		String meaning = getStateMeaning(state).replace(")", "");
+		String [] meanings = meaning.split(",");
+		for (int i = 0; i < meanings.length; i++) {
+			if(meanings[i].contains("ay")){
+				String [] values = meanings[i].split("=");
+				ay  = Integer.parseInt(values[1]);
+				break;
+			}
+		}
+		return ay;
 	}
 }
 
@@ -645,6 +731,7 @@ public class PartiallyObservableMonteCarloPlanning {
 	private Map<Integer, HashSet<Integer>> stateSuccessors;
 	private List<String> varNames;
 	private ArrayList<POMDPShield> localShields;
+	private POMDPShield mainShield;
 	private boolean useLocalShields;
 	public PartiallyObservableMonteCarloPlanning(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest, ArrayList<Integer> endStates,
 			double gamma, double c, double threshold, double timeout, double noParticles, boolean useLocalShields) 
@@ -697,38 +784,39 @@ public class PartiallyObservableMonteCarloPlanning {
 
 	}
 	
+	public void setMainShield(String winning, String translation) {
+		int [] primaryStates = {0,  0, 99, 99};
+		mainShield = new POMDPShield(pomdp, winning, translation, varNames, endStates, primaryStates );
+	}
+
+	
 	public void initializeLocalShield() {
 		localShields = new ArrayList<POMDPShield> ();
-		//String [] winningFiles = {winningFile, winningFile};
-		//String [] translationFiles = {translationFile, translationFile};
 		String wPath = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\winningregion\\";
 		String tPath = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\translation\\";
-		String [] winningFiles = {wPath + "abstractA-6-74-fixpoint.wr" , wPath + "abstractB-6-74-fixpoint.wr"};
-		String [] translationFiles = {tPath + "abstractA-6-translate.txt" , tPath + "abstractB-6-translate.txt" };
+		
+		String [] winningFiles = {wPath + "obstacleA-6-test18-fixpoint.wr", wPath + "obstacleB-6-test18-fixpoint.wr", wPath + "obstacleC-6-test18-fixpoint.wr", wPath + "obstacleF-6-test18-fixpoint.wr" };
+		String [] translationFiles = {tPath + "obstacleA-6-translate.txt", tPath + "obstacleB-6-translate.txt", tPath + "obstacleC-6-translate.txt", tPath + "obstacleF-6-translate.txt"  };
+		int [][] primaryStates= {{0, 0, 2, 2}, {3, 0, 5, 2}, {0, 3, 2, 5}, {3,3, 5,5} };
 		for(int i = 0 ; i < winningFiles.length; i ++) {
-//			System.out.println(winningFiles[i]);
-//			System.out.println(translationFiles[i]);
-			POMDPShield localShield = new POMDPShield(pomdp, winningFiles[i], translationFiles[i], varNames, endStates);
+			POMDPShield localShield = new POMDPShield(pomdp, winningFiles[i], translationFiles[i], varNames, endStates, primaryStates[i]);
 			localShields.add(localShield);
 		}
 	}
+
 	
 	public void setShieldLevel(int i) {
 
 		if (shieldLevel == 0  ) { // load translation anyway, for generating stompy traces 
-			PrismObsToPrismStates = new ArrayList<ArrayList<Integer>> ();
-			PrismObsToStompyObs =  new int[pomdp.getNumObservations()];
-			StompyObsToPrismObs =  new int[pomdp.getNumObservations()];
-			winningRegion = new HashMap<Integer, ArrayList<ArrayList<BigInteger>>>(); 
-			StompyObsToStompyStates = new ArrayList<ArrayList<Integer>> (); // dummy
-			importWinningRegion();
+//			PrismObsToPrismStates = new ArrayList<ArrayList<Integer>> ();
+//			PrismObsToStompyObs =  new int[pomdp.getNumObservations()];
+//			StompyObsToPrismObs =  new int[pomdp.getNumObservations()];
+//			winningRegion = new HashMap<Integer, ArrayList<ArrayList<BigInteger>>>(); 
+//			StompyObsToStompyStates = new ArrayList<ArrayList<Integer>> (); // dummy
+//			importWinningRegion();
 		}
 		shieldLevel = i;
-		
-		if (useLocalShields) {
-			initializeLocalShield();
-		}
-		
+
 	}
 	public double fastUCB(int N, int n) 
 	{
@@ -1128,9 +1216,9 @@ public class PartiallyObservableMonteCarloPlanning {
 				
 		for (Object action : availableActions) {
 			POMCPNode newChild = new POMCPNode ();
-			if (shieldLevel == 2 && TreeDepth == 0 && parent.isActionIllegal(action)) {
-				 continue;
-			}
+//			if (shieldLevel == 2 && TreeDepth == 0 && parent.isActionIllegal(action)) {
+//				 continue;
+//			}
 			if (shieldLevel == 2 && TreeDepth == 0 && isActionShieldedForNode(parent, action)) {
 				parent.addIllegalActions(action);
 				continue;
@@ -1604,12 +1692,13 @@ public class PartiallyObservableMonteCarloPlanning {
 		System.out.println("s=" + state + pomdp.getStatesList().get(state).toString( varNames));
 	}
 	public int getStompyState(int PrismState) {
-		return PrismStateToStompyState[PrismState];
+		return mainShield.getStompyState(PrismState);
+//		return PrismStateToStompyState[PrismState];
 	}
 	public HashSet<Integer> getStompyBeliefSupport(HashSet<Integer> PrismBeliefSupport){
 		HashSet<Integer> StompyBeliefSupport = new HashSet<Integer> ();
 		for (int PrismState : PrismBeliefSupport) {
-			StompyBeliefSupport.add(PrismStateToStompyState[PrismState]);
+			StompyBeliefSupport.add(mainShield.getStompyState(PrismState));
 		}
 		return StompyBeliefSupport;
 	}
@@ -1699,11 +1788,15 @@ public class PartiallyObservableMonteCarloPlanning {
 		StompyStateToObs = new ArrayList<Integer> ();
 		HashMap<String, Integer> StompyMeaning2State = new HashMap<String, Integer>();
 		// get StompyStateToObs and StompyMeaningToState
+		// get StompyObsToStompyStates
 		try {
 //			List<String> varNames = getVarNames();
+			
 			BufferedReader in = new BufferedReader(new FileReader(translateFrile));
 			String str;
 			while((str = in.readLine()) != null) {
+//				System.out.println(str + translateFrile);
+
 				if (str.startsWith("Actions")) {
 					str = str.substring("Actions".length()).replace("{", "").replace("}", "");
 					stompyActions = str.split(",", 0);
@@ -1727,11 +1820,22 @@ public class PartiallyObservableMonteCarloPlanning {
 					}
 					meaning += value;
 				}
-//				Arrays.hashCode(values);
 				//meaning = "(" + meaning.substring(0, meaning.length()-1) + ")" ;
 				StompyMeaning2State.put(meaning, state);
 			}
 			in.close();
+			
+			// build stommpyObsToStompyStates;
+			StompyObsToStompyStates = new ArrayList<ArrayList<Integer>> ();
+			int numStompyStates = StompyStateToObs.size();
+			for (int s = 0; s < numStompyStates; s++) {
+				ArrayList<Integer> StompyStatesPerObservation = new ArrayList<Integer> ();
+				StompyObsToStompyStates.add(StompyStatesPerObservation);
+			}
+			for (int StompyState = 0; StompyState < numStompyStates; StompyState++) {
+				int StompyObs = StompyStateToObs.get(StompyState); 
+				StompyObsToStompyStates.get(StompyObs).add(StompyState); 
+			}
 			translate(StompyMeaning2State);
 		} catch(IOException e) {
 		}
@@ -1881,6 +1985,7 @@ public class PartiallyObservableMonteCarloPlanning {
 			in.close();
 		} catch(IOException e) {
 		}
+		displayWinningRegion();
 	}
 	public void displayWinningRegion() {
 		System.out.println("output winningregion");
@@ -1973,29 +2078,47 @@ public class PartiallyObservableMonteCarloPlanning {
 	
 	public boolean isActionShieldedForStates(HashSet<Integer> beliefSupport, Object action) 
 	{
+		HashSet<Integer> nextBeliefSupport = getNextBeliefSupport(beliefSupport, action);
+		useLocalShields = false;
 		if (!useLocalShields) {
-			HashSet<Integer> nextBeliefSupport = getNextBeliefSupport(beliefSupport, action);
-			if (!isSetOfStatesWinning(nextBeliefSupport)) {
+			System.out.println("hehreeeDDDDDDDDDD");
+
+			if (!mainShield.isSetOfStatesWinning(nextBeliefSupport)) {
 //				System.out.print("action shield for " + beliefSupport);
 				return true; // action should be shielded because next belief support is not winning
 			}
 			return false;
 		} else {
+			System.out.println("hehreee");
 			int numLocalShields = localShields.size();
 			for (int i = 0; i < numLocalShields; i++) {
-				
-				HashSet<Integer> nextBeliefSupport = getNextBeliefSupport(beliefSupport, action);
 				POMDPShield localShield = localShields.get(i);
+				System.out.println("shield = " + i );
+
 				if(!localShield.isSetOfStatesWinning(nextBeliefSupport)) {
-					System.out.println(action + " action shield for current support " + beliefSupport + " because next" + nextBeliefSupport);
+					System.out.println("shield = " + i + " action = " + action + " action shield for current support " + beliefSupport + " because next" + nextBeliefSupport);
+//						for (int s : nextNonSinkingBeliefSupport) {
+//							System.out.println(s+ "?"+getAX(s));
+//						}
 					return true;
 				}
 			}
-//			System.out.print("action not shield for " + beliefSupport);
 			return false;
 		}
 	} 
-
+	public int getAX(int state) {
+		int ax = -1;
+		String meaning = getStateMeaning(state);
+		String [] meanings = meaning.split(",");
+		for (int i = 0; i < meanings.length; i++) {
+			if(meanings[i].contains("ax")){
+				String [] values = meanings[i].split("=");
+				ax  = Integer.parseInt(values[1]);
+				break;
+			}
+		}
+		return ax;
+	}
 	
 	public boolean isActionShieldedForStates_BackUp(HashSet<Integer> states, Object action) 
 	{
@@ -2110,6 +2233,7 @@ public class PartiallyObservableMonteCarloPlanning {
 			BigInteger tp = nextSupport.get(bucket).add(base.pow(indexInBucket));
 			nextSupport.set(bucket, tp);
 		}
+		System.out.println("next support" + nextSupport);
 		return nextSupport;
 	}
 	public boolean isSupportWinning(ArrayList<BigInteger> nextSupport, int StompyObs) 

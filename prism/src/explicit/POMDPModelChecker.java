@@ -1887,7 +1887,7 @@ public class POMDPModelChecker extends ProbModelChecker
 		out.println("modelName" + ";"+ "nStates" + ";" + "shieldLevel" + ";" + "numEpisode" + ";" + "numEpisodes" + ";" + "undiscounted reward" + ";" + "discounted reward" + ";" + "timeSpent" + ";"   
 					+ "average undiscounted reward" + ";" + "average discounted reward" + ";" + "average time spent " + ";" + "isSafeTrace");
 
-		int numEpisodes = 10;
+		int numEpisodes = 1;
 		for (int shieldLevel = 2; shieldLevel < 3; shieldLevel ++) {
 			ArrayList<Double>  undiscountedReward = new ArrayList<Double> ();
 			double totalUndiscountedReward = 0;
@@ -1959,18 +1959,23 @@ public class POMDPModelChecker extends ProbModelChecker
 		double noParticles = 1200; 
 		PartiallyObservableMonteCarloPlanning pomcp = new PartiallyObservableMonteCarloPlanning(pomdp, mdpRewards, target, min, statesOfInterest, endStates,
 																								discount, c, threshold, timeout, noParticles, useLocalShield);
-		pomcp.setTranslationFile("E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\translation\\" + modelName + modelArgs +"translate.txt");
-
-		pomcp.setWinningFile("E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\winningregion\\" + modelName + modelArgs +"initial.wr");
+		pomcp.setTranslationFile("E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\translation\\" +"obstacle-6-translate.txt");
+		pomcp.setWinningFile("E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\winningregion\\" + modelName + modelArgs +"fixpoint.wr");
 		pomcp.setShieldLevel(shield);
+		String mainTranslation = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\translation\\" +"obstacle-6-translate.txt";
+		String mainWinning = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\winningregion\\" + modelName + modelArgs +"fixpoint.wr";
+		
+		pomcp.setMainShield(mainWinning, mainTranslation);
+		pomcp.initializeLocalShield();
+		
 		pomcp.setNumSimulations(Math.pow(2, 4));
 		int step = 0;
 		int stepLimit = 1000;
 		double gamma = 1;
-		int verbose = -1;
+		int verbose = 1;
 		
 		String path = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\files\\logs\\traces\\";
-		String fileName =  modelName + modelArgs + crashCost  + "-shield-" +  shield + "-Episode-" + episode;
+		String fileName =  modelName + modelArgs + crashCost  + "-shield-" +  shield + "-Episode-" + episode +  timeStamp ;
 		
 		PrismFileLog out = new PrismFileLog(path + fileName + ".txt");
 		
@@ -1993,7 +1998,7 @@ public class POMDPModelChecker extends ProbModelChecker
 			step += 1;
 			pomcp.setVerbose(1);
 			if(step == 1) {
-				pomcp.setVerbose(-1);
+				pomcp.setVerbose(1);
 			}
 			if(step >= 2) {
 //				mainLog.println("step = " + step);
@@ -2022,8 +2027,10 @@ public class POMDPModelChecker extends ProbModelChecker
 				}
 			}
 
-			out.println(state + ";" + pomcp.getRootBeliefSupportPrism() + ";" + pomcp.getStompyState(state) 
-							+ ";" + pomcp.getRootBeliefSupportStompy() + ";" + action 
+			out.println(state + ";" + pomcp.getRootBeliefSupportPrism() 
+							+ ";" + pomcp.getStompyState(state) 
+							+ ";" + pomcp.getRootBeliefSupportStompy() 
+							+ ";" + action 
 							+ ";" + Arrays.toString(availableActions.toArray()) 
 							+ ";" + Arrays.toString(allowedActions.toArray())
 							+ ";" + pomcp.getStateMeaning(state)
@@ -2054,8 +2061,10 @@ public class POMDPModelChecker extends ProbModelChecker
 		    //pomcp.display();
 			state = nextState;
 		}
-		out.println(state + ";" + pomcp.getRootBeliefSupportPrism() + ";" + pomcp.getStompyState(state) 
-		+ ";" + pomcp.getRootBeliefSupportStompy() + ";" + "notApplicable" 
+		out.println(state + ";" + pomcp.getRootBeliefSupportPrism() 
+		+ ";" + pomcp.getStompyState(state) 
+		+ ";" + pomcp.getRootBeliefSupportStompy() 
+		+ ";" + "notApplicable" 
 		+ ";" +("notApplicable") 
 		+ ";" + ("notApplicable")
 		+ ";" + pomcp.getStateMeaning(state)
