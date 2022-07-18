@@ -14,18 +14,18 @@ module robot
 	c:[1..M] init 1; //grid column
 
 	// transitions
-	[east]  (c<M | c=M) -> p/3:(r'=min(r+1, N))+ p/3: (c'=max(c-1, 1))+ p/3: (r'=max(r-1, 1)) + (1-p): (c'=min(c+1, M));
-	[south] (r<N | r=N) -> (1-p):(r'=min(r+1, N)) + p/3: (c'=min(c+1, M)) + p/3:(r'=min(r+1, N))+ p/3: (c'=max(c-1, 1));
-	[west]  (c>1 | c=1) -> p/3:(r'=max(r-1, 1))+ p/3:(r'=min(r+1, N))+ p/3: (c'=min(c+1, M)) + (1-p): (c'=max(c-1, 1));
-	[north] (r=1 | r>1) -> (1-p):(r'=max(r-1, 1)) + p/3: (c'=max(c-1, 1)) + p/3: (c'=min(c+1, M)) + p/3:(r'=min(r+1, N));
+	[east]  (c<M | c=M)  -> p/3:(r'=min(r+1, N))+ p/3: (c'=max(c-1, 1))+ p/3: (r'=max(r-1, 1)) + (1-p): (c'=min(c+1, M));
+	[south] (r<N | r=N)  -> (1-p):(r'=min(r+1, N)) + p/3: (c'=min(c+1, M)) + p/3:(r'=min(r+1, N))+ p/3: (c'=max(c-1, 1));
+	[west]  (c>1 | c=1)  -> p/3:(r'=max(r-1, 1))+ p/3:(r'=min(r+1, N))+ p/3: (c'=min(c+1, M)) + (1-p): (c'=max(c-1, 1));
+	[north] (r=1 | r>1)  -> (1-p):(r'=max(r-1, 1)) + p/3: (c'=max(c-1, 1)) + p/3: (c'=min(c+1, M)) + p/3:(r'=min(r+1, N));
 
 	// terminal state self-loop to avoid deadlock
-	[] office -> true;
+	// [] office & got_coffee -> true;
 
 endmodule
 
 // label "goal" = F(coffee & (F office));
-label "obs" = wall;
+label "obs" = decoration;
 
 rewards
 
@@ -41,9 +41,9 @@ rewards
 	[north] !decoration & wall: 35;
 
 	// decoration
-    [east] decoration & !wall: 20;
-    [south] decoration & !wall: 20;
-    [west] decoration & !wall: 20;
-    [north] decoration & !wall: 20;
+    [east] decoration & !wall: 10;
+    [south] decoration & !wall: 10;
+    [west] decoration & !wall: 10;
+    [north] decoration & !wall: 10;
 
 endrewards

@@ -2858,9 +2858,9 @@ public class MDPModelChecker extends ProbModelChecker
 
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
 			atoms = 51;
-			b_atoms = 26;
+			b_atoms = 11;
 			// TODO make this a point variable or something to be a bit cleaner
-			double b_max = 100;
+			double b_max = 50;
 			double b_min = 0;
 			double v_max = 100;
 			double v_min = 0;
@@ -2989,6 +2989,12 @@ public class MDPModelChecker extends ProbModelChecker
 //		mainLog.println("\nPolicy");
 //		//Arrays.toString(policy);
 //		Arrays.stream(policy).forEach(e -> mainLog.print(e + ", "));
+		// Finished CVAR
+		timer = System.currentTimeMillis() - timer;
+		if (verbosity >= 1) {
+			mainLog.print("\nCVAR (" + (min ? "min" : "max") + ")");
+			mainLog.println(" ran " + iters + " iterations and " + timer / 1000.0 + " seconds.");
+		}
 
 		// Compute distribution on induced DTMC
 		mainLog.println("\n\nComputing distribution on induced DTMC...");
@@ -3064,6 +3070,12 @@ public class MDPModelChecker extends ProbModelChecker
 		// take dtmc_result.solnObject
 		// adjust to be on the same scale
 		//
+		timer = System.currentTimeMillis() - timer;
+		if (verbosity >= 1) {
+			mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
+			mainLog.println(" ran " + iters + " iterations and " + timer / 1000.0 + " seconds.");
+		}
+
 		double [] adjusted_dtmc_distr=operator.adjust_support(((TreeMap)dtmc_result.solnObj[initialState]));
 		mainLog.println(adjusted_dtmc_distr);
 		mainLog.println("Wasserstein p=2 dtmc vs code distributions: "+operator.getW(adjusted_dtmc_distr, initialState, pol[initialState]));
@@ -3073,6 +3085,12 @@ public class MDPModelChecker extends ProbModelChecker
 			BitSet obs_states= cvar_mdp.getProductModel().getLabelStates(bad_states_label);
 			ModelCheckerResult result_obs = mcDTMC.computeReachProbs(dtmc, obs_states);
 			mainLog.println("Probs of reaching obstacle :" + result_obs.soln[initialState]);
+		}
+
+		timer = System.currentTimeMillis() - timer;
+		if (verbosity >= 1) {
+			mainLog.print("\nChecking Probability of bad events :");
+			mainLog.println(" ran " + iters + " iterations and " + timer / 1000.0 + " seconds.");
 		}
 
 		int starting = 0;
@@ -3090,13 +3108,6 @@ public class MDPModelChecker extends ProbModelChecker
 		boolean print= false;
 		if (print) {
 			printToFile(policy, action_val, alpha, b_atoms, operator.getB(), starting, "gridmap/cvar_out_"+n+"_"+ settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) +"_"+alpha+".out", n, mdp.getMaxNumChoices());
-		}
-
-		// Finished CVAR
-		timer = System.currentTimeMillis() - timer;
-		if (verbosity >= 1) {
-			mainLog.print("\nCVAR (" + (min ? "min" : "max") + ")");
-			mainLog.println(" ran " + iters + " iterations and " + timer / 1000.0 + " seconds.");
 		}
 
 		operator.writeToFile(initialState, pol[initialState], "distr_cvar.csv");
