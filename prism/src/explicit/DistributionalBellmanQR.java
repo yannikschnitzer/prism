@@ -107,9 +107,11 @@ public class DistributionalBellmanQR extends DistributionalBellman {
     @Override
     public double getW(double[] dist1, double[] dist2) {
         double sum = 0;
+        double cum_p=0;
         for (int i =0; i<atoms; i++)
         {
-            sum+= pow((dist1[i]* p[i] - dist2[i]* p[i]),2) ;
+            cum_p += p[i];
+            sum+= pow((dist1[i]* cum_p - dist2[i]* cum_p),2) ;
         }
         return sqrt(sum);
     }
@@ -117,9 +119,10 @@ public class DistributionalBellmanQR extends DistributionalBellman {
     @Override
     public double getW(double[] dist1, int state) {
         double sum = 0;
+        double cum_p=0;
         for (int i =0; i<atoms; i++)
         {
-            sum+= pow((dist1[i]* p[i] - z[state][i]* p[i]),2);
+            sum+= pow(((dist1[i])*cum_p - (z[state][i])*cum_p), 2);
         }
         return sqrt(sum);
     }
@@ -138,7 +141,7 @@ public class DistributionalBellmanQR extends DistributionalBellman {
             }
         }
 
-        // Sort the list using lambda expression
+        // Sort the list based on value
         multimap.sort(Map.Entry.comparingByValue());
 
         // Consolidate based on probability

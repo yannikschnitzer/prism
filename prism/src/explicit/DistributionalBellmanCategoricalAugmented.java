@@ -187,7 +187,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         //  right now I'm choosing a slightly more conservative approach by
         // choosing lower index -> intuition :"we have used less budget than we actually have"
         // opposite of chap 7 -> they take floor since they are doing max and we are doing min -> cost approach
-        return u;
+        return l;
     }
 
     @Override
@@ -325,7 +325,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         {
             cum_p[0] += dist1[i];
             cum_p[1] += dist2[i];
-            sum+= pow(((delta_z)*cum_p[0] - (delta_z)*cum_p[1]), 2);
+            sum+= pow((cum_p[0] - cum_p[1]), 2);
         }
         return sqrt(sum);
     }
@@ -340,7 +340,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         {
             cum_p[0] += dist1[i];
             cum_p[1] += p[state][idx_a][i];
-            sum+= pow(((delta_z)*cum_p[0] - (delta_z)*cum_p[1]), 2);
+            sum+= pow((cum_p[0] - cum_p[1]), 2);
         }
         return sqrt(sum);
     }
