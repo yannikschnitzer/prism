@@ -44,6 +44,7 @@ import explicit.rewards.MCRewardsFromMDPRewards;
 import explicit.rewards.MDPRewards;
 import explicit.rewards.Rewards;
 import explicit.rewards.StateRewardsArray;
+import parser.State;
 import parser.ast.Expression;
 import parser.type.TypeDouble;
 import prism.AccuracyFactory;
@@ -3060,6 +3061,19 @@ public class MDPModelChecker extends ProbModelChecker
 //			mainLog.println("Currently returning policy "+ Arrays.toString(pol));
 		}
 
+		MDPSimple mdpToSimulate = (MDPSimple) cvar_mdp.productModel;
+		List<State> mdpStatesList = mdpToSimulate.getStatesList();
+		int maxPathLen = 100;
+		int s = mdpToSimulate.getFirstInitialState();
+		mainLog.println("Random path:");
+		mainLog.println(mdpStatesList.get(s));
+		int pathLen = 0;
+		while (pathLen < maxPathLen && mdpToSimulate.getNumTransitions(s, strat.getChoiceIndex(s)) > 0) {
+			Distribution distr = mdpToSimulate.getChoice(s, strat.getChoiceIndex(s));
+			s = distr.sample();
+			mainLog.println(mdpStatesList.get(s));
+			pathLen++;
+		}
 
 		DTMC dtmc = new DTMCFromMDPAndMDStrategy(cvar_mdp.productModel, strat);
 		DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
