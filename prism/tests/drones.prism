@@ -43,6 +43,7 @@ rewards
 	[south] !drained: 1;
 	[west] !drained: 1;
 	[north] !drained: 1;
+	[wait] !drained: 1;
 
 	// drained
     [rescue] drained: 50;

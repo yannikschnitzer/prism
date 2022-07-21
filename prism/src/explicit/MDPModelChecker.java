@@ -2830,8 +2830,9 @@ public class MDPModelChecker extends ProbModelChecker
 		// Set up CVAR variables
 		int atoms;
 		int iterations = 500;
-		double error_thresh = 0.08;
+		double error_thresh = 0.005;
 		double error_thresh_cvar = 2;
+		int min_iter = 50;
 		double gamma = 1;
 		double alpha = 0.8;
 		String bad_states_label = "obs";
@@ -2977,7 +2978,7 @@ public class MDPModelChecker extends ProbModelChecker
 			mainLog.println("Max Wp dist :"+(max_dist) + " error Wp:" + (error_thresh) +" at iter:"+iters);
 
 //			& (max_cvar_dist < error_thresh_cvar)
-			if ((max_dist <error_thresh) &(iters>10)) {
+			if ((max_dist <error_thresh) &(iters>min_iter)) {
 				break;
 			}
 		}
