@@ -32,10 +32,12 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.PrimitiveIterator;
 import java.util.PrimitiveIterator.OfInt;
 import java.util.TreeMap;
@@ -2600,6 +2602,35 @@ public class DTMCModelChecker extends ProbModelChecker
 		return res;
 	}
 
+	/** State-reward pair */
+	class StateRew
+	{
+		int s;
+		int r;
+		StateRew(int s, int r)
+		{
+			this.s = s;
+			this.r = r;
+		}
+		@Override
+		public int hashCode()
+		{
+			return Objects.hash(r, s);
+		}
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			StateRew other = (StateRew) obj;
+			return r == other.r && s == other.s;
+		}
+	}
+	
 	/**
 	 * Compute the full distribution for the reward accumulated until a target is reached.
 	 * @param dtmc The DTMC
@@ -2608,86 +2639,132 @@ public class DTMCModelChecker extends ProbModelChecker
 	 */
 	public ModelCheckerResult computeReachRewardsDistr(DTMC dtmc, MCRewards mcRewards, BitSet target) throws PrismException
 	{
-		int T = 100;
-		List<Pair<Integer,Integer>> states = new ArrayList<>();
-		List <Double> probs = new ArrayList<>();
-		for (int s : dtmc.getInitialStates()) {
-			Pair<Integer,Integer> sr = new Pair<>(s, 0);
-			states.add(sr);
-			probs.add(1.0 / dtmc.getNumInitialStates());
-		}
-
-		if (verbosity >=1 ) {
+		int maxIters = 1000;
+		double termCritEpsilon = 1e-6;
+		
+		if (verbosity >= 1) {
 			mainLog.println("DTMC #initial states: " + dtmc.getNumInitialStates());
 		}
 
-		for (int t = 1; t <= T; t++) {
-			
-			List<Pair<Integer,Integer>> statesNew = new ArrayList<>();
-			List <Double> probsNew = new ArrayList<>();
-			int n = states.size();
-			for (int i = 0 ; i < n; i++) {
-				int s = states.get(i).first;
-				int r = states.get(i).second;
+		// Initialise solution vector (equiprob in init states)
+		HashMap<StateRew, Double> rewProbs = new HashMap<>();
+		for (int s : dtmc.getInitialStates()) {
+			rewProbs.put(new StateRew(s, 0), 1.0 / dtmc.getNumInitialStates());
+		}
+
+		// Start iterations
+		long timer = System.currentTimeMillis();
+		mainLog.println("Starting reward distribution computation...");
+		int iters = 0;
+		boolean done = false;
+		while (!done && iters < maxIters) {
+			iters++;
+			HashMap<StateRew, Double> rewProbsNew = new HashMap<>();
+			// For each state/rew in the current iter
+			Iterator<Map.Entry<StateRew, Double>> it = rewProbs.entrySet().iterator();
+			while(it.hasNext()) {
+			    Map.Entry<StateRew, Double> entry1 = it.next();
+				StateRew sr = entry1.getKey();
+				double val = entry1.getValue();
+				int s = sr.s;
+				int r = sr.r;
+				// For each DTMC transition in the current state
 				Iterator<Entry<Integer,Double>> iter = dtmc.getTransitionsIterator(s);
 				while (iter.hasNext()) {
 					Entry<Integer,Double> entry = iter.next();
-					double prob = probs.get(i) * entry.getValue();
+					double prob = val * entry.getValue();
 					int sNext = entry.getKey();
 					// TODO: check rewards are integers
-					int sr = target.get(s) ? 0 : (int) mcRewards.getStateReward(s);
-					Pair<Integer,Integer> srNext = new Pair<>(sNext, r + sr);
-					int j = statesNew.indexOf(srNext);
-					if (j != -1) {
-						probsNew.set(j, probsNew.get(j) + prob);
-					} else {
-						statesNew.add(srNext);
-						probsNew.add(prob);
-					}
+					int rNext = r + (target.get(s) ? 0 : (int) mcRewards.getStateReward(s));
+					Double valLookup = rewProbsNew.get(new StateRew(sNext, rNext));
+					rewProbsNew.put(new StateRew(sNext, rNext), valLookup == null ? prob : prob + valLookup);
 				}
 			}
-			states = statesNew;
-			probs = probsNew;
-		}
-		int n = states.size();
-//		mainLog.print("t=" + T + ":");
-//		for (int i = 0; i < n; i++) {
-//			mainLog.print(" " + states.get(i) + ":" + probs.get(i));
-//		}
-//		mainLog.println();
-		
-		TreeMap<Integer,Double> dist = new TreeMap<>();
-		n = states.size();
-		int rMax = -1;
-		for (int i = 0; i < n; i++) {
-			int r = states.get(i).second;
-			rMax = Math.max(rMax, r);
-			Double p = dist.get(r);
-			if (p == null) {
-				dist.put(r, probs.get(i));
-			} else {
-				dist.put(r, p + probs.get(i));
+			//Pair<Integer,Map<Integer,Double>> maxAndDist = extractRewardDist(rewProbsNew);
+			//exportRewardDistLine(maxAndDist.first, maxAndDist.second, "distr"+iters+".csv");
+			// Check max diff between iters
+			double diff = PrismUtils.measureSupNorm(rewProbs, rewProbsNew, true);
+			diff = Math.max(diff, PrismUtils.measureSupNorm(rewProbsNew, rewProbs, true));
+			done = diff < termCritEpsilon;
+			if (verbosity >= 1) {
+				mainLog.println(iters+": n="+rewProbs.size() + ", diff=" + diff);
 			}
+			// Swap vectors for next iter
+			rewProbs = rewProbsNew;
 		}
-		
-		try (PrintWriter pw = new PrintWriter(new File("prism/distr.csv"))) {
-			pw.println("r,p");
-		for (int r = 0; r <= rMax; r++) {
-			Double p = dist.get(r);
-			p = (p == null) ? 0.0 : p;
-			pw.println(r + "," + p);
-		}
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		timer = System.currentTimeMillis() - timer;
+		mainLog.println("Reward distribution computed in " + iters + " iterations and " + timer / 1000.0 + " seconds.");
+
+		// Export the final distribution to a file
+		Pair<Integer,Map<Integer,Double>> maxAndDist = extractRewardDist(rewProbs);
+		exportRewardDist(maxAndDist.first, maxAndDist.second, "distr.csv");
 		
 		// Return results
 		Object solnObj[] = new Object[dtmc.getNumStates()];
-		solnObj[dtmc.getFirstInitialState()] = dist;
+		solnObj[dtmc.getFirstInitialState()] = maxAndDist.second;
 		ModelCheckerResult res = new ModelCheckerResult();
 		res.solnObj = solnObj;
 		return res;
+	}
+	
+	/**
+	 * Project a distribution over state/reward pairs to the distribution over rewards.
+	 * Return a pair containing the max reward value and the distribution.
+	 */
+	private Pair<Integer,Map<Integer,Double>> extractRewardDist(HashMap<StateRew, Double> rewProbs)
+	{
+		TreeMap<Integer,Double> dist = new TreeMap<>();
+		int rMax = -1;
+		Iterator<Map.Entry<StateRew, Double>> it = rewProbs.entrySet().iterator();
+		while(it.hasNext()) {
+		    Map.Entry<StateRew, Double> entry1 = it.next();
+			StateRew sr = entry1.getKey();
+			double val = entry1.getValue();
+			int r = sr.r;
+			rMax = Math.max(rMax, r);
+			Double p = dist.get(r);
+			if (p == null) {
+				dist.put(r, val);
+			} else {
+				dist.put(r, p + val);
+			}
+		}
+		return new Pair<>(rMax, dist);
+	}
+	
+	/**
+	 * Export a reward distribution to a line in a file
+	 */
+	private void exportRewardDistLine(int rMax, Map<Integer,Double> dist, String filename)
+	{
+		try (PrintWriter pw = new PrintWriter(new File(filename))) {
+			for (int r = 0; r <= rMax; r++) {
+				Double p = dist.get(r);
+				p = (p == null) ? 0.0 : p;
+				if (r > 0) pw.print(",");
+				pw.print(p);
+			}
+			pw.println();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Export a reward distribution to a CSV file
+	 */
+	private void exportRewardDist(int rMax, Map<Integer,Double> dist, String filename)
+	{
+		try (PrintWriter pw = new PrintWriter(new File(filename))) {
+			pw.println("r,p");
+			for (int r = 0; r <= rMax; r++) {
+				Double p = dist.get(r);
+				p = (p == null) ? 0.0 : p;
+				pw.println(r + "," + p);
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**

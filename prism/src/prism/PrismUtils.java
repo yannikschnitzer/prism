@@ -219,7 +219,7 @@ public class PrismUtils
 					value = diff;
 				}
 			} else {
-				// Only check over common elements
+				return d1;
 			}
 		}
 		return value;
