@@ -2697,7 +2697,7 @@ public class DTMCModelChecker extends ProbModelChecker
 
 		// Export the final distribution to a file
 		Pair<Integer,Map<Integer,Double>> maxAndDist = extractRewardDist(rewProbs);
-		exportRewardDist(maxAndDist.first, maxAndDist.second, "distr.csv");
+		exportRewardDist(maxAndDist.first, maxAndDist.second, "prism/distr.csv");
 		
 		// Return results
 		Object solnObj[] = new Object[dtmc.getNumStates()];
