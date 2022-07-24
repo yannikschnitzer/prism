@@ -1795,7 +1795,7 @@ public class POMDPModelChecker extends ProbModelChecker
 					double immediateReward = ( mdpRewards.getTransitionReward(s, choice) + mdpRewards.getStateReward(s) );
 					double stateReward = mdpRewards.getStateReward(s);
 					int obs = pomdp.getObservation(s);
-					mainLog.println("state=" + s + " meaning=" + getStateMeaning(pomdp, s)+ "safe=" + pomdp.getLabelStates("notbad").get(s)  + " action=" + action + " stateReward=" + stateReward + " immediateReard=" + immediateReward);
+//					mainLog.println("state=" + s + " meaning=" + getStateMeaning(pomdp, s)+ "safe=" + pomdp.getLabelStates("notbad").get(s)  + " action=" + action + " stateReward=" + stateReward + " immediateReard=" + immediateReward);
 				}
 			}
 		}
@@ -1888,7 +1888,7 @@ public class POMDPModelChecker extends ProbModelChecker
 					+ "average undiscounted reward" + ";" + "average discounted reward" + ";" + "average time spent " + ";" + "isSafeTrace");
 
 		int numEpisodes = 1;
-		for (int shieldLevel = 2; shieldLevel < 3; shieldLevel ++) {
+		for (int shieldLevel = 1; shieldLevel < 2; shieldLevel ++) {
 			ArrayList<Double>  undiscountedReward = new ArrayList<Double> ();
 			double totalUndiscountedReward = 0;
 			ArrayList<Double> discountedReward = new ArrayList<Double> ();
@@ -1959,12 +1959,15 @@ public class POMDPModelChecker extends ProbModelChecker
 		double noParticles = 1200; 
 		PartiallyObservableMonteCarloPlanning pomcp = new PartiallyObservableMonteCarloPlanning(pomdp, mdpRewards, target, min, statesOfInterest, endStates,
 																								discount, c, threshold, timeout, noParticles, useLocalShield);
-		pomcp.setTranslationFile("E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\translation\\" +"obstacle-6-translate.txt");
-		pomcp.setWinningFile("E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\winningregion\\" + modelName + modelArgs +"fixpoint.wr");
+//		pomcp.setTranslationFile("E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\translation\\" +"obstacle-6-translate.txt");
+//		pomcp.setWinningFile("E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\winningregion\\" + modelName + modelArgs +"fixpoint.wr");
 		pomcp.setShieldLevel(shield);
-		String mainTranslation = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\translation\\" +"obstacle-6-translate.txt";
+//		String mainTranslation = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\translation\\" +"obstacle-6-translate.txt";
+//		String mainWinning = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\winningregion\\" + modelName + modelArgs +"fixpoint.wr";
+
+		String mainTranslation = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\translation\\" +"rocks2Base-6-translate.txt";
 		String mainWinning = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\winningregion\\" + modelName + modelArgs +"fixpoint.wr";
-		
+
 		pomcp.setMainShield(mainWinning, mainTranslation);
 		pomcp.initializeLocalShield();
 		
