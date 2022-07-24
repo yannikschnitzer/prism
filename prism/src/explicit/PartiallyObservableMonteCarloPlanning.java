@@ -630,6 +630,33 @@ import java.math.BigInteger;
 	{
 		belief.addParticle(s);
 	}
+	public POMCPNode getChildByActionIndex(int index) {
+		for (POMCPNode child: children) {
+			if (child.getH() == index) {
+				return child;
+			}
+		}
+		return null;
+	}
+	public boolean checkChildByObservationIndex(int index) {
+		if (children == null){
+			return false;
+		}
+		for (POMCPNode child: children) {
+			if (child.getH() == index) {
+				return true;
+			}
+		}
+		return true;
+	}
+	public POMCPNode getChildByObservationIndex(int index) {
+		for (POMCPNode child: children) {
+			if (child.getH() == index) {
+				return child;
+			}
+		}
+		return null;
+	}
 }
 
  class POMCPBelief{
@@ -1058,16 +1085,15 @@ public class PartiallyObservableMonteCarloPlanning {
 			expand(vnode);
 		}
 		PeakTreeDepth = TreeDepth;
+
+		// TODO check later
+		// For shield 1; add sample for only first layer
 		if (TreeDepth == 1 && shieldLevel < 4) {
 			vnode.getBelief().addParticle(state);
 		}
-		if (TreeDepth > 1 && shieldLevel == 3) {
-			vnode.getBelief().addParticle(state);
-		}
-		
 		int actionIndex = GreedyUCB(vnode, true);
 
-		
+		// For shield 4; add sample for every layer		
 		if (shieldLevel == 4) {
 			vnode.getBelief().addParticle(state);
 			if (shieldLevel == 4 && !isSetOfStatesWinning(vnode.getBelief().getUniqueStatesInt())) {
@@ -1090,27 +1116,20 @@ public class PartiallyObservableMonteCarloPlanning {
 				}
 			}
 		}
-		//check in winning
-		
 		
 //		System.out.println("TreeDepth = " + TreeDepth);
 //		System.out.println("particles  " + vnode.getBelief().getUniqueStatesInt());
 		// qnode = vnode ->  Child
-		ArrayList<POMCPNode> children = vnode.getChildren();
-		POMCPNode qnode = new POMCPNode();
-		for (POMCPNode child : children) {
-			if (child.getH() == actionIndex) {
-				qnode = child;
-				break;
-			}
-		}
-		
-		double totalReward = simulateQ(state, qnode, actionIndex);
-		
-//		if(totalReward< -20) {
-//			System.out.println("? <-20"+TreeDepth);
+//		ArrayList<POMCPNode> children = vnode.getChildren();
+//		POMCPNode qnode = new POMCPNode();
+//		for (POMCPNode child : children) {
+//			if (child.getH() == actionIndex) {
+//				qnode = child;
+//				break;
+//			}
 //		}
-//		
+		POMCPNode qnode = vnode.getChildByActionIndex(actionIndex);
+		double totalReward = simulateQ(state, qnode, actionIndex);
 		vnode.increaseV(totalReward);
 		vnode.increaseN(1);
 		return totalReward;
@@ -1130,57 +1149,37 @@ public class PartiallyObservableMonteCarloPlanning {
 			displayState(nextState);
 		}
 		
-		boolean isvnode = false;
-		POMCPNode vnode = new POMCPNode();
-
 		state = nextState; 
-		ArrayList<POMCPNode> children = qnode.getChildren();
-		if (children == null) {
-			isvnode = false;
-		}
-		else {
-			for (POMCPNode child : children) {
-				if (child.getH() ==  observation) {
-					vnode = child;
-					isvnode = true;
-					break;
-				}
-			}
+		POMCPNode vnode = null;
+		if (qnode.checkChildByObservationIndex(observation)){
+			vnode = qnode.getChildByObservationIndex(observation);
 		}
 
 		int paraExpandCount = 1;
-		if (!isvnode && done == 0 && qnode.getN() >= paraExpandCount) {
+		if (vnode != null  && done == 0 && qnode.getN() >= paraExpandCount) {
 			vnode = expandNode(state);			
 			vnode.setH(observation);
 			vnode.setID(nodeCount);
 			updateNodeCount();
 			vnode.setParent(qnode);
 			qnode.addChild(vnode);
-			isvnode = true;
 		}
-		
 		
 		if(done == 0) {
 			TreeDepth++;
-			if(isvnode) {
+			if(vnode != null) {
 				delayedReward = simulateV(state, vnode);
 			}
 			else {
 				delayedReward = Rollout(state);	
-				//delayedReward = rollout(state , 0);	
 			}
 			TreeDepth--;
-		} else {
-			//System.out.println("done" + TreeDepth);
 		}
-//		System.out.println("immediateReward" + immediateReward);
-//		System.out.println("delayedReward" + delayedReward);
-//		System.out.println("gamma * delayedReward" + gamma * delayedReward);
-//		System.out.println("immediateReward + gamma * delayedReward" + (immediateReward + gamma * delayedReward));
 		double totalReward = immediateReward + gamma * delayedReward;
 		qnode.increaseN(1);
 		qnode.increaseV(totalReward);
 		return totalReward;
+	
 	}
 	
 	public POMCPNode expandNode(int state)

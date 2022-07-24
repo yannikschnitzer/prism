@@ -1888,7 +1888,7 @@ public class POMDPModelChecker extends ProbModelChecker
 					+ "average undiscounted reward" + ";" + "average discounted reward" + ";" + "average time spent " + ";" + "isSafeTrace");
 
 		int numEpisodes = 1;
-		for (int shieldLevel = 1; shieldLevel < 2; shieldLevel ++) {
+		for (int shieldLevel = 0; shieldLevel < 1; shieldLevel ++) {
 			ArrayList<Double>  undiscountedReward = new ArrayList<Double> ();
 			double totalUndiscountedReward = 0;
 			ArrayList<Double> discountedReward = new ArrayList<Double> ();
