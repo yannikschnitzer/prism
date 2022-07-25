@@ -17,7 +17,7 @@ import static java.lang.Math.sqrt;
 
 public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugmented {
     int atoms = 1;
-    double delta_z = 1;
+//    double delta_z = 1;
     double [][][] z ;
     double [] p;
     int n_actions = 4;
