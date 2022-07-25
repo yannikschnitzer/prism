@@ -1884,10 +1884,10 @@ public class POMDPModelChecker extends ProbModelChecker
 
 		
 		PrismFileLog out = new PrismFileLog(path + modelName + modelArgs + crashCost + timeStamp  + ".txt");
-		out.println("modelName" + ";"+ "nStates" + ";" + "shieldLevel" + ";" + "numEpisode" + ";" + "numEpisodes" + ";" + "undiscounted reward" + ";" + "discounted reward" + ";" + "timeSpent" + ";"   
-					+ "average undiscounted reward" + ";" + "average discounted reward" + ";" + "average time spent " + ";" + "isSafeTrace");
+//		out.println("modelName" + ";"+ "nStates" + ";" + "shieldLevel" + ";" + "numEpisode" + ";" + "numEpisodes" + ";" + "undiscounted reward" + ";" + "discounted reward" + ";" + "timeSpent" + ";"   
+//					+ "average undiscounted reward" + ";" + "average discounted reward" + ";" + "average time spent " + ";" + "isSafeTrace");
 
-		int numEpisodes = 1;
+		int numEpisodes = 100;
 		for (int shieldLevel = 0; shieldLevel < 1; shieldLevel ++) {
 			ArrayList<Double>  undiscountedReward = new ArrayList<Double> ();
 			double totalUndiscountedReward = 0;
@@ -1987,8 +1987,8 @@ public class POMDPModelChecker extends ProbModelChecker
 		List<Object> allowedActions;
 		boolean isSafeTrace = true;
 
-		out.println("prism_state;prism_belief_support;stompy_state;stompy_belief_support;selected_action;available_actions;allowed_actions;state_meaning;safe?;unsafeActions");
-		while (! endStates.contains(state)) {
+//		out.println("prism_state;prism_belief_support;stompy_state;stompy_belief_support;selected_action;available_actions;allowed_actions;state_meaning;safe?;unsafeActions");
+		while (!endStates.contains(state)) {
 			if (verbose >= 0) {
 				mainLog.println("\n =============== Step "+ step + " Cur state " + state + "shield" + shield);
 				pomcp.displayState(state);
@@ -2010,11 +2010,11 @@ public class POMDPModelChecker extends ProbModelChecker
 			}
 			//Object action = pomcp.search(); //
 			Object action = pomcp.selectAction(); // SimulateV SimulateQ
-			ArrayList<Double> sord = pomcp.step(state, action);
-			int nextState = sord.get(0).intValue();
-			int obsSample = sord.get(1).intValue();
-			double reward = sord.get(2);
-			double done = sord.get(3);
+			
+			stepReturn sord = pomcp.step(state, action);
+			int nextState = sord.getState();
+			int obsSample = sord.getObservation();
+			double reward = sord.getReward();
 			if (pomdp.hasLabel("notbad") && !pomdp.getLabelStates("notbad").get(nextState)) {
 				isSafeTrace = false;
 			}
@@ -2030,17 +2030,17 @@ public class POMDPModelChecker extends ProbModelChecker
 				}
 			}
 
-			out.println(state + ";" + pomcp.getRootBeliefSupportPrism() 
-							+ ";" + pomcp.getStompyState(state) 
-							+ ";" + pomcp.getRootBeliefSupportStompy() 
-							+ ";" + action 
-							+ ";" + Arrays.toString(availableActions.toArray()) 
-							+ ";" + Arrays.toString(allowedActions.toArray())
-							+ ";" + pomcp.getStateMeaning(state)
-							+ ";" + isSafeTrace
-							+";" + unsafeActions);
+//			out.println(state + ";" + pomcp.getRootBeliefSupportPrism() 
+//							+ ";" + pomcp.getStompyState(state) 
+//							+ ";" + pomcp.getRootBeliefSupportStompy() 
+//							+ ";" + action 
+//							+ ";" + Arrays.toString(availableActions.toArray()) 
+//							+ ";" + Arrays.toString(allowedActions.toArray())
+//							+ ";" + pomcp.getStateMeaning(state)
+//							+ ";" + isSafeTrace
+//							+";" + unsafeActions);
 
-			pomcp.update(action,  obsSample);
+			pomcp.Update(action,  obsSample);
 			totalUndiscountedReward += reward;
 			totalDiscountedReward += reward * gamma;
 			gamma *= discount;

@@ -175,7 +175,6 @@ import java.math.BigInteger;
 	{
 //		System.out.println("translating");
 		int nStompyStates = StompyStateToObs.size();
-		int nPrismStates= pomdp.getNumStates();
 		//		int StompyState = PrismStateToStompyState[sPrime];
 		//		int StompyObs = StompyStateToStompyObs[StompyState];
 		PrismStateToStompyState = new int[pomdp.getNumStates()];
@@ -519,7 +518,8 @@ import java.math.BigInteger;
 	private double v;
 	private double n;
 	private POMCPBelief belief;
-	private ArrayList<POMCPNode> children;
+//	private ArrayList<POMCPNode> children;
+	private HashMap<Integer, POMCPNode> children;
 	private HashSet<Object> illegalActions; 
 	public POMCPNode() 
 	{
@@ -530,6 +530,7 @@ import java.math.BigInteger;
 	public void clear() 
 	{
 		this.parent = null;
+//		this.children = null;
 		this.children = null;
 		this.h = -1;
 		this.hAction = -1;
@@ -608,16 +609,28 @@ import java.math.BigInteger;
 	{
 		return parent;
 	}
-	public ArrayList<POMCPNode> getChildren() 
-	{
+//	public ArrayList<POMCPNode> getChildren() 
+//	{
+//		return children;
+//	}
+	public HashMap<Integer, POMCPNode> getChildren(){
 		return children;
 	}
-	public void addChild(POMCPNode child) {
+//	public void addChild(POMCPNode child) {
+//		if (children == null) {
+//			children = new ArrayList<POMCPNode> ();
+//		}
+//		children.add(child);
+//	}
+	
+	public void addChild(POMCPNode node, int index) {
 		if (children == null) {
-			children = new ArrayList<POMCPNode> ();
+			children = new HashMap<Integer, POMCPNode> (); 
 		}
-		children.add(child);
+		children.put(index, node);
 	}
+	
+	
 	public void setBelief(POMCPBelief belief) 
 	{
 		this.belief = belief;
@@ -630,37 +643,80 @@ import java.math.BigInteger;
 	{
 		belief.addParticle(s);
 	}
+//	public POMCPNode getChildByActionIndex(int index) {
+//		for (POMCPNode child: children) {
+//			if (child.getH() == index) {
+//				return child;
+//			}
+//		}
+//		return null;
+//	}
 	public POMCPNode getChildByActionIndex(int index) {
-		for (POMCPNode child: children) {
-			if (child.getH() == index) {
-				return child;
-			}
-		}
-		return null;
+		return children.get(index);
 	}
-	public boolean checkChildByObservationIndex(int index) {
-		if (children == null){
+//	public boolean checkChildByObservationIndex(int index) {
+//
+//		if (children == null) {
+//			return false;
+//		}
+//		for (POMCPNode child: children) {
+//			if (child.getH() == index) {
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
+
+//	public boolean checkChildByObservationIndex(int index) {
+//
+//		if (children == null) {
+//			return false;
+//		}
+//		for (POMCPNode child: children) {
+//			if (child.getH() == index) {
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
+	public boolean checkChildByObservationIndex(int index) 
+	{
+		if (children == null ) {
 			return false;
 		}
-		for (POMCPNode child: children) {
-			if (child.getH() == index) {
-				return true;
-			}
-		}
-		return true;
+		return children.containsKey(index);
 	}
-	public POMCPNode getChildByObservationIndex(int index) {
-		for (POMCPNode child: children) {
-			if (child.getH() == index) {
-				return child;
-			}
+
+//	public POMCPNode getChildByObservationIndex(int index) {
+//		if (children != null) {
+//			for (POMCPNode child: children) {
+//				if (child.getH() == index) {
+//					return child;
+//				}
+//			}
+//		}
+//		POMCPNode child = new POMCPNode();
+//		child.setH(index);
+//		child.setParent(this);
+//		this.addChild(child);
+//		return child;
+//	}
+//	
+	public POMCPNode getChildByObservationIndex(int index) 
+	{
+		if (children == null || !children.containsKey(index)) {
+			POMCPNode child = new POMCPNode();
+			child.setH(index);
+			child.setParent(this);
+			this.addChild(child, index);
+			return child;	
 		}
-		return null;
+		return children.get(index);
 	}
+
 }
 
  class POMCPBelief{
-	 private int observation;
 	 private ArrayList<Integer> particles;
 	 private HashSet<Integer> uniqueStatesInt;
 	 private BitSet uniqueStates;
@@ -669,6 +725,17 @@ import java.math.BigInteger;
 		 this.particles = new ArrayList<Integer>();
 		 uniqueStates = new BitSet();
 		 uniqueStatesInt = new HashSet<Integer> ();
+	 }
+	 public void copy(POMCPBelief orginal) {
+		 for (int state: orginal.getParticles()) {
+			 addParticle(state);
+		 }
+	 }
+	 public boolean empty() {
+		 return particles.size() == 0;
+	 }
+	 public ArrayList<Integer> getParticles(){
+		 return particles;
 	 }
 	 public Integer sample() 
 	 {
@@ -729,7 +796,36 @@ import java.math.BigInteger;
 		 return dist;
 	 }
  }
-
+  class stepReturn{
+	 private int state;
+	 private int observation;
+	 private double reward;
+	 private boolean terminal;
+	 stepReturn(int state, int observation, double reward, boolean termial)
+	 {
+		 this.state = state;
+		 this.observation = observation;
+		 this.reward = reward;
+		 this.terminal = termial;
+	 }
+	 public int getState() 
+	 {
+		 return state;
+	 }
+	 public int getObservation() 
+	 {
+		 return observation;
+	 }
+	 public double getReward() 
+	 {
+		 return reward;
+	 }
+	 public boolean getTerminal() 
+	 {
+		 return terminal;
+	 }
+ }
+ 
 public class PartiallyObservableMonteCarloPlanning {
 	private double numSimulations;
 	private int verbose;
@@ -838,10 +934,9 @@ public class PartiallyObservableMonteCarloPlanning {
 		}
 	}
 	
-	public void setShieldLevel(int i) {
-
+	public void setShieldLevel(int i) 
+	{
 		shieldLevel = i;
-
 	}
 	public double fastUCB(int N, int n) 
 	{
@@ -926,75 +1021,64 @@ public class PartiallyObservableMonteCarloPlanning {
 	public void update(Object action, int obs) 
 	{
 		// update/ prune tree given real action and observation
-		ArrayList<Object> actionObservation = new ArrayList<Object>();
-		actionObservation.add(action);
-		actionObservation.add(obs);
-		history.add(actionObservation);
+		int actionIndex = getActionIndex(action);
+		POMCPNode qnode = root.getChildByActionIndex(actionIndex);
+		POMCPNode vnode = qnode.getChildByObservationIndex(obs);
+		invigorateBelief(root, vnode, action, obs);
+		vnode.clear();
+		root = vnode;
+	}
+//	
+	public boolean Update(Object action, int obs) {
 		
-		POMCPNode aNode = new POMCPNode();
-		ArrayList<POMCPNode> children = root.getChildren();
-		if (children.size()>0) {
-			for (int i =0; i < children.size(); i++) {
-				POMCPNode child = children.get(i);
-				int actionIndex = getActionIndex(action);
-				if (child.getH() == actionIndex) {
-					aNode = child;
-					break;
-				}
+		POMCPBelief beliefs = new POMCPBelief();
+		int actionIndex = getActionIndex(action);
+		POMCPNode qnode = root.getChildByActionIndex(actionIndex);
+		boolean isVnode = qnode.checkChildByObservationIndex(obs);
+		if (isVnode) {
+			POMCPNode vnode = qnode.getChildByObservationIndex(obs);
+			if (verbose > 1) {
+				System.out.println("Matched " + vnode.getBelief().size() + " states");
 			}
+			beliefs.copy(vnode.getBelief()) ;
+		}
+		else {
+			System.out.println("No matching node found");
 		}
 		
-		POMCPNode oNode = getObsNode(aNode, obs);
-		invigorateBelief(root, oNode, action, obs);
-		oNode.clear();
-		setRoot(oNode);
+		if(beliefs.empty() && (!isVnode || qnode.getChildByObservationIndex(obs).getBelief().empty()) ) {
+			return false;
+		}
+		
+		int state = 0;
+		if (isVnode && ! qnode.getChildByObservationIndex(obs).getBelief().empty() ) {
+			POMCPNode vnode = qnode.getChildByObservationIndex(obs);
+			if (! vnode.getBelief().empty()) {
+				state = vnode.getBelief().getParticles().get(0);
+			}
+		} else {
+			state = beliefs.getParticles().get(0);
+		}
+		
+		POMCPNode newRoot = new POMCPNode();
+		expand(newRoot, state);
+		newRoot.setBelief(beliefs);
+		invigorateBelief(root, newRoot, action, obs);
+		setRoot(newRoot);
+		return true;
 	}
 	
-	public POMCPNode getObsNode(POMCPNode aNode, int obs) 
-	{
-        //"""Get the observation node from given action node, adding a new node if necessary """
-		ArrayList<POMCPNode> children = aNode.getChildren();
-		
-		/// what if no children
-		if(children != null) {
-			for (int i =0; i < children.size(); i++) {
-				POMCPNode child = children.get(i);
-				if (child.getH() ==  obs) {
-					return child;
-				}
-			}
-		}
-		POMCPNode oNode = new POMCPNode();
-		oNode.setH(obs);
-		oNode.setParent(aNode);
-		oNode.setID(nodeCount);
-		updateNodeCount();
-		aNode.addChild(oNode);
-		return oNode;
-	}
 	public void invigorateBelief(POMCPNode parent, POMCPNode child, Object action, int obs) 
 	{
 		// fill child belief with particles
-//		System.out.println("updating belief.." );
-//		System.out.println("root belief support" + parent.getBelief().getUniqueStatesInt());
-//		System.out.println("action " + action + " obs " + obs);
-
 		int childBeliefSize = child.getBelief().size();
 		while (childBeliefSize < K) {
 			int s = parent.getBelief().sample();
-//			int choice = pomdp.getChoiceByAction(s, action);
-//			int nextState = step(s, choice);
-//			int obsSample = pomdp.getObservation(nextState);
-//			double reward = mdpRewards.getTransitionReward(s, choice) + mdpRewards.getStateReward(s);
-			
-			ArrayList<Double> sord = step(s, action);
-			int nextState = sord.get(0).intValue();
-			int obsSample = sord.get(1).intValue();
-			double reward = sord.get(2);
-			double d = sord.get(3);
+			stepReturn sord = step(s, action);
+			int nextState = sord.getState();
+			int obsSample = sord.getObservation();
 			if (obsSample == obs) {
 				if (!child.getBelief().getUniqueStatesInt().contains(nextState)) {
-//					System.out.println("add new" + nextState);
 				}
 				child.addBeliefParticle(nextState);
 				childBeliefSize += 1;
@@ -1002,16 +1086,11 @@ public class PartiallyObservableMonteCarloPlanning {
 		}
 	}
 	
-	
-	public ArrayList<Double> step(int state, Object action){
-		ArrayList<Double> sord = new ArrayList<Double> ();
-		//pomdp.getObservationProbAfterChoice(null, state, state);
+	public stepReturn step(int state, Object action)
+	{
 		if(!pomdp.getAvailableActions(state).contains(action)) {
 			System.out.print("error step ");
-			sord.add(0.0);
-			sord.add(-1.0);
-			sord.add(-1.0);
-			sord.add(1.0);
+			return new stepReturn(0, -1, -1, true);
 		}
 		int choice = pomdp.getChoiceByAction(state, action);
 		Iterator<Entry<Integer, Double>> iter = pomdp.getTransitionsIterator(state, choice);
@@ -1029,17 +1108,14 @@ public class PartiallyObservableMonteCarloPlanning {
 		if (min) {
 			reward *= -1;
 		}
-		double d = 0; // whether next state is terminal
+		boolean d = false; // whether next state is terminal
 		if (endStates.contains(nextState)){
-			d = 1;
+			d = true;
 		}
-		sord.add(Double.valueOf(nextState));
-		sord.add(Double.valueOf(obs));
-		sord.add(reward);
-		sord.add(d);
-		return sord;
+		return new stepReturn(nextState, obs, reward, d);
 	}
-	public Object selectAction() {
+	public Object selectAction() 
+	{
 		boolean distableTrue = false;
 		if (distableTrue) {
 			return null;
@@ -1047,9 +1123,7 @@ public class PartiallyObservableMonteCarloPlanning {
 		else {
 			UCTSearch();
 		}
-		
 		int actionIndex = GreedyUCB(root, false);
-		
 		return allActions.get(actionIndex);
 	}
 	public void UCTSearch()
@@ -1061,7 +1135,7 @@ public class PartiallyObservableMonteCarloPlanning {
 				root.getBelief().displayUniqueStates();
 			}
 			if (verbose >= 2 ) {
-				System.out.println("================================Start UCT search  sample state" + state + " num Seracrh" + n);
+				System.out.println("=============Start UCT search  sample state" + state + " num Seracrh" + n);
 			}
 			TreeDepth = 0;
 			PeakTreeDepth =0;
@@ -1081,12 +1155,9 @@ public class PartiallyObservableMonteCarloPlanning {
 	public double simulateV(int state, POMCPNode vnode)
 	{
 		// original code would do actionSelectionFirst, and then do the add particle for only the first layer
-		if (vnode.getChildren() == null) {
-			expand(vnode);
-		}
 		PeakTreeDepth = TreeDepth;
 
-		// TODO check later
+		// TODO check later for shielding logic
 		// For shield 1; add sample for only first layer
 		if (TreeDepth == 1 && shieldLevel < 4) {
 			vnode.getBelief().addParticle(state);
@@ -1111,23 +1182,11 @@ public class PartiallyObservableMonteCarloPlanning {
 				}
 //				System.out.println("after" + vparent.getIllegalActions());
 			} else {
-				if (verbose >=5) {
+				if (verbose >= 5) {
 					System.out.println("safe. Current Belief Support" + vnode.getBelief().getUniqueStatesInt() + " vnode ID="+ vnode.getID() );
 				}
 			}
 		}
-		
-//		System.out.println("TreeDepth = " + TreeDepth);
-//		System.out.println("particles  " + vnode.getBelief().getUniqueStatesInt());
-		// qnode = vnode ->  Child
-//		ArrayList<POMCPNode> children = vnode.getChildren();
-//		POMCPNode qnode = new POMCPNode();
-//		for (POMCPNode child : children) {
-//			if (child.getH() == actionIndex) {
-//				qnode = child;
-//				break;
-//			}
-//		}
 		POMCPNode qnode = vnode.getChildByActionIndex(actionIndex);
 		double totalReward = simulateQ(state, qnode, actionIndex);
 		vnode.increaseV(totalReward);
@@ -1138,11 +1197,11 @@ public class PartiallyObservableMonteCarloPlanning {
 	{
 		double delayedReward = 0;
 		Object action = allActions.get(actionIndex);
-		ArrayList<Double> sord = step(state, action);
-		int nextState = sord.get(0).intValue();
-		int observation = sord.get(1).intValue();
-		double immediateReward = sord.get(2);
-		double done = sord.get(3);
+		stepReturn sord = step(state, action);
+		int nextState = sord.getState();
+		int observation = sord.getObservation();
+		double immediateReward = sord.getReward();
+		boolean done = sord.getTerminal();
 		
 		if (verbose >= 3) {
 			System.out.println("uct action=" + action + " reward=" + immediateReward );
@@ -1156,22 +1215,23 @@ public class PartiallyObservableMonteCarloPlanning {
 		}
 
 		int paraExpandCount = 1;
-		if (vnode != null  && done == 0 && qnode.getN() >= paraExpandCount) {
-			vnode = expandNode(state);			
+		if (vnode == null && !done && qnode.getN() >= paraExpandCount) {
+			vnode = new POMCPNode();
+			expand(vnode, state);
+//			vnode = expandNode(state);			
 			vnode.setH(observation);
-			vnode.setID(nodeCount);
 			updateNodeCount();
 			vnode.setParent(qnode);
-			qnode.addChild(vnode);
+			qnode.addChild(vnode, observation);
 		}
 		
-		if(done == 0) {
+		if(!done) { // 0: ! terminal
 			TreeDepth++;
 			if(vnode != null) {
 				delayedReward = simulateV(state, vnode);
 			}
 			else {
-				delayedReward = Rollout(state);	
+				delayedReward = rollout(state);	
 			}
 			TreeDepth--;
 		}
@@ -1181,31 +1241,29 @@ public class PartiallyObservableMonteCarloPlanning {
 		return totalReward;
 	
 	}
+//	
+//	public POMCPNode expandNode(int state)
+//	{
+//		POMCPNode vnode = new POMCPNode ();
+//		vnode.addBeliefParticle(state);
+//		List <Object> availableActions = getLegalActions(state);
+//		for (Object action : availableActions) {
+//			int actionIndex = getActionIndex(action);
+//			POMCPNode qnode = new POMCPNode();
+//			qnode.setH(actionIndex);
+//			qnode.setHAction(action, true);
+//			qnode.setParent(vnode);
+//			qnode.setID(nodeCount);
+//			nodeCount += 1;
+//			vnode.addChild(qnode);
+//		}
+//		return vnode;
+//	}
 	
-	public POMCPNode expandNode(int state)
-	{
-		POMCPNode vnode = new POMCPNode ();
-		vnode.addBeliefParticle(state);
-		List <Object> availableActions = getLegalActions(state);
-		for (Object action : availableActions) {
-			int actionIndex = getActionIndex(action);
-			POMCPNode qnode = new POMCPNode();
-			qnode.setH(actionIndex);
-			qnode.setHAction(action, true);
-			qnode.setParent(vnode);
-			qnode.setID(nodeCount);
-			nodeCount += 1;
-			vnode.addChild(qnode);
-		}
-		return vnode;
-	}
-	
-	public void expand(POMCPNode parent)
+	public void expand(POMCPNode parent, int state)
 	{	
-		BitSet uniqueStates = parent.getBelief().getUniqueStates();
-		int state = uniqueStates.nextSetBit(0);
+
 		List <Object> availableActions = getLegalActions(state);
-				
 		for (Object action : availableActions) {
 			POMCPNode newChild = new POMCPNode ();
 //			if (shieldLevel == 2 && TreeDepth == 0 && parent.isActionIllegal(action)) {
@@ -1215,29 +1273,29 @@ public class PartiallyObservableMonteCarloPlanning {
 				parent.addIllegalActions(action);
 				continue;
 			}
-			int a = actionToIndex.get(action);
-			newChild.setH(a);
+			int actionIndex = actionToIndex.get(action);
+			newChild.setH(actionIndex);
 			newChild.setHAction(action, true);
 			newChild.setParent(parent);;
 			newChild.setID(nodeCount);
 			updateNodeCount();
-			parent.addChild(newChild);
+			parent.addChild(newChild, actionIndex);
 		}
 		if (parent.getChildren() == null) {
 			System.out.println("May need to add default action");
 		}
 	}
 	
-	public double Rollout(int state)
+	public double rollout(int state)
 	{
 		double totalReward = 0;
 		double discount = 1;
-		double done = 0;
+		boolean done = false;
 		if (verbose >= 3) {
 			System.out.println("starting rollout");
 		}
 		int d = 0;
-		while (done == 0) {
+		while (!done ) {
 			if(discount < e) {
 				break;
 			}
@@ -1247,9 +1305,10 @@ public class PartiallyObservableMonteCarloPlanning {
 			}
 			Random rnd = new Random();
 			Object randomAction = availableActions.get(rnd.nextInt(availableActions.size()));
-			ArrayList<Double> sord = step(state, randomAction);
-			int nextState = sord.get(0).intValue();
-			double reward = sord.get(2);
+			stepReturn sord = step(state, randomAction);
+			int nextState = sord.getState();
+			double reward = sord.getReward();
+			done = sord.getTerminal();
 
 			if (verbose >= 4) {
 				System.out.println("verbose= "+ verbose + " state= " + state + " rollout action=" + randomAction + " reward=" + reward + " discountR=" + reward*discount + " depth=" + d + " totalR=" + totalReward);
@@ -1259,7 +1318,6 @@ public class PartiallyObservableMonteCarloPlanning {
 			totalReward += reward * discount;
 			discount *= gamma;
 			d++;
-			done = sord.get(3);
 			state = nextState;
 		}
 		if (verbose >= 3) {
@@ -1267,46 +1325,12 @@ public class PartiallyObservableMonteCarloPlanning {
 		}
 		return totalReward;
 	}
-
-	public double rollout(int state, int d) {
-		if (Math.pow(gamma, d) < e) {
-			return 0;
-		}
-//		List <Object> availableActions = pomdp.getAvailableActions(state);
-//		////only legal direction
-//		for (int a = availableActions.size() -1 ; a >= 0; a--) {
-//			if (step(state,  availableActions.get(a)).get(2) < -20 ) {
-//				availableActions.remove(a);
-//			}
-//		}
-//		if (availableActions.size() <= 0) {
-//			return 0;
-//		}
-		List <Object> availableActions = getLegalActions(state);
-		Random rnd = new Random();
-		
-		Object randomAction = availableActions.get(rnd.nextInt(availableActions.size()));
-		ArrayList<Double> sord = step(state, randomAction);
-		int nextState = sord.get(0).intValue();
-		double reward = sord.get(2);
-		double done = sord.get(3);
-		
-		if(verbose >=3) {
-			System.out.println("state" + state + "Rollout action = " + randomAction + " Reward = "+ reward);
-			displayState(nextState);
-		}
-		if (done == 1) {
-			return reward;
-		}
-		
-		return reward + gamma * rollout(nextState, d + 1);
-	}
 	
 	public List<Object> getLegalActions(int state)
 	{
 		List <Object> availableActions = pomdp.getAvailableActions(state);
 		for (int a = availableActions.size() -1 ; a >= 0; a--) {
-			if (step(state,  availableActions.get(a)).get(2) < -90 ) {
+			if (step(state,  availableActions.get(a)).getReward() < -90 ) {
 //				System.out.println("========\nstate " + state + "action" + availableActions.get(a));
 //				displayState(state);
 				availableActions.remove(a);
@@ -1320,14 +1344,19 @@ public class PartiallyObservableMonteCarloPlanning {
 	
 	public int GreedyUCB(POMCPNode vnode, boolean ucb) 
 	{
+		if (vnode.getChildren() == null) {
+			int state = vnode.getBelief().getUniqueStatesInt().iterator().next();
+			expand(vnode, state);
+		}
 		ArrayList<Integer> besta = new ArrayList<Integer> ();
 		double bestq = Double.NEGATIVE_INFINITY;
 		
-		ArrayList<POMCPNode> children = vnode.getChildren();
+//		ArrayList<POMCPNode> children = vnode.getChildren();
+		HashMap<Integer, POMCPNode> children = vnode.getChildren();
+		
 		ArrayList<Integer> actionIndexCandidates = new ArrayList<Integer>(); // if all actions are shielded, randomly pick an action
-		for (int i = 0; i < children.size(); i++) {
+		for (int i: children.keySet()) {
 			POMCPNode child = children.get(i);
-			
 			int actionIndex = child.getH();
 			Object action = allActions.get(actionIndex);
 			
@@ -1406,56 +1435,6 @@ public class PartiallyObservableMonteCarloPlanning {
 //			System.out.println("states" + vnode.getBelief().getUniqueStates());
 //			return actionIndex;
 //		}
-		
-		
-
-	}
-	public Object search( ) 
-	{
-		if(verbose >= 3) {
-			System.out.println("\nStart search...");
-		}
-		
-		int state = 0;
-		int n = 0;
-		long startTime = System.currentTimeMillis();
-		
-		if(root.getChildren() == null) {
-			//state = initialBeliefParticles.sample();
-			expand(root);
-		}
-		
-		while (n < numSimulations){
-			if(verbose >=3) {
-				System.out.println("Search num "+n);
-			}
-			double elapsed = (System.currentTimeMillis() - startTime) * 0.001;
-			if (elapsed > timeout) {
-				break;
-			}
-			n += 1;
-			state = root.getBelief().sample();
-			if (verbose >= 2) {
-				System.out.println("==Starting simulation==");
-				displayState(state);
-			}
-			
-			//simulate(state, history, 0);
-			double totalReward = simulate(state, root, 0);
-			
-			if (verbose >= 3) {
-				System.out.println("Total reward = " + totalReward);
-			}
-			if (verbose >= 4) {
-				displayValue(6);
-			}
-		}
-		//displayValue(14);
-		return greedyAction(root, state);		
-//		POMCPNode bestNode = uctActionGetAction(root, state);
-//		int actionIndex = bestNode.getH();
-//		return allActions.get(actionIndex);
-		
 	}
 
 	public int drawStateFromBelief(double[] belief) 
@@ -1488,117 +1467,6 @@ public class PartiallyObservableMonteCarloPlanning {
 		return state; 
 	}
 	
-	public double simulate(int state, POMCPNode node, int d)
-	{
-		double simR = 0;
-		if ((Math.pow(gamma, d) < e) && d != 0)  {
-			return 0;
-		}
-		if (node.getChildren() == null) {
-			expand(node);
-			if(verbose >= 3) {
-				System.out.println("...Start rollout...");
-			}
-			double rollR = rollout(state, d);
-			return rollR;
-		}
-
-		POMCPNode aNode = uctActionGetAction(node, state);
-		int a = aNode.getH();
-		Object action = allActions.get(a);
-		
-		//List<Object>  availableActions = pomdp.getAvailableActions(state);
-		//System.out.println("legit action"+availableActions.contains(action));
-		// action = uct_action(node)
-		// next_s, o, r, d, = self.M.step(s, a)
-		ArrayList<Double> sord = step(state, action);
-		
-		int nextState = sord.get(0).intValue();
-		int obsSample = sord.get(1).intValue();
-		double reward = sord.get(2);
-		double done = sord.get(3);
-		POMCPNode ONode = getObsNode(aNode, obsSample);
-		
-		
-		if (verbose >= 3) {
-			System.out.println("simulateaction = " + action + " reward = "+ reward);
-			displayState(nextState);
-		}
-		ONode.addBeliefParticle(nextState);
-		
-		if (done == 1) {
-			simR = reward;
-		}
-		else {
-			simR = reward + gamma * simulate(nextState, ONode, d + 1);
-		}
-		if (node.getH() != -1) {
-			node.addBeliefParticle(state);
-		}
-		node.increaseN(1);
-		aNode.increaseN(1);
-		double val = (simR - aNode.getV()) / aNode.getN();
-		aNode.increaseV(val);
-		
-		return simR;
-	}
-	
-	public POMCPNode uctActionGetAction(POMCPNode node, int state) 
-	{
-		ArrayList<POMCPNode> children = node.getChildren();
-
-		if (node.getN() == 0) {
-			Random rnd = new Random();
-			return children.get(rnd.nextInt(children.size()));
-		}
-		double logN = Math.log(node.getN() + 1);
-		double maxV = Double.NEGATIVE_INFINITY;
-		ArrayList<POMCPNode> maxChildCandidates = new ArrayList<POMCPNode> ();
-		for (int i = 0; i < children.size(); i++) {
-			POMCPNode child = children.get(i);
-			Object action = allActions.get(child.getH());
-			if (!pomdp.getAvailableActions(state).contains(action)) {
-				continue;
-			}
-			if (child.getN() == 0) {
-				return child;
-			}
-			double child_UCT_V = child.getV() + this.c * Math.sqrt(logN / child.getN());
-			if (child_UCT_V >= maxV) {
-				if (child_UCT_V > maxV) {
-					maxChildCandidates.clear();
-				}
-				maxV = child_UCT_V;
-				maxChildCandidates.add(child);				
-			}
-		}
-		Random rnd = new Random();
-		POMCPNode maxChild = maxChildCandidates.get(rnd.nextInt(maxChildCandidates.size()));
-		if (!pomdp.getAvailableActions(state).contains(allActions.get(maxChild.getH()))) {
-			System.out.println("Er");
-		}
-		return maxChild;
-	}
-	
-	public Object greedyAction(POMCPNode node, int state){
-		double maxV = Double.NEGATIVE_INFINITY;
-		int maxA = -1;
-		ArrayList<POMCPNode> children = node.getChildren();
-		for (int i = 0; i < children.size(); i++) {
-			POMCPNode child = children.get(i);
-			Object action = allActions.get(child.getH());
-			if (! pomdp.getAvailableActions(state).contains(action)) {
-				continue;
-			}
-			if(maxV < child.getV()) {
-				maxV = child.getV();
-				maxA = child.getH();
-			}
-		}
-		return allActions.get(maxA);
-	}
-	
-	
 	public void display()
 	{
 		ArrayList<POMCPNode> q = new ArrayList<POMCPNode> ();
@@ -1611,7 +1479,7 @@ public class PartiallyObservableMonteCarloPlanning {
 			System.out.println("============="+q.size()+"layer = "+ layer++);
 			for (int i = 0; i < size; i++) {
 				POMCPNode cur = q.get(i);
-				ArrayList<POMCPNode> children = cur.getChildren();
+				HashMap<Integer, POMCPNode> children = cur.getChildren();
 				if (children != null) {
 					for (int j = 0; j < children.size(); j++) {
 						if (children.get(j).getH()!= -1) {
@@ -1668,16 +1536,6 @@ public class PartiallyObservableMonteCarloPlanning {
 	{	
 		return pomdp.getStatesList().get(state).toString(varNames);
 	}
-//	public String getStateMeaningAbstract(int state) 
-//	{
-//		List<String> varNames = getVarNames();
-//		String originalMeaning = pomdp.getStatesList().get(state).toString(varNames);
-//		int ax = Integer.valueOf(getValueFromLine(originalMeaning, "ax=" ).replaceAll("[^0-9.]",""));
-//		int ay = Integer.valueOf(getValueFromLine(originalMeaning, "ay=" ).replaceAll("[^0-9.]",""));
-//		originalMeaning = originalMeaning.replace("ax="+ax,  "ax="+(ax/2));
-//		originalMeaning = originalMeaning.replace("ay="+ay,  "ay="+(ay/2));
-//		return originalMeaning;
-//	}
 	public void displayState(int state) 
 	{
 		List<String> varNames = getVarNames();
@@ -1719,13 +1577,9 @@ public class PartiallyObservableMonteCarloPlanning {
 				POMCPNode node = queue.poll();
 				displayNode(node);
 				System.out.println("");
-//				if (!node.isONode()) {
-//					displayNode(node);
-//					System.out.println("");
-//				}
-				ArrayList<POMCPNode> children = node.getChildren();
+				HashMap<Integer, POMCPNode> children = node.getChildren();
 				if (children != null) {
-					for(POMCPNode child : children) {
+					for(POMCPNode child : children.values()) {
 						if (child.getN() > 0) {
 							queue.offer(child);
 						}
@@ -1756,15 +1610,12 @@ public class PartiallyObservableMonteCarloPlanning {
 	public boolean isActionShieldedForNode(POMCPNode node, Object action) // Main interface checking if action should be shielded
 	{
 		HashSet<Integer> currentBeliefSupport = node.getBelief().getUniqueStatesInt();
-		
 		return isActionShieldedForStates(currentBeliefSupport, action);
 	}
-	
 	
 	public HashSet<Integer> getNextBeliefSupport(HashSet<Integer> beliefSupport, Object action)
 	{
 		HashSet<Integer> nextBeliefSupport = new HashSet<Integer> ();
-		
 		for (int state: beliefSupport) { // for every state in current belief support
 			HashSet<Integer> nextStates = getNextStates(state, action);			// get its successor states
 			nextBeliefSupport.addAll(nextStates);			// add these states into next belief support
@@ -1793,8 +1644,7 @@ public class PartiallyObservableMonteCarloPlanning {
 	{
 		HashSet<Integer> nextBeliefSupport = getNextBeliefSupport(beliefSupport, action);
 		if (!useLocalShields) {
-			System.out.println("hehreeeDDDDDDDDDD");
-
+			System.out.println("Use concetralized shield");
 			if (!mainShield.isSetOfStatesWinning(nextBeliefSupport)) {
 //				System.out.print("action shield for " + beliefSupport);
 				return true; // action should be shielded because next belief support is not winning
@@ -1816,7 +1666,6 @@ public class PartiallyObservableMonteCarloPlanning {
 				}
 			}
 			System.out.println("Not shielded: action "  + action);
-
 			return false;
 		}
 	}
@@ -1835,616 +1684,3 @@ public class PartiallyObservableMonteCarloPlanning {
 		}
 	}
 } 
-//	
-//	public void setTranslationFile(String file) {
-//		translationFile = file;
-//	}
-//	public void setWinningFile(String file) {
-//		winningFile = file;
-//	}
-//	public void importWinningRegion() 
-//	{
-//		//reading translate
-////		String model = "obstacle-6-";
-////		String translationPath = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\translation\\";
-////		String translateFrile = translationPath + model + "translate.txt";
-////		loadTranlateFromFile(translateFrile);
-//		loadTranslationFromFile(translationFile);
-//		// reading winning region
-//		// prismObs -> belief support (represented in big integer, which can be converted in binary, and corrspoding to PrsimObsToPrismStates)
-//		//String winngingFile = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\winningregion" + "\\obstacle-2-fixpoint.wr";
-////		String winningRegionPath = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\precomputed_winningregions\\";
-////		String winngingFile = winningRegionPath + model + "fixpoint.wr";
-//		loadWinningRegionFromFile(winningFile);
-////		displayWinningRegion();
-//	}
-//	
-//	public void loadTranslationFromFile(String translateFrile) 
-//	{
-//		StompyStateToObs = new ArrayList<Integer> ();
-//		HashMap<String, Integer> StompyMeaning2State = new HashMap<String, Integer>();
-//		// get StompyStateToObs and StompyMeaningToState
-//		// get StompyObsToStompyStates
-//		try {
-////			List<String> varNames = getVarNames();
-//			
-//			BufferedReader in = new BufferedReader(new FileReader(translateFrile));
-//			String str;
-//			while((str = in.readLine()) != null) {
-////				System.out.println(str + translateFrile);
-//
-//				if (str.startsWith("Actions")) {
-//					str = str.substring("Actions".length()).replace("{", "").replace("}", "");
-//					stompyActions = str.split(",", 0);
-////					for (String a : stompyActions) {
-////						System.out.print(a);
-////					}
-//					continue;
-//				}
-//				str = str.replace("\"", "").replace(":", "").replace("}", ",");
-//				int state = Integer.parseInt(getValueFromLine(str, "state="));
-//				int obs= Integer.parseInt(getValueFromLine(str, "obs="));
-//				StompyStateToObs.add(obs);
-//				String meaning = "";
-//				int numberVariables = varNames.size();
-//				for (int i = 0; i < numberVariables; i++) {
-//					String varName = varNames.get(i);
-//					String value = getValueFromLine(str, varName);
-//					//meaning += varName + "=" + value + ",";
-//					if (i > 0) {
-//						meaning += ",";
-//					}
-//					meaning += value;
-//				}
-//				//meaning = "(" + meaning.substring(0, meaning.length()-1) + ")" ;
-//				StompyMeaning2State.put(meaning, state);
-//			}
-//			in.close();
-//			
-//			// build stommpyObsToStompyStates;
-//			StompyObsToStompyStates = new ArrayList<ArrayList<Integer>> ();
-//			int numStompyStates = StompyStateToObs.size();
-//			for (int s = 0; s < numStompyStates; s++) {
-//				ArrayList<Integer> StompyStatesPerObservation = new ArrayList<Integer> ();
-//				StompyObsToStompyStates.add(StompyStatesPerObservation);
-//			}
-//			for (int StompyState = 0; StompyState < numStompyStates; StompyState++) {
-//				int StompyObs = StompyStateToObs.get(StompyState); 
-//				StompyObsToStompyStates.get(StompyObs).add(StompyState); 
-//			}
-//			translate(StompyMeaning2State);
-//		} catch(IOException e) {
-//		}
-//	}
-//	
-//	public String getValueFromLine(String str, String feature) 
-//	{
-//		String value = "";
-//		int startIndex = str.indexOf(feature) + feature.length();
-//		int endIndex = startIndex + 1;
-//		while ((endIndex < str.length()) &&  (str.charAt(endIndex) != ',' || str.charAt(endIndex) != ',')   ) {
-//			endIndex++;
-//		}
-//		value = str.substring(startIndex, endIndex);
-//		return value;
-//	}
-//
-//	
-//	public void translate(HashMap<String, Integer> StompyMeaning2State) 
-//	{
-//		int nStompyStates = StompyStateToObs.size();
-//		int nPrismStates= pomdp.getNumStates();
-//		//		int StompyState = PrismStateToStompyState[sPrime];
-//		//		int StompyObs = StompyStateToStompyObs[StompyState];
-//		PrismStateToStompyState = new int[pomdp.getNumStates()];
-//		HashMap<Integer, ArrayList<Integer>> StompyStateToPrismState = new HashMap<Integer, ArrayList<Integer>>();
-//		for (int s = 0; s < nStompyStates; s++) {
-//			StompyStateToPrismState.put(s, new ArrayList<Integer>());
-//		}
-//		
-//		for (int PrismState = 0; PrismState < pomdp.getNumStates(); PrismState++) {
-//			String meaning = "";
-//			
-////			if (nStompyStates == nPrismStates) {
-////				meaning = getStateMeaning(PrismState);
-////			} else {
-////				meaning = getStateMeaningAbstract(PrismState);
-////				System.out.println("use absract shielding");
-////			}
-//			
-//			//meaning = getStateMeaning(PrismState);
-//			
-////			meaning = getStateMeaningAbstract(PrismState);
-//			meaning = pomdp.getStatesList().get(PrismState).toStringNoParentheses();
-//			int StompyState = -1;
-//			if (StompyMeaning2State.containsKey(meaning)){
-//				StompyState = StompyMeaning2State.get(meaning);
-//			} else {
-//				System.out.println("no match");
-//				continue; // prism state has not couterpart in stompystate
-//			}
-//			
-//			PrismStateToStompyState[PrismState] =  StompyState; //key
-//			
-////			System.out.println("Prism state= " + PrismState + " " + getStateMeaning(PrismState)+ " to StompyState => "+ StompyState + " " + meaning);
-//			
-//			ArrayList<Integer> tp = StompyStateToPrismState.get(StompyState);
-//			tp.add(PrismState);
-//			StompyStateToPrismState.put(StompyState, tp);
-//			
-//			PrismObsToStompyObs[pomdp.getObservation(PrismState)] = StompyStateToObs.get(StompyState);// StompyStateToObs[StompyState];
-////			System.out.println(pomdp.getObservation(PrismState) + "xxx" + StompyStateToObs.get(StompyState));
-////			StompyObsToPrismObs[StompyStateToObs.get(StompyState)] = pomdp.getObservation(PrismState);
-//		}			
-//		
-////		for (int s = 0; s < nPrismStates; s++) {
-////			System.out.println("Prism State " + s + getStateMeaning(s) + " Prism Obs " + pomdp.getObservation(s) + 
-////					" Stompy State " + PrismStateToStompyState[s] 
-////							+ " Stompy Obs "+ PrismObsToStompyObs[pomdp.getObservation(s)]  +"alt " + StompyStateToObs.get(PrismStateToStompyState[s]) 
-////							+ getStateMeaningAbstract(s));
-////		}
-////		
-//		
-//		for (int i = 0; i < pomdp.getNumObservations(); i++) {
-//			ArrayList<Integer> StompyStatesPerObservation = new ArrayList<Integer> (); // dummy
-//			StompyObsToStompyStates.add(StompyStatesPerObservation); // dummy
-////
-////			ArrayList<Integer> PrismStatesPerObservation = new ArrayList<Integer> ();
-////			PrismObsToPrismStates.add(PrismStatesPerObservation);
-//		}
-//		
-//		for (int StompyState = 0; StompyState < nStompyStates; StompyState++) {
-//			int StompyObs = StompyStateToObs.get(StompyState); // dummy
-//			StompyObsToStompyStates.get(StompyObs).add(StompyState); // dummy
-//
-////			if (nStompyStates == nPrismStates) {
-////				int PrismState = StompyStateToPrismState.get(StompyState).get(0);
-////				int PrismObs = pomdp.getObservation(PrismState);
-////				PrismObsToPrismStates.get(PrismObs).add(PrismState);
-////			}else {
-//////				asddddddd
-////			}
-//		}
-//	}
-//	public void loadWinningRegionFromFile(String winngingFile) 
-//	{
-//		try {
-//			BufferedReader in = new BufferedReader(new FileReader(winngingFile));
-//			String str;
-//			long[] observationSizes = new long[pomdp.getNumObservations()];
-//			long state = 0;
-//			int observation = 0;
-//			String preamblestream;
-//			//winningregion
-//			
-//			while((str = in.readLine()) != null) {
-//				if(str.length()>0 && str.charAt(0)=='#') {
-//					continue;
-//				}
-//				if(state == 0) {
-//					//reading preamble
-//					state = 1;
-//				} else if (state == 1) {
-//					if (str.indexOf(":winningregion") >= 0) {
-//						state = 2;
-//					}else {
-//						preamblestream = str;
-//					}
-//				} else if (state == 2) {
-//					String[] entries = str.split(" ");
-//					for (int ob = 0; ob < entries.length; ob++) {
-//						observationSizes[ob] = Long.parseLong(entries[ob]);
-//					}
-//					// wr = winningRegion(observationSizes);
-//					state = 3;
-//				} else if (state == 3) { //eg. 84 1154891893868338944 139664365006618624;84 1442277793550311168 139664365006618624;
-//					if (str.length() == 0) {
-//						++observation;
-//						continue;
-//					}
-//					String[] entries = str.split(";");
-//					for (int i = 0; i < entries.length; i++) {
-//						String[] subEntries = entries[i].split(" "); //eg. 84 1154891893868338944 139664365006618624;
-//						ArrayList<BigInteger> bv = new ArrayList<BigInteger> ();
-//						long obsSize = Long.parseLong(subEntries[0]); // eg. 84
-//						for (int j = 1; j < subEntries.length; j++) {
-//							BigInteger beliefSupport = new BigInteger(subEntries[j]);
-//							//String beliefSupport = subEntries[j]; //eg. 1154891893868338944
-//							bv.add(beliefSupport);
-//						}
-//						updateWinningRegion(winningRegion, observation, bv);
-//						//updateWinningRegion(winningRegion,  StompyObsToPrismObs[observation], bv);
-//					}
-//					++observation;
-//				}
-//			}
-//			in.close();
-//		} catch(IOException e) {
-//		}
-//		displayWinningRegion();
-//	}
-//	public void displayWinningRegion() {
-//		System.out.println("output winningregion");
-//		for (int observation = 0; observation < pomdp.getNumObservations(); observation++) {
-//			ArrayList<ArrayList<BigInteger>> existingWinningSupports = winningRegion.get(observation);
-//			if (existingWinningSupports == null) {
-//				System.out.println("Obs = " + observation + " NULL");
-//			} else {
-//				System.out.println("Obs = " + observation +" StompyObs = " + PrismObsToStompyObs[observation]);
-//				for (ArrayList<BigInteger> support: existingWinningSupports) {
-//					for (BigInteger tp: support) {
-//						System.out.print(tp + " ");
-//					}
-//					System.out.print(";");
-//				}
-//				System.out.println("");
-//			}
-//		}
-//	}
-//	public boolean updateWinningRegion(Map<Integer, ArrayList<ArrayList<BigInteger>>> winningRegion, int observation, ArrayList<BigInteger> winning) 
-//	{
-//		ArrayList<ArrayList<BigInteger>> existingWinningSupports = winningRegion.get(observation);
-//		if (existingWinningSupports == null) {
-//			existingWinningSupports = new ArrayList<ArrayList<BigInteger>>();
-//			existingWinningSupports.add(winning);
-//			winningRegion.put(observation, existingWinningSupports);
-//			return true;
-//		}
-//
-//		ArrayList<ArrayList<BigInteger>> newWinningSupports = new ArrayList<ArrayList<BigInteger>>();
-//		boolean changed = false;
-//		for (ArrayList<BigInteger> support : existingWinningSupports) {
-//			if (isFirstBeliefSupportSubsetOfSecond(winning, support) ){ 
-//				// This new winning support is already covered.
-//				return false;
-//			}
-//			if (isFirstBeliefSupportSubsetOfSecond(support, winning)) {
-//				// This new winning support extends the previouse support, thus the previous is now spurious
-//				changed = true;
-//			} else {
-//				newWinningSupports.add(support);
-//			}
-//		}
-//		//only if changed
-//		if (changed) {
-//			newWinningSupports.add(winning);
-//			winningRegion.put(observation, newWinningSupports);
-//		} else {
-//			existingWinningSupports.add(winning);
-//			winningRegion.put(observation, existingWinningSupports);
-//		}
-//		return true;
-//	}
-//
-//	public int getAX(int state) {
-//		int ax = -1;
-//		String meaning = getStateMeaning(state);
-//		String [] meanings = meaning.split(",");
-//		for (int i = 0; i < meanings.length; i++) {
-//			if(meanings[i].contains("ax")){
-//				String [] values = meanings[i].split("=");
-//				ax  = Integer.parseInt(values[1]);
-//				break;
-//			}
-//		}
-//		return ax;
-//	}
-//	
-//	public boolean isActionShieldedForStates_BackUp(HashSet<Integer> states, Object action) 
-//	{
-//		// get next belief supports
-//		HashMap<Integer, HashSet<Integer>> nextObsToUniqueStates= new HashMap<Integer, HashSet<Integer>> ();
-//		
-//		for (int state : states) {
-//			int choice = pomdp.getChoiceByAction(state, action);
-//			Iterator<Entry<Integer, Double>> iter = pomdp.getTransitionsIterator(state, choice);
-//			while (iter.hasNext()) {
-//				Map.Entry<Integer, Double> trans = iter.next();
-//				int nextState = trans.getKey();
-//				int PrismObs = pomdp.getObservation(nextState);
-//				int StompyState = PrismStateToStompyState[nextState];
-//				int StompyObs = StompyStateToObs.get(StompyState);
-//				if(verbose == 9) {
-//					System.out.println(nextState);
-//				}
-//				if (winningRegion.get(StompyObs) == null) { // if not winning support for this obs
-//					if (!endStates.contains(nextState)) {
-//						// this state is not a end state
-//						return true;
-//					}
-//					
-////					if (endStates.contains(nextState)) {
-//////						System.out.println("Safe Action to end" + action);
-////						if(verbose == 9) {
-////							System.out.println("Safe Action to end" + action + "state" +nextState);
-////						}
-////						return false;
-////					} else {
-//////						System.out.println("Leading to no winning obs" + action);
-////						if(verbose == 9) {
-////							System.out.println("Leading to no winning obs" + action + "state" +nextState);
-////						}
-////						return true;
-////					}
-////					
-//				}
-//				if(nextObsToUniqueStates.get(PrismObs) == null) {
-//					nextObsToUniqueStates.put(PrismObs, new HashSet<Integer> ());
-//				}
-//				nextObsToUniqueStates.get(PrismObs).add(nextState);
-//			}
-//		}
-//		
-//		for (int PrismObs : nextObsToUniqueStates.keySet()) {
-//			HashSet<Integer> nextStates =  nextObsToUniqueStates.get(PrismObs);
-////			System.out.println("Current states" + states);
-////			System.out.println("If PrismObs = " + PrismObs);
-//			if(verbose == 9) {
-//				System.out.println("Then nextStates " + nextStates);
-//			}
-//			if (!isSetOfStatesWinning(nextStates)) {
-//				// this observation is not safe
-//				// this action should be shielded
-//				return true;
-//			}
-//		}
-//		return false;
-//	}
-//	public boolean isSetOfStatesWinning(HashSet<Integer> PrismStates) 
-//	{
-//		// convert to Stompy obs 
-//		HashMap<Integer, HashSet<Integer>> StompyObs2StompyStates = new HashMap<Integer, HashSet<Integer>> ();
-//		for (int state : PrismStates) {
-//			int StompyState = PrismStateToStompyState[state];
-//			int StompyObs = StompyStateToObs.get(StompyState);
-//			
-//			if (winningRegion.get(StompyObs) == null) { // if not winning support for this obs
-//				if (!endStates.contains(state)) { // logic to do
-//					return false;
-//				}
-//			}
-//			int index = StompyObsToStompyStates.get(StompyObs).indexOf(StompyState);
-////			System.out.println("state " + state + " stompy state " + StompyState + " stompy obs" + StompyObs + " index " +index);
-////			displayState(state)
-//			if (StompyObs2StompyStates.get(StompyObs) == null) {
-//				StompyObs2StompyStates.put(StompyObs, new HashSet<Integer> ());
-//			}
-//			//HashSet<Integer> StompyStates = new HashSet<Integer> ();
-//			HashSet<Integer> StompyStates = StompyObs2StompyStates.get(StompyObs); //wrong 2 opened an new one every time
-//			StompyStates.add(index); 
-//			StompyObs2StompyStates.put(StompyObs, StompyStates);
-//		}
-//		
-//		for (int StompyObs : StompyObs2StompyStates.keySet()) {
-//			if (winningRegion.get(StompyObs) == null) { // if not winning support for this obs
-//					return true; // all states are in end states; other wise it would return false above
-//			}
-//			ArrayList<BigInteger> nextSupport = getBigIntegerFromStateIndices(StompyObs2StompyStates.get(StompyObs), StompyObs);
-////			System.out.println("Big Integer = "+ nextSupport.toString() + "obs" + StompyObs + "IsWinning" + isSupportWinning(nextSupport, StompyObs));
-//			if (!isSupportWinning(nextSupport, StompyObs)) {
-//				return false;
-//			}
-//		}
-//		return true;
-//	}
-//
-//	public ArrayList<BigInteger> getBigIntegerFromStateIndices( HashSet<Integer> stateIndices, int StompyObs)
-//	{
-//		ArrayList<BigInteger> nextSupport = new ArrayList<BigInteger> ();
-//		ArrayList<ArrayList<BigInteger>> beliefSupports = winningRegion.get(StompyObs);
-//		int nBigInteger = beliefSupports.get(0).size();
-//		for (int i  = 0; i < nBigInteger; i++) {
-//			nextSupport.add(new BigInteger("0"));
-//		}
-//		for (int index : stateIndices) {
-//			int bucket = (int) (index / 64);
-//			int indexInBucket = 63 - (index - 64 * bucket) ;
-//			BigInteger base = new BigInteger("2");
-//			BigInteger tp = nextSupport.get(bucket).add(base.pow(indexInBucket));
-//			nextSupport.set(bucket, tp);
-//		}
-//		System.out.println("next support" + nextSupport);
-//		return nextSupport;
-//	}
-//	public boolean isSupportWinning(ArrayList<BigInteger> nextSupport, int StompyObs) 
-//	{
-//		boolean isThisObsWinning = false;
-//		ArrayList<ArrayList<BigInteger>> beliefSupports = winningRegion.get(StompyObs);
-//		for (ArrayList<BigInteger> winning : beliefSupports) {
-////			System.out.println("next Support " + nextSupport +   " winning" + winning + " < " + isFirstBeliefSupportSubsetOfSecond(nextSupport, winning));
-//			if (isFirstBeliefSupportSubsetOfSecond(nextSupport, winning)) {
-//				isThisObsWinning = true;
-////				System.out.println("nextSupport, winning" + nextSupport.toString() + winning.toString());
-//				break;
-//			}
-//		}
-//		return isThisObsWinning;
-//	}
-//	
-//	public boolean isFirstBeliefSupportSubsetOfSecond(ArrayList<BigInteger> first, ArrayList<BigInteger> second) 
-//	{
-//		for (int i = 0; i < first.size(); i++) {
-//			BigInteger firstAndSecond = first.get(i).and(second.get(i));
-//			if (!firstAndSecond.equals(first.get(i))) {
-//				return false;
-//			}
-//		}
-//		return true;
-//	}
-////	public boolean isActionShielded_A (POMCPNode node, Object action) 
-////	{
-////		HashSet<Integer> currentUniqueStates =  node.getBelief().getUniqueStatesInt();
-////		
-////		System.out.println("\ncurrentUniqueStates" + currentUniqueStates + "considering action " + action);
-////		
-////		//With this action, get all possible observations, and belief support per observation
-////		HashMap<Integer, HashSet<Integer>> nextObsToUniqueStates= new HashMap<Integer, HashSet<Integer>> ();
-////		for (int s : currentUniqueStates) {
-////			int choice = pomdp.getChoiceByAction(s, action);
-////			Iterator<Entry<Integer, Double>> iter = pomdp.getTransitionsIterator(s,choice);
-////			while (iter.hasNext()) {
-////				Map.Entry<Integer, Double> trans = iter.next();
-////				int sPrime = trans.getKey();
-////				int PrismObs =  pomdp.getObservation(sPrime);
-////				int StompyState = PrismStateToStompyState[sPrime];
-////				int StompyObs = StompyStateToObs.get(StompyState);
-//////				System.out.println("PrismState\t"+ sPrime + " \tPrismObs\t"+PrismObs);
-//////				System.out.println("StompyState\t"+ StompyState + " \tstompyObs\t"+StompyObs);
-////	
-////				if (winningRegion.get(StompyObs) == null) { // if not winning support for this obs
-////					if (endStates.contains(sPrime)) {
-//////						System.out.println("Safe Action to end" + action);
-////						return false;
-////					} else {
-//////						System.out.println("Leading to no winning obs" + action);
-////						return true;
-////					}	
-////				}
-////				
-////				if(nextObsToUniqueStates.get(PrismObs)  == null) {
-////					nextObsToUniqueStates.put(PrismObs, new HashSet<Integer> ());
-////				}
-////				HashSet<Integer> nextStates =  nextObsToUniqueStates.get(PrismObs);
-////				nextStates.add(sPrime); //wrong 1 without adding sprime
-////				nextObsToUniqueStates.put(PrismObs, nextStates);
-////
-////			}
-////		}
-////
-////		System.out.println("nextObs set in Prism>>>"+ nextObsToUniqueStates.keySet());
-////		// if supports for all obseravtions are safe, this action should not be shield 
-////		boolean isAllObsWinning = true;
-////		for (int PrismObs : nextObsToUniqueStates.keySet()) {
-////			if (!isAllObsWinning) {
-////				break;
-////			}
-////			//code up support from states			
-////			HashSet<Integer> states =  nextObsToUniqueStates.get(PrismObs);
-////			
-////			System.out.println("States" + states);
-////
-////			HashMap<Integer, HashSet<Integer>> tp = new HashMap<Integer, HashSet<Integer>> ();
-////			for (int state : states) {
-////				int StompyState = PrismStateToStompyState[state];
-////				int StompyObs = StompyStateToObs.get(StompyState);
-////				System.out.println("Prism State" + state +"PrismObs="+PrismObs + "StompyState"+ StompyState +"StompyObs"+StompyObs);
-////
-////				int index = StompyObsToStompyStates.get(StompyObs).indexOf(StompyState);
-////				if (tp.get(StompyObs) == null) {
-////					tp.put(StompyObs, new HashSet<Integer> ());
-////				}
-////				//HashSet<Integer> tpp = new HashSet<Integer> ();
-////				HashSet<Integer> tpp = tp.get(StompyObs);
-////				tpp.add(index);
-////				tp.put(StompyObs, tpp);
-////			}
-////			System.out.println("StompyObs" + tp.keySet());
-////			for (int StompyObs : tp.keySet()) {
-////				System.out.println("StompyObs"+ StompyObs + "StompyStates/Index" + tp.get(StompyObs));
-////				ArrayList<BigInteger> nextSupport = getBigIntegerFromStateIndices(tp.get(StompyObs), StompyObs);
-////				if (!isSupportWinning(nextSupport, StompyObs)) {
-////					isAllObsWinning = false;
-////					break;
-////				}
-////			}
-////			
-////			
-////			
-////		}
-//////		//if (verbose >= 5) {
-////			if (isAllObsWinning) {
-////				System.out.println("Safe Action " + action);
-////			} else {
-////				System.out.println("Shiedled " + action);
-////			}
-//////		//}
-////		return !isAllObsWinning;		
-////	}
-////	
-////	public boolean isActionShielded(POMCPNode node, Object action)
-////	{
-////		HashSet<Integer> currentUniqueStates =  node.getBelief().getUniqueStatesInt();
-////		HashMap<Integer, ArrayList<Integer>> PrismObsToStompyObs_tp = new HashMap<Integer, ArrayList<Integer>> ();
-////		
-//////		System.out.println("\ncurrentUniqueStates" + currentUniqueStates + "considering action " + action);
-////		
-////		//With this action, get all possible observations, and belief support per observation
-////		HashMap<Integer, HashSet<Integer>> nextObsToUniqueStateIndices= new HashMap<Integer, HashSet<Integer>> ();
-////		
-////		for (int s : currentUniqueStates) {
-////			int choice = pomdp.getChoiceByAction(s, action);
-////			Iterator<Entry<Integer, Double>> iter = pomdp.getTransitionsIterator(s,choice);
-////			while (iter.hasNext()) {
-////				Map.Entry<Integer, Double> trans = iter.next();
-////				int sPrime = trans.getKey();
-////				int PrismObs =  pomdp.getObservation(sPrime);
-////				
-////				if (winningRegion.get(PrismObsToStompyObs[PrismObs]) == null) { // if not winning support for this obs
-////					if (endStates.contains(sPrime)) {
-//////						System.out.println("Safe Action " + action);
-////						return false;
-////					} else {
-////						return true;
-////					}	
-////				}
-////				if(nextObsToUniqueStateIndices.get(PrismObs)  == null) {
-////					nextObsToUniqueStateIndices.put(PrismObs, new HashSet<Integer> ());
-////				}
-////				HashSet<Integer> tpp =  nextObsToUniqueStateIndices.get(PrismObs);
-////				
-////				int StompyState = PrismStateToStompyState[sPrime];
-////				int StompyObs = StompyStateToObs.get(StompyState);
-////				int index = StompyObsToStompyStates.get(StompyObs).indexOf(StompyState);
-////				tpp.add(index);
-////				
-//////				tpp.add(PrismObsToPrismStates.get(PrismObs).indexOf(sPrime));	
-////				nextObsToUniqueStateIndices.put(PrismObs, tpp);
-//////				System.out.println("PrismState="+ sPrime + " stompyS="+StompyState);
-////				
-////				if (PrismObsToStompyObs_tp.get(PrismObs)==null) {
-////					PrismObsToStompyObs_tp.put(PrismObs, new ArrayList<Integer> ());
-////				}
-////				ArrayList<Integer> tp =  PrismObsToStompyObs_tp.get(PrismObs);
-////				if (!tp.contains(StompyObs)) {
-////					tp.add(StompyObs);
-////				}
-////				PrismObsToStompyObs_tp.put(PrismObs, tp);
-////				
-////			}
-////		}
-////		
-////		// if suppoorts for all obseravtions are safe, this action should not be shield 
-////		boolean isAllObsWinning = true;
-////		for (int PrismObs : nextObsToUniqueStateIndices.keySet()) {
-////			//code up support from states			
-////			ArrayList<Integer> tp = PrismObsToStompyObs_tp.get(PrismObs);
-////			int StompyObs = tp.get(0);
-////			
-////			if (tp.size() > 1) {
-////				System.out.println("Maybe Error");
-////			}
-////			
-////			ArrayList<BigInteger> nextSupport = getBigIntegerFromStateIndices(nextObsToUniqueStateIndices.get(PrismObs),  StompyObs); 
-////
-//////			System.out.println("Prism Obs " + PrismObs + " Stompy Obs" + StompyObs+"cur supprot"+ nextSupport.get(0) + " winning region" + winningRegion.get(StompyObs).get(0));
-////			
-////			// test if this support is safe
-////			if (!isSupportWinning(nextSupport, StompyObs)) {
-////				isAllObsWinning = false;
-////				break;
-////			}
-////		}
-////		//if (verbose >= 5) {
-////			if (isAllObsWinning) {
-//////				System.out.println("Safe Action " + action);
-////			} else {
-//////				System.out.println("Shiedled " + action);
-////			}
-////		//}
-////		return !isAllObsWinning;	
-////	}
-////	
-////	
-//
-//	
-//}
