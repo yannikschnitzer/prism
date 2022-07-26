@@ -143,6 +143,8 @@ public class PrismSettings implements Observer
 	public static final String PRISM_FAU_INTERVALS					= "prism.fau.intervals";
 	public static final String PRISM_FAU_INITIVAL					= "prism.fau.initival";
 	public static final String PRISM_FAU_ARRAYTHRESHOLD				= "prism.fau.arraythreshold";
+	
+	public static final String PRISM_SHIELD_DIR						= "prism.shield.dir";
 
 	//Simulator
 	public static final String SIMULATOR_DEFAULT_NUM_SAMPLES		= "simulator.defaultNumSamples";
@@ -384,6 +386,8 @@ public class PrismSettings implements Observer
 																			"For fast adaptive uniformisation (FAU), the time period is split into this number of of intervals." },
 			{ DOUBLE_TYPE,      PRISM_FAU_INITIVAL,						"FAU initial time interval",			"4.1",   	 	new Double(1.0),     														"",	
 																			"For fast adaptive uniformisation (FAU), the length of initial time interval to analyse." },
+			{ STRING_TYPE,		PRISM_SHIELD_DIR,						"Directory for shield files",			"4.7",			"",																	"",
+																			"Directory for shield files." },
 		},
 		{
 			{ INTEGER_TYPE,		SIMULATOR_DEFAULT_NUM_SAMPLES,			"Default number of samples",			"4.0",		new Integer(1000),			"1,",
@@ -1703,6 +1707,15 @@ public class PrismSettings implements Observer
 			}
 		}
 
+		else if (sw.equals("shielddir")) {
+			if (i < args.length - 1) {
+				set(PRISM_SHIELD_DIR, args[++i]);
+			} else {
+				throw new PrismException("Nothing specified for -" + sw + " switch");
+			}
+		}
+		
+		
 		// HIDDEN OPTIONS
 		
 		// export property automaton to file (hidden option)
