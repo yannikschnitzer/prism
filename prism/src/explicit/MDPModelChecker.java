@@ -2994,6 +2994,7 @@ public class MDPModelChecker extends ProbModelChecker
 			mainLog.print("\nCVAR (" + (min ? "min" : "max") + ")");
 			mainLog.println(" ran " + iters + " iterations and " + timer / 1000.0 + " seconds.");
 		}
+		timer = System.currentTimeMillis();
 
 		// Compute distribution on induced DTMC
 		mainLog.println("\n\nComputing distribution on induced DTMC...");
@@ -3062,15 +3063,18 @@ public class MDPModelChecker extends ProbModelChecker
 		List<State> mdpStatesList = mdpToSimulate.getStatesList();
 		int maxPathLen = 100;
 		int s = mdpToSimulate.getFirstInitialState();
+		int idx_b;
 		mainLog.println("Generating random trace");
 //		mainLog.println(mdpStatesList.get(s));
 		PrismFileLog trace_out = new PrismFileLog("distr_cvar_policy.csv");
-		trace_out.println("s; actions; policy");
+		trace_out.println("s; actions; policy; b");
 		int pathLen = 0;
 		List<Object> available = new ArrayList<>();
 		while (pathLen < maxPathLen  && mdpToSimulate.getNumTransitions(s, strat.getChoiceIndex(s)) > 0) {
 			available = mdpToSimulate.getAvailableActions(s);
-			trace_out.println(mdpStatesList.get(s).toString()+";"+available.toString()+";"+policy[s]);
+			idx_b= cvar_mdp.getAutomatonState(s);
+
+			trace_out.println(mdpStatesList.get(s).toString()+";"+available.toString()+";"+policy[s]+";"+operator.getBVal(idx_b));
 			Distribution distr = mdpToSimulate.getChoice(s, strat.getChoiceIndex(s));
 			if (product_target.get(s))
 			{
@@ -3096,6 +3100,7 @@ public class MDPModelChecker extends ProbModelChecker
 			mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
 			mainLog.println(" : " + timer / 1000.0 + " seconds.");
 		}
+		timer = System.currentTimeMillis();
 
 		double [] adjusted_dtmc_distr=operator.adjust_support(((TreeMap)dtmc_result.solnObj[initialState]));
 		mainLog.println(adjusted_dtmc_distr);
