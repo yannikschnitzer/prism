@@ -2634,7 +2634,7 @@ public class MDPModelChecker extends ProbModelChecker
 		// Set up CVAR variables
 		int atoms;
 		int iterations = 150;
-		double error_thresh = 0.05;
+		double error_thresh = 0.01;
 		double error_thresh_cvar = 2;
 		double gamma = 1;
 		double alpha=0.5;
@@ -2657,7 +2657,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
-			atoms = 51;
+			atoms = 101;
 			double v_max = 100;
 			double v_min = 0;
 			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
@@ -2758,6 +2758,13 @@ public class MDPModelChecker extends ProbModelChecker
 		//Arrays.toString(policy);
 		mainLog.println(Arrays.toString(policy));
 
+		timer = System.currentTimeMillis() - timer;
+		if (verbosity >= 1) {
+			mainLog.print("\nValue iteration computation (" + (min ? "min" : "max") + ")");
+			mainLog.println(" : " + timer / 1000.0 + " seconds.");
+		}
+		timer = System.currentTimeMillis();
+
 		// Compute distribution on induced DTMC
 		mainLog.println("Computing distribution on induced DTMC...");
 		MDStrategy strat = new MDStrategyArray(mdp, choices);
@@ -2768,6 +2775,13 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 		DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
 		ModelCheckerResult dtmc_result = mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, target);
+
+		timer = System.currentTimeMillis() - timer;
+		if (verbosity >= 1) {
+			mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
+			mainLog.println(" : " + timer / 1000.0 + " seconds.");
+		}
+		timer = System.currentTimeMillis();
 
 		int initialState = dtmc.getFirstInitialState();
 		double [] adjusted_dtmc_distr=operator.adjust_support(((TreeMap)dtmc_result.solnObj[initialState]));
@@ -2781,12 +2795,12 @@ public class MDPModelChecker extends ProbModelChecker
 
 		operator.writeToFile(dtmc.getFirstInitialState(), null);
 
-		// Finished CVAR
-		timer = System.currentTimeMillis() - timer;
-		if (verbosity >= 1) {
-			mainLog.print("\nCVAR (" + (min ? "min" : "max") + ")");
-			mainLog.println(" ran " + iters + " iterations and " + timer / 1000.0 + " seconds.");
-		}
+		// Finished VI
+//		timer = System.currentTimeMillis() - timer;
+//		if (verbosity >= 1) {
+//			mainLog.print("\nVI (" + (min ? "min" : "max") + ")");
+//			mainLog.println(" ran " + iters + " iterations and " + timer / 1000.0 + " seconds.");
+//		}
 
 		// Store results
 		ModelCheckerResult res = new ModelCheckerResult();
@@ -2831,11 +2845,11 @@ public class MDPModelChecker extends ProbModelChecker
 		// Set up CVAR variables
 		int atoms;
 		int iterations = 500;
-		double error_thresh = 0.005;
+		double error_thresh = 0.01;
 		double error_thresh_cvar = 2;
 		int min_iter = 50;
 		double gamma = 1;
-		double alpha = 0.8;
+		double alpha = 0.7;
 		String bad_states_label = "obs";
 		boolean check_reach_dtmc = true;
 
@@ -2843,12 +2857,7 @@ public class MDPModelChecker extends ProbModelChecker
 		String qr = "QR";
 
 		int nactions = mdp.getMaxNumChoices();
-
 		DistributionalBellmanAugmented operator;
-
-		// use vmin and vmax for b values?
-		// TODO figure out how to work out b stuff with aquantile representation
-
 		int b_atoms;
 
 		BitSet unknown_original = new BitSet();
@@ -2859,26 +2868,28 @@ public class MDPModelChecker extends ProbModelChecker
 		mainLog.println(" Starting Cvar iteration with method:"+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
 
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
-			atoms = 51;
-			b_atoms = 11;
+			atoms = 101;
+			b_atoms = 101;
 			// TODO make this a point variable or something to be a bit cleaner
-			double b_max = 50;
+			double b_max = 100;
 			double b_min = 0;
 			double v_max = 100;
 			double v_min = 0;
 			operator = new DistributionalBellmanCategoricalAugmented(atoms, b_atoms, v_min, v_max, b_min, b_max, n, n_actions, mainLog);
 			operator.initialize(mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
 			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min+" - b_atoms:"+b_atoms+" - bmin:"+b_min+" - bmax:"+b_max);
-			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations);
+			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+" - error thresh:"+error_thresh);
 		}
 		else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
-			atoms = 100;
-			b_atoms = 11;
-			double b_max = 50;
+			atoms = 1000;
+			b_atoms = 76;
+			double b_max = 100;
 			double b_min = 0;
-			// FIXME test distbellmanQRaugmented class
+			error_thresh = 1.0/atoms*3.1;
 			operator = new DistributionalBellmanQRAugmented(atoms, b_atoms, b_min, b_max, n, n_actions, mainLog);
 			operator.initialize(mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
+			mainLog.println("----- Parameters:\natoms:"+atoms+" - b_atoms:"+b_atoms+" - bmin:"+b_min+" - bmax:"+b_max);
+			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+" - error thresh:"+error_thresh);
 		}
 		else {
 			atoms = 101;
@@ -3066,7 +3077,7 @@ public class MDPModelChecker extends ProbModelChecker
 		int idx_b;
 		mainLog.println("Generating random trace");
 //		mainLog.println(mdpStatesList.get(s));
-		PrismFileLog trace_out = new PrismFileLog("distr_cvar_policy.csv");
+		PrismFileLog trace_out = new PrismFileLog("distr_cvar_"+ settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) +"_policy.csv");
 		trace_out.println("s; actions; policy; b");
 		int pathLen = 0;
 		List<Object> available = new ArrayList<>();
@@ -3136,7 +3147,7 @@ public class MDPModelChecker extends ProbModelChecker
 			printToFile(policy, action_val, alpha, b_atoms, operator.getB(), starting, "gridmap/cvar_out_"+n+"_"+ settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) +"_"+alpha+".out", n, mdp.getMaxNumChoices());
 		}
 
-		operator.writeToFile(initialState, pol[initialState], "distr_cvar.csv");
+		operator.writeToFile(initialState, pol[initialState], null);
 
 		// Store results
 		//FIXME value im returning is policy not value

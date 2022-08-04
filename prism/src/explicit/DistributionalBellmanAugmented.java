@@ -33,6 +33,8 @@ public abstract class DistributionalBellmanAugmented {
 
     public abstract double getVariance(double [] probs);
 
+    public abstract double getProbThreshold(double[] probs, double lim);
+
     // Wp with p=2
     public abstract double getW(double[] dist1, double[] dist2);
 

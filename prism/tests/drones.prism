@@ -18,7 +18,7 @@ module robot
 
 	// transitions
 	[east]  (c<M | c=M) & ! regen  & !drained-> p/3:(r'=min(r+1, N)) &(battery'=max(battery-1, 0))+ p/3: (c'=max(c-1, 1))&(battery'=max(battery-1, 0))+ p/3: (r'=max(r-1, 1)) &(battery'=max(battery-1, 0))+ (1-p): (c'=min(c+1, M))&(battery'=max(battery-1, 0));
-	[south] (r<N | r=N) & ! regen & !drained -> (1-p):(r'=min(r+1, N)) &(battery'=max(battery-1, 0))+ p/3: (c'=min(c+1, M)) &(battery'=max(battery-1, 0))+ p/3:(r'=min(r+1, N))&(battery'=max(battery-1, 0))+ p/3: (c'=max(c-1, 1))&(battery'=max(battery-1, 0));
+	[south] (r<N | r=N) & ! regen & !drained -> (1-p):(r'=min(r+1, N)) &(battery'=max(battery-1, 0))+ p/3: (c'=min(c+1, M)) &(battery'=max(battery-1, 0))+ p/3:(r'=max(r-1, 1))&(battery'=max(battery-1, 0))+ p/3: (c'=max(c-1, 1))&(battery'=max(battery-1, 0));
 	[west]  (c>1 | c=1) & ! regen & !drained -> p/3:(r'=max(r-1, 1))&(battery'=max(battery-1, 0))+ p/3:(r'=min(r+1, N))&(battery'=max(battery-1, 0))+ p/3: (c'=min(c+1, M)) &(battery'=max(battery-1, 0))+ (1-p): (c'=max(c-1, 1))&(battery'=max(battery-1, 0));
 	[north] (r=1 | r>1) & ! regen & !drained -> (1-p):(r'=max(r-1, 1)) &(battery'=max(battery-1, 0))+ p/3: (c'=max(c-1, 1))&(battery'=max(battery-1, 0)) + p/3: (c'=min(c+1, M)) &(battery'=max(battery-1, 0))+ p/3:(r'=min(r+1, N))&(battery'=max(battery-1, 0));
 

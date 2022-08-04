@@ -322,6 +322,21 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         return res;
     }
 
+    @Override
+    public double getProbThreshold(double [] probs, double lim){
+        double res = 0.0;
+
+        for(int j=atoms-1; j>=0; j--){
+            if (z[j] >= lim){
+                res += probs[j];
+            } else{
+                break;
+            }
+        }
+
+        return res;
+    }
+
     // Wp with p=2 -> cramer distance
     @Override
     public double getW(double[] dist1, double[] dist2)

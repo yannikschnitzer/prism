@@ -270,7 +270,6 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
     }
 
 
-    // TODO: change following functions to take into account slack variable
     @Override
     public double getVar(double [] probs, double lim){
         double sum_p = 0.0;
@@ -304,6 +303,23 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
         return res;
     }
 
+    @Override
+    public double getProbThreshold(double [] probs, double lim){
+        double res = 0.0;
+        double [] temp = Arrays.copyOf(probs, probs.length);
+        Arrays.sort(temp);
+
+        for(int j=atoms-1; j>=0; j--){
+            if (temp[j] >= lim){
+                res += p[j];
+            } else{
+                break;
+            }
+        }
+
+        return res;
+    }
+
     // Wp with p=1
     @Override
     public double getW(double[] dist1, double[] dist2)
@@ -314,7 +330,7 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
         {
             sum+= abs((dist1[i]) - (dist2[i]));
         }
-        return sqrt(sum);
+        return sum* (1.0/atoms);
     }
 
     // Wp with p=1
@@ -326,7 +342,7 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
         {
             sum+= abs((dist1[i]) - (z[state][idx_a][i]));
         }
-        return sqrt(sum);
+        return sum* (1.0/atoms);
     }
 
 //    // Kolmogorov-Smirnov test
