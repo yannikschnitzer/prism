@@ -3,22 +3,22 @@ INFO:__main__:Loading problem definition....
 INFO:__main__:Construct POMDP representation...
 INFO:__main__:-------------------------------------------------------------- 
 Model type: 	POMDP (sparse)
-States: 	13
-Transitions: 	61
-Choices: 	43
+States: 	26
+Transitions: 	135
+Choices: 	86
 Observations: 	4
 Reward Models:  none
 State Labels: 	5 labels
    * deadlock -> 0 item(s)
-   * traps -> 1 item(s)
+   * traps -> 4 item(s)
    * init -> 1 item(s)
-   * notbad -> 12 item(s)
+   * notbad -> 22 item(s)
    * goal -> 1 item(s)
 Choice Labels: 	5 labels
    * placement -> 1 item(s)
-   * north -> 10 item(s)
-   * south -> 10 item(s)
-   * east -> 10 item(s)
-   * west -> 10 item(s)
+   * north -> 20 item(s)
+   * south -> 20 item(s)
+   * east -> 20 item(s)
+   * west -> 20 item(s)
 -------------------------------------------------------------- 
 

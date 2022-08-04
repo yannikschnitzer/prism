@@ -1,2 +1,3 @@
 
 R{"cost"}min=? [F "goal"];
+<<*>> (1 * R{"rew"}max=? [ F "goal" ] + 1 * R{"cos"}min=? [ F "goal" ]);

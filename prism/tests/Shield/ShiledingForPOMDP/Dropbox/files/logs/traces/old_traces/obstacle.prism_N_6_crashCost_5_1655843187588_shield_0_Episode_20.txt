@@ -1,9 +1,0 @@
-prism_state;prism_belief_support;stompy_state;stompy_belief_support;selected_action;available_actions;allowed_actions;state_meaning;safe?
-0;[0];0;[0];placement;[placement];[placement];(start=false,ax=0,ay=0);true
-10;[23, 8, 10, 14];4;[1, 2, 3, 4];south;[north, south, east, west];[north, south, east, west];(start=true,ax=1,ay=3);true
-11;[16, 24, 9, 10, 11, 12, 15];11;[17, 18, 4, 20, 7, 11, 13];east;[north, south, east, west];[north, south, east, west];(start=true,ax=1,ay=4);false
-17;[17];10;[10];south;[north, south, east, west];[north, south, east, west];(start=true,ax=2,ay=4);false
-18;[18];29;[29];east;[north, south, east, west];[north, south, east, west];(start=true,ax=2,ay=5);false
-24;[24, 30];7;[7, 27];east;[north, south, east, west];[north, south, east, west];(start=true,ax=3,ay=5);false
-30;[30];27;[27];east;[north, south, east, west];[north, south, east, west];(start=true,ax=4,ay=5);false
-36;[36];28;[28];notApplicable;notApplicable;notApplicable;(start=true,ax=5,ay=5);true

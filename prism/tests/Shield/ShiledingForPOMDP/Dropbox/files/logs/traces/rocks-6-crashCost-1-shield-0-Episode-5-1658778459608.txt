@@ -1,0 +1,1 @@
+777;[777];743;[743];notApplicable;notApplicable;notApplicable;(started=true,done=true,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=true,r2lastobs=false,x=5,y=3);true

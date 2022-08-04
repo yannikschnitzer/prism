@@ -46,9 +46,21 @@ experiment_to_grid_model_names = {
     "avoid": models.surveillance,
     "refuel": models.refuel,
     'obstacle': models.obstacle,
+    'obstacle_6_factored': models.obstacle_6_factored,
+    'obstacleA': models.obstacleA,
+    'obstacleB': models.obstacleB,
+    'obstacleC': models.obstacleC,
+    'obstacleD': models.obstacleD,
+    'obstacleE': models.obstacleE,
+    'obstacleF': models.obstacleF,
     "intercept": models.intercept,
     'evade': models.evade,
     'rocks': models.rocks,
+    'rocks2Base': models.rocks2Base,
+    'rocks2A': models.rocks2A,
+    'rocks2B': models.rocks2B,
+    'rocks2C': models.rocks2C,
+    'rocks2D': models.rocks2D,
     'concrete': models.concrete,
     'abstractA': models.abstractA,
     'abstractB': models.abstractB
@@ -149,6 +161,8 @@ def main():
     for para, value in constants.items():
         pa += str(value) + "-"
     n_states= model.state_valuations.get_nr_of_states()
+    #n_states = 20
+    print("states" , n_states , args.grid_model)
     acts = model.choice_labeling.get_labels()
     #print("Actions" + acts)
 
@@ -156,7 +170,9 @@ def main():
     #file.write("Actions" + acts)
     for s in range(n_states):
         meaning = model.state_valuations.get_json(s)
+        
         meaning += ", state=" + str(s) + ", obs=" + str(model.get_observation(s)) +"\n"
+        print(s, meaning)
         file.write(meaning)
 
     file.close()

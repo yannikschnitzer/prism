@@ -1,0 +1,37 @@
+:preamble
+model hash: 1991921449457415736
+:winningregion
+1 27 1
+1 9223372036854775808;
+27 18446743936270598144;
+1 9223372036854775808;
+:state information
+[!start	& ax=0	& ay=0] & state=0 & obs=2
+[start	& ax=15	& ay=14] & state=1 & obs=1
+[start	& ax=14	& ay=7] & state=2 & obs=1
+[start	& ax=7	& ay=14] & state=3 & obs=1
+[start	& ax=7	& ay=7] & state=4 & obs=1
+[start	& ax=15	& ay=12] & state=5 & obs=1
+[start	& ax=15	& ay=9] & state=6 & obs=1
+[start	& ax=9	& ay=14] & state=7 & obs=1
+[start	& ax=12	& ay=14] & state=8 & obs=1
+[start	& ax=14	& ay=8] & state=9 & obs=1
+[start	& ax=14	& ay=9] & state=10 & obs=1
+[start	& ax=9	& ay=7] & state=11 & obs=1
+[start	& ax=12	& ay=7] & state=12 & obs=1
+[start	& ax=7	& ay=12] & state=13 & obs=1
+[start	& ax=7	& ay=9] & state=14 & obs=1
+[start	& ax=8	& ay=14] & state=15 & obs=1
+[start	& ax=7	& ay=8] & state=16 & obs=1
+[start	& ax=8	& ay=7] & state=17 & obs=1
+[start	& ax=9	& ay=12] & state=18 & obs=1
+[start	& ax=12	& ay=12] & state=19 & obs=1
+[start	& ax=9	& ay=9] & state=20 & obs=0
+[start	& ax=12	& ay=9] & state=21 & obs=1
+[start	& ax=13	& ay=12] & state=22 & obs=1
+[start	& ax=9	& ay=8] & state=23 & obs=1
+[start	& ax=12	& ay=8] & state=24 & obs=1
+[start	& ax=8	& ay=12] & state=25 & obs=1
+[start	& ax=8	& ay=9] & state=26 & obs=1
+[start	& ax=8	& ay=8] & state=27 & obs=1
+[start	& ax=13	& ay=9] & state=28 & obs=1

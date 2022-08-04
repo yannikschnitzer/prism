@@ -1,0 +1,1 @@
+0;[99, 383];0;[36, 69];notApplicable;notApplicable;notApplicable;(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0);true

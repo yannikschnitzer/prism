@@ -1782,8 +1782,6 @@ public class POMDPModelChecker extends ProbModelChecker
 	public ModelCheckerResult computeReachRewardsPOMCP(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean minMax, BitSet statesOfInterest) throws PrismException
 	{
 		int nStates = pomdp.getNumStates();
-
-		//
 		ArrayList<Object> allActions = getAllActions(pomdp);
 		int nActions = allActions.size();
 		
@@ -1792,15 +1790,13 @@ public class POMDPModelChecker extends ProbModelChecker
 			for (int s=0; s<nStates; s++) {
 				if (pomdp.getAvailableActions(s).contains(action)) {
 					int choice =  pomdp.getChoiceByAction(s, action);
-					double immediateReward = ( mdpRewards.getTransitionReward(s, choice) + mdpRewards.getStateReward(s) );
+					double immediateReward = (mdpRewards.getTransitionReward(s, choice) + mdpRewards.getStateReward(s) );
 					double stateReward = mdpRewards.getStateReward(s);
 					int obs = pomdp.getObservation(s);
 //					mainLog.println("state=" + s + " meaning=" + getStateMeaning(pomdp, s)+ "safe=" + pomdp.getLabelStates("notbad").get(s)  + " action=" + action + " stateReward=" + stateReward + " immediateReard=" + immediateReward);
 				}
 			}
 		}
-		
-		//
 		
 		BitSet targetObs = getObservationsMatchingStates(pomdp, target);
 		// Check we are only computing for a single state (and use initial state if unspecified)
@@ -1831,7 +1827,8 @@ public class POMDPModelChecker extends ProbModelChecker
 		unknownObs.andNot(infObs);
 		ModelCheckerResult res = null;
 		ArrayList<Integer> endStates = new ArrayList<Integer>();
-		for (int i=0; i < nStates; i++) {
+		System.out.println("end states" + nStates);
+		for (int i = 1; i < nStates; i++) {
 			if (!unknownObs.get(pomdp.getObservation(i))) {
 				endStates.add(i);
 				mainLog.print(i + " ");
@@ -1878,26 +1875,72 @@ public class POMDPModelChecker extends ProbModelChecker
 		
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		String timeStamp = "-" + timestamp.getTime();
-		String path = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\files\\logs\\";
+		
 //		mainLog.println("E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\translation\\" + modelName + modelArgs +"translate.txt");
 //		mainLog.println("E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\winningregion\\" + modelName + modelArgs +"fixpoint.wr");
 
+		String shielddir = getSettings().getString(PrismSettings.PRISM_SHIELD_DIR);
+		System.out.println(shielddir + (shielddir == null) + shielddir.length());
 		
-		PrismFileLog out = new PrismFileLog(path + modelName + modelArgs + crashCost + timeStamp  + ".txt");
-//		out.println("modelName" + ";"+ "nStates" + ";" + "shieldLevel" + ";" + "numEpisode" + ";" + "numEpisodes" + ";" + "undiscounted reward" + ";" + "discounted reward" + ";" + "timeSpent" + ";"   
-//					+ "average undiscounted reward" + ";" + "average discounted reward" + ";" + "average time spent " + ";" + "isSafeTrace");
+		String resultDirName = "." + System.getProperties().getProperty("file.separator") + "result" + System.getProperties().getProperty("file.separator");
+		
+		File resultDir = new File(resultDirName);
+		if (!resultDir.exists()) {
+			resultDir.mkdir();
+		}
+		
+		PrismFileLog out = new PrismFileLog(resultDirName + modelName + modelArgs + crashCost + timeStamp  + ".txt");
+		
+		out.println("modelName" + ";"+ "nStates" + ";" + "shieldLevel"+ ";" + "useLocalShield" + ";" + "numEpisode" + ";" 
+					+ "numEpisodes" + ";" + "undiscounted reward" + ";" + "discounted reward"+ ";" + "numBad" + ";" + "timeSpent" + ";"   
+					+ "average undiscounted reward" + ";" + "average discounted reward" + ";" + "average time spent " + ";" + "average numBad");
 
-		int numEpisodes = 100;
-		for (int shieldLevel = 0; shieldLevel < 1; shieldLevel ++) {
+		int numEpisodes = 10;
+		int [][] testCases= {
+							{0, 0}, // no shield
+//							{2, 0}, // prior shielding; centralized shield
+//							{4, 0}, // on-the-fly; centrailized shield
+//							{2, 1}, // prior shielding; factoerd shield
+//							{4, 1} // on-the-fly; factoer shield
+							};
+//		
+		double discount = 0.95;
+		double c = 350;
+		double threshold = 0.001;
+		double timeout = 10000;
+//		double noParticles = 1200; 
+		PartiallyObservableMonteCarloPlanning pomcp = new PartiallyObservableMonteCarloPlanning(pomdp, mdpRewards, target, minMax, statesOfInterest, endStates, c);
+//		String shieldDir =  "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\files\\obstacle\\N50\\winningregion";
+		String shieldDir =  ".\\winningregion";
+
+		
+		long timer0 = System.currentTimeMillis();
+		pomcp.loadShiled();
+//		pomcp.loadLocalShield(shieldDir);
+//		pomcp.loadMainShield(shieldDir);
+		
+		System.out.println("Time for load shields" + (System.currentTimeMillis() - timer0));
+		for (int i = 0; i < testCases.length; i++ ) {
+			int shieldLevel = testCases[i][0];
+			boolean useLocalShield = (testCases[i][1] == 1);
+			pomcp.initializePOMCP();
+			pomcp.setShieldLevel(shieldLevel);
+			pomcp.setUseLocalShields(useLocalShield);
+			pomcp.setNumSimulations(Math.pow(2, 15));
 			ArrayList<Double>  undiscountedReward = new ArrayList<Double> ();
 			double totalUndiscountedReward = 0;
 			ArrayList<Double> discountedReward = new ArrayList<Double> ();
 			double totalDiscountedReward = 0;
+			ArrayList<Double> numBad = new ArrayList<Double> ();
+			double totalNumBad = 0;
 			long totalTime = 0;
-			boolean useLocalShield = true;
+
 			for (int numEpisode = 1; numEpisode <= numEpisodes; numEpisode++) {
+
+				pomcp.resetRoot();
+				
 				long episodeTime = System.currentTimeMillis();
-				double[] reward = computeReachRewardsPOMCPEpisode(pomdp,  mdpRewards,  target,  minMax,  statesOfInterest, endStates, numEpisode,
+				double[] reward = computeReachRewardsPOMCPEpisode(pomcp, pomdp,  mdpRewards,  target,  minMax,  statesOfInterest, endStates, numEpisode,
 																modelName, modelArgs, crashCost, timeStamp, shieldLevel, useLocalShield);
 				if (reward == null) {
 					break;
@@ -1906,39 +1949,28 @@ public class POMDPModelChecker extends ProbModelChecker
 				totalUndiscountedReward += reward[0];
 				discountedReward.add(reward[1]);
 				totalDiscountedReward += reward[1];
-				double isSafeTrace = reward[2];
+				numBad.add(reward[2]);
+				totalNumBad += reward[2];
+//				double isSafeTrace = reward[2];
 				long timeSpent = ((System.currentTimeMillis() - episodeTime) );
 				totalTime += timeSpent;
-				mainLog.println("Model=" + modelName + modelArgs + crashCost + "; nStates=" + nStates +  "; Shield=" + shieldLevel + "; Episode=" + numEpisode + "; Total Episodes=" + numEpisodes + "; Undiscounted Reward=" +  reward[0] + "; Discounted Reward=" + reward[1] 
+				mainLog.println("Model=" + modelName + modelArgs + crashCost + "; nStates=" + nStates +  "; Shield=" + shieldLevel + "; useLocalShiled"+ useLocalShield + "; Episode=" + numEpisode 
+								+ "; Total Episodes=" + numEpisodes + "; Undiscounted Reward=" +  reward[0] + "; Discounted Reward=" + reward[1] +  "; numBad=" + reward[2]
 								+"; Time Spent=" + timeSpent
 								+ "; Average undiscounted=" + (totalUndiscountedReward/numEpisode) 
 								+ "; Average discounted=" + (totalDiscountedReward/numEpisode)
 								+ "; Average time spent=" + (totalTime/numEpisode)
-								+ "; isSafeTrace=" + isSafeTrace);
-				out.println(modelName + modelArgs + crashCost + ";"+ nStates + ";" + shieldLevel + ";" + numEpisode + ";" + numEpisodes + ";" + reward[0] + ";" + reward[1] + ";" + timeSpent + ";" +  
-							+ (totalUndiscountedReward/numEpisode) + ";" + (totalDiscountedReward/numEpisode) + ";" + (totalTime/numEpisode) + ";" + isSafeTrace);
+								+ "; Average numBad=" + (totalNumBad/numEpisode));
+				out.println(modelName + modelArgs + crashCost + ";"+ nStates + ";" + shieldLevel+ ";" + useLocalShield + ";" + numEpisode + ";" + numEpisodes + ";" + reward[0] + ";" + reward[1]+ ";" + reward[2] + ";" + timeSpent + ";" +  
+							+ (totalUndiscountedReward/numEpisode) + ";" + (totalDiscountedReward/numEpisode) + ";" + (totalTime/numEpisode) + ";" + (totalNumBad/numEpisode));
 			}
 			mainLog.println("");
-//			timer = System.currentTimeMillis() -timer;
-//			mainLog.println("average time over " +  (timer / numEpisodes) + "ms episodes");
-//			mainLog.println("discounted reward \t discounted reward \t time");
-//			mainLog.println(undiscountedRewardAverage+" " + discountedRewardAverage + " " + timer/numEpisodes);
 		}
 		out.close();
-//		double std = 0;
-//		mainLog.println("rewards from POMCP");
-//		for(double reward : undiscountedReward) {
-//			mainLog.println(reward);
-//			std += Math.pow(reward -  undiscountedRewardAverage, 2);
-//		}
-//		std = Math.sqrt(std / undiscountedReward.size());
-//		mainLog.println("average reward = "+ undiscountedRewardAverage + "std = "+ std);
-		
 		return res; 
 	}
 	
-
-	   public double[] computeReachRewardsPOMCPEpisode(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest, 
+   public double[] computeReachRewardsPOMCPEpisode(PartiallyObservableMonteCarloPlanning pomcp, POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest, 
 			   											ArrayList<Integer> endStates, int episode, String modelName, String modelArgs, String crashCost,
 			   											String timeStamp, int shield, boolean useLocalShield) throws PrismException
 	{
@@ -1953,43 +1985,30 @@ public class POMDPModelChecker extends ProbModelChecker
 		double totalUndiscountedReward = 0;
 		double totalDiscountedReward = 0;
 		double discount = 0.95;
-		double c = 10;
-		double threshold = 0.001;
-		double timeout = 10000;
-		double noParticles = 1200; 
-		PartiallyObservableMonteCarloPlanning pomcp = new PartiallyObservableMonteCarloPlanning(pomdp, mdpRewards, target, min, statesOfInterest, endStates,
-																								discount, c, threshold, timeout, noParticles, useLocalShield);
-//		pomcp.setTranslationFile("E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\translation\\" +"obstacle-6-translate.txt");
-//		pomcp.setWinningFile("E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\winningregion\\" + modelName + modelArgs +"fixpoint.wr");
-		pomcp.setShieldLevel(shield);
-//		String mainTranslation = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\translation\\" +"obstacle-6-translate.txt";
-//		String mainWinning = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\winningregion\\" + modelName + modelArgs +"fixpoint.wr";
-
-		String mainTranslation = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\translation\\" +"rocks2Base-6-translate.txt";
-		String mainWinning = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\winningregion\\" + modelName + modelArgs +"fixpoint.wr";
-
-		pomcp.setMainShield(mainWinning, mainTranslation);
-		pomcp.initializeLocalShield();
-		
-		pomcp.setNumSimulations(Math.pow(2, 4));
 		int step = 0;
 		int stepLimit = 1000;
 		double gamma = 1;
 		int verbose = 1;
 		
-		String path = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\files\\logs\\traces\\";
+		String path = "." + System.getProperties().getProperty("file.separator") + "log" + System.getProperties().getProperty("file.separator");
+		
+		File resultDir = new File(path);
+		if (!resultDir.exists()) {
+			resultDir.mkdir();
+		}
+		
 		String fileName =  modelName + modelArgs + crashCost  + "-shield-" +  shield + "-Episode-" + episode +  timeStamp ;
-		
-		PrismFileLog out = new PrismFileLog(path + fileName + ".txt");
-		
+//		PrismFileLog out = new PrismFileLog(path + fileName + ".txt");
 		List<Object> availableActions;
 		HashSet<Object> unsafeActions;
 		List<Object> allowedActions;
 		boolean isSafeTrace = true;
-
+		double numBad = 0;
+		pomcp.setVerbose(verbose);
+		ArrayList<Object> actionRecord = new ArrayList<Object> ();
 //		out.println("prism_state;prism_belief_support;stompy_state;stompy_belief_support;selected_action;available_actions;allowed_actions;state_meaning;safe?;unsafeActions");
 		while (!endStates.contains(state)) {
-			if (verbose >= 0) {
+			if (verbose > 0) {
 				mainLog.println("\n =============== Step "+ step + " Cur state " + state + "shield" + shield);
 				pomcp.displayState(state);
 				pomcp.displayRootBelief();
@@ -1999,18 +2018,15 @@ public class POMDPModelChecker extends ProbModelChecker
 				break;
 			}
 			step += 1;
-			pomcp.setVerbose(1);
-			if(step == 1) {
-				pomcp.setVerbose(1);
-			}
-			if(step >= 2) {
-//				mainLog.println("step = " + step);
-				pomcp.setVerbose(verbose);
-				pomcp.setNumSimulations(Math.pow(2, 15));
-			}
 			//Object action = pomcp.search(); //
-			Object action = pomcp.selectAction(); // SimulateV SimulateQ
+			Object action;
 			
+			if(step == 1) {
+				action = pomcp.getDefaultAction();
+			}else{
+				action = pomcp.selectAction(); // SimulateV SimulateQ
+			}
+			actionRecord.add(action);
 			stepReturn sord = pomcp.step(state, action);
 			int nextState = sord.getState();
 			int obsSample = sord.getObservation();
@@ -2020,7 +2036,6 @@ public class POMDPModelChecker extends ProbModelChecker
 			}
 			availableActions = pomdp.getAvailableActions(state);
 			unsafeActions = pomcp.getRoot().getIllegalActions();
-			
 			allowedActions = pomdp.getAvailableActions(state);
 			if (unsafeActions != null) {
 				for (int a = availableActions.size() -1 ; a >= 0; a--) {
@@ -2040,48 +2055,45 @@ public class POMDPModelChecker extends ProbModelChecker
 //							+ ";" + isSafeTrace
 //							+";" + unsafeActions);
 
-			pomcp.Update(action,  obsSample);
+			pomcp.update(action,  obsSample);
 			totalUndiscountedReward += reward;
 			totalDiscountedReward += reward * gamma;
 			gamma *= discount;
 			if (pomdp.hasLabel("notbad") && !pomdp.getLabelStates("notbad").get(nextState)) {
 				safeTrace = 0;
+				numBad += 1;
 			}
-			if (verbose >= 0){
+			
+			if (verbose > 0){
 				mainLog.println("Action actually taken= "+ action + " reward = "+ reward + " states after action :");
-				//pomcp.displayState(nextState);
-				if (pomdp.hasLabel("notbad") && !pomdp.getLabelStates("notbad").get(nextState)) {
+				if (safeTrace== 0) {
 					mainLog.println("violated !");
-					safeTrace = 0;
-					//return null;
 				} else {
 					mainLog.println("so far is ... safe");
 				}
 			}
-			
 			//mainLog.println("Updated Belief=");
 			//pomcp.displayRoot();
 		    //pomcp.display();
 			state = nextState;
 		}
-		out.println(state + ";" + pomcp.getRootBeliefSupportPrism() 
-		+ ";" + pomcp.getStompyState(state) 
-		+ ";" + pomcp.getRootBeliefSupportStompy() 
-		+ ";" + "notApplicable" 
-		+ ";" +("notApplicable") 
-		+ ";" + ("notApplicable")
-		+ ";" + pomcp.getStateMeaning(state)
-		+ ";" + true);
-		
+////		out.println(state + ";" + pomcp.getRootBeliefSupportPrism() 
+////		+ ";" + pomcp.getStompyState(state) 
+////		+ ";" + pomcp.getRootBeliefSupportStompy() 
+//		+ ";" + "notApplicable" 
+//		+ ";" +("notApplicable") 
+//		+ ";" + ("notApplicable")
+//		+ ";" + pomcp.getStateMeaning(state)
+//		+ ";" + true);
 		timer = System.currentTimeMillis() - timer;
 		if (verbose >= 0) {
 			mainLog.println("UndiscountedReward "+ totalUndiscountedReward+ " DiscountedReward "+ totalDiscountedReward + " Time(ms) " + timer);
 		}
 		totalReward[0] = totalUndiscountedReward;
 		totalReward[1] = totalDiscountedReward;
-		totalReward[2] = safeTrace;
-		out.close();
-
+		totalReward[2] = numBad;
+//		out.close();
+		System.out.println("action record\n"+actionRecord.toString());
 		return totalReward;
 	}
 	
@@ -2106,6 +2118,7 @@ public class POMDPModelChecker extends ProbModelChecker
 		
 		mainLog.println("Calling Perseus pomdp solver");
 		//computeReachRewardsPerseus( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
+		//TODO: use POMCP method herehere
 		computeReachRewardsPOMCP( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
 		mainLog.println("End calling Perseus pomdp solver");
 		
@@ -2337,7 +2350,8 @@ public class POMDPModelChecker extends ProbModelChecker
 		timer = System.currentTimeMillis();
 		mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
 
-//		// Compute rewards
+		//TODO  use POMCP rather than tranditional method
+//		// Compute rewards 
 //		res = computeMultiReachRewardsFixedGrid(pomdp, weights, mdpRewardsList, target, min, statesOfInterest.nextSetBit(0));
 //
 //		// Finished expected reachability
@@ -2354,6 +2368,7 @@ public class POMDPModelChecker extends ProbModelChecker
 		for (int i = 0; i < numRewards; i++) {
 			mdpRewardsWeighted.addRewards(weights.get(i), mdpRewardsList.get(i));
 		}
+		// min == false
 		computeReachRewardsPOMCP(pomdp, mdpRewardsWeighted, target, min, statesOfInterest);
 		////////////
 		

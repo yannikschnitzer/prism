@@ -1,0 +1,1 @@
+36;[33, 34, 27, 28, 30];0;[0];notApplicable;notApplicable;notApplicable;(start=true,ax=5,ay=5);true

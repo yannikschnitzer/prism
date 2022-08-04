@@ -183,3 +183,92 @@ def abstractA(N):
 def abstractB(N):
     return Model(_example_path("abstractB.nm"), ProgramAnnotation(_grid_obstacle_dict),
                  ["Pmax=? [ \"notbad\" U \"goal\"]"], constants=f"N={N}")
+
+
+def obstacleA(N):
+    return Model(_example_path("obstacleA.nm"), ProgramAnnotation(_grid_obstacle_dict),
+                 ["Pmax=? [ \"notbad\" U \"goal\"]"], constants=f"N={N}")
+
+def obstacleB(N):
+    return Model(_example_path("obstacleB.nm"), ProgramAnnotation(_grid_obstacle_dict),
+                 ["Pmax=? [ \"notbad\" U \"goal\"]"], constants=f"N={N}")
+def obstacleC(N):
+    return Model(_example_path("obstacleC.nm"), ProgramAnnotation(_grid_obstacle_dict),
+                 ["Pmax=? [ \"notbad\" U \"goal\"]"], constants=f"N={N}")
+def obstacleD(N):
+    return Model(_example_path("obstacleD.nm"), ProgramAnnotation(_grid_obstacle_dict),
+                 ["Pmax=? [ \"notbad\" U \"goal\"]"], constants=f"N={N}")
+def obstacleE(N):
+    return Model(_example_path("obstacleE.nm"), ProgramAnnotation(_grid_obstacle_dict),
+                 ["Pmax=? [ \"notbad\" U \"goal\"]"], constants=f"N={N}")
+def obstacleF(N):
+    return Model(_example_path("obstacleF.nm"), ProgramAnnotation(_grid_obstacle_dict),
+                 ["Pmax=? [ \"notbad\" U \"goal\"]"], constants=f"N={N}")
+
+def obstacle_6_factored(N):
+    return Model(_example_path("obstacle_6_factored.nm"), ProgramAnnotation(_grid_obstacle_dict),
+                 ["Pmax=? [ \"notbad\" U \"goal\"]"], constants=f"N={N}")
+def obstacle_6_centralized(N):
+    return Model(_example_path("obstacle_6_centralized.nm"), ProgramAnnotation(_grid_obstacle_dict),
+                 ["Pmax=? [ \"notbad\" U \"goal\"]"], constants=f"N={N}")
+
+
+def obstacle_50_factored(N):
+    return Model(_example_path("obstacle_50_factored.nm"), ProgramAnnotation(_grid_obstacle_dict),
+                 ["Pmax=? [ \"notbad\" U \"goal\"]"], constants=f"N={N}")
+def obstacle_50_centralized(N):
+    return Model(_example_path("obstacle_50_centralized.nm"), ProgramAnnotation(_grid_obstacle_dict),
+                 ["Pmax=? [ \"notbad\" U \"goal\"]"], constants=f"N={N}")
+
+
+def obstacle_100_factored(N):
+    return Model(_example_path("obstacle_100_factored.nm"), ProgramAnnotation(_grid_obstacle_dict),
+                 ["Pmax=? [ \"notbad\" U \"goal\"]"], constants=f"N={N}")
+def obstacle_100_centralized(N):
+    return Model(_example_path("obstacle_100_centralized.nm"), ProgramAnnotation(_grid_obstacle_dict),
+                 ["Pmax=? [ \"notbad\" U \"goal\"]"], constants=f"N={N}")
+
+
+def obstacle_1000_factored(N):
+    return Model(_example_path("obstacle_1000_factored.nm"), ProgramAnnotation(_grid_obstacle_dict),
+                 ["Pmax=? [ \"notbad\" U \"goal\"]"], constants=f"N={N}")
+def obstacle_1000_centralized(N):
+    return Model(_example_path("obstacle_1000_centralized.nm"), ProgramAnnotation(_grid_obstacle_dict),
+                 ["Pmax=? [ \"notbad\" U \"goal\"]"], constants=f"N={N}")
+
+
+def rocks2Base(N, K=2):
+    K = int(K)
+    if K == 2:
+        return Model(_example_path("rocks2Base.nm"), ProgramAnnotation(_grid_rocks), ["Pmax=? [\"notbad\" U \"goal\"]"], constants=f"N={N}")
+    else:
+        raise RuntimeError("Rocks is only available with 2 or 3 rocks")
+
+def rocks2A(N, K=2):
+    K = int(K)
+    if K == 2:
+        return Model(_example_path("rocks2A.nm"), ProgramAnnotation(_grid_rocks), ["Pmax=? [\"notbad\" U \"goal\"]"], constants=f"N={N}")
+    else:
+        raise RuntimeError("Rocks is only available with 2 or 3 rocks")
+
+def rocks2B(N, K=2):
+    K = int(K)
+    if K == 2:
+        return Model(_example_path("rocks2B.nm"), ProgramAnnotation(_grid_rocks), ["Pmax=? [\"notbad\" U \"goal\"]"], constants=f"N={N}")
+    else:
+        raise RuntimeError("Rocks is only available with 2 or 3 rocks")
+
+def rocks2C(N, K=2):
+    K = int(K)
+    if K == 2:
+        return Model(_example_path("rocks2C.nm"), ProgramAnnotation(_grid_rocks), ["Pmax=? [\"notbad\" U \"goal\"]"], constants=f"N={N}")
+    else:
+        raise RuntimeError("Rocks is only available with 2 or 3 rocks")
+
+def rocks2D(N, K=2):
+    K = int(K)
+    if K == 2:
+        return Model(_example_path("rocks2D.nm"), ProgramAnnotation(_grid_rocks), ["Pmax=? [\"notbad\" U \"goal\"]"], constants=f"N={N}")
+    else:
+        raise RuntimeError("Rocks is only available with 2 or 3 rocks")
+

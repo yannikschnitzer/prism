@@ -1,4 +1,4 @@
- #!/bin/bash         
+#!/bin/bash         
 # S1= /opt/storm/build
 # /opt/gridstorm/gridstorm/models/files/= /opt/gridstorm/gridstorm/models/files/
 # 900= 900
@@ -39,21 +39,34 @@ echo "Storm-binary: $STORM_POMDP"
 echo "Models expected at folder /opt/gridstorm/gridstorm/models/files/"
 MODEL_DIR=/opt/gridstorm/gridstorm/models/files/
 
-TO=90
+TO=9000
 echo "Time out is $TO seconds"
 TIMEOUTCOMMAND="timeout $TO"
 
 #concrete
 #echo "Running test benchmarks..."
-#$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/test.nm -const N=6 --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative -stats --exportwinningregion "winningregion/test-6-initial.wr" &> logfiles/iterative/test-6-initial.log
 
-#$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/concrete.prism --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative -stats --exportwinningregion "winningregion/concrete-initial.wr" &> logfiles/iterative/concrete-initial.log
+#$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/$1.nm -const N=$2,primaryMinX=$3,primaryMinY=$4,primaryMaxX=$5,primaryMaxY=$6 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/$1-$2-$3-$4-$5-$6-fixpoint.wr" &> logfiles/iterative/$1-$2-$3-fixpoint.log
+#$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/obstacle_6_centralized.nm -const N=$2 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/obstacle_6_centralized-$2-$3-$4-$5-$6-fixpoint.wr" &> logfiles/iterative/$1-$2-fixpoint.log
+#$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/obstacle.nm -const N=6 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/dfixpoint.wr" &> logfiles/iterative/dfixpoint.log
 
-$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/$1.nm --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative -stats --exportwinningregion "winningregion/$1-initial.wr" &> logfiles/iterative/$1-initial.log
+$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/obstacle_6_centralized.nm -const N=$2 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/obstacle_6_centralizedfixpoint.wr" &> logfiles/iterative/2fixpoint.log
 
-#$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/abstract_1.nm --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative -stats --exportwinningregion "winningregion/abstract_1-initial.wr" &> logfiles/iterative/abstract_1-initial.log
+N=$2
+shieldSizeX=3
+shieldSizeY=3
+maxX=0
+maxY=0
 
-#$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/abstract_2.nm --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative -stats --exportwinningregion "winningregion/abstract_2-initial.wr" &> logfiles/iterative/abstract_2-initial.log
-
-#$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/obstacle.nm -const N=6 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/obstacle-6-fixpoint.wr" &> logfiles/iterative/obstacle-6-fixpoint.log
-
+minX=0
+while [ "$minX" -lt "$N" ];do
+  minY=0
+  while [ "$minY" -lt "$N" ];do
+    maxX=`expr $minX + $shieldSizeX - 1`
+    maxY=`expr $minY + $shieldSizeY - 1`
+    echo $minX $minY $maxX $maxY
+    $TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/$1.nm -const N=$2,primaryMinX=$minX,primaryMinY=$minY,primaryMaxX=$maxX,primaryMaxY=$maxY --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/$1-$2-$minX-$minY-$maxX-$maxY-fixpoint.wr" &> logfiles/iterative/$1-$2-$minX-$minY-$maxX-$maxY-fixpoint.log
+    minY=`expr $minY + $shieldSizeY`
+  done
+  minX=`expr $minX + $shieldSizeX`
+done

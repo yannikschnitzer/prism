@@ -46,9 +46,23 @@ experiment_to_grid_model_names = {
     "avoid": models.surveillance,
     "refuel": models.refuel,
     'obstacle': models.obstacle,
+    'obstacleA': models.obstacleA,
+    'obstacleB': models.obstacleB,
+    'obstacleC': models.obstacleC,
+    'obstacleD': models.obstacleD,
+    'obstacleE': models.obstacleE,
+    'obstacleF': models.obstacleF,
     "intercept": models.intercept,
     'evade': models.evade,
-    'rocks': models.rocks
+    'rocks': models.rocks,
+    'rocks2Base': models.rocks2Base,
+    'rocks2A': models.rocks2A,
+    'rocks2B': models.rocks2B,
+    'rocks2C': models.rocks2C,
+    'rocks2D': models.rocks2D,
+    'concrete': models.concrete,
+    'abstractA': models.abstractA,
+    'abstractB': models.abstractB
 }
 
 class ManualInput:

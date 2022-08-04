@@ -1,0 +1,2334 @@
+PRISM
+=====
+
+Version: 4.7.dev
+Date: Mon Jul 25 11:53:05 EDT 2022
+Hostname: YEW
+Memory limits: cudd=1g, java(heap)=1g
+Command line: prism rocks2.prism -const N=6 -const crashCost=10 safe.props -prop 1
+
+Parsing model file "rocks2.prism"...
+
+Type:        POMDP
+Modules:     master rock1 rock2 robot 
+Variables:   started done r1qual r1taken r1lastobs r2qual r2taken r2lastobs x y 
+Observables: started r1taken r1lastobs r2taken r2lastobs done seefinish seebad seegood atr1 atr2 nearr1 nearr2
+
+Switching to explicit engine, which supports POMDPs...
+
+Parsing properties file "safe.props"...
+
+1 property:
+(1) R{"cost"}min=? [ F "goal" ]
+
+---------------------------------------------------------------------
+
+Model checking: R{"cost"}min=? [ F "goal" ]
+Model constants: crashCost=10,N=6
+
+Building model...
+Model constants: crashCost=10,N=6
+
+Computing reachable states... 816 states
+Reachable states exploration and model construction done in 0.118 secs.
+Sorting reachable states list...
+
+Time for model construction: 0.142 seconds.
+
+Type:        POMDP
+States:      816 (1 initial)
+Obs/unobs:   74/144
+Transitions: 7325
+Choices:     4295
+Max/avg:     7/5.26
+Building reward structure...
+Calling Perseus pomdp solver
+Starting Prob1 (max)...
+Prob1 (max) took 18 iterations and 0.034 seconds.
+762 763 764 765 766 767 768 769 770 771 772 773 774 775 776 777 778 779 780 781 782 783 784 785 786 787 788 789 790 791 792 793 794 795 796 797 798 799 800 801 802 803 804 805 806 807 808 809 810 811 812 813 814 815 rocks2.prism -const N=6 -const crashCost=10 safe.props -prop 1 
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+
+ =============== Step 0 Cur state 0shield0
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=0 o=-1 vmean=-33.61136447007599 v=-1101377.19095545 n=32768.0 Belief Support=[0]
+MCTS layer2
+Id=1 a=placement vmean=-33.61136447007599 v=-1101377.19095545 n=32768.0 | Id=0 o=-1 vmean=-33.61136447007599 v=-1101377.19095545 n=32768.0 Belief Support=[0]
+reach tree print depth 2
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 284shield0
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=1(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8200.0], 
+s=61(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8168.0], 
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8154.0], 
+s=345(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8245.0], 
+
+Action actually taken= south reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 285shield0
+s=285(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=1)
+Belief 
+s=2(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=1)
+[7386.0], 
+s=62(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=1)
+[7385.0], 
+s=285(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=1)
+[7268.0], 
+s=346(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=1)
+[7373.0], 
+
+Action actually taken= north reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 284shield0
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=1(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8299.0], 
+s=61(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8192.0], 
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8100.0], 
+s=345(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8165.0], 
+
+Action actually taken= r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 320shield0
+s=320(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=0,y=0)
+Belief 
+s=37(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=0,y=0)
+[4230.0], 
+s=97(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=0,y=0)
+[4165.0], 
+s=320(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=0,y=0)
+[4093.0], 
+s=381(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=0,y=0)
+[4109.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 290shield0
+s=290(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+Belief 
+s=7(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[7490.0], 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[815.0], 
+s=67(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[7467.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[808.0], 
+s=290(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[7254.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[809.0], 
+s=351(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[7286.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[835.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 6 Cur state 296shield0
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+Belief 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[6702.0], 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[1478.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[90.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[6631.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[1481.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[82.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[6495.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[1456.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[80.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[6681.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[1467.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[83.0], 
+
+Action actually taken= r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 7 Cur state 459shield0
+s=459(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+Belief 
+s=170(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[3390.0], 
+s=175(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[664.0], 
+s=181(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[50.0], 
+s=216(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[3257.0], 
+s=221(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[699.0], 
+s=227(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[44.0], 
+s=459(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[3401.0], 
+s=465(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[788.0], 
+s=471(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[43.0], 
+s=514(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[3197.0], 
+s=520(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[769.0], 
+s=526(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[40.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 8 Cur state 302shield0
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+Belief 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[6237.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[1868.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[5823.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[1874.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[6096.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2137.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[5732.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2033.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 9 Cur state 308shield0
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[5651.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[5373.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[5782.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[5182.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 10 Cur state 314shield0
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[8325.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[8126.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[8614.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[7695.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 11 Cur state 314shield0
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[8419.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[8128.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[8539.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[7671.0], 
+
+Action actually taken= finish reward = -30.0 states after action :
+so far is ... safe
+UndiscountedReward -40.0 DiscountedReward -24.688000922764587 Time(ms) 5042
+Model=rocks-6-crashCost-10; nStates=816; Shield=0; Episode=1; Total Episodes=10; Undiscounted Reward=-40.0; Discounted Reward=-24.688000922764587; Time Spent=5044; Average undiscounted=-40.0; Average discounted=-24.688000922764587; Average time spent=5044; isSafeTrace=1.0
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+
+ =============== Step 0 Cur state 0shield0
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=0 o=-1 vmean=-26.12629240722257 v=-856106.3495998692 n=32768.0 Belief Support=[0]
+MCTS layer2
+Id=1 a=placement vmean=-26.12629240722257 v=-856106.3495998692 n=32768.0 | Id=0 o=-1 vmean=-26.12629240722257 v=-856106.3495998692 n=32768.0 Belief Support=[0]
+reach tree print depth 2
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 345shield0
+s=345(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=1(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8146.0], 
+s=61(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8053.0], 
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8233.0], 
+s=345(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8335.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 351shield0
+s=351(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+Belief 
+s=7(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[7213.0], 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[860.0], 
+s=67(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[7115.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[766.0], 
+s=290(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[7503.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[775.0], 
+s=351(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[7522.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[852.0], 
+
+Action actually taken= r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 351shield0
+s=351(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+Belief 
+s=7(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[3621.0], 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[461.0], 
+s=67(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[3553.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[412.0], 
+s=290(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[3739.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[428.0], 
+s=351(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[3706.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[452.0], 
+
+Action actually taken= r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 351shield0
+s=351(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+Belief 
+s=7(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[3710.0], 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[468.0], 
+s=67(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[3616.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[390.0], 
+s=290(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[3781.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[437.0], 
+s=351(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[3626.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[477.0], 
+
+Action actually taken= r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 387shield0
+s=387(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=1,y=0)
+Belief 
+s=42(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=1,y=0)
+[3638.0], 
+s=44(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=2,y=0)
+[435.0], 
+s=103(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=1,y=0)
+[3601.0], 
+s=108(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=2,y=0)
+[389.0], 
+s=325(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=1,y=0)
+[3783.0], 
+s=328(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=2,y=0)
+[422.0], 
+s=387(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=1,y=0)
+[3600.0], 
+s=393(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=2,y=0)
+[505.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 6 Cur state 363shield0
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+Belief 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[6540.0], 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[1530.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[86.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[6507.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[1444.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[79.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[6835.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[1565.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[89.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[6311.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[1672.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[95.0], 
+
+Action actually taken= r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 7 Cur state 520shield0
+s=520(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+Belief 
+s=170(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[3292.0], 
+s=175(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[733.0], 
+s=181(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[35.0], 
+s=216(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[3327.0], 
+s=221(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[774.0], 
+s=227(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[42.0], 
+s=459(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[3409.0], 
+s=465(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[771.0], 
+s=471(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[44.0], 
+s=514(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[3150.0], 
+s=520(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[861.0], 
+s=526(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[51.0], 
+
+Action actually taken= r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 8 Cur state 550shield0
+s=550(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+Belief 
+s=192(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=2,y=0)
+[3173.0], 
+s=196(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[721.0], 
+s=202(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[39.0], 
+s=241(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=2,y=0)
+[3393.0], 
+s=246(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[817.0], 
+s=252(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[43.0], 
+s=485(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=2,y=0)
+[3425.0], 
+s=490(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[712.0], 
+s=496(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[44.0], 
+s=544(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=2,y=0)
+[3077.0], 
+s=550(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[828.0], 
+s=556(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[38.0], 
+
+Action actually taken= r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 9 Cur state 550shield0
+s=550(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+Belief 
+s=192(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=2,y=0)
+[3245.0], 
+s=196(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[743.0], 
+s=202(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[43.0], 
+s=241(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=2,y=0)
+[3523.0], 
+s=246(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[811.0], 
+s=252(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[46.0], 
+s=485(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=2,y=0)
+[3419.0], 
+s=490(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=0)
+[710.0], 
+s=496(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=0)
+[46.0], 
+s=544(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=2,y=0)
+[3087.0], 
+s=550(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=0)
+[796.0], 
+s=556(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=0)
+[26.0], 
+
+Action actually taken= west reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 10 Cur state 357shield0
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+Belief 
+s=1(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[620.0], 
+s=7(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[5932.0], 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[1370.0], 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[88.0], 
+s=61(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[735.0], 
+s=67(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[6428.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[1435.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[80.0], 
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[711.0], 
+s=290(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[6093.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[1284.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[93.0], 
+s=345(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[631.0], 
+s=351(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[5724.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[1469.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[66.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 11 Cur state 369shield0
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief 
+s=7(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[529.0], 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[5551.0], 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[1728.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[211.0], 
+s=67(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[709.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[5781.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[1938.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[224.0], 
+s=290(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[670.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[5596.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[1746.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[202.0], 
+s=351(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[511.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[5185.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[1897.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[193.0], 
+
+Action actually taken= r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 12 Cur state 526shield0
+s=526(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief 
+s=168(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[299.0], 
+s=170(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[2780.0], 
+s=175(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[820.0], 
+s=181(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[98.0], 
+s=213(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[374.0], 
+s=216(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[2806.0], 
+s=221(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[935.0], 
+s=227(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[126.0], 
+s=454(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[344.0], 
+s=459(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[2836.0], 
+s=465(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[895.0], 
+s=471(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[113.0], 
+s=508(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[240.0], 
+s=514(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[2547.0], 
+s=520(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[967.0], 
+s=526(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[81.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 13 Cur state 375shield0
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[2327.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[2805.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[2564.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[2304.0], 
+
+Action actually taken= finish reward = -60.0 states after action :
+so far is ... safe
+UndiscountedReward -72.0 DiscountedReward -39.53368333118018 Time(ms) 5798
+Model=rocks-6-crashCost-10; nStates=816; Shield=0; Episode=2; Total Episodes=10; Undiscounted Reward=-72.0; Discounted Reward=-39.53368333118018; Time Spent=5801; Average undiscounted=-56.0; Average discounted=-32.110842126972386; Average time spent=5422; isSafeTrace=1.0
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+
+ =============== Step 0 Cur state 0shield0
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=0 o=-1 vmean=-26.240593366899308 v=-859851.7634465565 n=32768.0 Belief Support=[0]
+MCTS layer2
+Id=1 a=placement vmean=-26.240593366899308 v=-859851.7634465565 n=32768.0 | Id=0 o=-1 vmean=-26.240593366899308 v=-859851.7634465565 n=32768.0 Belief Support=[0]
+reach tree print depth 2
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 1shield0
+s=1(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=1(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8231.0], 
+s=61(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8147.0], 
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8270.0], 
+s=345(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8119.0], 
+
+Action actually taken= south reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 2shield0
+s=2(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=1)
+Belief 
+s=2(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=1)
+[7413.0], 
+s=62(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=1)
+[7263.0], 
+s=285(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=1)
+[7539.0], 
+s=346(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=1)
+[7235.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 8shield0
+s=8(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=1)
+Belief 
+s=8(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=1)
+[7341.0], 
+s=68(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=1)
+[7231.0], 
+s=291(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=1)
+[7663.0], 
+s=352(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=1)
+[7255.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 20shield0
+s=20(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=1)
+Belief 
+s=14(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=1)
+[7252.0], 
+s=20(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=1)
+[841.0], 
+s=74(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=1)
+[7134.0], 
+s=80(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[776.0], 
+s=297(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=1)
+[7672.0], 
+s=303(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=1)
+[904.0], 
+s=358(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=1)
+[7406.0], 
+s=364(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[775.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 26shield0
+s=26(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+Belief 
+s=20(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=1)
+[6526.0], 
+s=26(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+[1531.0], 
+s=80(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[6367.0], 
+s=86(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=1)
+[1416.0], 
+s=303(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=1)
+[6926.0], 
+s=309(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+[1611.0], 
+s=364(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[6628.0], 
+s=370(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=1)
+[1424.0], 
+
+Action actually taken= r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 6 Cur state 56shield0
+s=56(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=1)
+Belief 
+s=50(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=1)
+[3298.0], 
+s=56(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=1)
+[761.0], 
+s=115(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=1)
+[3153.0], 
+s=121(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=1)
+[713.0], 
+s=334(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=3,y=1)
+[3477.0], 
+s=340(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=4,y=1)
+[794.0], 
+s=400(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=3,y=1)
+[3430.0], 
+s=406(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=4,y=1)
+[743.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 7 Cur state 32shield0
+s=32(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=1)
+Belief 
+s=32(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=1)
+[2501.0], 
+s=92(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=1)
+[2375.0], 
+s=315(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=1)
+[2600.0], 
+s=376(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=1)
+[2524.0], 
+
+Action actually taken= north reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 8 Cur state 31shield0
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[5724.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[5610.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[6017.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[5857.0], 
+
+Action actually taken= finish reward = -0.0 states after action :
+so far is ... safe
+UndiscountedReward -7.0 DiscountedReward -5.73159137421875 Time(ms) 3555
+Model=rocks-6-crashCost-10; nStates=816; Shield=0; Episode=3; Total Episodes=10; Undiscounted Reward=-7.0; Discounted Reward=-5.73159137421875; Time Spent=3558; Average undiscounted=-39.666666666666664; Average discounted=-23.317758542721176; Average time spent=4801; isSafeTrace=1.0
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+
+ =============== Step 0 Cur state 0shield0
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=0 o=-1 vmean=-29.149843102874396 v=-955182.0587949882 n=32768.0 Belief Support=[0]
+MCTS layer2
+Id=1 a=placement vmean=-29.149843102874396 v=-955182.0587949882 n=32768.0 | Id=0 o=-1 vmean=-29.149843102874396 v=-955182.0587949882 n=32768.0 Belief Support=[0]
+reach tree print depth 2
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 61shield0
+s=61(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=1(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8231.0], 
+s=61(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8169.0], 
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8208.0], 
+s=345(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8159.0], 
+
+Action actually taken= south reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 62shield0
+s=62(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=1)
+Belief 
+s=2(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=1)
+[7391.0], 
+s=62(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=1)
+[7386.0], 
+s=285(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=1)
+[7460.0], 
+s=346(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=1)
+[7262.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 68shield0
+s=68(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=1)
+Belief 
+s=8(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=1)
+[7324.0], 
+s=68(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=1)
+[7414.0], 
+s=291(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=1)
+[7528.0], 
+s=352(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=1)
+[7118.0], 
+
+Action actually taken= west reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 62shield0
+s=62(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=1)
+Belief 
+s=2(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=1)
+[8222.0], 
+s=62(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=1)
+[8210.0], 
+s=285(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=1)
+[8357.0], 
+s=346(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=1)
+[7886.0], 
+
+Action actually taken= r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 209shield0
+s=209(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=1)
+Belief 
+s=164(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=1)
+[4174.0], 
+s=209(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=1)
+[4181.0], 
+s=449(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=1)
+[4188.0], 
+s=503(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=1)
+[4001.0], 
+
+Action actually taken= north reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 6 Cur state 61shield0
+s=61(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=1(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8282.0], 
+s=61(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8331.0], 
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8245.0], 
+s=345(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[7898.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 7 Cur state 67shield0
+s=67(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+Belief 
+s=7(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[7383.0], 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[802.0], 
+s=67(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[7558.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[861.0], 
+s=290(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[7377.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[846.0], 
+s=351(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[7181.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[749.0], 
+
+Action actually taken= r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 8 Cur state 213shield0
+s=213(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+Belief 
+s=168(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[3664.0], 
+s=170(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[414.0], 
+s=213(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[3820.0], 
+s=216(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[447.0], 
+s=454(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[3552.0], 
+s=459(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[440.0], 
+s=508(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[3551.0], 
+s=514(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[382.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 9 Cur state 73shield0
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+Belief 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[6555.0], 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[1496.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[90.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[6978.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[1595.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[82.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[6327.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[1508.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[86.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[6503.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[1383.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[92.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 10 Cur state 79shield0
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+Belief 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[5845.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2027.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[6371.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2106.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[5605.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2034.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[5951.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[1959.0], 
+
+Action actually taken= r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 11 Cur state 79shield0
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+Belief 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[3025.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[1047.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[3211.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[1106.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[2816.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[1077.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[3030.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[970.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 12 Cur state 85shield0
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[5417.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[5749.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[5121.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[5553.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 13 Cur state 91shield0
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[8113.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[8700.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[7662.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[8284.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 14 Cur state 91shield0
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[8036.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[8534.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[7529.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[8115.0], 
+
+Action actually taken= finish reward = -30.0 states after action :
+so far is ... safe
+UndiscountedReward -43.0 DiscountedReward -23.876749791155284 Time(ms) 8820
+Model=rocks-6-crashCost-10; nStates=816; Shield=0; Episode=4; Total Episodes=10; Undiscounted Reward=-43.0; Discounted Reward=-23.876749791155284; Time Spent=8823; Average undiscounted=-40.5; Average discounted=-23.457506354829704; Average time spent=5806; isSafeTrace=1.0
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+
+ =============== Step 0 Cur state 0shield0
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=0 o=-1 vmean=-39.54596085299167 v=-1295842.045230831 n=32768.0 Belief Support=[0]
+MCTS layer2
+Id=1 a=placement vmean=-39.54596085299167 v=-1295842.045230831 n=32768.0 | Id=0 o=-1 vmean=-39.54596085299167 v=-1295842.045230831 n=32768.0 Belief Support=[0]
+reach tree print depth 2
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 345shield0
+s=345(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=1(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8316.0], 
+s=61(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8043.0], 
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8150.0], 
+s=345(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8258.0], 
+
+Action actually taken= r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 381shield0
+s=381(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=0,y=0)
+Belief 
+s=37(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=0,y=0)
+[4122.0], 
+s=97(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=0,y=0)
+[4105.0], 
+s=320(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=0,y=0)
+[4120.0], 
+s=381(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=0,y=0)
+[4230.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 351shield0
+s=351(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+Belief 
+s=7(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[7346.0], 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[814.0], 
+s=67(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[7164.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[798.0], 
+s=290(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[7373.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[874.0], 
+s=351(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[7555.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[811.0], 
+
+Action actually taken= r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 508shield0
+s=508(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+Belief 
+s=168(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[3666.0], 
+s=170(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[441.0], 
+s=213(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[3567.0], 
+s=216(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[392.0], 
+s=454(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[3606.0], 
+s=459(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[432.0], 
+s=508(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[3800.0], 
+s=514(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[424.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 357shield0
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+Belief 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[6636.0], 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[1593.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[75.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[6435.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[1417.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[74.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[6442.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[1503.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[93.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[6840.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[1547.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[101.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 6 Cur state 363shield0
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+Belief 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[5969.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2117.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[5795.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[1901.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[5822.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[2032.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[6079.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[2053.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 7 Cur state 369shield0
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[5467.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[5453.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[5326.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[5699.0], 
+
+Action actually taken= south reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 8 Cur state 370shield0
+s=370(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=1)
+Belief 
+s=26(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+[7395.0], 
+s=27(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=2)
+[778.0], 
+s=86(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=1)
+[7457.0], 
+s=87(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=2)
+[776.0], 
+s=309(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+[7105.0], 
+s=310(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=2)
+[733.0], 
+s=370(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=1)
+[7646.0], 
+s=371(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=2)
+[864.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 9 Cur state 376shield0
+s=376(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=1)
+Belief 
+s=32(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=1)
+[7419.0], 
+s=33(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=2)
+[759.0], 
+s=92(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=1)
+[7380.0], 
+s=93(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=2)
+[804.0], 
+s=315(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=1)
+[7165.0], 
+s=316(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=2)
+[700.0], 
+s=376(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=1)
+[7662.0], 
+s=377(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=2)
+[866.0], 
+
+Action actually taken= finish reward = -60.0 states after action :
+so far is ... safe
+UndiscountedReward -68.0 DiscountedReward -44.20997638898436 Time(ms) 5448
+Model=rocks-6-crashCost-10; nStates=816; Shield=0; Episode=5; Total Episodes=10; Undiscounted Reward=-68.0; Discounted Reward=-44.20997638898436; Time Spent=5450; Average undiscounted=-46.0; Average discounted=-27.608000361660636; Average time spent=5735; isSafeTrace=1.0
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+
+ =============== Step 0 Cur state 0shield0
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=0 o=-1 vmean=-30.719438361910512 v=-1006614.5562430837 n=32768.0 Belief Support=[0]
+MCTS layer2
+Id=1 a=placement vmean=-30.719438361910512 v=-1006614.5562430837 n=32768.0 | Id=0 o=-1 vmean=-30.719438361910512 v=-1006614.5562430837 n=32768.0 Belief Support=[0]
+reach tree print depth 2
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 1shield0
+s=1(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=1(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8238.0], 
+s=61(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8257.0], 
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8170.0], 
+s=345(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8102.0], 
+
+Action actually taken= r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 163shield0
+s=163(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=163(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[4096.0], 
+s=208(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[4137.0], 
+s=448(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[4081.0], 
+s=502(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[4009.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 7shield0
+s=7(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+Belief 
+s=7(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[7374.0], 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[821.0], 
+s=67(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[7415.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[878.0], 
+s=290(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[7375.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[811.0], 
+s=351(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[7269.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[789.0], 
+
+Action actually taken= south reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 8shield0
+s=8(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=1)
+Belief 
+s=8(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=1)
+[6700.0], 
+s=15(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=2)
+[82.0], 
+s=68(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=1)
+[6678.0], 
+s=75(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=2)
+[92.0], 
+s=291(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=1)
+[6487.0], 
+s=298(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=2)
+[82.0], 
+s=352(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=1)
+[6611.0], 
+s=359(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=2)
+[71.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 14shield0
+s=14(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=1)
+Belief 
+s=14(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=1)
+[7324.0], 
+s=20(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=1)
+[823.0], 
+s=21(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=2)
+[95.0], 
+s=27(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=2)
+[14.0], 
+s=74(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=1)
+[7308.0], 
+s=80(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[811.0], 
+s=81(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=2)
+[100.0], 
+s=87(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=2)
+[6.0], 
+s=297(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=1)
+[7163.0], 
+s=303(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=1)
+[792.0], 
+s=304(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=2)
+[116.0], 
+s=310(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=2)
+[16.0], 
+s=358(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=1)
+[7246.0], 
+s=364(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[834.0], 
+s=365(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=2)
+[81.0], 
+s=371(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=2)
+[9.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 6 Cur state 20shield0
+s=20(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=1)
+Belief 
+s=20(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=1)
+[6613.0], 
+s=26(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+[1495.0], 
+s=27(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=2)
+[99.0], 
+s=80(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[6615.0], 
+s=86(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=1)
+[1409.0], 
+s=87(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=2)
+[94.0], 
+s=303(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=1)
+[6394.0], 
+s=309(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+[1375.0], 
+s=310(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=2)
+[107.0], 
+s=364(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[6534.0], 
+s=370(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=1)
+[1512.0], 
+s=371(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=2)
+[64.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 7 Cur state 26shield0
+s=26(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+Belief 
+s=26(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+[6026.0], 
+s=86(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=1)
+[5969.0], 
+s=309(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+[5890.0], 
+s=370(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=1)
+[5887.0], 
+
+Action actually taken= r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 8 Cur state 26shield0
+s=26(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+Belief 
+s=26(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+[4200.0], 
+s=86(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=1)
+[4167.0], 
+s=309(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+[3917.0], 
+s=370(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=1)
+[4087.0], 
+
+Action actually taken= r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 9 Cur state 26shield0
+s=26(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+Belief 
+s=26(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+[4198.0], 
+s=86(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=1)
+[4181.0], 
+s=309(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+[3901.0], 
+s=370(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=1)
+[4079.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 10 Cur state 32shield0
+s=32(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=1)
+Belief 
+s=32(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=1)
+[8502.0], 
+s=92(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=1)
+[8361.0], 
+s=315(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=1)
+[7822.0], 
+s=376(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=1)
+[8075.0], 
+
+Action actually taken= finish reward = -0.0 states after action :
+so far is ... safe
+UndiscountedReward -9.0 DiscountedReward -7.025261215232422 Time(ms) 3021
+Model=rocks-6-crashCost-10; nStates=816; Shield=0; Episode=6; Total Episodes=10; Undiscounted Reward=-9.0; Discounted Reward=-7.025261215232422; Time Spent=3023; Average undiscounted=-39.833333333333336; Average discounted=-24.177543837255936; Average time spent=5283; isSafeTrace=1.0
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+
+ =============== Step 0 Cur state 0shield0
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=0 o=-1 vmean=-34.899996683511425 v=-1143603.0913253024 n=32768.0 Belief Support=[0]
+MCTS layer2
+Id=1 a=placement vmean=-34.899996683511425 v=-1143603.0913253024 n=32768.0 | Id=0 o=-1 vmean=-34.899996683511425 v=-1143603.0913253024 n=32768.0 Belief Support=[0]
+reach tree print depth 2
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 284shield0
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=1(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8105.0], 
+s=61(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8241.0], 
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8284.0], 
+s=345(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8137.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 290shield0
+s=290(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+Belief 
+s=7(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[7498.0], 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[787.0], 
+s=67(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[7247.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[797.0], 
+s=290(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[7420.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[793.0], 
+s=351(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[7365.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[814.0], 
+
+Action actually taken= west reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 284shield0
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=1(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[7647.0], 
+s=7(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[735.0], 
+s=61(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[7426.0], 
+s=67(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[717.0], 
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[7480.0], 
+s=290(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[727.0], 
+s=345(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[7316.0], 
+s=351(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[708.0], 
+
+Action actually taken= south reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 285shield0
+s=285(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=1)
+Belief 
+s=2(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=1)
+[6889.0], 
+s=62(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=1)
+[6673.0], 
+s=285(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=1)
+[6793.0], 
+s=346(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=1)
+[6525.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 291shield0
+s=291(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=1)
+Belief 
+s=8(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=1)
+[7554.0], 
+s=68(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=1)
+[7220.0], 
+s=291(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=1)
+[7547.0], 
+s=352(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=1)
+[7092.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 6 Cur state 297shield0
+s=297(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=1)
+Belief 
+s=14(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=1)
+[7586.0], 
+s=20(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=1)
+[848.0], 
+s=74(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=1)
+[7177.0], 
+s=80(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[825.0], 
+s=297(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=1)
+[7538.0], 
+s=303(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=1)
+[830.0], 
+s=358(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=1)
+[7106.0], 
+s=364(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[825.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 7 Cur state 309shield0
+s=309(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+Belief 
+s=20(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=1)
+[6783.0], 
+s=26(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+[1551.0], 
+s=80(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[6532.0], 
+s=86(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=1)
+[1454.0], 
+s=303(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=1)
+[6772.0], 
+s=309(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+[1463.0], 
+s=364(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[6407.0], 
+s=370(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=1)
+[1432.0], 
+
+Action actually taken= west reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 8 Cur state 303shield0
+s=303(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=1)
+Belief 
+s=14(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=1)
+[6188.0], 
+s=20(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=1)
+[1415.0], 
+s=74(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=1)
+[5966.0], 
+s=80(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[1376.0], 
+s=297(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=1)
+[6388.0], 
+s=303(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=1)
+[1309.0], 
+s=358(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=1)
+[6128.0], 
+s=364(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[1361.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 9 Cur state 309shield0
+s=309(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+Belief 
+s=20(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=1)
+[6027.0], 
+s=26(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+[2052.0], 
+s=80(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[5950.0], 
+s=86(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=1)
+[2008.0], 
+s=303(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=1)
+[6119.0], 
+s=309(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=1)
+[1933.0], 
+s=364(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[6009.0], 
+s=370(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=1)
+[2060.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 10 Cur state 315shield0
+s=315(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=1)
+Belief 
+s=32(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=1)
+[2651.0], 
+s=92(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=1)
+[2680.0], 
+s=315(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=1)
+[2697.0], 
+s=376(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=1)
+[2771.0], 
+
+Action actually taken= finish reward = -30.0 states after action :
+so far is ... safe
+UndiscountedReward -39.0 DiscountedReward -24.98736939238378 Time(ms) 7636
+Model=rocks-6-crashCost-10; nStates=816; Shield=0; Episode=7; Total Episodes=10; Undiscounted Reward=-39.0; Discounted Reward=-24.98736939238378; Time Spent=7638; Average undiscounted=-39.714285714285715; Average discounted=-24.293233202274198; Average time spent=5619; isSafeTrace=1.0
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+
+ =============== Step 0 Cur state 0shield0
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=0 o=-1 vmean=-42.25691384520852 v=-1384674.5528797929 n=32768.0 Belief Support=[0]
+MCTS layer2
+Id=1 a=placement vmean=-42.25691384520852 v=-1384674.5528797929 n=32768.0 | Id=0 o=-1 vmean=-42.25691384520852 v=-1384674.5528797929 n=32768.0 Belief Support=[0]
+reach tree print depth 2
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 284shield0
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=1(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8158.0], 
+s=61(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8193.0], 
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8256.0], 
+s=345(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8160.0], 
+
+Action actually taken= r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 448shield0
+s=448(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=163(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[3994.0], 
+s=208(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[4118.0], 
+s=448(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[4070.0], 
+s=502(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[4110.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 290shield0
+s=290(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+Belief 
+s=7(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[7253.0], 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[797.0], 
+s=67(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[7467.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[804.0], 
+s=290(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[7439.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[804.0], 
+s=351(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[7357.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[816.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 296shield0
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+Belief 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[6430.0], 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[1479.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[85.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[6793.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[1457.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[81.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[6734.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[1377.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[85.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[6697.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[1446.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[67.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 302shield0
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+Belief 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[5744.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[1976.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[6120.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[1969.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[6104.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[1890.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[6074.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[1993.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 6 Cur state 308shield0
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[5434.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[5583.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[5610.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[5645.0], 
+
+Action actually taken= r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 7 Cur state 308shield0
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[4088.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[4003.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[4124.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[4122.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 8 Cur state 314shield0
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[8374.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[7952.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[8357.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[8075.0], 
+
+Action actually taken= finish reward = -30.0 states after action :
+so far is ... safe
+UndiscountedReward -37.0 DiscountedReward -25.634204312890617 Time(ms) 5536
+Model=rocks-6-crashCost-10; nStates=816; Shield=0; Episode=8; Total Episodes=10; Undiscounted Reward=-37.0; Discounted Reward=-25.634204312890617; Time Spent=5538; Average undiscounted=-39.375; Average discounted=-24.460854591101253; Average time spent=5609; isSafeTrace=1.0
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+
+ =============== Step 0 Cur state 0shield0
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=0 o=-1 vmean=-26.46849970902512 v=-867319.7984653352 n=32768.0 Belief Support=[0]
+MCTS layer2
+Id=1 a=placement vmean=-26.46849970902512 v=-867319.7984653352 n=32768.0 | Id=0 o=-1 vmean=-26.46849970902512 v=-867319.7984653352 n=32768.0 Belief Support=[0]
+reach tree print depth 2
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 345shield0
+s=345(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=1(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8169.0], 
+s=61(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8244.0], 
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8098.0], 
+s=345(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8256.0], 
+
+Action actually taken= r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 381shield0
+s=381(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=0,y=0)
+Belief 
+s=37(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=0,y=0)
+[4112.0], 
+s=97(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=0,y=0)
+[4151.0], 
+s=320(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=true,x=0,y=0)
+[3984.0], 
+s=381(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=0,y=0)
+[4211.0], 
+
+Action actually taken= r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 532shield0
+s=532(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=0,y=0)
+Belief 
+s=187(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=0,y=0)
+[4098.0], 
+s=233(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=0,y=0)
+[4067.0], 
+s=477(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=true,x=0,y=0)
+[3915.0], 
+s=532(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=true,x=0,y=0)
+[4249.0], 
+
+Action actually taken= r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 502shield0
+s=502(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=163(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[4141.0], 
+s=208(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[4072.0], 
+s=448(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[3979.0], 
+s=502(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=true,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[4311.0], 
+
+Action actually taken= south reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 346shield0
+s=346(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=1)
+Belief 
+s=2(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=1)
+[7520.0], 
+s=62(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=1)
+[7299.0], 
+s=285(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=1)
+[7116.0], 
+s=346(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=1)
+[7605.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 6 Cur state 352shield0
+s=352(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=1)
+Belief 
+s=8(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=1)
+[7579.0], 
+s=68(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=1)
+[7234.0], 
+s=291(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=1)
+[7076.0], 
+s=352(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=1)
+[7598.0], 
+
+Action actually taken= r1sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 7 Cur state 352shield0
+s=352(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=1)
+Belief 
+s=8(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=1)
+[4161.0], 
+s=68(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=1)
+[3888.0], 
+s=291(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=1)
+[4012.0], 
+s=352(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=1)
+[4186.0], 
+
+Action actually taken= r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 8 Cur state 388shield0
+s=388(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=1,y=1)
+Belief 
+s=104(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=1,y=1)
+[7813.0], 
+s=388(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=1,y=1)
+[8632.0], 
+
+Action actually taken= r2sense reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 9 Cur state 388shield0
+s=388(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=1,y=1)
+Belief 
+s=104(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=1,y=1)
+[15511.0], 
+s=388(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=true,x=1,y=1)
+[17249.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 10 Cur state 358shield0
+s=358(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=1)
+Belief 
+s=74(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=1)
+[13992.0], 
+s=80(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[1575.0], 
+s=358(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=1)
+[15425.0], 
+s=364(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[1745.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 11 Cur state 364shield0
+s=364(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+Belief 
+s=80(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[12539.0], 
+s=86(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=1)
+[2821.0], 
+s=364(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=1)
+[13901.0], 
+s=370(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=1)
+[3123.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 12 Cur state 376shield0
+s=376(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=1)
+Belief 
+s=92(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=1)
+[4691.0], 
+s=376(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=1)
+[5309.0], 
+
+Action actually taken= finish reward = -60.0 states after action :
+so far is ... safe
+UndiscountedReward -71.0 DiscountedReward -40.614403506505454 Time(ms) 11149
+Model=rocks-6-crashCost-10; nStates=816; Shield=0; Episode=9; Total Episodes=10; Undiscounted Reward=-71.0; Discounted Reward=-40.614403506505454; Time Spent=11151; Average undiscounted=-42.888888888888886; Average discounted=-26.255693359479498; Average time spent=6225; isSafeTrace=1.0
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+Winning region loaded.
+
+ =============== Step 0 Cur state 0shield0
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=0(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=0 o=-1 vmean=-32.212230535376015 v=-1055530.3701832013 n=32768.0 Belief Support=[0]
+MCTS layer2
+Id=1 a=placement vmean=-32.212230535376015 v=-1055530.3701832013 n=32768.0 | Id=0 o=-1 vmean=-32.212230535376015 v=-1055530.3701832013 n=32768.0 Belief Support=[0]
+reach tree print depth 2
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 61shield0
+s=61(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+Belief 
+s=1(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8175.0], 
+s=61(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8304.0], 
+s=284(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0)
+[8103.0], 
+s=345(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=0,y=0)
+[8185.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 67shield0
+s=67(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+Belief 
+s=7(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[7449.0], 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[810.0], 
+s=67(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[7490.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[809.0], 
+s=290(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=1,y=0)
+[7354.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[755.0], 
+s=351(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=1,y=0)
+[7324.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[749.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 73shield0
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+Belief 
+s=13(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[6663.0], 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[1499.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[75.0], 
+s=73(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[6648.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[1453.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[98.0], 
+s=296(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=2,y=0)
+[6812.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[1396.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[73.0], 
+s=357(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=2,y=0)
+[6504.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[1464.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[74.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 79shield0
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+Belief 
+s=19(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[6037.0], 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[1958.0], 
+s=79(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[5964.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[1976.0], 
+s=302(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=3,y=0)
+[6110.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[1996.0], 
+s=363(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=3,y=0)
+[5909.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[1886.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 85shield0
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+Belief 
+s=25(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[5534.0], 
+s=85(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[5400.0], 
+s=308(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=4,y=0)
+[5739.0], 
+s=369(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=4,y=0)
+[5458.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 6 Cur state 91shield0
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[8181.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[7995.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[8551.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[8009.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 7 Cur state 91shield0
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[5838.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[5826.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[6186.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[5912.0], 
+
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 8 Cur state 91shield0
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+Belief 
+s=31(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[8016.0], 
+s=91(started=true,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[8155.0], 
+s=314(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=5,y=0)
+[8471.0], 
+s=375(started=true,done=false,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0)
+[8093.0], 
+
+Action actually taken= finish reward = -30.0 states after action :
+so far is ... safe
+UndiscountedReward -37.0 DiscountedReward -25.634204312890617 Time(ms) 1991
+Model=rocks-6-crashCost-10; nStates=816; Shield=0; Episode=10; Total Episodes=10; Undiscounted Reward=-37.0; Discounted Reward=-25.634204312890617; Time Spent=1993; Average undiscounted=-42.3; Average discounted=-26.193544454820607; Average time spent=5801; isSafeTrace=1.0
+
+End calling Perseus pomdp solver
+
+java.lang.NullPointerException: Cannot read field "strat" because "res" is null
+    at explicit.ProbModelChecker.checkRewardReach(ProbModelChecker.java:1393)
+    at explicit.ProbModelChecker.checkRewardPathFormula(ProbModelChecker.java:1350)
+    at explicit.ProbModelChecker.checkRewardFormula(ProbModelChecker.java:1200)
+    at explicit.ProbModelChecker.checkExpressionReward(ProbModelChecker.java:1132)
+    at explicit.ProbModelChecker.checkExpressionReward(ProbModelChecker.java:1114)
+    at explicit.ProbModelChecker.checkExpression(ProbModelChecker.java:528)
+    at explicit.StateModelChecker.checkExpressionFilter(StateModelChecker.java:1004)
+    at explicit.StateModelChecker.checkExpression(StateModelChecker.java:662)
+    at explicit.NonProbModelChecker.checkExpression(NonProbModelChecker.java:76)
+    at explicit.ProbModelChecker.checkExpression(ProbModelChecker.java:536)
+    at explicit.StateModelChecker.check(StateModelChecker.java:577)
+    at prism.Prism.modelCheck(Prism.java:3133)
+    at prism.PrismCL.run(PrismCL.java:407)
+    at prism.PrismCL.go(PrismCL.java:223)
+    at prism.PrismCL.main(PrismCL.java:2744)
+
+Error: Caught unhandled exception, aborting....

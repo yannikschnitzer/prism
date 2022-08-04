@@ -78,8 +78,8 @@ module rock2
     [west] true -> (r2lastobs'=false);
 endmodule
 module robot
-    x : [xMIN..xMAX] init 0;
-    y : [yMIN..yMAX] init 0;
+    x : [xMIN..xMAX] init 1;
+    y : [yMIN..yMAX] init 2;
 
     [west] true -> (1-slippery): (x'=max(x-1,xMIN)) + slippery: (x'=max(x-2,xMIN));
     [east] true -> (1-slippery): (x'=min(x+1,xMAX)) + slippery: (x'=min(x+2,xMAX));
@@ -91,15 +91,18 @@ endmodule
 
 
 rewards "cost"
+[west] x = xMIN : 1000;
+[south] y = yMAX  : 1000;
+[north] y = yMIN : 1000;
     [r1sense] true : 1;
-    [r1sample] !r1qual : 20;
+    [r1sample] !r1qual : 5;
     [r2sense] true : 1;
-    [r2sample] !r2qual : 20;
+    [r2sample] !r2qual : 5;
     [north] true : 1;
     [south] true : 1;
     [west] true : 1;
     [east] true : 1;
-    [finish] true : (!r1taken & r1qual ? 30 : 0) + (!r2taken & r2qual ? 30 : 0) ;//+ (!r3taken & r3qual ? 30 : 0) ;
+    [finish] true : (!r1taken & r1qual ? 100 : 0) + (!r2taken & r2qual ? 100 : 0) ;//+ (!r3taken & r3qual ? 30 : 0) ;
     bad: crashCost;
 endrewards
 label "goal" = good;

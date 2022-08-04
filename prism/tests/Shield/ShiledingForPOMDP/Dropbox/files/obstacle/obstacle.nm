@@ -1,0 +1,56 @@
+pomdp
+observables
+start
+endobservables
+const int N;
+const int axMAX = N-1;
+const int ayMAX = N-1;
+const int axMIN = 0;
+const int ayMIN = 0;
+const int primaryMinX;
+const int primaryMinY;
+const int primaryMaxX;
+const int primaryMaxY;
+const int pad = 2;
+const int areaMinX = max(primaryMinX - pad, axMIN);
+const int areaMinY = max(primaryMinY - pad, ayMIN);
+const int areaMaxY = min(primaryMaxX + pad, axMAX);
+const int areaMaxY = min(primaryMaxY + pad, ayMAX);
+const double slippery = 0.1;
+const int ob0x = 4;
+const int ob0y = 0;
+const int ob1x = 4;
+const int ob1y = 3;
+const int ob2x = 1;
+const int ob2y = 5;
+const int ob3x = 0;
+const int ob3y = 0;
+const int ob4x = 3;
+const int ob4y = 2;
+const int ob5x = 5;
+const int ob5y = 2;
+formula crash = (ax = ob0x & ay = ob0y)|(ax = ob1x & ay = ob1y)|(ax = ob2x & ay = ob2y)|(ax = ob3x & ay = ob3y)|(ax = ob4x & ay = ob4y)|(ax = ob5x & ay = ob5y);
+formula done = start & (ax = areaMaxX | ay = areaMaxY | ax = areaMinX | ay = areaMinY ) & (!crash);
+observable "amdone" = done;
+observable "hascrash" = crash;
+module master
+start : bool init false;
+[placement] !start -> (start'=true);
+[north] start & !done -> true;
+[south] start  & !done -> true;
+[east] start  & !done-> true;
+[west] start & !done -> true;
+endmodule
+module robot
+ax : [axMIN..axMAX] init axMIN;
+ay : [ayMIN..ayMAX] init ayMIN;
+slipped : bool init false;
+[placement] true ->  (ax'=axMIN) & (ay'=ayMIN)
+[west] true -> (1-slippery): (ax'=max(ax-1,areaMinX)) + slippery: (ax'=max(ax-2,areaMinX));
+[east] true -> (1-slippery): (ax'=min(ax+1,areaMaxX)) + slippery: (ax'=min(ax+2,areaMaxX));
+[south]  true -> (1-slippery): (ay'=min(ay+1,areaMaxY)) + slippery: (ay'=min(ay+2,areaMaxY));
+[north]  true -> (1-slippery): (ay'=max(ay-1,areaMinY)) + slippery: (ay'=max(ay-2,areaMinY));
+endmodule
+label "goal" = done;
+label "traps" = crash;
+label "notbad" =  !crash;

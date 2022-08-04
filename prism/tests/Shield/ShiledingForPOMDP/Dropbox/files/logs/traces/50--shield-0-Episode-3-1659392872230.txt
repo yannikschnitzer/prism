@@ -1,0 +1,1 @@
+100;[98, 100, 150, 200, 250, 300, 350];notApplicable;notApplicable;notApplicable;(start=true,ax=1,ay=49);true

@@ -1,0 +1,1 @@
+obstacle_50_centralized.nm -const N=50 ..//..//safe.props -prop 1 

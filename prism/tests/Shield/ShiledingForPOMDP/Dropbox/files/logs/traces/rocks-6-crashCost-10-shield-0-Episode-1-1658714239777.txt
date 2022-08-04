@@ -1,0 +1,1 @@
+0;[369, 19, 308, 85, 357, 296, 25, 73, 363, 13, 302, 79];0;[16, 22, 10, 42, 58, 91, 75, 28, 45, 61, 78, 94];notApplicable;notApplicable;notApplicable;(started=false,done=false,r1qual=false,r1taken=false,r1lastobs=false,r2qual=false,r2taken=false,r2lastobs=false,x=0,y=0);true

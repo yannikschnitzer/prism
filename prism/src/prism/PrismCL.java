@@ -2225,7 +2225,6 @@ public class PrismCL implements PrismModelListener
 	// store command line arguments //  to be deleted
 	public void storeArguments(String[] args)
 	{
-//		String path = "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\files\\";
 		PrismFileLog out = new PrismFileLog( "arguments.txt");
 		String s;
 		int i;

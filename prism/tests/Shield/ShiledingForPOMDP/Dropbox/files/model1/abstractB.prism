@@ -1,0 +1,66 @@
+pomdp
+
+observables
+start
+endobservables
+const int N;
+
+const int axMAX = 5;
+const int ayMAX = 2;
+const int axMIN = 2;
+const int ayMIN = 0;
+const double slippery = 0.2;
+
+const int ob2x = 3;
+const int ob2y = 1;
+
+formula done = start & ax = 5 & ay = 2;
+observable "amdone" = done;
+formula crash =   (ax = ob2x & ay = ob2y)  ;
+observable "hascrash" = crash;
+
+
+module master
+    start : bool init false;
+
+    [placement] !start -> (start'=true);
+    [north] start & !done -> true;
+    [south] start  & !done -> true;
+    [east] start  & !done-> true;
+    [west] start & !done -> true;
+
+
+endmodule
+
+
+module robot
+    ax : [axMIN..axMAX] init 2;
+    ay : [ayMIN..ayMAX] init 0;
+
+
+    [placement] true ->  1/2: (ax'=3) & (ay'=0) + 1/2: (ax'=3) & (ay'=2);
+
+    [west] true -> (1-slippery): (ax'=max(ax-1,axMIN)) + slippery: (ax'=max(ax-2,axMIN));
+    [east] true -> (1-slippery): (ax'=min(ax+1,axMAX)) + slippery: (ax'=min(ax+2,axMAX));
+    [south]  true -> (1-slippery): (ay'=min(ay+1,ayMAX)) + slippery: (ay'=min(ay+2,ayMAX));
+    [north]  true -> (1-slippery): (ay'=max(ay-1,ayMIN)) + slippery: (ay'=max(ay-2,ayMIN));
+endmodule
+
+
+label "goal" = done;
+label "traps" = crash;
+label "notbad" =  !crash;
+
+rewards "cost"
+
+    //[west] ax = axMIN : 100;
+    //[north] ay = ayMIN  : 100;
+    //[south] ay = ayMAX : 100;
+
+    [north] true : 1;
+    [south] true : 1;
+    [west] true : 1;
+    [east] true : 1;
+    
+    crash: 5;
+endrewards

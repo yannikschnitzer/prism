@@ -1,0 +1,1990 @@
+PRISM
+=====
+
+Version: 4.7.dev
+Date: Tue Jul 05 10:38:36 EDT 2022
+Hostname: YEW
+Memory limits: cudd=1g, java(heap)=1g
+Command line: prism concrete.prism -const N=6 safe.props -prop 1
+
+Parsing model file "concrete.prism"...
+
+Type:        POMDP
+Modules:     master robot 
+Variables:   start ax ay 
+Observables: start amdone hascrash
+
+Switching to explicit engine, which supports POMDPs...
+
+Parsing properties file "safe.props"...
+
+1 property:
+(1) R{"cost"}min=? [ F "goal" ]
+
+---------------------------------------------------------------------
+
+Model checking: R{"cost"}min=? [ F "goal" ]
+Model constants: N=6
+
+Building model...
+Model constants: N=6
+
+Computing reachable states... 19 states
+Reachable states exploration and model construction done in 0.01 secs.
+Sorting reachable states list...
+
+Time for model construction: 0.02 seconds.
+
+Warning: Deadlocks detected and fixed in 1 states
+
+Type:        POMDP
+States:      19 (1 initial)
+Obs/unobs:   4/18
+Transitions: 122
+Choices:     70
+Max/avg:     4/3.68
+Building reward structure...
+Calling Perseus pomdp solver
+state=0 meaning=(start=false,ax=0,ay=0)safe=true action=placement stateReward=0.0 immediateReard=0.0
+state=1 meaning=(start=true,ax=0,ay=0)safe=true action=north stateReward=0.0 immediateReard=1.0
+state=2 meaning=(start=true,ax=0,ay=1)safe=true action=north stateReward=0.0 immediateReard=1.0
+state=3 meaning=(start=true,ax=0,ay=2)safe=true action=north stateReward=0.0 immediateReard=1.0
+state=4 meaning=(start=true,ax=1,ay=0)safe=true action=north stateReward=0.0 immediateReard=1.0
+state=5 meaning=(start=true,ax=1,ay=1)safe=true action=north stateReward=0.0 immediateReard=1.0
+state=6 meaning=(start=true,ax=1,ay=2)safe=false action=north stateReward=5.0 immediateReard=6.0
+state=7 meaning=(start=true,ax=2,ay=0)safe=true action=north stateReward=0.0 immediateReard=1.0
+state=8 meaning=(start=true,ax=2,ay=1)safe=true action=north stateReward=0.0 immediateReard=1.0
+state=9 meaning=(start=true,ax=2,ay=2)safe=true action=north stateReward=0.0 immediateReard=1.0
+state=10 meaning=(start=true,ax=3,ay=0)safe=true action=north stateReward=0.0 immediateReard=1.0
+state=11 meaning=(start=true,ax=3,ay=1)safe=true action=north stateReward=0.0 immediateReard=1.0
+state=12 meaning=(start=true,ax=3,ay=2)safe=true action=north stateReward=0.0 immediateReard=1.0
+state=13 meaning=(start=true,ax=4,ay=0)safe=true action=north stateReward=0.0 immediateReard=1.0
+state=14 meaning=(start=true,ax=4,ay=1)safe=true action=north stateReward=0.0 immediateReard=1.0
+state=15 meaning=(start=true,ax=4,ay=2)safe=false action=north stateReward=5.0 immediateReard=6.0
+state=17 meaning=(start=true,ax=5,ay=1)safe=true action=north stateReward=0.0 immediateReard=1.0
+state=18 meaning=(start=true,ax=5,ay=2)safe=true action=north stateReward=0.0 immediateReard=1.0
+state=1 meaning=(start=true,ax=0,ay=0)safe=true action=south stateReward=0.0 immediateReard=1.0
+state=2 meaning=(start=true,ax=0,ay=1)safe=true action=south stateReward=0.0 immediateReard=1.0
+state=3 meaning=(start=true,ax=0,ay=2)safe=true action=south stateReward=0.0 immediateReard=1.0
+state=4 meaning=(start=true,ax=1,ay=0)safe=true action=south stateReward=0.0 immediateReard=1.0
+state=5 meaning=(start=true,ax=1,ay=1)safe=true action=south stateReward=0.0 immediateReard=1.0
+state=6 meaning=(start=true,ax=1,ay=2)safe=false action=south stateReward=5.0 immediateReard=6.0
+state=7 meaning=(start=true,ax=2,ay=0)safe=true action=south stateReward=0.0 immediateReard=1.0
+state=8 meaning=(start=true,ax=2,ay=1)safe=true action=south stateReward=0.0 immediateReard=1.0
+state=9 meaning=(start=true,ax=2,ay=2)safe=true action=south stateReward=0.0 immediateReard=1.0
+state=10 meaning=(start=true,ax=3,ay=0)safe=true action=south stateReward=0.0 immediateReard=1.0
+state=11 meaning=(start=true,ax=3,ay=1)safe=true action=south stateReward=0.0 immediateReard=1.0
+state=12 meaning=(start=true,ax=3,ay=2)safe=true action=south stateReward=0.0 immediateReard=1.0
+state=13 meaning=(start=true,ax=4,ay=0)safe=true action=south stateReward=0.0 immediateReard=1.0
+state=14 meaning=(start=true,ax=4,ay=1)safe=true action=south stateReward=0.0 immediateReard=1.0
+state=15 meaning=(start=true,ax=4,ay=2)safe=false action=south stateReward=5.0 immediateReard=6.0
+state=17 meaning=(start=true,ax=5,ay=1)safe=true action=south stateReward=0.0 immediateReard=1.0
+state=18 meaning=(start=true,ax=5,ay=2)safe=true action=south stateReward=0.0 immediateReard=1.0
+state=1 meaning=(start=true,ax=0,ay=0)safe=true action=east stateReward=0.0 immediateReard=1.0
+state=2 meaning=(start=true,ax=0,ay=1)safe=true action=east stateReward=0.0 immediateReard=1.0
+state=3 meaning=(start=true,ax=0,ay=2)safe=true action=east stateReward=0.0 immediateReard=1.0
+state=4 meaning=(start=true,ax=1,ay=0)safe=true action=east stateReward=0.0 immediateReard=1.0
+state=5 meaning=(start=true,ax=1,ay=1)safe=true action=east stateReward=0.0 immediateReard=1.0
+state=6 meaning=(start=true,ax=1,ay=2)safe=false action=east stateReward=5.0 immediateReard=6.0
+state=7 meaning=(start=true,ax=2,ay=0)safe=true action=east stateReward=0.0 immediateReard=1.0
+state=8 meaning=(start=true,ax=2,ay=1)safe=true action=east stateReward=0.0 immediateReard=1.0
+state=9 meaning=(start=true,ax=2,ay=2)safe=true action=east stateReward=0.0 immediateReard=1.0
+state=10 meaning=(start=true,ax=3,ay=0)safe=true action=east stateReward=0.0 immediateReard=1.0
+state=11 meaning=(start=true,ax=3,ay=1)safe=true action=east stateReward=0.0 immediateReard=1.0
+state=12 meaning=(start=true,ax=3,ay=2)safe=true action=east stateReward=0.0 immediateReard=1.0
+state=13 meaning=(start=true,ax=4,ay=0)safe=true action=east stateReward=0.0 immediateReard=1.0
+state=14 meaning=(start=true,ax=4,ay=1)safe=true action=east stateReward=0.0 immediateReard=1.0
+state=15 meaning=(start=true,ax=4,ay=2)safe=false action=east stateReward=5.0 immediateReard=6.0
+state=17 meaning=(start=true,ax=5,ay=1)safe=true action=east stateReward=0.0 immediateReard=1.0
+state=18 meaning=(start=true,ax=5,ay=2)safe=true action=east stateReward=0.0 immediateReard=1.0
+state=1 meaning=(start=true,ax=0,ay=0)safe=true action=west stateReward=0.0 immediateReard=1.0
+state=2 meaning=(start=true,ax=0,ay=1)safe=true action=west stateReward=0.0 immediateReard=1.0
+state=3 meaning=(start=true,ax=0,ay=2)safe=true action=west stateReward=0.0 immediateReard=1.0
+state=4 meaning=(start=true,ax=1,ay=0)safe=true action=west stateReward=0.0 immediateReard=1.0
+state=5 meaning=(start=true,ax=1,ay=1)safe=true action=west stateReward=0.0 immediateReard=1.0
+state=6 meaning=(start=true,ax=1,ay=2)safe=false action=west stateReward=5.0 immediateReard=6.0
+state=7 meaning=(start=true,ax=2,ay=0)safe=true action=west stateReward=0.0 immediateReard=1.0
+state=8 meaning=(start=true,ax=2,ay=1)safe=true action=west stateReward=0.0 immediateReard=1.0
+state=9 meaning=(start=true,ax=2,ay=2)safe=true action=west stateReward=0.0 immediateReard=1.0
+state=10 meaning=(start=true,ax=3,ay=0)safe=true action=west stateReward=0.0 immediateReard=1.0
+state=11 meaning=(start=true,ax=3,ay=1)safe=true action=west stateReward=0.0 immediateReard=1.0
+state=12 meaning=(start=true,ax=3,ay=2)safe=true action=west stateReward=0.0 immediateReard=1.0
+state=13 meaning=(start=true,ax=4,ay=0)safe=true action=west stateReward=0.0 immediateReard=1.0
+state=14 meaning=(start=true,ax=4,ay=1)safe=true action=west stateReward=0.0 immediateReard=1.0
+state=15 meaning=(start=true,ax=4,ay=2)safe=false action=west stateReward=5.0 immediateReard=6.0
+state=17 meaning=(start=true,ax=5,ay=1)safe=true action=west stateReward=0.0 immediateReard=1.0
+state=18 meaning=(start=true,ax=5,ay=2)safe=true action=west stateReward=0.0 immediateReard=1.0
+Starting Prob1 (max)...
+Prob1 (max) took 8 iterations and 0.004 seconds.
+16 concrete.prism -const N=6 safe.props -prop 1 
+
+ =============== Step 0 Cur state 0shield2
+s=0(start=false,ax=0,ay=0)
+Belief 
+s=0(start=false,ax=0,ay=0)
+[10000.0], 
+
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 1shield2
+s=1(start=true,ax=0,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=6 o=-1 vmean=-5.6997694797947505 v=-186770.04631391438 n=32768.0 Belief Support=[1]
+MCTS layer2
+Id=37 a=north vmean=-25.47878867070931 v=-1605.1636862546866 n=63.0 | Id=6 o=-1 vmean=-5.6997694797947505 v=-186770.04631391438 n=32768.0 Belief Support=[1]
+Id=38 a=south vmean=-28.10179972811852 v=-533.9341948342519 n=19.0 | Id=6 o=-1 vmean=-5.6997694797947505 v=-186770.04631391438 n=32768.0 Belief Support=[1]
+Id=39 a=east vmean=-5.605701529041478 v=-182829.9553696878 n=32615.0 | Id=6 o=-1 vmean=-5.6997694797947505 v=-186770.04631391438 n=32768.0 Belief Support=[1]
+Id=40 a=west vmean=-25.3660994808069 v=-1800.9930631372897 n=71.0 | Id=6 o=-1 vmean=-5.6997694797947505 v=-186770.04631391438 n=32768.0 Belief Support=[1]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 4shield2
+s=4(start=true,ax=1,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[6566.0], 
+s=4(start=true,ax=1,ay=0)
+[26049.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=50 o=-1 vmean=-6.166632973329136 v=-202068.22927004914 n=32768.0 Belief Support=[1, 4]
+MCTS layer2
+Id=926 a=north vmean=-25.846374217920456 v=-1137.2404655885 n=44.0 | Id=50 o=-1 vmean=-6.166632973329136 v=-202068.22927004914 n=32768.0 Belief Support=[1, 4]
+Id=927 a=south vmean=-27.90580768899985 v=-530.2103460909972 n=19.0 | Id=50 o=-1 vmean=-6.166632973329136 v=-202068.22927004914 n=32768.0 Belief Support=[1, 4]
+Id=928 a=east vmean=-33.511319379566956 v=-134.04527751826782 n=4.0 | Id=50 o=-1 vmean=-6.166632973329136 v=-202068.22927004914 n=32768.0 Belief Support=[1, 4]
+Id=929 a=west vmean=-6.124177645357978 v=-200266.73318085124 n=32701.0 | Id=50 o=-1 vmean=-6.166632973329136 v=-202068.22927004914 n=32768.0 Belief Support=[1, 4]
+reach tree print depth 2
+Action actually taken= west reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 1shield2
+s=1(start=true,ax=0,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[27543.0], 
+s=4(start=true,ax=1,ay=0)
+[5158.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=939 o=-1 vmean=-5.83128324954051 v=-191079.48952094343 n=32768.0 Belief Support=[1, 4]
+MCTS layer2
+Id=1395 a=north vmean=-24.036607654299527 v=-4422.735808391113 n=184.0 | Id=939 o=-1 vmean=-5.83128324954051 v=-191079.48952094343 n=32768.0 Belief Support=[1, 4]
+Id=1396 a=south vmean=-25.778807563388227 v=-1237.382763042635 n=48.0 | Id=939 o=-1 vmean=-5.83128324954051 v=-191079.48952094343 n=32768.0 Belief Support=[1, 4]
+Id=1397 a=east vmean=-5.639027119974732 v=-182896.20560926045 n=32434.0 | Id=939 o=-1 vmean=-5.83128324954051 v=-191079.48952094343 n=32768.0 Belief Support=[1, 4]
+Id=1398 a=west vmean=-24.736915100479127 v=-2523.165340248871 n=102.0 | Id=939 o=-1 vmean=-5.83128324954051 v=-191079.48952094343 n=32768.0 Belief Support=[1, 4]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 4shield2
+s=4(start=true,ax=1,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[5575.0], 
+s=4(start=true,ax=1,ay=0)
+[22805.0], 
+s=7(start=true,ax=2,ay=0)
+[4054.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1403 o=-1 vmean=-4.7105999545796635 v=-154356.9393116664 n=32768.0 Belief Support=[1, 4, 7]
+MCTS layer2
+Id=2459 a=north vmean=-27.603209266174456 v=-193.2224648632212 n=7.0 | Id=1403 o=-1 vmean=-4.7105999545796635 v=-154356.9393116664 n=32768.0 Belief Support=[1, 4, 7]
+Id=2460 a=south vmean=-28.57129601522419 v=-171.42777609134512 n=6.0 | Id=1403 o=-1 vmean=-4.7105999545796635 v=-154356.9393116664 n=32768.0 Belief Support=[1, 4, 7]
+Id=2461 a=east vmean=-4.688493433566172 v=-153473.14405435507 n=32734.0 | Id=1403 o=-1 vmean=-4.7105999545796635 v=-154356.9393116664 n=32768.0 Belief Support=[1, 4, 7]
+Id=2462 a=west vmean=-24.72119125508359 v=-519.1450163567554 n=21.0 | Id=1403 o=-1 vmean=-4.7105999545796635 v=-154356.9393116664 n=32768.0 Belief Support=[1, 4, 7]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 7shield2
+s=7(start=true,ax=2,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[1107.0], 
+s=4(start=true,ax=1,ay=0)
+[9195.0], 
+s=7(start=true,ax=2,ay=0)
+[19169.0], 
+s=10(start=true,ax=3,ay=0)
+[3263.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2482 o=-1 vmean=-4.305605647547708 v=-141086.0858588433 n=32768.0 Belief Support=[1, 4, 7, 10]
+MCTS layer2
+Id=2813 a=north vmean=-24.11524214979436 v=-964.6096859917743 n=40.0 | Id=2482 o=-1 vmean=-4.305605647547708 v=-141086.0858588433 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2814 a=south vmean=-24.589628035462344 v=-688.5095849929456 n=28.0 | Id=2482 o=-1 vmean=-4.305605647547708 v=-141086.0858588433 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2815 a=east vmean=-4.242837396007615 v=-138592.28354058875 n=32665.0 | Id=2482 o=-1 vmean=-4.305605647547708 v=-141086.0858588433 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2816 a=west vmean=-24.019515636225183 v=-840.6830472678814 n=35.0 | Id=2482 o=-1 vmean=-4.305605647547708 v=-141086.0858588433 n=32768.0 Belief Support=[1, 4, 7, 10]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 6 Cur state 10shield2
+s=10(start=true,ax=3,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[193.0], 
+s=4(start=true,ax=1,ay=0)
+[2700.0], 
+s=7(start=true,ax=2,ay=0)
+[11140.0], 
+s=10(start=true,ax=3,ay=0)
+[16006.0], 
+s=13(start=true,ax=4,ay=0)
+[2626.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2821 o=-1 vmean=-3.146226806431582 v=-103095.55999315008 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=3252 a=north vmean=-22.789108749853156 v=-91.15643499941262 n=4.0 | Id=2821 o=-1 vmean=-3.146226806431582 v=-103095.55999315008 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3253 a=south vmean=-28.56165577002113 v=-57.12331154004226 n=2.0 | Id=2821 o=-1 vmean=-3.146226806431582 v=-103095.55999315008 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3254 a=east vmean=-3.1407421351287064 v=-102890.71234681642 n=32760.0 | Id=2821 o=-1 vmean=-3.146226806431582 v=-103095.55999315008 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3255 a=west vmean=-28.28394989723631 v=-56.56789979447262 n=2.0 | Id=2821 o=-1 vmean=-3.146226806431582 v=-103095.55999315008 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 7 Cur state 10shield2
+s=10(start=true,ax=3,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[39.0], 
+s=4(start=true,ax=1,ay=0)
+[673.0], 
+s=7(start=true,ax=2,ay=0)
+[4431.0], 
+s=10(start=true,ax=3,ay=0)
+[12045.0], 
+s=13(start=true,ax=4,ay=0)
+[13412.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=3260 o=-1 vmean=-2.1395151834656154 v=-70107.63353180129 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=3471 a=north vmean=-33.178588397295435 v=-99.5357651918863 n=3.0 | Id=3260 o=-1 vmean=-2.1395151834656154 v=-70107.63353180129 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3472 a=south vmean=-18.271525529637547 v=-328.88745953347586 n=18.0 | Id=3260 o=-1 vmean=-2.1395151834656154 v=-70107.63353180129 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3473 a=east vmean=-2.1193512946445785 v=-69366.36787371706 n=32730.0 | Id=3260 o=-1 vmean=-2.1395151834656154 v=-70107.63353180129 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3474 a=west vmean=-18.402496079973254 v=-312.84243335954534 n=17.0 | Id=3260 o=-1 vmean=-2.1395151834656154 v=-70107.63353180129 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 8 Cur state 10shield2
+s=10(start=true,ax=3,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[11.0], 
+s=4(start=true,ax=1,ay=0)
+[144.0], 
+s=7(start=true,ax=2,ay=0)
+[1494.0], 
+s=10(start=true,ax=3,ay=0)
+[6254.0], 
+s=13(start=true,ax=4,ay=0)
+[13199.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=3549 o=-1 vmean=-1.7982274605803863 v=-58924.3174282981 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=3730 a=north vmean=-20.849848317642238 v=-62.54954495292671 n=3.0 | Id=3549 o=-1 vmean=-1.7982274605803863 v=-58924.3174282981 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3731 a=south vmean=-15.549746308113592 v=-108.84822415679514 n=7.0 | Id=3549 o=-1 vmean=-1.7982274605803863 v=-58924.3174282981 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3732 a=east vmean=-1.791551894229413 v=-58684.073847378655 n=32756.0 | Id=3549 o=-1 vmean=-1.7982274605803863 v=-58924.3174282981 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3733 a=west vmean=-34.42290590489257 v=-68.84581180978515 n=2.0 | Id=3549 o=-1 vmean=-1.7982274605803863 v=-58924.3174282981 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 9 Cur state 10shield2
+s=10(start=true,ax=3,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[4.0], 
+s=4(start=true,ax=1,ay=0)
+[72.0], 
+s=7(start=true,ax=2,ay=0)
+[656.0], 
+s=10(start=true,ax=3,ay=0)
+[3825.0], 
+s=13(start=true,ax=4,ay=0)
+[11866.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=3748 o=-1 vmean=-1.6428110223930275 v=-53831.63158177472 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=3884 a=north vmean=-16.549149327068097 v=-99.29489596240859 n=6.0 | Id=3748 o=-1 vmean=-1.6428110223930275 v=-53831.63158177472 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3885 a=south vmean=-24.085868070318686 v=-72.25760421095606 n=3.0 | Id=3748 o=-1 vmean=-1.6428110223930275 v=-53831.63158177472 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3886 a=east vmean=-1.6357901911144659 v=-53578.67191976322 n=32754.0 | Id=3748 o=-1 vmean=-1.6428110223930275 v=-53831.63158177472 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3887 a=west vmean=-16.28143236763872 v=-81.40716183819359 n=5.0 | Id=3748 o=-1 vmean=-1.6428110223930275 v=-53831.63158177472 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 10 Cur state 13shield2
+s=13(start=true,ax=4,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[2.0], 
+s=4(start=true,ax=1,ay=0)
+[36.0], 
+s=7(start=true,ax=2,ay=0)
+[372.0], 
+s=10(start=true,ax=3,ay=0)
+[2592.0], 
+s=13(start=true,ax=4,ay=0)
+[10819.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=3897 o=-1 vmean=-1.5503003288647554 v=-50800.241176240306 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=4043 a=north vmean=-21.107520828602635 v=-84.43008331441054 n=4.0 | Id=3897 o=-1 vmean=-1.5503003288647554 v=-50800.241176240306 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=4044 a=south vmean=-24.18724847620668 v=-72.56174542862004 n=3.0 | Id=3897 o=-1 vmean=-1.5503003288647554 v=-50800.241176240306 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=4045 a=east vmean=-1.5444164071183366 v=-50593.53708078959 n=32759.0 | Id=3897 o=-1 vmean=-1.5503003288647554 v=-50800.241176240306 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=4046 a=west vmean=-24.856133353898343 v=-49.71226670779669 n=2.0 | Id=3897 o=-1 vmean=-1.5503003288647554 v=-50800.241176240306 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 11 Cur state 13shield2
+s=13(start=true,ax=4,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[3.0], 
+s=4(start=true,ax=1,ay=0)
+[22.0], 
+s=7(start=true,ax=2,ay=0)
+[199.0], 
+s=10(start=true,ax=3,ay=0)
+[1899.0], 
+s=13(start=true,ax=4,ay=0)
+[10147.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=4051 o=-1 vmean=-1.4839862804094044 v=-48627.26243645536 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=4167 a=north vmean=-24.596672771224966 v=-49.19334554244993 n=2.0 | Id=4051 o=-1 vmean=-1.4839862804094044 v=-48627.26243645536 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=4168 a=south vmean=-46.5449623378403 v=-46.5449623378403 n=1.0 | Id=4051 o=-1 vmean=-1.4839862804094044 v=-48627.26243645536 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=4169 a=east vmean=-1.4788999457631302 v=-48448.762223200145 n=32760.0 | Id=4051 o=-1 vmean=-1.4839862804094044 v=-48627.26243645536 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=4170 a=west vmean=-16.552381075000984 v=-82.76190537500491 n=5.0 | Id=4051 o=-1 vmean=-1.4839862804094044 v=-48627.26243645536 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+UndiscountedReward -11.0 DiscountedReward -8.192798246747259 Time(ms) 1468
+Model=concrete-6-; nStates=19; Shield=2; Episode=1; Total Episodes=10; Undiscounted Reward=-11.0; Discounted Reward=-8.192798246747259; Time Spent=1469; Average undiscounted=-11.0; Average discounted=-8.192798246747259; Average time spent=1469; isSafeTrace=1.0
+
+ =============== Step 0 Cur state 0shield2
+s=0(start=false,ax=0,ay=0)
+Belief 
+s=0(start=false,ax=0,ay=0)
+[10000.0], 
+
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 1shield2
+s=1(start=true,ax=0,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=6 o=-1 vmean=-7.599787307802146 v=-249029.8305020607 n=32768.0 Belief Support=[1]
+MCTS layer2
+Id=27 a=north vmean=-24.896799393790996 v=-2041.5375502908616 n=82.0 | Id=6 o=-1 vmean=-7.599787307802146 v=-249029.8305020607 n=32768.0 Belief Support=[1]
+Id=28 a=south vmean=-39.00983401497722 v=-117.02950204493166 n=3.0 | Id=6 o=-1 vmean=-7.599787307802146 v=-249029.8305020607 n=32768.0 Belief Support=[1]
+Id=29 a=east vmean=-7.525029859746322 v=-245549.24935338224 n=32631.0 | Id=6 o=-1 vmean=-7.599787307802146 v=-249029.8305020607 n=32768.0 Belief Support=[1]
+Id=30 a=west vmean=-25.423348006633486 v=-1322.0140963449412 n=52.0 | Id=6 o=-1 vmean=-7.599787307802146 v=-249029.8305020607 n=32768.0 Belief Support=[1]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 4shield2
+s=4(start=true,ax=1,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[6548.0], 
+s=4(start=true,ax=1,ay=0)
+[26083.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=35 o=-1 vmean=-4.833441304775827 v=-158382.2046748943 n=32768.0 Belief Support=[1, 4]
+MCTS layer2
+Id=1036 a=north vmean=-24.968150808804605 v=-599.2356194113105 n=24.0 | Id=35 o=-1 vmean=-4.833441304775827 v=-158382.2046748943 n=32768.0 Belief Support=[1, 4]
+Id=1037 a=south vmean=-25.698338787531625 v=-411.173420600506 n=16.0 | Id=35 o=-1 vmean=-4.833441304775827 v=-158382.2046748943 n=32768.0 Belief Support=[1, 4]
+Id=1038 a=east vmean=-4.794322763825733 v=-156798.3259909206 n=32705.0 | Id=35 o=-1 vmean=-4.833441304775827 v=-158382.2046748943 n=32768.0 Belief Support=[1, 4]
+Id=1039 a=west vmean=-24.93346278095558 v=-573.4696439619784 n=23.0 | Id=35 o=-1 vmean=-4.833441304775827 v=-158382.2046748943 n=32768.0 Belief Support=[1, 4]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 7shield2
+s=7(start=true,ax=2,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[1361.0], 
+s=4(start=true,ax=1,ay=0)
+[10396.0], 
+s=7(start=true,ax=2,ay=0)
+[20948.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1044 o=-1 vmean=-5.046773615286844 v=-165372.6778257193 n=32768.0 Belief Support=[1, 4, 7]
+MCTS layer2
+Id=1535 a=north vmean=-28.861660598711264 v=-259.7549453884014 n=9.0 | Id=1044 o=-1 vmean=-5.046773615286844 v=-165372.6778257193 n=32768.0 Belief Support=[1, 4, 7]
+Id=1536 a=south vmean=-33.101724367409574 v=-132.4068974696383 n=4.0 | Id=1044 o=-1 vmean=-5.046773615286844 v=-165372.6778257193 n=32768.0 Belief Support=[1, 4, 7]
+Id=1537 a=east vmean=-5.032100474415061 v=-164796.25843661884 n=32749.0 | Id=1044 o=-1 vmean=-5.046773615286844 v=-165372.6778257193 n=32768.0 Belief Support=[1, 4, 7]
+Id=1538 a=west vmean=-30.709591040449293 v=-184.25754624269575 n=6.0 | Id=1044 o=-1 vmean=-5.046773615286844 v=-165372.6778257193 n=32768.0 Belief Support=[1, 4, 7]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 10shield2
+s=10(start=true,ax=3,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[277.0], 
+s=4(start=true,ax=1,ay=0)
+[3213.0], 
+s=7(start=true,ax=2,ay=0)
+[12489.0], 
+s=10(start=true,ax=3,ay=0)
+[16770.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1543 o=-1 vmean=-3.7004223276523014 v=-121255.43883251061 n=32768.0 Belief Support=[1, 4, 7, 10]
+MCTS layer2
+Id=1959 a=north vmean=-24.777169160097234 v=-148.6630149605834 n=6.0 | Id=1543 o=-1 vmean=-3.7004223276523014 v=-121255.43883251061 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=1960 a=south vmean=-27.268634453633744 v=-109.07453781453498 n=4.0 | Id=1543 o=-1 vmean=-3.7004223276523014 v=-121255.43883251061 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=1961 a=east vmean=-3.6828918876008383 v=-120570.51461627624 n=32738.0 | Id=1543 o=-1 vmean=-3.7004223276523014 v=-121255.43883251061 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=1962 a=west vmean=-21.35933317298198 v=-427.1866634596396 n=20.0 | Id=1543 o=-1 vmean=-3.7004223276523014 v=-121255.43883251061 n=32768.0 Belief Support=[1, 4, 7, 10]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 13shield2
+s=13(start=true,ax=4,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[50.0], 
+s=4(start=true,ax=1,ay=0)
+[849.0], 
+s=7(start=true,ax=2,ay=0)
+[5063.0], 
+s=10(start=true,ax=3,ay=0)
+[13336.0], 
+s=13(start=true,ax=4,ay=0)
+[13440.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1967 o=-1 vmean=-2.1915116851012093 v=-71811.45489739643 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=2263 a=north vmean=-28.0025914422232 v=-56.0051828844464 n=2.0 | Id=1967 o=-1 vmean=-2.1915116851012093 v=-71811.45489739643 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2264 a=south vmean=-31.427149372405445 v=-62.85429874481089 n=2.0 | Id=1967 o=-1 vmean=-2.1915116851012093 v=-71811.45489739643 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2265 a=east vmean=-2.185989756269159 v=-71613.02441537764 n=32760.0 | Id=1967 o=-1 vmean=-2.1915116851012093 v=-71811.45489739643 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2266 a=west vmean=-19.892750097437833 v=-79.57100038975133 n=4.0 | Id=1967 o=-1 vmean=-2.1915116851012093 v=-71811.45489739643 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+UndiscountedReward -5.0 DiscountedReward -4.2981621875 Time(ms) 637
+Model=concrete-6-; nStates=19; Shield=2; Episode=2; Total Episodes=10; Undiscounted Reward=-5.0; Discounted Reward=-4.2981621875; Time Spent=638; Average undiscounted=-8.0; Average discounted=-6.24548021712363; Average time spent=1053; isSafeTrace=1.0
+
+ =============== Step 0 Cur state 0shield2
+s=0(start=false,ax=0,ay=0)
+Belief 
+s=0(start=false,ax=0,ay=0)
+[10000.0], 
+
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 1shield2
+s=1(start=true,ax=0,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=6 o=-1 vmean=-6.415590876367623 v=-210226.08183681426 n=32768.0 Belief Support=[1]
+MCTS layer2
+Id=32 a=north vmean=-26.202106539063337 v=-1388.7116465703568 n=53.0 | Id=6 o=-1 vmean=-6.415590876367623 v=-210226.08183681426 n=32768.0 Belief Support=[1]
+Id=33 a=south vmean=-26.971377957681323 v=-997.940984434209 n=37.0 | Id=6 o=-1 vmean=-6.415590876367623 v=-210226.08183681426 n=32768.0 Belief Support=[1]
+Id=34 a=east vmean=-6.329690963172566 v=-206525.1567463945 n=32628.0 | Id=6 o=-1 vmean=-6.415590876367623 v=-210226.08183681426 n=32768.0 Belief Support=[1]
+Id=35 a=west vmean=-26.285449188294443 v=-1314.272459414722 n=50.0 | Id=6 o=-1 vmean=-6.415590876367623 v=-210226.08183681426 n=32768.0 Belief Support=[1]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 4shield2
+s=4(start=true,ax=1,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[6517.0], 
+s=4(start=true,ax=1,ay=0)
+[26111.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=40 o=-1 vmean=-4.779560756998738 v=-156616.64688533466 n=32768.0 Belief Support=[1, 4]
+MCTS layer2
+Id=921 a=north vmean=-25.81292314026561 v=-413.00677024424976 n=16.0 | Id=40 o=-1 vmean=-4.779560756998738 v=-156616.64688533466 n=32768.0 Belief Support=[1, 4]
+Id=922 a=south vmean=-34.31513410548457 v=-102.9454023164537 n=3.0 | Id=40 o=-1 vmean=-4.779560756998738 v=-156616.64688533466 n=32768.0 Belief Support=[1, 4]
+Id=923 a=east vmean=-4.751334153300863 v=-155477.90749846413 n=32723.0 | Id=40 o=-1 vmean=-4.779560756998738 v=-156616.64688533466 n=32768.0 Belief Support=[1, 4]
+Id=924 a=west vmean=-23.953354396516115 v=-622.787214309419 n=26.0 | Id=40 o=-1 vmean=-4.779560756998738 v=-156616.64688533466 n=32768.0 Belief Support=[1, 4]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 7shield2
+s=7(start=true,ax=2,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[1308.0], 
+s=4(start=true,ax=1,ay=0)
+[10499.0], 
+s=7(start=true,ax=2,ay=0)
+[20916.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=939 o=-1 vmean=-4.770082906581528 v=-156306.0766828635 n=32768.0 Belief Support=[1, 4, 7]
+MCTS layer2
+Id=1320 a=north vmean=-4.748191661156106 v=-155422.5576446228 n=32733.0 | Id=939 o=-1 vmean=-4.770082906581528 v=-156306.0766828635 n=32768.0 Belief Support=[1, 4, 7]
+Id=1321 a=south vmean=-25.10249572637265 v=-351.4349401692171 n=14.0 | Id=939 o=-1 vmean=-4.770082906581528 v=-156306.0766828635 n=32768.0 Belief Support=[1, 4, 7]
+Id=1322 a=east vmean=-28.253718042617912 v=-141.26859021308957 n=5.0 | Id=939 o=-1 vmean=-4.770082906581528 v=-156306.0766828635 n=32768.0 Belief Support=[1, 4, 7]
+Id=1323 a=west vmean=-24.425969241147598 v=-390.81550785836157 n=16.0 | Id=939 o=-1 vmean=-4.770082906581528 v=-156306.0766828635 n=32768.0 Belief Support=[1, 4, 7]
+reach tree print depth 2
+Action actually taken= north reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 7shield2
+s=7(start=true,ax=2,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[1249.0], 
+s=4(start=true,ax=1,ay=0)
+[10618.0], 
+s=7(start=true,ax=2,ay=0)
+[20866.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1328 o=-1 vmean=-5.9124182591837355 v=-193738.12151693265 n=32768.0 Belief Support=[1, 4, 7]
+MCTS layer2
+Id=1659 a=north vmean=-25.401332082328267 v=-279.4146529056109 n=11.0 | Id=1328 o=-1 vmean=-5.9124182591837355 v=-193738.12151693265 n=32768.0 Belief Support=[1, 4, 7]
+Id=1660 a=south vmean=-42.21608481988506 v=-42.21608481988506 n=1.0 | Id=1328 o=-1 vmean=-5.9124182591837355 v=-193738.12151693265 n=32768.0 Belief Support=[1, 4, 7]
+Id=1661 a=east vmean=-5.891814542179688 v=-192850.87359462553 n=32732.0 | Id=1328 o=-1 vmean=-5.9124182591837355 v=-193738.12151693265 n=32768.0 Belief Support=[1, 4, 7]
+Id=1662 a=west vmean=-23.567382690883633 v=-565.6171845812072 n=24.0 | Id=1328 o=-1 vmean=-5.9124182591837355 v=-193738.12151693265 n=32768.0 Belief Support=[1, 4, 7]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 10shield2
+s=10(start=true,ax=3,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[277.0], 
+s=4(start=true,ax=1,ay=0)
+[3073.0], 
+s=7(start=true,ax=2,ay=0)
+[12605.0], 
+s=10(start=true,ax=3,ay=0)
+[16777.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1677 o=-1 vmean=-4.749187371005046 v=-155621.37177309336 n=32768.0 Belief Support=[1, 4, 7, 10]
+MCTS layer2
+Id=2183 a=north vmean=-28.740448995641604 v=-86.22134698692481 n=3.0 | Id=1677 o=-1 vmean=-4.749187371005046 v=-155621.37177309336 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2184 a=south vmean=-32.68660950084628 v=-65.37321900169256 n=2.0 | Id=1677 o=-1 vmean=-4.749187371005046 v=-155621.37177309336 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2185 a=east vmean=-4.74303374918179 v=-155381.78562319544 n=32760.0 | Id=1677 o=-1 vmean=-4.749187371005046 v=-155621.37177309336 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2186 a=west vmean=-29.330527969788694 v=-87.99158390936608 n=3.0 | Id=1677 o=-1 vmean=-4.749187371005046 v=-155621.37177309336 n=32768.0 Belief Support=[1, 4, 7, 10]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 6 Cur state 13shield2
+s=13(start=true,ax=4,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[57.0], 
+s=4(start=true,ax=1,ay=0)
+[868.0], 
+s=7(start=true,ax=2,ay=0)
+[4958.0], 
+s=10(start=true,ax=3,ay=0)
+[13503.0], 
+s=13(start=true,ax=4,ay=0)
+[13374.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2191 o=-1 vmean=-3.086725268773059 v=-101145.8136071556 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=2477 a=north vmean=-3.07904690089808 v=-100857.26028581751 n=32756.0 | Id=2191 o=-1 vmean=-3.086725268773059 v=-101145.8136071556 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2478 a=south vmean=-31.479404294302235 v=-62.95880858860447 n=2.0 | Id=2191 o=-1 vmean=-3.086725268773059 v=-101145.8136071556 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2479 a=east vmean=-24.192057658413727 v=-72.57617297524118 n=3.0 | Id=2191 o=-1 vmean=-3.086725268773059 v=-101145.8136071556 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2480 a=west vmean=-21.8597628249396 v=-153.0183397745772 n=7.0 | Id=2191 o=-1 vmean=-3.086725268773059 v=-101145.8136071556 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= north reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 7 Cur state 13shield2
+s=13(start=true,ax=4,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[61.0], 
+s=4(start=true,ax=1,ay=0)
+[839.0], 
+s=7(start=true,ax=2,ay=0)
+[4966.0], 
+s=10(start=true,ax=3,ay=0)
+[13496.0], 
+s=13(start=true,ax=4,ay=0)
+[13394.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2485 o=-1 vmean=-3.0902205190831635 v=-101260.3459693171 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=2706 a=north vmean=-3.079073853806971 v=-100836.5896383245 n=32749.0 | Id=2485 o=-1 vmean=-3.0902205190831635 v=-101260.3459693171 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2707 a=south vmean=-20.6143581600819 v=-206.143581600819 n=10.0 | Id=2485 o=-1 vmean=-3.0902205190831635 v=-101260.3459693171 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2708 a=east vmean=-22.28658079216052 v=-156.00606554512365 n=7.0 | Id=2485 o=-1 vmean=-3.0902205190831635 v=-101260.3459693171 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2709 a=west vmean=-30.803341923577992 v=-61.606683847155985 n=2.0 | Id=2485 o=-1 vmean=-3.0902205190831635 v=-101260.3459693171 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= north reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 8 Cur state 13shield2
+s=13(start=true,ax=4,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[44.0], 
+s=4(start=true,ax=1,ay=0)
+[838.0], 
+s=7(start=true,ax=2,ay=0)
+[5068.0], 
+s=10(start=true,ax=3,ay=0)
+[13462.0], 
+s=13(start=true,ax=4,ay=0)
+[13337.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2729 o=-1 vmean=-2.1826015334517086 v=-71519.48704814559 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=2900 a=north vmean=-17.7678488461646 v=-88.839244230823 n=5.0 | Id=2729 o=-1 vmean=-2.1826015334517086 v=-71519.48704814559 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2901 a=south vmean=-22.6326098935652 v=-67.8978296806956 n=3.0 | Id=2729 o=-1 vmean=-2.1826015334517086 v=-71519.48704814559 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2902 a=east vmean=-2.1762919243836243 v=-71288.79456703438 n=32757.0 | Id=2729 o=-1 vmean=-2.1826015334517086 v=-71519.48704814559 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2903 a=west vmean=-24.65180239998989 v=-73.95540719996967 n=3.0 | Id=2729 o=-1 vmean=-2.1826015334517086 v=-71519.48704814559 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+UndiscountedReward -8.0 DiscountedReward -6.395011805507813 Time(ms) 811
+Model=concrete-6-; nStates=19; Shield=2; Episode=3; Total Episodes=10; Undiscounted Reward=-8.0; Discounted Reward=-6.395011805507813; Time Spent=812; Average undiscounted=-8.0; Average discounted=-6.295324079918358; Average time spent=973; isSafeTrace=1.0
+
+ =============== Step 0 Cur state 0shield2
+s=0(start=false,ax=0,ay=0)
+Belief 
+s=0(start=false,ax=0,ay=0)
+[10000.0], 
+
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 1shield2
+s=1(start=true,ax=0,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=6 o=-1 vmean=-6.387904046976229 v=-209318.83981131707 n=32768.0 Belief Support=[1]
+MCTS layer2
+Id=27 a=north vmean=-25.013597800794102 v=-2576.4005734817924 n=103.0 | Id=6 o=-1 vmean=-6.387904046976229 v=-209318.83981131707 n=32768.0 Belief Support=[1]
+Id=28 a=south vmean=-28.07410648204582 v=-533.4080231588706 n=19.0 | Id=6 o=-1 vmean=-6.387904046976229 v=-209318.83981131707 n=32768.0 Belief Support=[1]
+Id=29 a=east vmean=-6.291244744131119 v=-205126.03488239515 n=32605.0 | Id=6 o=-1 vmean=-6.387904046976229 v=-209318.83981131707 n=32768.0 Belief Support=[1]
+Id=30 a=west vmean=-26.414544689767904 v=-1082.996332280484 n=41.0 | Id=6 o=-1 vmean=-6.387904046976229 v=-209318.83981131707 n=32768.0 Belief Support=[1]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 1shield2
+s=1(start=true,ax=0,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[6492.0], 
+s=4(start=true,ax=1,ay=0)
+[26113.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=40 o=-1 vmean=-5.529996052062889 v=-181206.91063399674 n=32768.0 Belief Support=[1, 4]
+MCTS layer2
+Id=846 a=north vmean=-5.498157438810682 v=-179872.22061069147 n=32715.0 | Id=40 o=-1 vmean=-5.529996052062889 v=-181206.91063399674 n=32768.0 Belief Support=[1, 4]
+Id=847 a=south vmean=-33.628008487143624 v=-100.88402546143088 n=3.0 | Id=40 o=-1 vmean=-5.529996052062889 v=-181206.91063399674 n=32768.0 Belief Support=[1, 4]
+Id=848 a=east vmean=-24.108976847223776 v=-843.8141896528322 n=35.0 | Id=40 o=-1 vmean=-5.529996052062889 v=-181206.91063399674 n=32768.0 Belief Support=[1, 4]
+Id=849 a=west vmean=-25.999453879380326 v=-389.9918081907049 n=15.0 | Id=40 o=-1 vmean=-5.529996052062889 v=-181206.91063399674 n=32768.0 Belief Support=[1, 4]
+reach tree print depth 2
+Action actually taken= north reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 1shield2
+s=1(start=true,ax=0,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[6328.0], 
+s=4(start=true,ax=1,ay=0)
+[26387.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=854 o=-1 vmean=-5.538058087288603 v=-181471.08740427296 n=32768.0 Belief Support=[1, 4]
+MCTS layer2
+Id=1175 a=north vmean=-5.511823810545018 v=-180401.99331913845 n=32730.0 | Id=854 o=-1 vmean=-5.538058087288603 v=-181471.08740427296 n=32768.0 Belief Support=[1, 4]
+Id=1176 a=south vmean=-49.308116884963496 v=-49.308116884963496 n=1.0 | Id=854 o=-1 vmean=-5.538058087288603 v=-181471.08740427296 n=32768.0 Belief Support=[1, 4]
+Id=1177 a=east vmean=-27.217394686139155 v=-598.7826830950614 n=22.0 | Id=854 o=-1 vmean=-5.538058087288603 v=-181471.08740427296 n=32768.0 Belief Support=[1, 4]
+Id=1178 a=west vmean=-28.06688567695619 v=-421.00328515434285 n=15.0 | Id=854 o=-1 vmean=-5.538058087288603 v=-181471.08740427296 n=32768.0 Belief Support=[1, 4]
+reach tree print depth 2
+Action actually taken= north reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 1shield2
+s=1(start=true,ax=0,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[6419.0], 
+s=4(start=true,ax=1,ay=0)
+[26311.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1193 o=-1 vmean=-4.796673737571682 v=-157177.40503274888 n=32768.0 Belief Support=[1, 4]
+MCTS layer2
+Id=1529 a=north vmean=-22.89614758733728 v=-686.8844276201183 n=30.0 | Id=1193 o=-1 vmean=-4.796673737571682 v=-157177.40503274888 n=32768.0 Belief Support=[1, 4]
+Id=1530 a=south vmean=-22.924161503708895 v=-733.5731681186846 n=32.0 | Id=1193 o=-1 vmean=-4.796673737571682 v=-157177.40503274888 n=32768.0 Belief Support=[1, 4]
+Id=1531 a=east vmean=-4.749247059562125 v=-155219.6416476689 n=32683.0 | Id=1193 o=-1 vmean=-4.796673737571682 v=-157177.40503274888 n=32768.0 Belief Support=[1, 4]
+Id=1532 a=west vmean=-23.361121275706285 v=-537.3057893412446 n=23.0 | Id=1193 o=-1 vmean=-4.796673737571682 v=-157177.40503274888 n=32768.0 Belief Support=[1, 4]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 4shield2
+s=4(start=true,ax=1,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[1237.0], 
+s=4(start=true,ax=1,ay=0)
+[10340.0], 
+s=7(start=true,ax=2,ay=0)
+[21106.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1542 o=-1 vmean=-4.21164282405513 v=-138007.1120586385 n=32768.0 Belief Support=[1, 4, 7]
+MCTS layer2
+Id=1963 a=north vmean=-26.015300127221938 v=-208.1224010177755 n=8.0 | Id=1542 o=-1 vmean=-4.21164282405513 v=-138007.1120586385 n=32768.0 Belief Support=[1, 4, 7]
+Id=1964 a=south vmean=-28.69786774817028 v=-114.79147099268113 n=4.0 | Id=1542 o=-1 vmean=-4.21164282405513 v=-138007.1120586385 n=32768.0 Belief Support=[1, 4, 7]
+Id=1965 a=east vmean=-4.19036937331085 v=-137163.36069658407 n=32733.0 | Id=1542 o=-1 vmean=-4.21164282405513 v=-138007.1120586385 n=32768.0 Belief Support=[1, 4, 7]
+Id=1966 a=west vmean=-22.645108262744888 v=-520.8374900431324 n=23.0 | Id=1542 o=-1 vmean=-4.21164282405513 v=-138007.1120586385 n=32768.0 Belief Support=[1, 4, 7]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 6 Cur state 7shield2
+s=7(start=true,ax=2,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[243.0], 
+s=4(start=true,ax=1,ay=0)
+[3095.0], 
+s=7(start=true,ax=2,ay=0)
+[12509.0], 
+s=10(start=true,ax=3,ay=0)
+[16886.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1986 o=-1 vmean=-4.463441587989407 v=-146258.0539552369 n=32768.0 Belief Support=[1, 4, 7, 10]
+MCTS layer2
+Id=2282 a=north vmean=-4.452784538020415 v=-145833.1464047066 n=32751.0 | Id=1986 o=-1 vmean=-4.463441587989407 v=-146258.0539552369 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2283 a=south vmean=-22.984836870479803 v=-252.83320557527784 n=11.0 | Id=1986 o=-1 vmean=-4.463441587989407 v=-146258.0539552369 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2284 a=east vmean=-29.125159462009453 v=-87.37547838602836 n=3.0 | Id=1986 o=-1 vmean=-4.463441587989407 v=-146258.0539552369 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2285 a=west vmean=-28.232955522861488 v=-84.69886656858446 n=3.0 | Id=1986 o=-1 vmean=-4.463441587989407 v=-146258.0539552369 n=32768.0 Belief Support=[1, 4, 7, 10]
+reach tree print depth 2
+Action actually taken= north reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 7 Cur state 7shield2
+s=7(start=true,ax=2,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[231.0], 
+s=4(start=true,ax=1,ay=0)
+[3196.0], 
+s=7(start=true,ax=2,ay=0)
+[12370.0], 
+s=10(start=true,ax=3,ay=0)
+[16954.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2295 o=-1 vmean=-3.64794813279341 v=-119535.96441537446 n=32768.0 Belief Support=[1, 4, 7, 10]
+MCTS layer2
+Id=2541 a=north vmean=-22.509041789304614 v=-112.54520894652308 n=5.0 | Id=2295 o=-1 vmean=-3.64794813279341 v=-119535.96441537446 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2542 a=south vmean=-26.74442849117388 v=-133.7221424558694 n=5.0 | Id=2295 o=-1 vmean=-3.64794813279341 v=-119535.96441537446 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2543 a=east vmean=-3.6395071406209127 v=-119212.056391038 n=32755.0 | Id=2295 o=-1 vmean=-3.64794813279341 v=-119535.96441537446 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2544 a=west vmean=-25.880224311425394 v=-77.64067293427618 n=3.0 | Id=2295 o=-1 vmean=-3.64794813279341 v=-119535.96441537446 n=32768.0 Belief Support=[1, 4, 7, 10]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 8 Cur state 10shield2
+s=10(start=true,ax=3,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[49.0], 
+s=4(start=true,ax=1,ay=0)
+[823.0], 
+s=7(start=true,ax=2,ay=0)
+[5015.0], 
+s=10(start=true,ax=3,ay=0)
+[13327.0], 
+s=13(start=true,ax=4,ay=0)
+[13541.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2554 o=-1 vmean=-2.1894026805512734 v=-71742.34703630413 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=2835 a=north vmean=-12.833283296220387 v=-115.49954966598348 n=9.0 | Id=2554 o=-1 vmean=-2.1894026805512734 v=-71742.34703630413 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2836 a=south vmean=-16.427682803982137 v=-82.13841401991068 n=5.0 | Id=2554 o=-1 vmean=-2.1894026805512734 v=-71742.34703630413 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2837 a=east vmean=-2.1828691843032764 v=-71493.33152430091 n=32752.0 | Id=2554 o=-1 vmean=-2.1894026805512734 v=-71742.34703630413 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2838 a=west vmean=-25.688774158811732 v=-51.377548317623464 n=2.0 | Id=2554 o=-1 vmean=-2.1894026805512734 v=-71742.34703630413 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 9 Cur state 13shield2
+s=13(start=true,ax=4,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[11.0], 
+s=4(start=true,ax=1,ay=0)
+[190.0], 
+s=7(start=true,ax=2,ay=0)
+[1660.0], 
+s=10(start=true,ax=3,ay=0)
+[6824.0], 
+s=13(start=true,ax=4,ay=0)
+[13183.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2843 o=-1 vmean=-2.703522545082624 v=-88589.02675726742 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=3069 a=north vmean=-26.049035942187267 v=-52.098071884374534 n=2.0 | Id=2843 o=-1 vmean=-2.703522545082624 v=-88589.02675726742 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3070 a=south vmean=-22.85600694055701 v=-68.56802082167103 n=3.0 | Id=2843 o=-1 vmean=-2.703522545082624 v=-88589.02675726742 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3071 a=east vmean=-2.6982969218992108 v=-88396.20716141815 n=32760.0 | Id=2843 o=-1 vmean=-2.703522545082624 v=-88589.02675726742 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3072 a=west vmean=-24.05116771443581 v=-72.15350314330743 n=3.0 | Id=2843 o=-1 vmean=-2.703522545082624 v=-88589.02675726742 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+UndiscountedReward -9.0 DiscountedReward -7.025261215232422 Time(ms) 878
+Model=concrete-6-; nStates=19; Shield=2; Episode=4; Total Episodes=10; Undiscounted Reward=-9.0; Discounted Reward=-7.025261215232422; Time Spent=878; Average undiscounted=-8.25; Average discounted=-6.477808363746874; Average time spent=949; isSafeTrace=1.0
+
+ =============== Step 0 Cur state 0shield2
+s=0(start=false,ax=0,ay=0)
+Belief 
+s=0(start=false,ax=0,ay=0)
+[10000.0], 
+
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 1shield2
+s=1(start=true,ax=0,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=6 o=-1 vmean=-5.572618369074503 v=-182603.5587178333 n=32768.0 Belief Support=[1]
+MCTS layer2
+Id=27 a=north vmean=-34.80368358413358 v=-104.41105075240074 n=3.0 | Id=6 o=-1 vmean=-5.572618369074503 v=-182603.5587178333 n=32768.0 Belief Support=[1]
+Id=28 a=south vmean=-28.947684930180554 v=-260.529164371625 n=9.0 | Id=6 o=-1 vmean=-5.572618369074503 v=-182603.5587178333 n=32768.0 Belief Support=[1]
+Id=29 a=east vmean=-5.5368134478308235 v=-181114.70469199406 n=32711.0 | Id=6 o=-1 vmean=-5.572618369074503 v=-182603.5587178333 n=32768.0 Belief Support=[1]
+Id=30 a=west vmean=-24.975862460337854 v=-1123.9138107152035 n=45.0 | Id=6 o=-1 vmean=-5.572618369074503 v=-182603.5587178333 n=32768.0 Belief Support=[1]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 1shield2
+s=1(start=true,ax=0,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[6609.0], 
+s=4(start=true,ax=1,ay=0)
+[26102.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=40 o=-1 vmean=-4.823290400599313 v=-158049.57984683829 n=32768.0 Belief Support=[1, 4]
+MCTS layer2
+Id=461 a=north vmean=-24.44527094054638 v=-1148.9277342056798 n=47.0 | Id=40 o=-1 vmean=-4.823290400599313 v=-158049.57984683829 n=32768.0 Belief Support=[1, 4]
+Id=462 a=south vmean=-26.740943130564133 v=-454.59603321959025 n=17.0 | Id=40 o=-1 vmean=-4.823290400599313 v=-158049.57984683829 n=32768.0 Belief Support=[1, 4]
+Id=463 a=east vmean=-4.776509496049017 v=-156163.20146382655 n=32694.0 | Id=40 o=-1 vmean=-4.823290400599313 v=-158049.57984683829 n=32768.0 Belief Support=[1, 4]
+Id=464 a=west vmean=-28.2854615585991 v=-282.854615585991 n=10.0 | Id=40 o=-1 vmean=-4.823290400599313 v=-158049.57984683829 n=32768.0 Belief Support=[1, 4]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 4shield2
+s=4(start=true,ax=1,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[1313.0], 
+s=4(start=true,ax=1,ay=0)
+[10561.0], 
+s=7(start=true,ax=2,ay=0)
+[20820.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=484 o=-1 vmean=-4.760612398231714 v=-155995.74706525682 n=32768.0 Belief Support=[1, 4, 7]
+MCTS layer2
+Id=975 a=north vmean=-4.730873011951444 v=-154789.4340780393 n=32719.0 | Id=484 o=-1 vmean=-4.760612398231714 v=-155995.74706525682 n=32768.0 Belief Support=[1, 4, 7]
+Id=976 a=south vmean=-26.75327673841332 v=-267.5327673841332 n=10.0 | Id=484 o=-1 vmean=-4.760612398231714 v=-155995.74706525682 n=32768.0 Belief Support=[1, 4, 7]
+Id=977 a=east vmean=-24.0069945050873 v=-552.1608736170078 n=23.0 | Id=484 o=-1 vmean=-4.760612398231714 v=-155995.74706525682 n=32768.0 Belief Support=[1, 4, 7]
+Id=978 a=west vmean=-24.163709138520463 v=-386.6193462163274 n=16.0 | Id=484 o=-1 vmean=-4.760612398231714 v=-155995.74706525682 n=32768.0 Belief Support=[1, 4, 7]
+reach tree print depth 2
+Action actually taken= north reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 4shield2
+s=4(start=true,ax=1,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[1331.0], 
+s=4(start=true,ax=1,ay=0)
+[10410.0], 
+s=7(start=true,ax=2,ay=0)
+[20978.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=993 o=-1 vmean=-3.951265205124571 v=-129475.05824152194 n=32768.0 Belief Support=[1, 4, 7]
+MCTS layer2
+Id=1289 a=north vmean=-25.122304526287977 v=-577.8130041046235 n=23.0 | Id=993 o=-1 vmean=-3.951265205124571 v=-129475.05824152194 n=32768.0 Belief Support=[1, 4, 7]
+Id=1290 a=south vmean=-26.842629740247876 v=-322.1115568829745 n=12.0 | Id=993 o=-1 vmean=-3.951265205124571 v=-129475.05824152194 n=32768.0 Belief Support=[1, 4, 7]
+Id=1291 a=east vmean=-3.921444877363506 v=-128329.28361172073 n=32725.0 | Id=993 o=-1 vmean=-3.951265205124571 v=-129475.05824152194 n=32768.0 Belief Support=[1, 4, 7]
+Id=1292 a=west vmean=-30.73125860182635 v=-245.8500688146108 n=8.0 | Id=993 o=-1 vmean=-3.951265205124571 v=-129475.05824152194 n=32768.0 Belief Support=[1, 4, 7]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 7shield2
+s=7(start=true,ax=2,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[262.0], 
+s=4(start=true,ax=1,ay=0)
+[3167.0], 
+s=7(start=true,ax=2,ay=0)
+[12405.0], 
+s=10(start=true,ax=3,ay=0)
+[16891.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1297 o=-1 vmean=-3.0787807270391867 v=-100885.48686362007 n=32768.0 Belief Support=[1, 4, 7, 10]
+MCTS layer2
+Id=1583 a=north vmean=-20.767658967540044 v=-103.83829483770022 n=5.0 | Id=1297 o=-1 vmean=-3.0787807270391867 v=-100885.48686362007 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=1584 a=south vmean=-28.75248840113221 v=-86.25746520339663 n=3.0 | Id=1297 o=-1 vmean=-3.0787807270391867 v=-100885.48686362007 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=1585 a=east vmean=-3.0715096102787935 v=-100610.36879429217 n=32756.0 | Id=1297 o=-1 vmean=-3.0787807270391867 v=-100885.48686362007 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=1586 a=west vmean=-21.25557732176992 v=-85.02230928707968 n=4.0 | Id=1297 o=-1 vmean=-3.0787807270391867 v=-100885.48686362007 n=32768.0 Belief Support=[1, 4, 7, 10]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 6 Cur state 10shield2
+s=10(start=true,ax=3,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[49.0], 
+s=4(start=true,ax=1,ay=0)
+[848.0], 
+s=7(start=true,ax=2,ay=0)
+[5043.0], 
+s=10(start=true,ax=3,ay=0)
+[13188.0], 
+s=13(start=true,ax=4,ay=0)
+[13628.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1606 o=-1 vmean=-2.1934324711268283 v=-71874.39521388391 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=1777 a=north vmean=-22.087826334360486 v=-132.52695800616291 n=6.0 | Id=1606 o=-1 vmean=-2.1934324711268283 v=-71874.39521388391 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=1778 a=south vmean=-40.19107393379584 v=-40.19107393379584 n=1.0 | Id=1606 o=-1 vmean=-2.1934324711268283 v=-71874.39521388391 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=1779 a=east vmean=-2.185372430791996 v=-71581.87397059183 n=32755.0 | Id=1606 o=-1 vmean=-2.1934324711268283 v=-71874.39521388391 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=1780 a=west vmean=-19.9672018920697 v=-119.8032113524182 n=6.0 | Id=1606 o=-1 vmean=-2.1934324711268283 v=-71874.39521388391 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 7 Cur state 13shield2
+s=13(start=true,ax=4,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[13.0], 
+s=4(start=true,ax=1,ay=0)
+[181.0], 
+s=7(start=true,ax=2,ay=0)
+[1679.0], 
+s=10(start=true,ax=3,ay=0)
+[6722.0], 
+s=13(start=true,ax=4,ay=0)
+[13412.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1795 o=-1 vmean=-1.820193419216342 v=-59644.097960881096 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=2016 a=north vmean=-21.60939242471909 v=-64.82817727415727 n=3.0 | Id=1795 o=-1 vmean=-1.820193419216342 v=-59644.097960881096 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2017 a=south vmean=-33.95973275142146 v=-33.95973275142146 n=1.0 | Id=1795 o=-1 vmean=-1.820193419216342 v=-59644.097960881096 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2018 a=east vmean=-1.8156426974936277 v=-59482.27041258874 n=32761.0 | Id=1795 o=-1 vmean=-1.820193419216342 v=-59644.097960881096 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2019 a=west vmean=-21.01321275561388 v=-63.039638266841635 n=3.0 | Id=1795 o=-1 vmean=-1.820193419216342 v=-59644.097960881096 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+UndiscountedReward -7.0 DiscountedReward -5.73159137421875 Time(ms) 589
+Model=concrete-6-; nStates=19; Shield=2; Episode=5; Total Episodes=10; Undiscounted Reward=-7.0; Discounted Reward=-5.73159137421875; Time Spent=591; Average undiscounted=-8.0; Average discounted=-6.32856496584125; Average time spent=877; isSafeTrace=1.0
+
+ =============== Step 0 Cur state 0shield2
+s=0(start=false,ax=0,ay=0)
+Belief 
+s=0(start=false,ax=0,ay=0)
+[10000.0], 
+
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 1shield2
+s=1(start=true,ax=0,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=6 o=-1 vmean=-8.130709822270184 v=-266427.0994561494 n=32768.0 Belief Support=[1]
+MCTS layer2
+Id=27 a=north vmean=-8.071532601191036 v=-263664.6839505064 n=32666.0 | Id=6 o=-1 vmean=-8.130709822270184 v=-266427.0994561494 n=32768.0 Belief Support=[1]
+Id=28 a=south vmean=-26.55041697238456 v=-1672.6762692602274 n=63.0 | Id=6 o=-1 vmean=-8.130709822270184 v=-266427.0994561494 n=32768.0 Belief Support=[1]
+Id=29 a=east vmean=-27.247543865692357 v=-1008.1591230306173 n=37.0 | Id=6 o=-1 vmean=-8.130709822270184 v=-266427.0994561494 n=32768.0 Belief Support=[1]
+Id=30 a=west vmean=-40.79005667591263 v=-81.58011335182526 n=2.0 | Id=6 o=-1 vmean=-8.130709822270184 v=-266427.0994561494 n=32768.0 Belief Support=[1]
+reach tree print depth 2
+Action actually taken= north reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 1shield2
+s=1(start=true,ax=0,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[32666.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=35 o=-1 vmean=-5.613975355925786 v=-183958.74446297614 n=32768.0 Belief Support=[1]
+MCTS layer2
+Id=1316 a=north vmean=-33.23121698893414 v=-199.38730193360487 n=6.0 | Id=35 o=-1 vmean=-5.613975355925786 v=-183958.74446297614 n=32768.0 Belief Support=[1]
+Id=1317 a=south vmean=-34.77260090691381 v=-173.86300453456903 n=5.0 | Id=35 o=-1 vmean=-5.613975355925786 v=-183958.74446297614 n=32768.0 Belief Support=[1]
+Id=1318 a=east vmean=-5.568170790610308 v=-182068.04851137585 n=32698.0 | Id=35 o=-1 vmean=-5.613975355925786 v=-183958.74446297614 n=32768.0 Belief Support=[1]
+Id=1319 a=west vmean=-25.71941771409794 v=-1517.4456451317785 n=59.0 | Id=35 o=-1 vmean=-5.613975355925786 v=-183958.74446297614 n=32768.0 Belief Support=[1]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 4shield2
+s=4(start=true,ax=1,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[6513.0], 
+s=4(start=true,ax=1,ay=0)
+[26185.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1324 o=-1 vmean=-5.03283868029409 v=-164916.05787587675 n=32768.0 Belief Support=[1, 4]
+MCTS layer2
+Id=1950 a=north vmean=-23.424937702957195 v=-421.6488786532295 n=18.0 | Id=1324 o=-1 vmean=-5.03283868029409 v=-164916.05787587675 n=32768.0 Belief Support=[1, 4]
+Id=1951 a=south vmean=-25.494101824846503 v=-229.44691642361852 n=9.0 | Id=1324 o=-1 vmean=-5.03283868029409 v=-164916.05787587675 n=32768.0 Belief Support=[1, 4]
+Id=1952 a=east vmean=-5.006954707884283 v=-163842.5789060974 n=32723.0 | Id=1324 o=-1 vmean=-5.03283868029409 v=-164916.05787587675 n=32768.0 Belief Support=[1, 4]
+Id=1953 a=west vmean=-23.46573192793443 v=-422.38317470281976 n=18.0 | Id=1324 o=-1 vmean=-5.03283868029409 v=-164916.05787587675 n=32768.0 Belief Support=[1, 4]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 4shield2
+s=4(start=true,ax=1,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[1326.0], 
+s=4(start=true,ax=1,ay=0)
+[10419.0], 
+s=7(start=true,ax=2,ay=0)
+[20978.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1958 o=-1 vmean=-5.308313593079532 v=-173942.8198180301 n=32768.0 Belief Support=[1, 4, 7]
+MCTS layer2
+Id=2429 a=north vmean=-24.895812397867164 v=-946.0408711189523 n=38.0 | Id=1958 o=-1 vmean=-5.308313593079532 v=-173942.8198180301 n=32768.0 Belief Support=[1, 4, 7]
+Id=2430 a=south vmean=-26.022927554839146 v=-624.5502613161395 n=24.0 | Id=1958 o=-1 vmean=-5.308313593079532 v=-173942.8198180301 n=32768.0 Belief Support=[1, 4, 7]
+Id=2431 a=east vmean=-5.263330956921295 v=-172089.86896749865 n=32696.0 | Id=1958 o=-1 vmean=-5.308313593079532 v=-173942.8198180301 n=32768.0 Belief Support=[1, 4, 7]
+Id=2432 a=west vmean=-28.235971809554723 v=-282.35971809554724 n=10.0 | Id=1958 o=-1 vmean=-5.308313593079532 v=-173942.8198180301 n=32768.0 Belief Support=[1, 4, 7]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 7shield2
+s=7(start=true,ax=2,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[262.0], 
+s=4(start=true,ax=1,ay=0)
+[3181.0], 
+s=7(start=true,ax=2,ay=0)
+[12649.0], 
+s=10(start=true,ax=3,ay=0)
+[16604.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2442 o=-1 vmean=-3.099180677168927 v=-101553.9524294714 n=32768.0 Belief Support=[1, 4, 7, 10]
+MCTS layer2
+Id=2918 a=north vmean=-21.215554807293692 v=-275.802212494818 n=13.0 | Id=2442 o=-1 vmean=-3.099180677168927 v=-101553.9524294714 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2919 a=south vmean=-22.90622134386295 v=-183.2497707509036 n=8.0 | Id=2442 o=-1 vmean=-3.099180677168927 v=-101553.9524294714 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2920 a=east vmean=-3.085400461023781 v=-101031.4380962237 n=32745.0 | Id=2442 o=-1 vmean=-3.099180677168927 v=-101553.9524294714 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2921 a=west vmean=-31.73117500131962 v=-63.46235000263924 n=2.0 | Id=2442 o=-1 vmean=-3.099180677168927 v=-101553.9524294714 n=32768.0 Belief Support=[1, 4, 7, 10]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 6 Cur state 10shield2
+s=10(start=true,ax=3,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[54.0], 
+s=4(start=true,ax=1,ay=0)
+[848.0], 
+s=7(start=true,ax=2,ay=0)
+[5115.0], 
+s=10(start=true,ax=3,ay=0)
+[13268.0], 
+s=13(start=true,ax=4,ay=0)
+[13460.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2946 o=-1 vmean=-2.1909955998976147 v=-71794.54381744504 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=3167 a=north vmean=-15.91016345431258 v=-95.46098072587547 n=6.0 | Id=2946 o=-1 vmean=-2.1909955998976147 v=-71794.54381744504 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3168 a=south vmean=-22.461135065639994 v=-89.84454026255997 n=4.0 | Id=2946 o=-1 vmean=-2.1909955998976147 v=-71794.54381744504 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3169 a=east vmean=-2.1846210514940956 v=-71559.4471627406 n=32756.0 | Id=2946 o=-1 vmean=-2.1909955998976147 v=-71794.54381744504 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3170 a=west vmean=-24.8955668581349 v=-49.7911337162698 n=2.0 | Id=2946 o=-1 vmean=-2.1909955998976147 v=-71794.54381744504 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 7 Cur state 13shield2
+s=13(start=true,ax=4,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[17.0], 
+s=4(start=true,ax=1,ay=0)
+[227.0], 
+s=7(start=true,ax=2,ay=0)
+[1759.0], 
+s=10(start=true,ax=3,ay=0)
+[6694.0], 
+s=13(start=true,ax=4,ay=0)
+[13340.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=3175 o=-1 vmean=-2.2848058524280703 v=-74868.51817236301 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=3346 a=north vmean=-2.782743429739743 v=-41312.60895791622 n=14846.0 | Id=3175 o=-1 vmean=-2.2848058524280703 v=-74868.51817236301 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3347 a=south vmean=-18.150684442396855 v=-90.75342221198427 n=5.0 | Id=3175 o=-1 vmean=-2.2848058524280703 v=-74868.51817236301 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3348 a=east vmean=-1.865998758119656 v=-33431.23375047176 n=17916.0 | Id=3175 o=-1 vmean=-2.2848058524280703 v=-74868.51817236301 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3349 a=west vmean=-33.92204178676403 v=-33.92204178676403 n=1.0 | Id=3175 o=-1 vmean=-2.2848058524280703 v=-74868.51817236301 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+UndiscountedReward -7.0 DiscountedReward -5.73159137421875 Time(ms) 775
+Model=concrete-6-; nStates=19; Shield=2; Episode=6; Total Episodes=10; Undiscounted Reward=-7.0; Discounted Reward=-5.73159137421875; Time Spent=775; Average undiscounted=-7.833333333333333; Average discounted=-6.2290693672375; Average time spent=860; isSafeTrace=1.0
+
+ =============== Step 0 Cur state 0shield2
+s=0(start=false,ax=0,ay=0)
+Belief 
+s=0(start=false,ax=0,ay=0)
+[10000.0], 
+
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 1shield2
+s=1(start=true,ax=0,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=6 o=-1 vmean=-7.922613826304576 v=-259608.20986034835 n=32768.0 Belief Support=[1]
+MCTS layer2
+Id=32 a=north vmean=-7.718491847175007 v=-250063.69886477588 n=32398.0 | Id=6 o=-1 vmean=-7.922613826304576 v=-259608.20986034835 n=32768.0 Belief Support=[1]
+Id=33 a=south vmean=-26.0744104631534 v=-3285.3757183573284 n=126.0 | Id=6 o=-1 vmean=-7.922613826304576 v=-259608.20986034835 n=32768.0 Belief Support=[1]
+Id=34 a=east vmean=-35.33525459091104 v=-176.6762729545552 n=5.0 | Id=6 o=-1 vmean=-7.922613826304576 v=-259608.20986034835 n=32768.0 Belief Support=[1]
+Id=35 a=west vmean=-25.44961926469316 v=-6082.459004261665 n=239.0 | Id=6 o=-1 vmean=-7.922613826304576 v=-259608.20986034835 n=32768.0 Belief Support=[1]
+reach tree print depth 2
+Action actually taken= north reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 1shield2
+s=1(start=true,ax=0,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[32398.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=50 o=-1 vmean=-6.434999595655798 v=-210862.0667504492 n=32768.0 Belief Support=[1]
+MCTS layer2
+Id=1486 a=north vmean=-28.008723287349856 v=-448.1395725975977 n=16.0 | Id=50 o=-1 vmean=-6.434999595655798 v=-210862.0667504492 n=32768.0 Belief Support=[1]
+Id=1487 a=south vmean=-27.75094763420366 v=-471.7661097814622 n=17.0 | Id=50 o=-1 vmean=-6.434999595655798 v=-210862.0667504492 n=32768.0 Belief Support=[1]
+Id=1488 a=east vmean=-6.368274537099519 v=-207949.6367344477 n=32654.0 | Id=50 o=-1 vmean=-6.434999595655798 v=-210862.0667504492 n=32768.0 Belief Support=[1]
+Id=1489 a=west vmean=-24.599065847186022 v=-1992.5243336220678 n=81.0 | Id=50 o=-1 vmean=-6.434999595655798 v=-210862.0667504492 n=32768.0 Belief Support=[1]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 4shield2
+s=4(start=true,ax=1,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[6502.0], 
+s=4(start=true,ax=1,ay=0)
+[26152.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1499 o=-1 vmean=-5.773793031309587 v=-189195.65004995256 n=32768.0 Belief Support=[1, 4]
+MCTS layer2
+Id=2545 a=north vmean=-30.4579000734205 v=-152.2895003671025 n=5.0 | Id=1499 o=-1 vmean=-5.773793031309587 v=-189195.65004995256 n=32768.0 Belief Support=[1, 4]
+Id=2546 a=south vmean=-28.692910884699227 v=-258.23619796229303 n=9.0 | Id=1499 o=-1 vmean=-5.773793031309587 v=-189195.65004995256 n=32768.0 Belief Support=[1, 4]
+Id=2547 a=east vmean=-5.760550739425973 v=-188658.03671620062 n=32750.0 | Id=1499 o=-1 vmean=-5.773793031309587 v=-189195.65004995256 n=32768.0 Belief Support=[1, 4]
+Id=2548 a=west vmean=-31.771908855612516 v=-127.08763542245006 n=4.0 | Id=1499 o=-1 vmean=-5.773793031309587 v=-189195.65004995256 n=32768.0 Belief Support=[1, 4]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 7shield2
+s=7(start=true,ax=2,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[1320.0], 
+s=4(start=true,ax=1,ay=0)
+[10512.0], 
+s=7(start=true,ax=2,ay=0)
+[20918.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2563 o=-1 vmean=-3.9943070163998695 v=-130885.45231339092 n=32768.0 Belief Support=[1, 4, 7]
+MCTS layer2
+Id=2909 a=north vmean=-24.830906091029004 v=-248.30906091029004 n=10.0 | Id=2563 o=-1 vmean=-3.9943070163998695 v=-130885.45231339092 n=32768.0 Belief Support=[1, 4, 7]
+Id=2910 a=south vmean=-25.11629773682709 v=-226.0466796314438 n=9.0 | Id=2563 o=-1 vmean=-3.9943070163998695 v=-130885.45231339092 n=32768.0 Belief Support=[1, 4, 7]
+Id=2911 a=east vmean=-3.97587348719825 v=-130166.12209738352 n=32739.0 | Id=2563 o=-1 vmean=-3.9943070163998695 v=-130885.45231339092 n=32768.0 Belief Support=[1, 4, 7]
+Id=2912 a=west vmean=-24.49744754661962 v=-244.97447546619622 n=10.0 | Id=2563 o=-1 vmean=-3.9943070163998695 v=-130885.45231339092 n=32768.0 Belief Support=[1, 4, 7]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 7shield2
+s=7(start=true,ax=2,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[242.0], 
+s=4(start=true,ax=1,ay=0)
+[3088.0], 
+s=7(start=true,ax=2,ay=0)
+[12555.0], 
+s=10(start=true,ax=3,ay=0)
+[16854.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2917 o=-1 vmean=-3.090231864518574 v=-101260.71773654463 n=32768.0 Belief Support=[1, 4, 7, 10]
+MCTS layer2
+Id=3243 a=north vmean=-23.797346335344116 v=-71.39203900603235 n=3.0 | Id=2917 o=-1 vmean=-3.090231864518574 v=-101260.71773654463 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=3244 a=south vmean=-22.609033347172247 v=-67.82710004151674 n=3.0 | Id=2917 o=-1 vmean=-3.090231864518574 v=-101260.71773654463 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=3245 a=east vmean=-3.084847366164514 v=-101056.51486818332 n=32759.0 | Id=2917 o=-1 vmean=-3.090231864518574 v=-101260.71773654463 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=3246 a=west vmean=-21.661243104652467 v=-64.9837293139574 n=3.0 | Id=2917 o=-1 vmean=-3.090231864518574 v=-101260.71773654463 n=32768.0 Belief Support=[1, 4, 7, 10]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 6 Cur state 7shield2
+s=7(start=true,ax=2,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[60.0], 
+s=4(start=true,ax=1,ay=0)
+[772.0], 
+s=7(start=true,ax=2,ay=0)
+[5037.0], 
+s=10(start=true,ax=3,ay=0)
+[13504.0], 
+s=13(start=true,ax=4,ay=0)
+[13386.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=3261 o=-1 vmean=-2.3503721212646442 v=-77016.99366959986 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=3507 a=north vmean=-27.499453495778663 v=-54.99890699155733 n=2.0 | Id=3261 o=-1 vmean=-2.3503721212646442 v=-77016.99366959986 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3508 a=south vmean=-24.115190207408947 v=-72.34557062222684 n=3.0 | Id=3261 o=-1 vmean=-2.3503721212646442 v=-77016.99366959986 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3509 a=east vmean=-2.3445045435966847 v=-76805.96884822739 n=32760.0 | Id=3261 o=-1 vmean=-2.3503721212646442 v=-77016.99366959986 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3510 a=west vmean=-27.893447919647386 v=-83.68034375894216 n=3.0 | Id=3261 o=-1 vmean=-2.3503721212646442 v=-77016.99366959986 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 7 Cur state 10shield2
+s=10(start=true,ax=3,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[15.0], 
+s=4(start=true,ax=1,ay=0)
+[213.0], 
+s=7(start=true,ax=2,ay=0)
+[1658.0], 
+s=10(start=true,ax=3,ay=0)
+[6675.0], 
+s=13(start=true,ax=4,ay=0)
+[13565.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=3515 o=-1 vmean=-1.8404579756748627 v=-60308.1269469139 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=3826 a=north vmean=-13.53687566630848 v=-135.3687566630848 n=10.0 | Id=3515 o=-1 vmean=-1.8404579756748627 v=-60308.1269469139 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3827 a=south vmean=-29.626810697711633 v=-59.25362139542327 n=2.0 | Id=3515 o=-1 vmean=-1.8404579756748627 v=-60308.1269469139 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3828 a=east vmean=-1.8325297773336968 v=-60015.35020767857 n=32750.0 | Id=3515 o=-1 vmean=-1.8404579756748627 v=-60308.1269469139 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3829 a=west vmean=-16.35906019615371 v=-98.15436117692227 n=6.0 | Id=3515 o=-1 vmean=-1.8404579756748627 v=-60308.1269469139 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 8 Cur state 13shield2
+s=13(start=true,ax=4,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[4.0], 
+s=4(start=true,ax=1,ay=0)
+[88.0], 
+s=7(start=true,ax=2,ay=0)
+[696.0], 
+s=10(start=true,ax=3,ay=0)
+[3988.0], 
+s=13(start=true,ax=4,ay=0)
+[11923.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=3834 o=-1 vmean=-2.63280957280512 v=-86271.90408167818 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=4085 a=north vmean=-2.6276828722844354 v=-86085.51857891039 n=32761.0 | Id=3834 o=-1 vmean=-2.63280957280512 v=-86271.90408167818 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=4086 a=south vmean=-26.408036454695296 v=-52.81607290939059 n=2.0 | Id=3834 o=-1 vmean=-2.63280957280512 v=-86271.90408167818 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=4087 a=east vmean=-35.03881125489741 v=-35.03881125489741 n=1.0 | Id=3834 o=-1 vmean=-2.63280957280512 v=-86271.90408167818 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=4088 a=west vmean=-24.63265465093771 v=-98.53061860375084 n=4.0 | Id=3834 o=-1 vmean=-2.63280957280512 v=-86271.90408167818 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= north reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 9 Cur state 13shield2
+s=13(start=true,ax=4,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[8.0], 
+s=4(start=true,ax=1,ay=0)
+[174.0], 
+s=7(start=true,ax=2,ay=0)
+[1375.0], 
+s=10(start=true,ax=3,ay=0)
+[7765.0], 
+s=13(start=true,ax=4,ay=0)
+[23439.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=4093 o=-1 vmean=-1.656424978875949 v=-54277.7337078071 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=4389 a=north vmean=-16.041884466183333 v=-80.20942233091667 n=5.0 | Id=4093 o=-1 vmean=-1.656424978875949 v=-54277.7337078071 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=4390 a=south vmean=-58.1592200331305 v=-58.1592200331305 n=1.0 | Id=4093 o=-1 vmean=-1.656424978875949 v=-54277.7337078071 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=4391 a=east vmean=-1.649239522528542 v=-54020.84056042239 n=32755.0 | Id=4093 o=-1 vmean=-1.656424978875949 v=-54277.7337078071 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=4392 a=west vmean=-16.932072145827288 v=-118.52450502079103 n=7.0 | Id=4093 o=-1 vmean=-1.656424978875949 v=-54277.7337078071 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+UndiscountedReward -9.0 DiscountedReward -7.025261215232422 Time(ms) 873
+Model=concrete-6-; nStates=19; Shield=2; Episode=7; Total Episodes=10; Undiscounted Reward=-9.0; Discounted Reward=-7.025261215232422; Time Spent=873; Average undiscounted=-8.0; Average discounted=-6.342811059808203; Average time spent=862; isSafeTrace=1.0
+
+ =============== Step 0 Cur state 0shield2
+s=0(start=false,ax=0,ay=0)
+Belief 
+s=0(start=false,ax=0,ay=0)
+[10000.0], 
+
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 1shield2
+s=1(start=true,ax=0,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=6 o=-1 vmean=-6.499348909793788 v=-212970.66507612285 n=32768.0 Belief Support=[1]
+MCTS layer2
+Id=32 a=north vmean=-6.3225386057490685 v=-205286.5059900665 n=32469.0 | Id=6 o=-1 vmean=-6.499348909793788 v=-212970.66507612285 n=32768.0 Belief Support=[1]
+Id=33 a=south vmean=-26.162972342902908 v=-2066.87481508933 n=79.0 | Id=6 o=-1 vmean=-6.499348909793788 v=-212970.66507612285 n=32768.0 Belief Support=[1]
+Id=34 a=east vmean=-28.161730382697716 v=-788.528450715536 n=28.0 | Id=6 o=-1 vmean=-6.499348909793788 v=-212970.66507612285 n=32768.0 Belief Support=[1]
+Id=35 a=west vmean=-25.149769897139297 v=-4828.755820250745 n=192.0 | Id=6 o=-1 vmean=-6.499348909793788 v=-212970.66507612285 n=32768.0 Belief Support=[1]
+reach tree print depth 2
+Action actually taken= north reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 1shield2
+s=1(start=true,ax=0,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[32469.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=50 o=-1 vmean=-5.586121953563136 v=-183046.04417435685 n=32768.0 Belief Support=[1]
+MCTS layer2
+Id=1151 a=north vmean=-23.711011490886015 v=-995.8624826172127 n=42.0 | Id=50 o=-1 vmean=-5.586121953563136 v=-183046.04417435685 n=32768.0 Belief Support=[1]
+Id=1152 a=south vmean=-24.830254847993935 v=-571.0958615038605 n=23.0 | Id=50 o=-1 vmean=-5.586121953563136 v=-183046.04417435685 n=32768.0 Belief Support=[1]
+Id=1153 a=east vmean=-5.536217758509446 v=-180929.13256584722 n=32681.0 | Id=50 o=-1 vmean=-5.586121953563136 v=-183046.04417435685 n=32768.0 Belief Support=[1]
+Id=1154 a=west vmean=-24.99787565402015 v=-549.9532643884432 n=22.0 | Id=50 o=-1 vmean=-5.586121953563136 v=-183046.04417435685 n=32768.0 Belief Support=[1]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 4shield2
+s=4(start=true,ax=1,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[6598.0], 
+s=4(start=true,ax=1,ay=0)
+[26083.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1159 o=-1 vmean=-4.760072039135631 v=-155978.04057839635 n=32768.0 Belief Support=[1, 4]
+MCTS layer2
+Id=1640 a=north vmean=-24.645986485491342 v=-246.4598648549134 n=10.0 | Id=1159 o=-1 vmean=-4.760072039135631 v=-155978.04057839635 n=32768.0 Belief Support=[1, 4]
+Id=1641 a=south vmean=-28.821163323604374 v=-115.2846532944175 n=4.0 | Id=1159 o=-1 vmean=-4.760072039135631 v=-155978.04057839635 n=32768.0 Belief Support=[1, 4]
+Id=1642 a=east vmean=-4.7434983852164585 v=-155306.88063037206 n=32741.0 | Id=1159 o=-1 vmean=-4.760072039135631 v=-155978.04057839635 n=32768.0 Belief Support=[1, 4]
+Id=1643 a=west vmean=-23.80118691346212 v=-309.4154298750076 n=13.0 | Id=1159 o=-1 vmean=-4.760072039135631 v=-155978.04057839635 n=32768.0 Belief Support=[1, 4]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 7shield2
+s=7(start=true,ax=2,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[1332.0], 
+s=4(start=true,ax=1,ay=0)
+[10463.0], 
+s=7(start=true,ax=2,ay=0)
+[20946.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1653 o=-1 vmean=-5.537538426636078 v=-181454.059164011 n=32768.0 Belief Support=[1, 4, 7]
+MCTS layer2
+Id=1989 a=north vmean=-22.117893601776757 v=-575.0652336461957 n=26.0 | Id=1653 o=-1 vmean=-5.537538426636078 v=-181454.059164011 n=32768.0 Belief Support=[1, 4, 7]
+Id=1990 a=south vmean=-24.2316038192092 v=-266.5476420113012 n=11.0 | Id=1653 o=-1 vmean=-5.537538426636078 v=-181454.059164011 n=32768.0 Belief Support=[1, 4, 7]
+Id=1991 a=east vmean=-5.515301543691107 v=-180499.27362037887 n=32727.0 | Id=1653 o=-1 vmean=-5.537538426636078 v=-181454.059164011 n=32768.0 Belief Support=[1, 4, 7]
+Id=1992 a=west vmean=-28.29316699365424 v=-113.17266797461696 n=4.0 | Id=1653 o=-1 vmean=-5.537538426636078 v=-181454.059164011 n=32768.0 Belief Support=[1, 4, 7]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 7shield2
+s=7(start=true,ax=2,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[270.0], 
+s=4(start=true,ax=1,ay=0)
+[3076.0], 
+s=7(start=true,ax=2,ay=0)
+[12463.0], 
+s=10(start=true,ax=3,ay=0)
+[16918.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2002 o=-1 vmean=-3.074699377983545 v=-100751.74921776481 n=32768.0 Belief Support=[1, 4, 7, 10]
+MCTS layer2
+Id=2358 a=north vmean=-29.914227881160222 v=-59.828455762320445 n=2.0 | Id=2002 o=-1 vmean=-3.074699377983545 v=-100751.74921776481 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2359 a=south vmean=-27.75772171674683 v=-55.51544343349366 n=2.0 | Id=2002 o=-1 vmean=-3.074699377983545 v=-100751.74921776481 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2360 a=east vmean=-3.069474277386036 v=-100559.04680144392 n=32761.0 | Id=2002 o=-1 vmean=-3.074699377983545 v=-100751.74921776481 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2361 a=west vmean=-25.786172375085552 v=-77.35851712525665 n=3.0 | Id=2002 o=-1 vmean=-3.074699377983545 v=-100751.74921776481 n=32768.0 Belief Support=[1, 4, 7, 10]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 6 Cur state 10shield2
+s=10(start=true,ax=3,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[53.0], 
+s=4(start=true,ax=1,ay=0)
+[825.0], 
+s=7(start=true,ax=2,ay=0)
+[4952.0], 
+s=10(start=true,ax=3,ay=0)
+[13208.0], 
+s=13(start=true,ax=4,ay=0)
+[13723.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2366 o=-1 vmean=-3.0744198918994576 v=-100742.59101776143 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=2607 a=north vmean=-3.0679685163816575 v=-100491.30875408118 n=32755.0 | Id=2366 o=-1 vmean=-3.0744198918994576 v=-100742.59101776143 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2608 a=south vmean=-16.992502063439407 v=-101.95501238063645 n=6.0 | Id=2366 o=-1 vmean=-3.0744198918994576 v=-100742.59101776143 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2609 a=east vmean=-19.984706520086668 v=-79.93882608034667 n=4.0 | Id=2366 o=-1 vmean=-3.0744198918994576 v=-100742.59101776143 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2610 a=west vmean=-23.12947507319157 v=-69.38842521957471 n=3.0 | Id=2366 o=-1 vmean=-3.0744198918994576 v=-100742.59101776143 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= north reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 7 Cur state 10shield2
+s=10(start=true,ax=3,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[51.0], 
+s=4(start=true,ax=1,ay=0)
+[870.0], 
+s=7(start=true,ax=2,ay=0)
+[4943.0], 
+s=10(start=true,ax=3,ay=0)
+[13267.0], 
+s=13(start=true,ax=4,ay=0)
+[13624.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2615 o=-1 vmean=-3.392815311394389 v=-111175.77212377134 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=2816 a=north vmean=-3.383964631960564 v=-110824.84169670848 n=32750.0 | Id=2615 o=-1 vmean=-3.392815311394389 v=-111175.77212377134 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2817 a=south vmean=-18.175832622653626 v=-109.05499573592175 n=6.0 | Id=2615 o=-1 vmean=-3.392815311394389 v=-111175.77212377134 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2818 a=east vmean=-18.64669576677577 v=-186.4669576677577 n=10.0 | Id=2615 o=-1 vmean=-3.392815311394389 v=-111175.77212377134 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2819 a=west vmean=-27.704236829799804 v=-55.40847365959961 n=2.0 | Id=2615 o=-1 vmean=-3.392815311394389 v=-111175.77212377134 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= north reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 8 Cur state 10shield2
+s=10(start=true,ax=3,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[51.0], 
+s=4(start=true,ax=1,ay=0)
+[858.0], 
+s=7(start=true,ax=2,ay=0)
+[4967.0], 
+s=10(start=true,ax=3,ay=0)
+[13223.0], 
+s=13(start=true,ax=4,ay=0)
+[13651.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2829 o=-1 vmean=-2.1861545236620947 v=-71635.91143135952 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=3085 a=north vmean=-16.870143350835068 v=-84.35071675417534 n=5.0 | Id=2829 o=-1 vmean=-2.1861545236620947 v=-71635.91143135952 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3086 a=south vmean=-28.690583005204417 v=-86.07174901561325 n=3.0 | Id=2829 o=-1 vmean=-2.1861545236620947 v=-71635.91143135952 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3087 a=east vmean=-2.179458847073309 v=-71392.53345358038 n=32757.0 | Id=2829 o=-1 vmean=-2.1861545236620947 v=-71635.91143135952 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3088 a=west vmean=-24.3185040031846 v=-72.9555120095538 n=3.0 | Id=2829 o=-1 vmean=-2.1861545236620947 v=-71635.91143135952 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 9 Cur state 13shield2
+s=13(start=true,ax=4,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[11.0], 
+s=4(start=true,ax=1,ay=0)
+[196.0], 
+s=7(start=true,ax=2,ay=0)
+[1625.0], 
+s=10(start=true,ax=3,ay=0)
+[6768.0], 
+s=13(start=true,ax=4,ay=0)
+[13347.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=3093 o=-1 vmean=-1.8240539475791069 v=-59770.599754272174 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=3309 a=north vmean=-32.5977743522468 v=-65.1955487044936 n=2.0 | Id=3093 o=-1 vmean=-1.8240539475791069 v=-59770.599754272174 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3310 a=south vmean=-30.091852203958346 v=-60.18370440791669 n=2.0 | Id=3093 o=-1 vmean=-1.8240539475791069 v=-59770.599754272174 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3311 a=east vmean=-1.8186964323997532 v=-59584.13251828071 n=32762.0 | Id=3093 o=-1 vmean=-1.8240539475791069 v=-59770.599754272174 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3312 a=west vmean=-30.543991439559736 v=-61.08798287911947 n=2.0 | Id=3093 o=-1 vmean=-1.8240539475791069 v=-59770.599754272174 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+UndiscountedReward -9.0 DiscountedReward -7.025261215232422 Time(ms) 838
+Model=concrete-6-; nStates=19; Shield=2; Episode=8; Total Episodes=10; Undiscounted Reward=-9.0; Discounted Reward=-7.025261215232422; Time Spent=838; Average undiscounted=-8.125; Average discounted=-6.42811732923623; Average time spent=859; isSafeTrace=1.0
+
+ =============== Step 0 Cur state 0shield2
+s=0(start=false,ax=0,ay=0)
+Belief 
+s=0(start=false,ax=0,ay=0)
+[10000.0], 
+
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 1shield2
+s=1(start=true,ax=0,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=6 o=-1 vmean=-5.95871219949681 v=-195255.08135311148 n=32768.0 Belief Support=[1]
+MCTS layer2
+Id=27 a=north vmean=-25.679006554175704 v=-1617.7774129130694 n=63.0 | Id=6 o=-1 vmean=-5.95871219949681 v=-195255.08135311148 n=32768.0 Belief Support=[1]
+Id=28 a=south vmean=-26.39626055946629 v=-1214.2279857354492 n=46.0 | Id=6 o=-1 vmean=-5.95871219949681 v=-195255.08135311148 n=32768.0 Belief Support=[1]
+Id=29 a=east vmean=-5.807441462294083 v=-188811.53682210523 n=32512.0 | Id=6 o=-1 vmean=-5.95871219949681 v=-195255.08135311148 n=32768.0 Belief Support=[1]
+Id=30 a=west vmean=-24.568293417395914 v=-3611.5391323571994 n=147.0 | Id=6 o=-1 vmean=-5.95871219949681 v=-195255.08135311148 n=32768.0 Belief Support=[1]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 4shield2
+s=4(start=true,ax=1,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[6499.0], 
+s=4(start=true,ax=1,ay=0)
+[26013.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=40 o=-1 vmean=-4.916861689064038 v=-161115.7238272504 n=32768.0 Belief Support=[1, 4]
+MCTS layer2
+Id=1026 a=north vmean=-25.09698130678592 v=-1204.6551027257242 n=48.0 | Id=40 o=-1 vmean=-4.916861689064038 v=-161115.7238272504 n=32768.0 Belief Support=[1, 4]
+Id=1027 a=south vmean=-26.696968596360733 v=-614.0302777162968 n=23.0 | Id=40 o=-1 vmean=-4.916861689064038 v=-161115.7238272504 n=32768.0 Belief Support=[1, 4]
+Id=1028 a=east vmean=-4.834137386275465 v=-157762.0736010998 n=32635.0 | Id=40 o=-1 vmean=-4.916861689064038 v=-161115.7238272504 n=32768.0 Belief Support=[1, 4]
+Id=1029 a=west vmean=-24.75749751142465 v=-1534.9648457083283 n=62.0 | Id=40 o=-1 vmean=-4.916861689064038 v=-161115.7238272504 n=32768.0 Belief Support=[1, 4]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 7shield2
+s=7(start=true,ax=2,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[1269.0], 
+s=4(start=true,ax=1,ay=0)
+[10361.0], 
+s=7(start=true,ax=2,ay=0)
+[21005.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1054 o=-1 vmean=-4.19422672829159 v=-137436.42143265883 n=32768.0 Belief Support=[1, 4, 7]
+MCTS layer2
+Id=1810 a=north vmean=-26.71702572627972 v=-133.5851286313986 n=5.0 | Id=1054 o=-1 vmean=-4.19422672829159 v=-137436.42143265883 n=32768.0 Belief Support=[1, 4, 7]
+Id=1811 a=south vmean=-39.42108680388884 v=-39.42108680388884 n=1.0 | Id=1054 o=-1 vmean=-4.19422672829159 v=-137436.42143265883 n=32768.0 Belief Support=[1, 4, 7]
+Id=1812 a=east vmean=-4.17912674843698 v=-136837.14712407204 n=32743.0 | Id=1054 o=-1 vmean=-4.19422672829159 v=-137436.42143265883 n=32768.0 Belief Support=[1, 4, 7]
+Id=1813 a=west vmean=-22.43516279741662 v=-426.2680931509158 n=19.0 | Id=1054 o=-1 vmean=-4.19422672829159 v=-137436.42143265883 n=32768.0 Belief Support=[1, 4, 7]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 10shield2
+s=10(start=true,ax=3,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[253.0], 
+s=4(start=true,ax=1,ay=0)
+[3013.0], 
+s=7(start=true,ax=2,ay=0)
+[12493.0], 
+s=10(start=true,ax=3,ay=0)
+[16984.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1828 o=-1 vmean=-3.9554171701808927 v=-129611.10983248749 n=32768.0 Belief Support=[1, 4, 7, 10]
+MCTS layer2
+Id=2144 a=north vmean=-21.12062015025611 v=-337.92992240409774 n=16.0 | Id=1828 o=-1 vmean=-3.9554171701808927 v=-129611.10983248749 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2145 a=south vmean=-23.791832875323898 v=-166.54283012726728 n=7.0 | Id=1828 o=-1 vmean=-3.9554171701808927 v=-129611.10983248749 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2146 a=east vmean=-3.940312859625992 v=-129013.72364987424 n=32742.0 | Id=1828 o=-1 vmean=-3.9554171701808927 v=-129611.10983248749 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2147 a=west vmean=-30.971143360819315 v=-92.91343008245795 n=3.0 | Id=1828 o=-1 vmean=-3.9554171701808927 v=-129611.10983248749 n=32768.0 Belief Support=[1, 4, 7, 10]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 13shield2
+s=13(start=true,ax=4,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[56.0], 
+s=4(start=true,ax=1,ay=0)
+[842.0], 
+s=7(start=true,ax=2,ay=0)
+[4931.0], 
+s=10(start=true,ax=3,ay=0)
+[13402.0], 
+s=13(start=true,ax=4,ay=0)
+[13511.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2162 o=-1 vmean=-2.1767232551853253 v=-71326.86762591274 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=2453 a=north vmean=-16.710147493584522 v=-83.5507374679226 n=5.0 | Id=2162 o=-1 vmean=-2.1767232551853253 v=-71326.86762591274 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2454 a=south vmean=-21.120228263106267 v=-63.360684789318796 n=3.0 | Id=2162 o=-1 vmean=-2.1767232551853253 v=-71326.86762591274 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2455 a=east vmean=-2.1717444062581035 v=-71144.1750046092 n=32759.0 | Id=2162 o=-1 vmean=-2.1767232551853253 v=-71326.86762591274 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=2456 a=west vmean=-35.78119904652063 v=-35.78119904652063 n=1.0 | Id=2162 o=-1 vmean=-2.1767232551853253 v=-71326.86762591274 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+UndiscountedReward -5.0 DiscountedReward -4.2981621875 Time(ms) 515
+Model=concrete-6-; nStates=19; Shield=2; Episode=9; Total Episodes=10; Undiscounted Reward=-5.0; Discounted Reward=-4.2981621875; Time Spent=516; Average undiscounted=-7.777777777777778; Average discounted=-6.191455646821093; Average time spent=821; isSafeTrace=1.0
+
+ =============== Step 0 Cur state 0shield2
+s=0(start=false,ax=0,ay=0)
+Belief 
+s=0(start=false,ax=0,ay=0)
+[10000.0], 
+
+Action actually taken= placement reward = -0.0 states after action :
+so far is ... safe
+
+ =============== Step 1 Cur state 1shield2
+s=1(start=true,ax=0,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[10000.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=6 o=-1 vmean=-7.525779694131446 v=-246604.7490172992 n=32768.0 Belief Support=[1]
+MCTS layer2
+Id=37 a=north vmean=-7.459497841340851 v=-243522.76652841343 n=32646.0 | Id=6 o=-1 vmean=-7.525779694131446 v=-246604.7490172992 n=32768.0 Belief Support=[1]
+Id=38 a=south vmean=-34.64294817290658 v=-138.5717926916263 n=4.0 | Id=6 o=-1 vmean=-7.525779694131446 v=-246604.7490172992 n=32768.0 Belief Support=[1]
+Id=39 a=east vmean=-30.837719233383705 v=-277.53947310045334 n=9.0 | Id=6 o=-1 vmean=-7.525779694131446 v=-246604.7490172992 n=32768.0 Belief Support=[1]
+Id=40 a=west vmean=-24.457534156836527 v=-2665.8712230951814 n=109.0 | Id=6 o=-1 vmean=-7.525779694131446 v=-246604.7490172992 n=32768.0 Belief Support=[1]
+reach tree print depth 2
+Action actually taken= north reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 2 Cur state 1shield2
+s=1(start=true,ax=0,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[32646.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=50 o=-1 vmean=-6.460285849811154 v=-211690.64672661189 n=32768.0 Belief Support=[1]
+MCTS layer2
+Id=1051 a=north vmean=-25.913094597625648 v=-1373.3940136741594 n=53.0 | Id=50 o=-1 vmean=-6.460285849811154 v=-211690.64672661189 n=32768.0 Belief Support=[1]
+Id=1052 a=south vmean=-25.498269276866967 v=-1606.390964442619 n=63.0 | Id=50 o=-1 vmean=-6.460285849811154 v=-211690.64672661189 n=32768.0 Belief Support=[1]
+Id=1053 a=east vmean=-6.323277602180613 v=-205689.89712133317 n=32529.0 | Id=50 o=-1 vmean=-6.460285849811154 v=-211690.64672661189 n=32768.0 Belief Support=[1]
+Id=1054 a=west vmean=-24.56068802570238 v=-3020.964627161393 n=123.0 | Id=50 o=-1 vmean=-6.460285849811154 v=-211690.64672661189 n=32768.0 Belief Support=[1]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 3 Cur state 4shield2
+s=4(start=true,ax=1,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[6598.0], 
+s=4(start=true,ax=1,ay=0)
+[25931.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=1079 o=-1 vmean=-6.269844756555011 v=-205450.2729827946 n=32768.0 Belief Support=[1, 4]
+MCTS layer2
+Id=2090 a=north vmean=-25.61434566945537 v=-998.9594811087595 n=39.0 | Id=1079 o=-1 vmean=-6.269844756555011 v=-205450.2729827946 n=32768.0 Belief Support=[1, 4]
+Id=2091 a=south vmean=-66.95869451585844 v=-66.95869451585844 n=1.0 | Id=1079 o=-1 vmean=-6.269844756555011 v=-205450.2729827946 n=32768.0 Belief Support=[1, 4]
+Id=2092 a=east vmean=-6.233632486685467 v=-203908.35227196832 n=32711.0 | Id=1079 o=-1 vmean=-6.269844756555011 v=-205450.2729827946 n=32768.0 Belief Support=[1, 4]
+Id=2093 a=west vmean=-28.000149129494535 v=-476.0025352014071 n=17.0 | Id=1079 o=-1 vmean=-6.269844756555011 v=-205450.2729827946 n=32768.0 Belief Support=[1, 4]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 4 Cur state 7shield2
+s=7(start=true,ax=2,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[1337.0], 
+s=4(start=true,ax=1,ay=0)
+[10460.0], 
+s=7(start=true,ax=2,ay=0)
+[20914.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2098 o=-1 vmean=-3.9599503925035493 v=-129759.6544615563 n=32768.0 Belief Support=[1, 4, 7]
+MCTS layer2
+Id=2554 a=north vmean=-25.92032949187012 v=-311.04395390244144 n=12.0 | Id=2098 o=-1 vmean=-3.9599503925035493 v=-129759.6544615563 n=32768.0 Belief Support=[1, 4, 7]
+Id=2555 a=south vmean=-27.62464722240369 v=-220.99717777922953 n=8.0 | Id=2098 o=-1 vmean=-3.9599503925035493 v=-129759.6544615563 n=32768.0 Belief Support=[1, 4, 7]
+Id=2556 a=east vmean=-3.9374775602738232 v=-128893.3279355636 n=32735.0 | Id=2098 o=-1 vmean=-3.9599503925035493 v=-129759.6544615563 n=32768.0 Belief Support=[1, 4, 7]
+Id=2557 a=west vmean=-25.71426110089831 v=-334.28539431167803 n=13.0 | Id=2098 o=-1 vmean=-3.9599503925035493 v=-129759.6544615563 n=32768.0 Belief Support=[1, 4, 7]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 5 Cur state 10shield2
+s=10(start=true,ax=3,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[252.0], 
+s=4(start=true,ax=1,ay=0)
+[3269.0], 
+s=7(start=true,ax=2,ay=0)
+[12475.0], 
+s=10(start=true,ax=3,ay=0)
+[16739.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2577 o=-1 vmean=-3.9663062568180436 v=-129967.92342341365 n=32768.0 Belief Support=[1, 4, 7, 10]
+MCTS layer2
+Id=2843 a=north vmean=-3.961474088450336 v=-129785.8140858099 n=32762.0 | Id=2577 o=-1 vmean=-3.9663062568180436 v=-129967.92342341365 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2844 a=south vmean=-34.81200239125442 v=-69.62400478250883 n=2.0 | Id=2577 o=-1 vmean=-3.9663062568180436 v=-129967.92342341365 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2845 a=east vmean=-25.051249106306283 v=-75.15374731891885 n=3.0 | Id=2577 o=-1 vmean=-3.9663062568180436 v=-129967.92342341365 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=2846 a=west vmean=-37.33158550250972 v=-37.33158550250972 n=1.0 | Id=2577 o=-1 vmean=-3.9663062568180436 v=-129967.92342341365 n=32768.0 Belief Support=[1, 4, 7, 10]
+reach tree print depth 2
+Action actually taken= north reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 6 Cur state 10shield2
+s=10(start=true,ax=3,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[242.0], 
+s=4(start=true,ax=1,ay=0)
+[3293.0], 
+s=7(start=true,ax=2,ay=0)
+[12511.0], 
+s=10(start=true,ax=3,ay=0)
+[16716.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=2851 o=-1 vmean=-3.091710989138113 v=-101309.18569207769 n=32768.0 Belief Support=[1, 4, 7, 10]
+MCTS layer2
+Id=3157 a=north vmean=-21.98114478264233 v=-87.92457913056931 n=4.0 | Id=2851 o=-1 vmean=-3.091710989138113 v=-101309.18569207769 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=3158 a=south vmean=-23.007840058865863 v=-69.02352017659759 n=3.0 | Id=2851 o=-1 vmean=-3.091710989138113 v=-101309.18569207769 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=3159 a=east vmean=-3.085639779496896 v=-101079.38789675932 n=32758.0 | Id=2851 o=-1 vmean=-3.091710989138113 v=-101309.18569207769 n=32768.0 Belief Support=[1, 4, 7, 10]
+Id=3160 a=west vmean=-24.283232003822206 v=-72.84969601146662 n=3.0 | Id=2851 o=-1 vmean=-3.091710989138113 v=-101309.18569207769 n=32768.0 Belief Support=[1, 4, 7, 10]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+
+ =============== Step 7 Cur state 13shield2
+s=13(start=true,ax=4,ay=0)
+Belief 
+s=1(start=true,ax=0,ay=0)
+[56.0], 
+s=4(start=true,ax=1,ay=0)
+[832.0], 
+s=7(start=true,ax=2,ay=0)
+[5086.0], 
+s=10(start=true,ax=3,ay=0)
+[13413.0], 
+s=13(start=true,ax=4,ay=0)
+[13371.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=3165 o=-1 vmean=-2.1947754832399013 v=-71918.40303480509 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+MCTS layer2
+Id=3381 a=north vmean=-36.23365826366796 v=-36.23365826366796 n=1.0 | Id=3165 o=-1 vmean=-2.1947754832399013 v=-71918.40303480509 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3382 a=south vmean=-22.877073377163484 v=-91.50829350865394 n=4.0 | Id=3165 o=-1 vmean=-2.1947754832399013 v=-71918.40303480509 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3383 a=east vmean=-2.18910838992682 v=-71713.00174561271 n=32759.0 | Id=3165 o=-1 vmean=-2.1947754832399013 v=-71918.40303480509 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+Id=3384 a=west vmean=-19.41483435506924 v=-77.65933742027696 n=4.0 | Id=3165 o=-1 vmean=-2.1947754832399013 v=-71918.40303480509 n=32768.0 Belief Support=[1, 4, 7, 10, 13]
+reach tree print depth 2
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+UndiscountedReward -7.0 DiscountedReward -5.73159137421875 Time(ms) 837
+Model=concrete-6-; nStates=19; Shield=2; Episode=10; Total Episodes=10; Undiscounted Reward=-7.0; Discounted Reward=-5.73159137421875; Time Spent=838; Average undiscounted=-7.7; Average discounted=-6.145469219560859; Average time spent=822; isSafeTrace=1.0
+
+End calling Perseus pomdp solver
+
+java.lang.NullPointerException: Cannot read field "strat" because "res" is null
+    at explicit.ProbModelChecker.checkRewardReach(ProbModelChecker.java:1393)
+    at explicit.ProbModelChecker.checkRewardPathFormula(ProbModelChecker.java:1350)
+    at explicit.ProbModelChecker.checkRewardFormula(ProbModelChecker.java:1200)
+    at explicit.ProbModelChecker.checkExpressionReward(ProbModelChecker.java:1132)
+    at explicit.ProbModelChecker.checkExpressionReward(ProbModelChecker.java:1114)
+    at explicit.ProbModelChecker.checkExpression(ProbModelChecker.java:528)
+    at explicit.StateModelChecker.checkExpressionFilter(StateModelChecker.java:1004)
+    at explicit.StateModelChecker.checkExpression(StateModelChecker.java:662)
+    at explicit.NonProbModelChecker.checkExpression(NonProbModelChecker.java:76)
+    at explicit.ProbModelChecker.checkExpression(ProbModelChecker.java:536)
+    at explicit.StateModelChecker.check(StateModelChecker.java:577)
+    at prism.Prism.modelCheck(Prism.java:3133)
+    at prism.PrismCL.run(PrismCL.java:407)
+    at prism.PrismCL.go(PrismCL.java:223)
+    at prism.PrismCL.main(PrismCL.java:2744)
+
+Error: Caught unhandled exception, aborting....

@@ -1,0 +1,2 @@
+modelName;nStates;shieldLevel;useLocalShield;numEpisode;numEpisodes;undiscounted reward;discounted reward;numBad;timeSpent;average undiscounted reward;average discounted reward;average time spent ;average numBad
+6-;629;0;false;1;1;-55.0;-41.05275671874999;0.0;2695;-55.0;-41.05275671874999;2695;0.0

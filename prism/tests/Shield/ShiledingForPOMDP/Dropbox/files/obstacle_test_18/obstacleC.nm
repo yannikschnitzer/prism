@@ -1,0 +1,78 @@
+pomdp
+
+observables
+start
+endobservables
+
+const int N;
+
+// 1/3 define  grid
+const int axMAX = 4;
+const int ayMAX = 5;
+const int axMIN = 0;
+const int ayMIN = 1;
+
+const double slippery = 0.1;
+const int ob1x = 4;
+const int ob1y = 4;
+const int ob2x = 5;
+const int ob2y = 1;
+const int ob3x = 1;
+const int ob3y = 0;
+const int ob4x = 5;
+const int ob4y = 4;
+const int ob5x = 2;
+const int ob5y = 4;
+
+//2/3 define goal
+formula done = start & ((ax=0 & ay=1) | (ax=0 & ay=2)| (ax=1 & ay=1)| (ax=1 & ay=2)| (ax=2 & ay=1)| (ax=2 & ay=2)| (ax=3 & ay=3)| (ax=3 & ay=4)| (ax=3 & ay=5)| (ax=4 & ay=3)| (ax=4 & ay=5) );
+
+observable "amdone" = done;
+formula crash =  (ax = ob1x & ay = ob1y) | (ax = ob2x & ay = ob2y)  | (ax = ob3x & ay = ob3y) | (ax = ob4x & ay = ob4y) | (ax = ob5x & ay = ob5y) ;
+observable "hascrash" = crash;
+
+
+module master
+    start : bool init false;
+
+    [placement] !start -> (start'=true);
+    [north] start & !done -> true;
+    [south] start  & !done -> true;
+    [east] start  & !done-> true;
+    [west] start & !done -> true;
+
+
+endmodule
+
+
+module robot
+    ax : [axMIN..axMAX] init axMIN;
+    ay : [ayMIN..ayMAX] init ayMIN;
+
+    //3/3 define initial
+    [placement] true ->  1: (ax'=0) & (ay'=3) ;
+
+    [west] true -> (1-slippery): (ax'=max(ax-1,axMIN)) + slippery: (ax'=max(ax-2,axMIN));
+    [east] true -> (1-slippery): (ax'=min(ax+1,axMAX)) + slippery: (ax'=min(ax+2,axMAX));
+    [south]  true -> (1-slippery): (ay'=min(ay+1,ayMAX)) + slippery: (ay'=min(ay+2,ayMAX));
+    [north]  true -> (1-slippery): (ay'=max(ay-1,ayMIN)) + slippery: (ay'=max(ay-2,ayMIN));
+endmodule
+
+
+label "goal" = done;
+label "traps" = crash;
+label "notbad" =  !crash;
+
+rewards "cost"
+
+    //[west] ax = axMIN : 100;
+    //[north] ay = ayMIN  : 100;
+    //[south] ay = ayMAX : 100;
+
+    [north] true : 1;
+    [south] true : 1;
+    [west] true : 1;
+    [east] true : 1;
+    
+    crash: 5;
+endrewards

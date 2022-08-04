@@ -11,7 +11,7 @@ const int axMIN = 0;
 const int ayMIN = 0;
 const double slippery = 0.2;
 const int ob1x = 1;
-const int ob1y = 2;
+const int ob1y = 1;
 //const int ob2x = 4;
 //const int ob2y = 2;
 
@@ -41,10 +41,22 @@ module robot
 
     [placement] true -> (ax'=0) & (ay'=0); 
 
-    [west] true -> (1-slippery): (ax'=max(ax-1,axMIN)) + slippery: (ax'=max(ax,axMIN));
-    [east] true -> (1-slippery): (ax'=min(ax+1,axMAX)) + slippery: (ax'=min(ax,axMAX));
-    [south]  true -> (1-slippery): (ay'=min(ay+1,ayMAX)) + slippery: (ay'=min(ay,ayMAX));
-    [north]  true -> (1-slippery): (ay'=max(ay-1,ayMIN)) + slippery: (ay'=max(ay,ayMIN));
+    //[west] true -> (1-slippery): (ax'=max(ax-1,axMIN)) + slippery: (ax'=max(ax,axMIN));
+    //[east] true -> (1-slippery): (ax'=min(ax+1,axMAX)) + slippery: (ax'=min(ax,axMAX));
+    //[south]  true -> (1-slippery): (ay'=min(ay+1,ayMAX)) + slippery: (ay'=min(ay,ayMAX));
+    //[north]  true -> (1-slippery): (ay'=max(ay-1,ayMIN)) + slippery: (ay'=max(ay,ayMIN));
+
+    [west] ax=3 -> (ax' = ax);
+    [east] ax=3  -> (ax' = ax);
+    [south]  ax=3 -> (ay' = ay);
+    [north]  ax=3 -> (ay' = ay);
+
+    [west] !(ax=3)  -> (1-slippery): (ax'=max(ax-1,axMIN)) + slippery: (ax'=max(ax,axMIN));
+    [east] !(ax=3) -> (1-slippery): (ax'=min(ax+1,axMAX)) + slippery: (ax'=min(ax,axMAX));
+    [south]  !(ax=3) -> (1-slippery): (ay'=min(ay+1,ayMAX)) + slippery: (ay'=min(ay,ayMAX));
+    [north]  !(ax=3) -> (1-slippery): (ay'=max(ay-1,ayMIN)) + slippery: (ay'=max(ay,ayMIN));
+
+
 endmodule
 
 

@@ -1,0 +1,233 @@
+Storm build folder is assumed to be found at: /opt/storm/build
+Storm-binary: /opt/storm/build/bin/storm-pomdp
+Models expected at folder /opt/gridstorm/gridstorm/models/files/
+Time out is 9000 seconds
+0 0 2 2
+0 3 2 5
+3 0 5 2
+3 3 5 5
+Storm-pomdp 1.6.4 (dev)
+
+Date: Fri Jul 29 21:30:41 2022
+Command line arguments: --prism /opt/gridstorm/gridstorm/models/files//obstacle_6_centralized.nm -const N=6 --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion winningregion/obstacle_6_centralizedfixpoint.wr
+Current working directory: /opt/experiments
+
+Storm-pomdp 1.6.4 (dev)
+
+Date: Fri Jul 29 21:30:41 2022
+Command line arguments: --prism /opt/gridstorm/gridstorm/models/files//obstacle_6_factored.nm -const 'N=6,primaryMinX=0,primaryMinY=3,primaryMaxX=2,primaryMaxY=5' --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion winningregion/obstacle_6_factored-6-0-3-2-5-fixpoint.wr
+Current working directory: /opt/experiments
+
+Storm-pomdp 1.6.4 (dev)
+
+Date: Fri Jul 29 21:30:41 2022
+Command line arguments: --prism /opt/gridstorm/gridstorm/models/files//obstacle_6_factored.nm -const 'N=6,primaryMinX=0,primaryMinY=0,primaryMaxX=2,primaryMaxY=2' --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion winningregion/obstacle_6_factored-6-0-0-2-2-fixpoint.wr
+Current working directory: /opt/experiments
+
+Storm-pomdp 1.6.4 (dev)
+
+Time for model input parsing: 0.002s.
+
+Date: Fri Jul 29 21:30:41 2022
+Command line arguments: --prism /opt/gridstorm/gridstorm/models/files//obstacle_6_factored.nm -const 'N=6,primaryMinX=3,primaryMinY=3,primaryMaxX=5,primaryMaxY=5' --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion winningregion/obstacle_6_factored-6-3-3-5-5-fixpoint.wr
+Current working directory: /opt/experiments
+
+Time for model input parsing: 0.003s.
+
+Storm-pomdp 1.6.4 (dev)
+
+Date: Fri Jul 29 21:30:41 2022
+Command line arguments: --prism /opt/gridstorm/gridstorm/models/files//obstacle_6_factored.nm -const 'N=6,primaryMinX=3,primaryMinY=0,primaryMaxX=5,primaryMaxY=2' --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion winningregion/obstacle_6_factored-6-3-0-5-2-fixpoint.wr
+Current working directory: /opt/experiments
+
+Time for model input parsing: 0.003s.
+
+Time for model input parsing: 0.002s.
+
+Time for model input parsing: 0.002s.
+
+Time for model construction: 0.021s.
+
+-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	37
+Transitions: 	202
+Choices: 	124
+Observations: 	4
+Reward Models:  none
+State Labels: 	5 labels
+   * deadlock -> 0 item(s)
+   * traps -> 6 item(s)
+   * init -> 1 item(s)
+   * notbad -> 31 item(s)
+   * goal -> 1 item(s)
+Choice Labels: 	5 labels
+   * placement -> 1 item(s)
+   * north -> 29 item(s)
+   * south -> 29 item(s)
+   * east -> 29 item(s)
+   * west -> 29 item(s)
+-------------------------------------------------------------- 
+Analyzing property 'Pmax=? ["notbad" U "goal"]'
+Time for model construction: 0.023s.
+
+-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	20
+Transitions: 	67
+Choices: 	44
+Observations: 	4
+Reward Models:  none
+State Labels: 	5 labels
+   * deadlock -> 0 item(s)
+   * traps -> 2 item(s)
+   * init -> 1 item(s)
+   * notbad -> 18 item(s)
+   * goal -> 9 item(s)
+Choice Labels: 	5 labels
+   * placement -> 1 item(s)
+   * north -> 8 item(s)
+   * south -> 8 item(s)
+   * east -> 8 item(s)
+   * west -> 8 item(s)
+-------------------------------------------------------------- 
+Analyzing property 'Pmax=? ["notbad" U "goal"]'
+Time for model construction: 0.026s.
+
+-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	20
+Transitions: 	57
+Choices: 	38
+Observations: 	4
+Reward Models:  none
+State Labels: 	5 labels
+   * deadlock -> 0 item(s)
+   * traps -> 5 item(s)
+   * init -> 1 item(s)
+   * notbad -> 15 item(s)
+   * goal -> 8 item(s)
+Choice Labels: 	5 labels
+   * placement -> 1 item(s)
+   * north -> 6 item(s)
+   * south -> 6 item(s)
+   * east -> 6 item(s)
+   * west -> 6 item(s)
+-------------------------------------------------------------- 
+Analyzing property 'Pmax=? ["notbad" U "goal"]'
+Time for model construction: 0.028s.
+
+-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	19
+Transitions: 	60
+Choices: 	40
+Observations: 	4
+Reward Models:  none
+State Labels: 	5 labels
+   * deadlock -> 0 item(s)
+   * traps -> 3 item(s)
+   * init -> 1 item(s)
+   * notbad -> 16 item(s)
+   * goal -> 8 item(s)
+Choice Labels: 	5 labels
+   * placement -> 1 item(s)
+   * north -> 7 item(s)
+   * south -> 7 item(s)
+   * east -> 7 item(s)
+   * west -> 7 item(s)
+-------------------------------------------------------------- 
+Analyzing property 'Pmax=? ["notbad" U "goal"]'
+Time for model construction: 0.032s.
+
+-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	22
+Transitions: 	76
+Choices: 	49
+Observations: 	4
+Reward Models:  none
+State Labels: 	5 labels
+   * deadlock -> 0 item(s)
+   * traps -> 3 item(s)
+   * init -> 1 item(s)
+   * notbad -> 19 item(s)
+   * goal -> 9 item(s)
+Choice Labels: 	5 labels
+   * placement -> 1 item(s)
+   * north -> 9 item(s)
+   * south -> 9 item(s)
+   * east -> 9 item(s)
+   * west -> 9 item(s)
+-------------------------------------------------------------- 
+Analyzing property 'Pmax=? ["notbad" U "goal"]'
+Write to file winningregion/obstacle_6_factored-6-0-3-2-5-fixpoint.wr.
+Initial state may not be safe.
+#STATS Number of belief support states: 770
+#STATS Total time: 0.016s
+#STATS SAT Calls: 17
+#STATS SAT Calls time: 0.003s
+#STATS Outer iterations: 4
+#STATS Solver initialization time: 0.009s
+#STATS Obtain partial scheduler time: 0.002s
+#STATS Update solver to extend partial scheduler time: 0.000s
+#STATS Update solver with new scheduler time: 0.000s
+#STATS Winning regions update time: 0.000s
+#STATS Graph search time: 0.000s
+Time for POMDP analysis: 0.017ss.
+Write to file winningregion/obstacle_6_factored-6-0-0-2-2-fixpoint.wr.
+Initial state may not be safe.
+#STATS Number of belief support states: 350
+#STATS Total time: 0.015s
+#STATS SAT Calls: 9
+#STATS SAT Calls time: 0.002s
+#STATS Outer iterations: 3
+#STATS Solver initialization time: 0.010s
+#STATS Obtain partial scheduler time: 0.001s
+#STATS Update solver to extend partial scheduler time: 0.000s
+#STATS Update solver with new scheduler time: 0.000s
+#STATS Winning regions update time: 0.000s
+#STATS Graph search time: 0.000s
+Time for POMDP analysis: 0.016ss.
+Write to file winningregion/obstacle_6_factored-6-3-0-5-2-fixpoint.wr.
+Initial state may not be safe.
+#STATS Number of belief support states: 390
+#STATS Total time: 0.014s
+#STATS SAT Calls: 7
+#STATS SAT Calls time: 0.001s
+#STATS Outer iterations: 3
+#STATS Solver initialization time: 0.010s
+#STATS Obtain partial scheduler time: 0.000s
+#STATS Update solver to extend partial scheduler time: 0.000s
+#STATS Update solver with new scheduler time: 0.000s
+#STATS Winning regions update time: 0.000s
+#STATS Graph search time: 0.000s
+Time for POMDP analysis: 0.015ss.
+Write to file winningregion/obstacle_6_factored-6-3-3-5-5-fixpoint.wr.
+Initial state is safe!
+#STATS Number of belief support states: 1030
+#STATS Total time: 0.023s
+#STATS SAT Calls: 22
+#STATS SAT Calls time: 0.004s
+#STATS Outer iterations: 4
+#STATS Solver initialization time: 0.014s
+#STATS Obtain partial scheduler time: 0.002s
+#STATS Update solver to extend partial scheduler time: 0.000s
+#STATS Update solver with new scheduler time: 0.000s
+#STATS Winning regions update time: 0.000s
+#STATS Graph search time: 0.000s
+Time for POMDP analysis: 0.024ss.
+Write to file winningregion/obstacle_6_centralizedfixpoint.wr.
+Initial state is safe!
+#STATS Number of belief support states: 536870976
+#STATS Total time: 0.116s
+#STATS SAT Calls: 101
+#STATS SAT Calls time: 0.055s
+#STATS Outer iterations: 11
+#STATS Solver initialization time: 0.018s
+#STATS Obtain partial scheduler time: 0.023s
+#STATS Update solver to extend partial scheduler time: 0.007s
+#STATS Update solver with new scheduler time: 0.009s
+#STATS Winning regions update time: 0.000s
+#STATS Graph search time: 0.000s
+Time for POMDP analysis: 0.118ss.

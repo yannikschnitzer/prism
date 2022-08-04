@@ -114,6 +114,7 @@ class SimulationExecutor:
 
                 print(state, end = '\t')
                 print(self._shield.list_support(), end = '\t')
+                print(self._shield.monitor(), end = '\t')
 		#print("state", state, type(state), self._model.state_valuations.get_json(state))
                 #print("self._shield.list_support()", self._shield.list_support(), type(self._shield.list_support()))
 

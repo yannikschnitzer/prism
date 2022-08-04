@@ -1,0 +1,74 @@
+INFO:__main__:Look up problem definition....
+INFO:__main__:Load winning region...
+INFO:__main__:Loading problem definition....
+INFO:__main__:Construct POMDP representation...
+INFO:__main__:[!start	& ax=3	& ay=3] & state=0 & obs=2
+[start	& ax=3	& ay=3] & state=1 & obs=1
+[start	& ax=3	& ay=2] & state=2 & obs=1
+[start	& ax=3	& ay=1] & state=3 & obs=1
+[start	& ax=3	& ay=4] & state=4 & obs=1
+[start	& ax=3	& ay=5] & state=5 & obs=1
+[start	& ax=4	& ay=3] & state=6 & obs=1
+[start	& ax=5	& ay=3] & state=7 & obs=1
+[start	& ax=2	& ay=3] & state=8 & obs=1
+[start	& ax=1	& ay=3] & state=9 & obs=1
+[start	& ax=4	& ay=4] & state=10 & obs=0
+[start	& ax=5	& ay=4] & state=11 & obs=0
+[start	& ax=2	& ay=4] & state=12 & obs=0
+[start	& ax=1	& ay=4] & state=13 & obs=1
+[start	& ax=4	& ay=5] & state=14 & obs=1
+[start	& ax=5	& ay=5] & state=15 & obs=3
+[start	& ax=2	& ay=5] & state=16 & obs=1
+[start	& ax=1	& ay=5] & state=17 & obs=1
+[start	& ax=4	& ay=2] & state=18 & obs=1
+[start	& ax=4	& ay=1] & state=19 & obs=1
+[start	& ax=5	& ay=2] & state=20 & obs=1
+[start	& ax=5	& ay=1] & state=21 & obs=0
+------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	22
+Transitions: 	88
+[!start	& ax=3	& ay=3]	0
+[start	& ax=3	& ay=3]	1
+[start	& ax=3	& ay=2]	2
+[start	& ax=3	& ay=1]	3
+[start	& ax=3	& ay=4]	4
+[start	& ax=3	& ay=5]	5
+[start	& ax=4	& ay=3]	6
+[start	& ax=5	& ay=3]	7
+[start	& ax=2	& ay=3]	8
+[start	& ax=1	& ay=3]	9
+[start	& ax=4	& ay=4]	10
+[start	& ax=5	& ay=4]	11
+[start	& ax=2	& ay=4]	12
+[start	& ax=1	& ay=4]	13
+[start	& ax=4	& ay=5]	14
+[start	& ax=5	& ay=5]	15
+[start	& ax=2	& ay=5]	16
+[start	& ax=1	& ay=5]	17
+[start	& ax=4	& ay=2]	18
+[start	& ax=4	& ay=1]	19
+[start	& ax=5	& ay=2]	20
+[start	& ax=5	& ay=1]	21
+Choices: 	70
+Observations: 	4
+Reward Models:  none
+State Labels: 	5 labels
+   * deadlock -> 0 item(s)
+   * traps -> 4 item(s)
+   * init -> 1 item(s)
+   * notbad -> 18 item(s)
+   * goal -> 1 item(s)
+Choice Labels: 	5 labels
+   * placement -> 1 item(s)
+   * north -> 16 item(s)
+   * south -> 16 item(s)
+   * east -> 16 item(s)
+   * west -> 16 item(s)
+-------------------------------------------------------------- 
+
+INFO:rlshield.model_simulator:Start new episode.
+INFO:rlshield.model_simulator:Done after 4 steps!
+INFO:rlshield.recorder:Rendering newvideos/obstacleE-6-test201509-fixpoint-0.mp4
+INFO:matplotlib.animation:figure size in inches has been adjusted from 6.3999999999999995 x 4.8 to 6.4 x 4.8
+INFO:matplotlib.animation:MovieWriter._run: running command: ffmpeg -f rawvideo -vcodec rawvideo -s 640x480 -pix_fmt rgba -r 3 -loglevel error -i pipe: -vcodec h264 -pix_fmt yuv420p -y newvideos/obstacleE-6-test201509-fixpoint-0.mp4

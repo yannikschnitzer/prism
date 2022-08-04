@@ -1,0 +1,1 @@
+786;[768, 786, 780];248;[248, 280, 319];notApplicable;notApplicable;notApplicable;(started=true,done=true,r1qual=true,r1taken=false,r1lastobs=false,r2qual=true,r2taken=false,r2lastobs=false,x=5,y=0);true
