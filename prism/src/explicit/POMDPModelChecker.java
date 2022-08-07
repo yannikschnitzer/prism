@@ -1897,10 +1897,10 @@ public class POMDPModelChecker extends ProbModelChecker
 
 		int numEpisodes = 10;
 		int [][] testCases= {
-							{0, 0}, // no shield
+//							{0, 0}, // no shield
 //							{2, 0}, // prior shielding; centralized shield
 //							{4, 0}, // on-the-fly; centrailized shield
-//							{2, 1}, // prior shielding; factoerd shield
+							{2, 1}, // prior shielding; factoerd shield
 //							{4, 1} // on-the-fly; factoer shield
 							};
 //		
@@ -1986,7 +1986,7 @@ public class POMDPModelChecker extends ProbModelChecker
 		double totalDiscountedReward = 0;
 		double discount = 0.95;
 		int step = 0;
-		int stepLimit = 1000;
+		int stepLimit = 2;
 		double gamma = 1;
 		int verbose = 1;
 		

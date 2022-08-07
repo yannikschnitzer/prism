@@ -4,9 +4,10 @@
 #docker cp  ./a.txt $1:/opt/experiments/
 docker cp  ./test.sh $1:/opt/experiments/
 #docker cp ./storm/Model.cpp $1:/opt/storm/src/storm/models/sparse/
-docker cp ./storm/Pomdp.cpp $1:/opt/storm/src/storm/models/sparse/
+#docker cp ./storm/Pomdp.cpp $1:/opt/storm/src/storm/models/sparse/
+#docker cp ./storm/Pomdp.h $1:/opt/storm/src/storm/models/sparse/
+
 docker cp ./storm/storm-pomdp.cpp $1:/opt/storm/src/storm-pomdp-cli/
-docker cp ./storm/Pomdp.h $1:/opt/storm/src/storm/models/sparse/
 
 
 docker cp  ./updatShield.sh $1:/opt/experiments/
@@ -31,6 +32,16 @@ docker cp ./files/obstacle/N100/obstacle_100_centralized.nm $1:/opt/gridstorm/gr
 docker cp ./files/obstacle/N1000/obstacle_1000_factored.nm $1:/opt/gridstorm/gridstorm/models/files/
 docker cp ./files/obstacle/N1000/obstacle_1000_centralized.nm $1:/opt/gridstorm/gridstorm/models/files/
 
+
+docker cp ./files/obstacle/N1000/obstacle_1000_centralized.nm $1:/opt/gridstorm/gridstorm/models/files/
+
+docker cp ./files/rock/N8R4/rocks_N8R4.nm $1:/opt/gridstorm/gridstorm/models/files/
+docker cp ./files/rock/N8R4/rocks_N8R4_0_0_3_3.nm $1:/opt/gridstorm/gridstorm/models/files/
+docker cp ./files/rock/N8R4/rocks_N8R4_0_4_3_7.nm $1:/opt/gridstorm/gridstorm/models/files/
+docker cp ./files/rock/N8R4/rocks_N8R4_4_0_3_7.nm $1:/opt/gridstorm/gridstorm/models/files/
+docker cp ./files/rock/N8R4/rocks_N8R4_4_4_7_7.nm $1:/opt/gridstorm/gridstorm/models/files/
+docker cp ./files/rock/N8R4/rocks_N8R4_exit.nm $1:/opt/gridstorm/gridstorm/models/files/
+
 #docker cp ./files/abstractA.prism $1:/opt/gridstorm/gridstorm/models/files/
 
 #docker cp ./files/abstractB.prism $1:/opt/gridstorm/gridstorm/models/files/
@@ -52,6 +63,7 @@ docker cp ./files/obstacle/N1000/obstacle_1000_centralized.nm $1:/opt/gridstorm/
 
 docker cp ./gridstorm/__init__.py $1:/opt/gridstorm/gridstorm/models/
 
+docker cp  ./comp_rocks.sh $1:/opt/experiments/comp_rocks.sh 
 docker cp  ./computeW.sh $1:/opt/experiments/computeW.sh 
 docker cp  ./computeW_Obstacle_N.sh $1:/opt/experiments/computeW_Obstacle_N.sh 
 docker cp  ./computeW_Obstacle_N_ShieldSizeX_ShieldSizeY.sh $1:/opt/experiments/computeW_Obstacle_N_ShieldSizeX_ShieldSizeY.sh 

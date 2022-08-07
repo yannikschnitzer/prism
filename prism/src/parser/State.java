@@ -278,7 +278,46 @@ public class State implements Comparable<State>
 //		System.out.println(hashCode());
 		return s;
 	}
-
+	
+	/**
+	 * Get string representation, e.g. "(a=0,b=true,c=5)", 
+	 * with variables names (taken from a String list). 
+	 */
+	public String toString(List<String> varNames, List<String> selectedVarNames)
+	{
+		int i, n;
+		String s = "(";
+		n = varValues.length;
+		for (i = 0; i < n; i++) {
+			if (selectedVarNames.contains(varNames.get(i))) {
+				if (s.length() > 1)
+					s += ",";
+				s += varNames.get(i) + "=" + varValues[i];
+			}
+		}
+		s += ")";
+		return s;
+	}
+	/**
+	 * Get string representation for selected varables,  e.g. "(a=0,b=true,c=5)", 
+	 * with variables names (taken from a String list). 
+	 */
+	public String toStringNoParentheses(List<String> varNames, List<String> selectedVarNames)
+	{
+		int i, n;
+		String s = "";
+		n = varValues.length;
+		for (i = 0; i < n; i++) {
+			if (selectedVarNames.contains(varNames.get(i))) {
+				if (s.length() > 0)
+					s += ",";
+				s += varValues[i];
+			}
+		}
+		return s;
+	}
+	
+	
 	/**
 	 * Get string representation, e.g. "(a=0,b=true,c=5)", 
 	 * with variables names (taken from model info). 

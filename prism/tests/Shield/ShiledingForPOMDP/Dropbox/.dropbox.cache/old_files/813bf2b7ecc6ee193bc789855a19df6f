@@ -1,0 +1,1288 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "generate blind grid for Prism",
+      "provenance": [],
+      "collapsed_sections": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "code",
+      "source": [
+        "def plot_board(obstacle, beliefState, agent, N):\n",
+        "\n",
+        "  from matplotlib import pyplot as plt\n",
+        "  fig, ax = plt.subplots(figsize = (N,N))\n",
+        "  ax.xaxis.set_ticks_position('top')   #将X坐标轴移到上面\n",
+        "  ax.invert_yaxis()  \n",
+        "  #\n",
+        "  x = [i for i in range(N)]\n",
+        "  y = [i for i in range(N)]\n",
+        "  plt.xlim((0,N))\n",
+        "  #plt.ylim((0,N))\n",
+        "  ax.set_ylim(bottom=N, top=0)  # 此处将原点设置为左上角  \n",
+        "  plt.xticks([0.5 + i for i in range(N )], labels = [str(i) for i in range(N)])\n",
+        "  plt.yticks([0.5 + i for i in range(N)], labels = [str(i) for i in range(N)])\n",
+        "  plt.xlabel('X Axis')\n",
+        "  plt.ylabel('Y Axis')\n",
+        "  width = 1\n",
+        "  height =1 \n",
+        "\n",
+        "  for left, bottom in obstacle:\n",
+        "    rect = plt.Rectangle((left, bottom), width, height, facecolor=\"red\", alpha = 1)\n",
+        "    ax.add_patch(rect)\n",
+        "\n",
+        "  for left, bottom in beliefState:\n",
+        "    rect = plt.Rectangle((left, bottom), width, height, facecolor=\"blue\", alpha = 0.5)\n",
+        "    ax.add_patch(rect)\n",
+        "\n",
+        "  #plt.scatter(agent[0] + 0.5, agent[1] +0.5)\n",
+        "  for i in range(N):\n",
+        "    plt.hlines(i, 0, N , alpha = 0.5)\n",
+        "    plt.vlines(i, 0, N , alpha = 0.5)\n",
+        "  plt.grid(False)\n",
+        "  plt.show()\n",
+        "\n",
+        "\n",
+        "def move(belief, action):\n",
+        "  result = set()\n",
+        "  for x, y in belief:\n",
+        "    for slip in [1, 2]:\n",
+        "      if action == \"w\":\n",
+        "        nx, ny = max(0, x - slip) , y\n",
+        "      if action == 'e':\n",
+        "        nx, ny = min(N - 1, x + slip), y\n",
+        "      if action == 'n':\n",
+        "        nx, ny = x, max(0, y - slip)\n",
+        "      if action == 's':\n",
+        "        nx, ny = x, min(N - 1, y + slip)\n",
+        "      result.add((nx, ny))\n",
+        "  return list(result)"
+      ],
+      "metadata": {
+        "id": "LZocXuq41yvR"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "N = 2; R = 2"
+      ],
+      "metadata": {
+        "id": "-TVDCpqmffGS"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def generate_rocks(N, R):\n",
+        "  obstacles = set()\n",
+        "  import random\n",
+        "  random.seed(N)\n",
+        "  while len(obstacles) < R:\n",
+        "    obstacle = (random.randint(0, N - 1), random.randint(0, N - 1))\n",
+        "    if obstacle == (0, 0):\n",
+        "      continue\n",
+        "    obstacles.add(obstacle)\n",
+        "  if N == 7:\n",
+        "    obstacles = [(1, 1), (1, 2), (2, 1), (3, 3), (3, 5), (4, 0), (4, 1), (6, 4)]\n",
+        "  \n",
+        "  #print(\"estimated states \" + str(N * N * (3 ** R)))\n",
+        "  #plot_board(obstacles, [], None, N)\n",
+        "  return sorted(list(obstacles))\n",
+        "obstacles = generate_rocks(N, R)"
+      ],
+      "metadata": {
+        "id": "KrKSio0_-IXo"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def in_bound(obstacle, lx, ly, rx, ry):\n",
+        "  x, y = obstacle[0], obstacle[1]\n",
+        "  return lx <= x <= rx and ly <= y <= ry\n",
+        "\n",
+        "def preamble(R, obstacles, lx, ly, rx, ry):\n",
+        "  print(\"pomdp\")\n",
+        "  print(\"observables\")\n",
+        "  observables = [\"started\"]\n",
+        "  for i in range(1, R + 1):\n",
+        "    if not in_bound(obstacles[i - 1], lx, ly, rx, ry):\n",
+        "      continue\n",
+        "    observables.append(\"r{}taken\".format(i))\n",
+        "  observables.append(\"done\")\n",
+        "  print(\", \".join(observables))\n",
+        "  print(\"endobservables\")\n"
+      ],
+      "metadata": {
+        "id": "KppVWBQAS1x6"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def grid():\n",
+        "  print(\"const int N;\")\n",
+        "  print(\"const int xMAX = N-1;\")\n",
+        "  print(\"const int yMAX = N-1;\")\n",
+        "  print(\"const int xMIN = 0;\")\n",
+        "  print(\"const int yMIN = 0;\")\n",
+        "  print(\"const double slippery = 0.1;\")\n",
+        "  print(\"// How likely is a rock a good rock\")\n",
+        "  print(\"const double goodrock = 0.5;\")\n",
+        "\n",
+        "def primary_grid(lx, ly, rx, ry):\n",
+        "  print(\"const int primaryMinX = {};\".format(lx))\n",
+        "  print(\"const int primaryMinY = {};\".format(ly))\n",
+        "  print(\"const int primaryMaxX = {};\".format(rx))\n",
+        "  print(\"const int primaryMaxY = {};\".format(ry))\n",
+        "  print(\"const int pad = 2;\")\n",
+        "  print(\"const int areaMinX = max(primaryMinX - pad, xMIN);\")\n",
+        "  print(\"const int areaMinY = max(primaryMinY - pad, yMIN);\")\n",
+        "  print(\"const int areaMaxX = min(primaryMaxX + pad, xMAX);\")\n",
+        "  print(\"const int areaMaxY = min(primaryMaxY + pad, yMAX);\")\n",
+        "def rock_positions(obstacles, lx, ly, rx, ry):\n",
+        "  for i, (x, y) in enumerate(obstacles):\n",
+        "    if not in_bound((x, y), lx, ly, rx, ry):\n",
+        "      continue\n",
+        "    print(\"const r{}x = {};\".format(i + 1, x))\n",
+        "    print(\"const r{}y = {};\".format(i + 1, y))\n",
+        "def constants(obstacles, lx, ly, rx, ry):\n",
+        "  grid()\n",
+        "  primary_grid(lx, ly, rx, ry)\n",
+        "  rock_positions(obstacles, lx, ly, rx, ry)\n",
+        "\n",
+        "constants(obstacles, 0, 0, N -1 , N -1)\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "3fNszRT3BQJM",
+        "outputId": "078a4c47-d9df-4e68-dd67-da5b9585fc95"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "const int N;\n",
+            "const int xMAX = N-1;\n",
+            "const int yMAX = N-1;\n",
+            "const int xMIN = 0;\n",
+            "const int yMIN = 0;\n",
+            "const double slippery = 0.1;\n",
+            "// How likely is a rock a good rock\n",
+            "const double goodrock = 0.5;\n",
+            "const int primaryMinX = 0;\n",
+            "const int primaryMinY = 0;\n",
+            "const int primaryMaxX = 1;\n",
+            "const int primaryMaxY = 1;\n",
+            "const int pad = 2;\n",
+            "const int areaMinX = max(primaryMinX - pad, xMIN);\n",
+            "const int areaMinY = max(primaryMinY - pad, yMIN);\n",
+            "const int areaMaxX = min(primaryMaxX + pad, xMAX);\n",
+            "const int areaMaxY = min(primaryMaxY + pad, yMAX);\n",
+            "const r1x = 0;\n",
+            "const r1y = 1;\n",
+            "const r2x = 1;\n",
+            "const r2y = 0;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def formula_finish(is_main):\n",
+        "  print(\"// We are done when we reach max x location\")\n",
+        "  if is_main:\n",
+        "    print(\"formula finish = started & x = xMAX;\")\n",
+        "  else:\n",
+        "    string = \"formula finish = started & (!bad) & (x = xMAX | \";\n",
+        "    out_primary_bound = \"x = primaryMinX - 1 | x = primaryMinX - 2| y = primaryMinY - 1 | y = primaryMinY - 2 | \"\n",
+        "    out_primary_bound += \"x = primaryMaxX + 1 | x = primaryMaxX + 2| y = primaryMaxY + 1 | y = primaryMaxY + 2);\"\n",
+        "    print(string + out_primary_bound)\n",
+        "\n",
+        "def observable_finish():\n",
+        "  print(\"observable \\\"seefinish\\\" = finish;\")\n",
+        "def formula_maxdist():\n",
+        "  print(\"formula maxdist = xMAX-xMIN+yMAX-yMIN;\")\n",
+        "\n",
+        "def formula_good(is_main, R, obstacles, lx, ly, rx, ry):\n",
+        "  if not is_main:\n",
+        "    print(\"formula good = finish & done;\")\n",
+        "    return\n",
+        "  prefix = \"formula good = finish & done & (\"\n",
+        "  ending = \");\"\n",
+        "  qual = []\n",
+        "  taken = []\n",
+        "  for i in range(1, R + 1):\n",
+        "    if not in_bound(obstacles[i - 1], lx, ly, rx, ry):\n",
+        "      continue\n",
+        "    qual.append(\"!r{}qual\".format(i))\n",
+        "    taken.append(\"r{}taken\".format(i))\n",
+        "  prefix += \"(\" + \" & \".join(qual) + \") | (\" + \" | \".join(taken) + \")\" + ending\n",
+        "  print(prefix)\n",
+        "\n",
+        "def formula_dist(R, obstacles, lx, ly, rx, ry):\n",
+        "  for i in range(1, R + 1):\n",
+        "    if not in_bound(obstacles[i - 1], lx, ly, rx, ry):\n",
+        "      continue\n",
+        "    print(\"formula r{}dist = max(r{}x-x,x-r{}x) + max(r{}y-y,y-r{}y);\".format(i, i, i, i, i))\n",
+        "  \n",
+        "def formula_bad(R, obstacles, lx, ly, rx, ry):\n",
+        "  prefix = \"formula bad = \"\n",
+        "  ending  = \";\"\n",
+        "  bad = []\n",
+        "  for i in range(1, R + 1):\n",
+        "    if not in_bound(obstacles[i - 1], lx, ly, rx, ry):\n",
+        "      continue\n",
+        "    bad.append(\"(r{}dist=0 & !r{}qual)\".format(i, i))\n",
+        "  prefix += \" | \".join(bad) + ending\n",
+        "  print(prefix)\n",
+        "\n",
+        "def observable_at(R, obstacles, lx, ly, rx, ry):\n",
+        "  for i in range(1, R + 1):\n",
+        "    if not in_bound(obstacles[i - 1], lx, ly, rx, ry):\n",
+        "      continue\n",
+        "    print(\"observable \\\"atr{}\\\" = r{}dist <= 0;\".format(i, i))\n",
+        "def observable_near(R, obstacles, lx, ly, rx, ry):\n",
+        "  for i in range(1, R + 1):\n",
+        "    if not in_bound(obstacles[i - 1], lx, ly, rx, ry):\n",
+        "      continue\n",
+        "    print(\"observable \\\"nearr{}\\\" = r{}dist <= 1;\".format(i, i))\n",
+        "\n",
+        "def formula_normdist(R, obstacles, lx, ly, rx, ry):\n",
+        "  for i in range(1, R + 1):\n",
+        "    if not in_bound(obstacles[i - 1], lx, ly, rx, ry):\n",
+        "      continue\n",
+        "    print(\"formula normdistr{} = (r{}dist <= 1) ? 1 : 2; // min(1+((r{}dist-1)/maxdist), 1.0)\".format(i, i, i))\n",
+        "\n",
+        "def observable_good_bad():\n",
+        "  print(\"observable \\\"seebad\\\" = bad;\")\n",
+        "  print(\"observable \\\"seegood\\\" = good;\")\n",
+        "\n",
+        "def formula_observable(R, is_main, obstacles, lx, ly, rx, ry):\n",
+        "  formula_finish(is_main)\n",
+        "  observable_finish()\n",
+        "  formula_maxdist()\n",
+        "  formula_good(is_main, R, obstacles, lx, ly, rx, ry)\n",
+        "  formula_dist(R, obstacles, lx, ly, rx, ry)\n",
+        "  formula_bad(R, obstacles, lx, ly, rx, ry)\n",
+        "  formula_normdist(R, obstacles, lx, ly, rx, ry)\n",
+        "  observable_at(R, obstacles, lx, ly, rx, ry)\n",
+        "  observable_near(R, obstacles, lx, ly, rx, ry)\n",
+        "  observable_good_bad()\n",
+        "formula_observable(R, False, obstacles, 0, 0, 7, 7)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "FIBskBYxB6m5",
+        "outputId": "2366bfbe-83e0-4d03-bab7-893385dbbf75"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "// We are done when we reach max x location\n",
+            "formula finish = started & (!bad) & (x = xMAX | x = primaryMinX - 1 | x = primaryMinX - 2| y = primaryMinY - 1 | y = primaryMinY - 2 | x = primaryMaxX + 1 | x = primaryMaxX + 2| y = primaryMaxY + 1 | y = primaryMaxY + 2);\n",
+            "observable \"seefinish\" = finish;\n",
+            "formula maxdist = xMAX-xMIN+yMAX-yMIN;\n",
+            "formula good = finish & done;\n",
+            "formula r1dist = max(r1x-x,x-r1x) + max(r1y-y,y-r1y);\n",
+            "formula r2dist = max(r2x-x,x-r2x) + max(r2y-y,y-r2y);\n",
+            "formula bad = (r1dist=0 & !r1qual) | (r2dist=0 & !r2qual);\n",
+            "formula normdistr1 = (r1dist <= 1) ? 1 : 2; // min(1+((r1dist-1)/maxdist), 1.0)\n",
+            "formula normdistr2 = (r2dist <= 1) ? 1 : 2; // min(1+((r2dist-1)/maxdist), 1.0)\n",
+            "observable \"atr1\" = r1dist <= 0;\n",
+            "observable \"atr2\" = r2dist <= 0;\n",
+            "observable \"nearr1\" = r1dist <= 1;\n",
+            "observable \"nearr2\" = r2dist <= 1;\n",
+            "observable \"seebad\" = bad;\n",
+            "observable \"seegood\" = good;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def master():\n",
+        "  print(\"module master\")\n",
+        "  print(\"started : bool init false;\")\n",
+        "  print(\"done : bool init false;\")\n",
+        "  print(\"\")\n",
+        "  print(\"[placement] !started -> (started\\'=true);\")\n",
+        "  print(\"[north] started & !done -> true;\")\n",
+        "  print(\"[south] started  & !done -> true;\")\n",
+        "  print(\"[east] started  & !done-> true;\")\n",
+        "  print(\"[west] started & !done -> true;\")\n",
+        "  print(\"[finish] finish | done -> (done\\'=true);\")\n",
+        "  print(\"endmodule\")\n",
+        "def robot():\n",
+        "  print(\"module robot\")\n",
+        "  print(\"x : [areaMinX..areaMaxX] init primaryMinX;\")\n",
+        "  print(\"y : [areaMinY..areaMaxX] init primaryMaxX;\")\n",
+        "  print(\"\")\n",
+        "  print(\"[west] true -> (1-slippery): (x\\'=max(x-1,areaMinX)) + slippery: (x\\'=max(x-2,areaMinX));\")\n",
+        "  print(\"[east] true -> (1-slippery): (x\\'=min(x+1,areaMaxX)) + slippery: (x\\'=min(x+2,areaMaxX));\")\n",
+        "  print(\"[south]  true -> (1-slippery): (y\\'=min(y+1,areaMaxY)) + slippery: (y\\'=min(y+2,areaMaxY));\")\n",
+        "  print(\"[north]  true -> (1-slippery): (y\\'=max(y-1,areaMinY)) + slippery: (y\\'=max(y-2,areaMinY));\")\n",
+        "  print(\"endmodule\")\n",
+        "master()\n",
+        "robot()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "5DCwt69cNAT4",
+        "outputId": "141d7454-6712-4212-9893-a8da0d24d0e1"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "module master\n",
+            "started : bool init false;\n",
+            "done : bool init false;\n",
+            "\n",
+            "[placement] !started -> (started'=true);\n",
+            "[north] started & !done -> true;\n",
+            "[south] started  & !done -> true;\n",
+            "[east] started  & !done-> true;\n",
+            "[west] started & !done -> true;\n",
+            "[finish] finish | done -> (done'=true);\n",
+            "endmodule\n",
+            "module robot\n",
+            "x : [areaMinX..areaMaxX] init primaryMinX;\n",
+            "y : [areaMinY..areaMaxX] init primaryMaxX;\n",
+            "\n",
+            "[west] true -> (1-slippery): (x'=max(x-1,areaMinX)) + slippery: (x'=max(x-2,areaMinX));\n",
+            "[east] true -> (1-slippery): (x'=min(x+1,areaMaxX)) + slippery: (x'=min(x+2,areaMaxX));\n",
+            "[south]  true -> (1-slippery): (y'=min(y+1,areaMaxY)) + slippery: (y'=min(y+2,areaMaxY));\n",
+            "[north]  true -> (1-slippery): (y'=max(y-1,areaMinY)) + slippery: (y'=max(y-2,areaMinY));\n",
+            "endmodule\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def one_rock(k):\n",
+        "  rk = \"r\" + str(k)\n",
+        "  print(\"module rock1\".replace(\"1\", str(k)))\n",
+        "  print(\"r1qual : bool init false;\".replace(\"r1\", rk))\n",
+        "  print(\"r1taken : bool init false;\".replace(\"r1\", rk))\n",
+        "  print(\"r1lastobs : bool init false;\".replace(\"r1\", rk))\n",
+        "  print(\"[placement] true -> goodrock : (r1qual'=true) + (1-goodrock) : (r1qual'=false);\".replace(\"r1\", rk))\n",
+        "  print(\"\".replace(\"r1\", rk))\n",
+        "  print(\"[r1sample] r1dist = 0 & started & !done & !bad & !finish & !r1taken-> 1:(r1taken'=(x = r1x & y = r1y & !r1taken));\".replace(\"r1\", rk))\n",
+        "  print(\"[r1sample] r1dist = 0 & started & !done & !bad & !finish & r1taken -> true;\".replace(\"r1\", rk))\n",
+        "  print(\"\".replace(\"r1\", rk))\n",
+        "  print(\"[r1sense] started & !r1taken & !done & !bad & !finish -> (1/normdistr1): (r1lastobs'=r1qual) +  (1-(1/normdistr1)): (r1lastobs'=!r1qual);\".replace(\"r1\", rk))\n",
+        "  print(\"[north] true -> (r1lastobs'=false);\".replace(\"r1\", rk))\n",
+        "  print(\"[south] true -> (r1lastobs'=false);\".replace(\"r1\", rk))\n",
+        "  print(\"[east] true -> (r1lastobs'=false);\".replace(\"r1\", rk))\n",
+        "  print(\"[west] true -> (r1lastobs'=false);\".replace(\"r1\", rk))\n",
+        "  print(\"endmodule\".replace(\"r1\", rk))\n",
+        "def rocks(R, obstacles, lx, ly, rx, ry):\n",
+        "  for i in range(1, R + 1):\n",
+        "    if not in_bound(obstacles[i - 1], lx, ly, rx, ry):\n",
+        "      continue\n",
+        "    one_rock(i)\n",
+        "rocks(R, obstacles, 0, 0, 7, 7)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "6h9KBsM_OHVX",
+        "outputId": "e3f8e932-139b-4778-9f32-95aa4085d794"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "module rock1\n",
+            "r1qual : bool init false;\n",
+            "r1taken : bool init false;\n",
+            "r1lastobs : bool init false;\n",
+            "[placement] true -> goodrock : (r1qual'=true) + (1-goodrock) : (r1qual'=false);\n",
+            "\n",
+            "[r1sample] r1dist = 0 & started & !done & !bad & !finish & !r1taken-> 1:(r1taken'=(x = r1x & y = r1y & !r1taken));\n",
+            "[r1sample] r1dist = 0 & started & !done & !bad & !finish & r1taken -> true;\n",
+            "\n",
+            "[r1sense] started & !r1taken & !done & !bad & !finish -> (1/normdistr1): (r1lastobs'=r1qual) +  (1-(1/normdistr1)): (r1lastobs'=!r1qual);\n",
+            "[north] true -> (r1lastobs'=false);\n",
+            "[south] true -> (r1lastobs'=false);\n",
+            "[east] true -> (r1lastobs'=false);\n",
+            "[west] true -> (r1lastobs'=false);\n",
+            "endmodule\n",
+            "module rock2\n",
+            "r2qual : bool init false;\n",
+            "r2taken : bool init false;\n",
+            "r2lastobs : bool init false;\n",
+            "[placement] true -> goodrock : (r2qual'=true) + (1-goodrock) : (r2qual'=false);\n",
+            "\n",
+            "[r2sample] r2dist = 0 & started & !done & !bad & !finish & !r2taken-> 1:(r2taken'=(x = r2x & y = r2y & !r2taken));\n",
+            "[r2sample] r2dist = 0 & started & !done & !bad & !finish & r2taken -> true;\n",
+            "\n",
+            "[r2sense] started & !r2taken & !done & !bad & !finish -> (1/normdistr2): (r2lastobs'=r2qual) +  (1-(1/normdistr2)): (r2lastobs'=!r2qual);\n",
+            "[north] true -> (r2lastobs'=false);\n",
+            "[south] true -> (r2lastobs'=false);\n",
+            "[east] true -> (r2lastobs'=false);\n",
+            "[west] true -> (r2lastobs'=false);\n",
+            "endmodule\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def reward_cost(R, obstacles, lx, ly, rx, ry):\n",
+        "  reward(R, obstacles, lx, ly, rx, ry)\n",
+        "  cost(R, obstacles, lx, ly, rx, ry)\n",
+        "\n",
+        "def reward(R, obstacles, lx, ly, rx, ry, finishGood = 100, finish = 20):\n",
+        "  print(\"rewards \\\"rew\\\"\")\n",
+        "  sampleGood = 100\n",
+        "  for i in range(1, R + 1):\n",
+        "    if not in_bound(obstacles[i - 1], lx, ly, rx, ry):\n",
+        "      continue\n",
+        "    print(\"[r{}sample] r{}qual & !r{}taken : {};\".format(i, i, i, sampleGood))\n",
+        "  \n",
+        "  prefix = \"[finish] (\"\n",
+        "  ending = \"): {};\".format(finishGood) ;\n",
+        "  qual = []\n",
+        "  taken = []\n",
+        "  for i in range(1, R + 1):\n",
+        "    if not in_bound(obstacles[i - 1], lx, ly, rx, ry):\n",
+        "      continue\n",
+        "    qual.append(\"!r{}qual\".format(i))\n",
+        "    taken.append(\"r{}taken\".format(i))\n",
+        "  prefix += \"(\" + \" & \".join(qual) + \") | (\" + \" | \".join(taken) + \")\" + ending\n",
+        "  print(prefix)\n",
+        "\n",
+        "  print(\"[finish] true: {};\".format(finish))\n",
+        "  print(\"endrewards\")\n",
+        "\n",
+        "def cost(R, obstacles, lx, ly, rx, ry, finishBad = 100, bad = 20):\n",
+        "  \n",
+        "  print(\"rewards \\\"cos\\\"\")\n",
+        "  print(\"//[r1sample] !r1qual & !r1taken : 10; // no need; cause it won\\'t r1sample is not enabled if !r1qual\")\n",
+        "  print(\"//[r2sample] !r2qual & !r1taken: 10; // no need; cause it won\\'t r1sample is not enabled if !r1qual\")\n",
+        "  print(\"//[r1sample] r1taken : 20;\")\n",
+        "  print(\"//[r2sample] r2taken : 20;\")\n",
+        "  finishBad = 100\n",
+        "  prefix = \"[finish] !(\"\n",
+        "  ending = \"): {};\".format(finishBad) ;\n",
+        "  qual = []\n",
+        "  taken = []\n",
+        "  for i in range(1, R + 1):\n",
+        "    if not in_bound(obstacles[i - 1], lx, ly, rx, ry):\n",
+        "      continue\n",
+        "    qual.append(\"!r{}qual\".format(i))\n",
+        "    taken.append(\"r{}taken\".format(i))\n",
+        "  prefix += \"(\" + \" & \".join(qual) + \") | (\" + \" | \".join(taken) + \")\" + ending\n",
+        "  print(prefix)\n",
+        "\n",
+        "  print(\"bad:{};\".format(20))\n",
+        "  print(\"[east] true: 1;\")\n",
+        "  print(\"[west] true: 1;\")\n",
+        "  print(\"[north] true: 1;\")\n",
+        "  print(\"[south] true: 1;\")\n",
+        "  for i in range(1, R + 1):\n",
+        "    if not in_bound(obstacles[i - 1], lx, ly, rx, ry):\n",
+        "      continue\n",
+        "    print(\"[r{}sense] true: 1;\".format(i))\n",
+        "    \n",
+        "  for i in range(1, R + 1):\n",
+        "    if not in_bound(obstacles[i - 1], lx, ly, rx, ry):\n",
+        "      continue\n",
+        "    print(\"[r{}sample] true: 1;\".format(i))\n",
+        "  print(\"endrewards\")\n",
+        "\n",
+        "  print(\"rewards \\\"cost\\\"\")\n",
+        "  print(\"[r1sense] true : 1;\")\n",
+        "  print(\"[r1sample] !r1qual : 20;\")\n",
+        "  print(\"[r2sense] true : 1;\")\n",
+        "  print(\"[r2sample] !r2qual : 20;\")\n",
+        "  print(\"//[r3sense] true : 1;\")\n",
+        "  print(\"//[r3sample] !r3qual : 20;\")\n",
+        "  print(\"[north] true : 1;\")\n",
+        "  print(\"[south] true : 1;\")\n",
+        "  print(\"[west] true : 1;\")\n",
+        "  print(\"[east] true : 1;\")\n",
+        "  print(\"[finish] true : (!r1taken & r1qual ? 30 : 0) + (!r2taken & r2qual ? 30 : 0) ;//+ (!r3taken & r3qual ? 30 : 0) ;\")\n",
+        "  print(\"endrewards\")"
+      ],
+      "metadata": {
+        "id": "EtwQO_MfP5Kw"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def labels(R, obstacles, lx, ly, rx, ry):\n",
+        "  print(\"label \\\"notbad\\\" = !bad;\")\n",
+        "  print(\"label \\\"goal\\\" = good;\")\n",
+        "  prefix = \"label \\\"rockposition\\\" = \"\n",
+        "  ending = \";\"\n",
+        "  position = []\n",
+        "  for i in range(1, R + 1):\n",
+        "    if not in_bound(obstacles[i - 1], lx, ly, rx, ry):\n",
+        "      continue\n",
+        "    position.append(\"(!r{}taken & r{}x = x & r{}y = y)\".format(i, i, i))\n",
+        "  print(prefix + \" | \".join(position) + ending)\n"
+      ],
+      "metadata": {
+        "id": "BG_-bFfSWKrf"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def generate_file(N, R, is_main, lx, ly, rx, ry):\n",
+        "  obstacles = generate_rocks(N, R)\n",
+        "  preamble(R, obstacles, lx, ly, rx, ry)\n",
+        "  constants(obstacles, lx, ly, rx, ry)\n",
+        "  formula_observable(R, is_main, obstacles, lx, ly, rx, ry)\n",
+        "  master()\n",
+        "  robot()\n",
+        "  rocks(R, obstacles, lx, ly, rx, ry)\n",
+        "  labels(R, obstacles, lx, ly, rx, ry)\n",
+        "  reward_cost(R, obstacles, lx, ly, rx, ry)\n"
+      ],
+      "metadata": {
+        "id": "9dqRGT3KVF7P"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "N = 8\n",
+        "R = 4\n",
+        "obstacles = generate_rocks(N, R)\n"
+      ],
+      "metadata": {
+        "id": "DbddqkCnnAGy"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "xMIN = yMIN = 0\n",
+        "xMAX = yMAX = N - 1\n",
+        "generate_file(N, R, True, xMIN, yMIN, xMAX, yMAX)"
+      ],
+      "metadata": {
+        "id": "UiwK77kqO4Xq"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "shieldSize = 4\n",
+        "shieldSizeX = 4\n",
+        "shieldSizeY = 4\n",
+        "for lx in range(0, xMAX, shieldSizeX):\n",
+        "  for ly in range(0, yMAX, shieldSizeY):\n",
+        "    rx, ry = lx + shieldSizeX - 1, ly + shieldSizeY - 1\n",
+        "    #print(lx, ly, rx, ry,\"------\")\n",
+        "    if not (lx == 0 and ly == 0):\n",
+        "      continue\n",
+        "    generate_file(N, R, False, lx, ly, rx, ry)\n"
+      ],
+      "metadata": {
+        "id": "u_vrQSUrQIuL"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "obstacles = generate_rocks(N, R)\n",
+        "print(obstacles)\n",
+        "plot_board(obstacles, [], None, 8)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 514
+        },
+        "id": "wcDkWYlSfh1L",
+        "outputId": "83d770d0-3ab5-4685-d537-00e72d71bc8b"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "[(1, 2), (3, 0), (3, 5), (6, 2)]\n"
+          ]
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "<Figure size 576x576 with 1 Axes>"
+            ],
+            "image/png": "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\n"
+          },
+          "metadata": {
+            "needs_background": "light"
+          }
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "cdU1e5cu1cnv"
+      },
+      "outputs": [],
+      "source": [
+        "import numpy as np\n",
+        "import pandas as pd"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "plot_board(obstacle, [((2,3))],  agent, N)\n",
+        "#plot_board(obstacle, [(2,3),(2,1)],  agent, N)\n",
+        "#plot_board(obstacle, [(4,4)],  agent, N)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 200
+        },
+        "id": "oNWrbXMFH3xU",
+        "outputId": "8cdb033b-cea1-41c4-c56d-14dd5e8f4342"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "NameError",
+          "evalue": "ignored",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-19-2b506fd001a5>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m()\u001b[0m\n\u001b[0;32m----> 1\u001b[0;31m \u001b[0mplot_board\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mobstacle\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m[\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;36m2\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;36m3\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m,\u001b[0m  \u001b[0magent\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mN\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m      2\u001b[0m \u001b[0;31m#plot_board(obstacle, [(2,3),(2,1)],  agent, N)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      3\u001b[0m \u001b[0;31m#plot_board(obstacle, [(4,4)],  agent, N)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;31mNameError\u001b[0m: name 'obstacle' is not defined"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "obstacle = [(1, 0), (5, 1),  (2, 4), (4, 4), (5,4), (5,5)]\n",
+        "belief = [(2, 1), (1, 1),  (1, 3), (3,4)]\n",
+        "agent= (2,1)\n",
+        "N = 6\n",
+        "plot_board(obstacle, belief, agent, N)\n",
+        "\n",
+        "s, w, e, n = 's', 'w', 'e', 'n'\n",
+        "for action in [s, e, e, s, e,  e]:\n",
+        "  belief = move(belief, action)\n",
+        "  plot_board(obstacle, belief, agent, N)\n",
+        "\n"
+      ],
+      "metadata": {
+        "id": "Ay8FHPMtthhe"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        ""
+      ],
+      "metadata": {
+        "id": "Zn85QTTVok1R"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "path = \"/content/drive/MyDrive/2021-03-25 MO-POMDP/shielding/\"\n",
+        "prism_file = \"Shili todo list - MO-POMDP - Sheet6.csv\"\n",
+        "stompy_file = \"Shili todo list - MO-POMDP - Sheet5.csv\"\n",
+        "prism = pd.read_csv(path + prism_file)\n",
+        "stompy = pd.read_csv(path + stompy_file)\n",
+        "stompy = stompy.loc[:, ['s', 'o', 'x', 'y', 'r1qual', 'r1taken', 'r1lastobs', 'r2qual', 'r2taken', 'r2lastobs']]"
+      ],
+      "metadata": {
+        "id": "eLFV1WF2juHF"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "prism.columns"
+      ],
+      "metadata": {
+        "id": "Qy1sAAGqoIxu"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "data = prism\n",
+        "feature = \"obs\"\n",
+        "for i in range(len(data)):\n",
+        "  obs = data.loc[i, feature]\n",
+        "  obs_size = len(data.loc[data.loc[:, feature] == obs, :])\n",
+        "  data.loc[i, \"obs_size\"] = obs_size\n",
+        "\n",
+        "data = stompy\n",
+        "feature = \"o\"\n",
+        "for i in range(len(data)):\n",
+        "  obs = data.loc[i, feature]\n",
+        "  obs_size = len(data.loc[data.loc[:, feature] == obs, :])\n",
+        "  data.loc[i, \"obs_size\"] = obs_size\n"
+      ],
+      "metadata": {
+        "id": "HZqJPUJuljsP"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "for i in range(10):\n",
+        "  c1 = prism.r1qual == stompy.loc[i, \"r1qual\"]\n",
+        "  c2 = prism.r1taken == stompy.loc[i, \"r1taken\"]\n",
+        "  c3 = prism.x == stompy.loc[i, \"x\"]\n",
+        "  c4 = prism.y == stompy.loc[i, \"y\"]\n",
+        "  c5 = prism.obs_size == stompy.loc[i, \"obs_size\"]\n",
+        "  c6 = prism.r2qual == stompy.loc[i, \"r2qual\"]\n",
+        "  c7 = prism.r2taken == stompy.loc[i, \"r2taken\"]\n",
+        "\n",
+        "  condition = c1 & c2 & c3 & c4 & c6 & c7\n",
+        "  tp = prism.loc[condition, :]\n",
+        "\n",
+        "  sc1 = stompy.r1qual == stompy.loc[i, \"r1qual\"]\n",
+        "  sc2 = stompy.r1taken == stompy.loc[i, \"r1taken\"]\n",
+        "  sc3 = stompy.x == stompy.loc[i, \"x\"]\n",
+        "  sc4 = stompy.y == stompy.loc[i, \"y\"]\n",
+        "  sc5 = stompy.obs_size == stompy.loc[i, \"obs_size\"]\n",
+        "  sc6 = stompy.r2qual == stompy.loc[i, \"r2qual\"]\n",
+        "  sc7 = stompy.r2taken == stompy.loc[i, \"r2taken\"]\n",
+        "  scondition = sc1 & sc2 & sc3 & sc4 & sc5 & sc6 &sc7\n",
+        "  stp = stompy.loc[scondition, :]\n",
+        "  #c1 = prism.r1qual == stompy.loc[i, \"r1qual\"]\n",
+        "  print(stompy.loc[i,:])\n",
+        "  print(tp) \n",
+        "  print(stp) \n",
+        "  print(\"++++++++++++++++++++++++++\")\n"
+      ],
+      "metadata": {
+        "id": "tbzk_wrKkBXW"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def bitfield(n):\n",
+        "  tp =[int(digit) for digit in bin(n)[2:]]\n",
+        "  while len(tp)<64:\n",
+        "    tp.insert(0,0)\n",
+        "  return tp# [2:] to chop off the \"0b\" part "
+      ],
+      "metadata": {
+        "id": "j0AFWI2O55fq"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "nums = [16167922662260080640,9223372036854775808,18410715276690587648 ]\n",
+        "for n in nums:\n",
+        "  print(bitfield(n))"
+      ],
+      "metadata": {
+        "id": "F7QIoVp2m-e8"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "a = [ 13546120693153792]\n",
+        "un = []\n",
+        "for i in range(len(a)):\n",
+        "  startIndex = 0 if (i % 2 ==0) else 64\n",
+        "  tp = bitfield(a[i])\n",
+        "  un2 = []\n",
+        "  for j in range(len(tp)):\n",
+        "    if (tp[j]==1):\n",
+        "      un2.append(j + startIndex)\n",
+        "      un.append(j + startIndex)\n",
+        "  print(un2)\n",
+        "un.sort()\n",
+        "print(un)\n",
+        "\n",
+        "#[3 13 14 15 28 30 31 36 51 53 59 64 72 73 82 83 ]\n"
+      ],
+      "metadata": {
+        "id": "Q5r8aBFY5-k9"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(bitfield(4608))"
+      ],
+      "metadata": {
+        "id": "kEHeF4GxnNMe"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "bucket1 = []\n",
+        "bucket2 = []\n",
+        "index = [54, 72, 72, 74, 74, 82, 82, 53, 55, 55, 73, 73, 75, 75, 83, 52, 54] \n",
+        "for i in index:\n",
+        "  if (i >=64):\n",
+        "    bucket2.append(i) \n",
+        "  else:\n",
+        "    bucket1.append(i)\n",
+        "print(bucket1)\n",
+        "print(bucket2)"
+      ],
+      "metadata": {
+        "id": "W1uvzP8-m4LP"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        ""
+      ],
+      "metadata": {
+        "id": "ot_CFXDAnQkG"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "un = set()\n",
+        "a=[4608, 135195949751336960]\n",
+        "for i in a:\n",
+        "  un2 = set()\n",
+        "  print(bitfield(i),  len(bitfield(i)))\n",
+        "  tp = bitfield(i)\n",
+        "  for j in range(len(tp)):\n",
+        "    if (tp[j] == 1):\n",
+        "      un.add(j)\n",
+        "      un2.add(j)\n",
+        "  print(un2)\n",
+        "un = (list(un))\n",
+        "un.sort()\n",
+        "print(un, len(un))"
+      ],
+      "metadata": {
+        "id": "im8reSETIkDd"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "[3 13 14 15 28 30 31 36 51 53 59 64 72 73 82 83 ]"
+      ],
+      "metadata": {
+        "id": "pAPZqBYgcXM8"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def nextPosition(cur, a):\n",
+        "    if a == 'n':\n",
+        "      return cur + 10\n",
+        "    elif a == 'w':\n",
+        "      return cur - 1\n",
+        "    elif a == 's':\n",
+        "      return cur - 10\n",
+        "    elif a =='e':\n",
+        "      return cur +1\n",
+        "    else:\n",
+        "      return -1\n",
+        "def inBound(next):\n",
+        "    if (next<0):\n",
+        "      return False\n",
+        "    x = int(next/10)\n",
+        "    y = next % 10\n",
+        "    return (x<=9) & (x>=0) & (y<=9) & (y>=0)\n",
+        "def transition():\n",
+        "    x = 10\n",
+        "    y = 10\n",
+        "    var = \"loc\"\n",
+        "    actions = ['n', 'w', 's', 'e']\n",
+        "    print(\"module agent\")\n",
+        "    print(var+\": [0:\"+ str(x*y)+\"] init 0;\")\n",
+        "    for i in range(x):\n",
+        "      for j in range(y):\n",
+        "        cur = int(i*10+j)\n",
+        "\n",
+        "        for a in actions:\n",
+        "          nextPositions = np.zeros(5)\n",
+        "          nextPositionsProbs = np.zeros(5)\n",
+        "          for k in range(len(actions)):\n",
+        "            act_prob = actions[k]\n",
+        "            prob = 0.7 if a==act_prob else 0.1\n",
+        "            next = nextPosition(cur, act_prob)\n",
+        "            nextPositions[k+1] = next\n",
+        "            if inBound(next):\n",
+        "              nextPositionsProbs[k+1] = prob # prob of going in direction of act_prob\n",
+        "        \n",
+        "          nextPositionsProbs[0] = 1 - np.sum(nextPositionsProbs) # prob of stay cur\n",
+        "          nextPositions = nextPositions.astype(int)\n",
+        "          rule = \"\"\n",
+        "          for k in range(len(nextPositionsProbs)):\n",
+        "            if nextPositionsProbs[k]>0 :\n",
+        "              rule += str(nextPositionsProbs[k])[0:3] + \":(\" + var +\"'=\"+str(nextPositions[k]) +\")+\"\n",
+        "          rule = rule[:-1] + \";\"\n",
+        "          print(\"[\"+a+\"]\", var+\"=\"+str(cur), \"->\", rule)\n",
+        "    print(\"enmodule\")"
+      ],
+      "metadata": {
+        "id": "eES9qpMG2FFa"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        ""
+      ],
+      "metadata": {
+        "id": "Oank8dn91mnE"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def model():\n",
+        "  print(\"pomdp\")\n",
+        "def observables(var_obs):\n",
+        "  print(\"observables \"+var_obs+\" endobservables\")\n",
+        "def label(var_obs):\n",
+        "  print(\"label \\\"end\\\" = \"+var_obs+\"= 100;\")\n",
+        "def rewards(var,var2):\n",
+        "  print(\"rewards \\\"dd\\\"\")\n",
+        "  print(\"\\t\"+var+\" = 0 : 10;\")\n",
+        "  print(\"endrewards\")\n",
+        "def nextPosition(cur, a):\n",
+        "  next = cur.copy()\n",
+        "  if a == 'n':\n",
+        "     next[1] += 1\n",
+        "  elif a == 'w':\n",
+        "    next[0] -= 1\n",
+        "  elif a == 's':\n",
+        "    next[1] -= 10\n",
+        "  elif a =='e':\n",
+        "    next[0] += 1\n",
+        "  return next\n",
+        "def state(cur):\n",
+        "  return str(int(cur[0]*10+cur[1]))\n",
+        "def inBound(next, xMax, yMax):\n",
+        "  x = next[0]\n",
+        "  y = next[1]\n",
+        "  return (x<xMax) & (x>=0) & (y<yMax) & (y>=0)\n",
+        "def obsF(cur, xMax, yMax):\n",
+        "  directions = [  [-1,1], [0,1],[1,1],\n",
+        "                [-1,0], [0,0], [1,0], \n",
+        "                [-1,-1], [0,-1],[1,-1]]\n",
+        "  #directions =[[1,0], [0,0]]\n",
+        "  n_neighbor = len(directions)\n",
+        "  neighbors = [0]*n_neighbor\n",
+        "  probs = np.ones(n_neighbor)\n",
+        "\n",
+        "                   \n",
+        "  for direction in range(len(directions)):\n",
+        "    next = np.sum([cur, directions[direction]], axis= 0)\n",
+        "    neighbors[direction] = next\n",
+        "    if not inBound(next, xMax, yMax):\n",
+        "      probs[direction] = 0\n",
+        "  sum_probs = np.sum(probs)\n",
+        "  for i in range(n_neighbor):\n",
+        "    probs[i] /= sum_probs\n",
+        "\n",
+        "  result = [neighbors, probs]\n",
+        "  return result\n",
+        "def transition( xMax, yMax, targetX, targetY):\n",
+        "  x = xMax\n",
+        "  y = yMax\n",
+        "  \n",
+        "  var = \"location\"\n",
+        "  var2 = \"obsLocation\"\n",
+        "  model()\n",
+        "  observables(var2)\n",
+        "\n",
+        "  actions = ['n', 'w', 's', 'e']\n",
+        "  print(\"module agent\")\n",
+        "  print(var+\": [0.. 100] init 0;\")\n",
+        "  print(var2+\": [0.. 100] init 0;\")\n",
+        "  for i in range(x):\n",
+        "    for j in range(y):\n",
+        "      cur = [i ,j].copy()\n",
+        "      if i==targetX and j == targetY:\n",
+        "        print(\"[n] \"+var+\"=\"+state(cur)+\"->\"+\"(\"+var+\"'=\"+state(cur)+\")&(\"+var2+\"'=100);\")\n",
+        "        print(\"[s] \"+var+\"=\"+state(cur)+\"->\"+\"(\"+var+\"'=\"+state(cur)+\")&(\"+var2+\"'=100);\")\n",
+        "        print(\"[w] \"+var+\"=\"+state(cur)+\"->\"+\"(\"+var+\"'=\"+state(cur)+\")&(\"+var2+\"'=100);\")\n",
+        "        print(\"[e] \"+var+\"=\"+state(cur)+\"->\"+\"(\"+var+\"'=\"+state(cur)+\")&(\"+var2+\"'=100);\")\n",
+        "      else:\n",
+        "        for a in actions:\n",
+        "          nextPositions = [None]* (len(actions)+1)\n",
+        "          nextPositionsProbs = [0]* (len(actions)+1)\n",
+        "          for k in range(len(actions)):\n",
+        "            act_prob = actions[k]\n",
+        "            prob = 0.7 if a==act_prob else 0.1\n",
+        "            next = nextPosition(cur, act_prob)\n",
+        "            nextPositions[k+1] = next\n",
+        "            if inBound(next, xMax, yMax):\n",
+        "              nextPositionsProbs[k+1] = prob # prob of going in direction of act_prob\n",
+        "        \n",
+        "          nextPositions[0] = cur\n",
+        "          nextPositionsProbs[0] = 1 - np.sum(nextPositionsProbs) # prob of stay cur\n",
+        "          pre_rule = \"[\"+a+\"] \"+ var+\"=\"+state(cur)+ \" -> \"\n",
+        "          rule = \"\"\n",
+        "          ruleB = \"\"\n",
+        "          for k in range(len(nextPositionsProbs)):\n",
+        "            prob_a = nextPositionsProbs[k]\n",
+        "            if prob_a >0 :\n",
+        "              rule += str(nextPositionsProbs[k])[0:3] + \":(\" + var +\"'=\"+state(nextPositions[k]) +\")+\"\n",
+        "              \n",
+        "              observations, observations_probs = obsF(nextPositions[k], xMax, yMax)\n",
+        "              for l in range(len(observations)):\n",
+        "                prob_b = observations_probs[l]\n",
+        "                if prob_b>0:\n",
+        "                  ruleB += str(prob_a* prob_b) + \":(\" + var + \"'=\" + state(nextPositions[k]) + \")\" + \" & (\"+var2+\"'=\" + state(observations[l]) + \")+\"     \n",
+        "          \n",
+        "          rule = rule[:-1] + \";\"\n",
+        "          ruleB = ruleB[:-1]+\";\"\n",
+        "          #print(\"\"+ pre_rule+rule)\n",
+        "          print( pre_rule+ruleB)\n",
+        "  print(\"endmodule\")\n",
+        "  label(var2)\n",
+        "  rewards(var, var2)\n",
+        "transition(5,5, 4,4)   "
+      ],
+      "metadata": {
+        "id": "cfoAMwlAsZ4J"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def model():\n",
+        "  print(\"pomdp\")\n",
+        "def observables(var_obs):\n",
+        "  print(\"observables obsX obsY endobservables\")\n",
+        "def label(var_obs):\n",
+        "  print(\"label \\\"end\\\" = x =10 & y = 10;\")\n",
+        "def rewards(var,var2):\n",
+        "  print(\"rewards \\\"dd\\\"\")\n",
+        "  print(\"\\t x = 10 & y = 10 : 1;\")\n",
+        "  print(\"endrewards\")\n",
+        "def nextPosition(cur, a):\n",
+        "  next = cur.copy()\n",
+        "  if a == 'n':\n",
+        "     next[1] += 1\n",
+        "  elif a == 'w':\n",
+        "    next[0] -= 1\n",
+        "  elif a == 's':\n",
+        "    next[1] -= 10\n",
+        "  elif a =='e':\n",
+        "    next[0] += 1\n",
+        "  return next\n",
+        "def state(cur):\n",
+        "  return str(int(cur[0]*10+cur[1]))\n",
+        "def inBound(next, xMax, yMax):\n",
+        "  x = next[0]\n",
+        "  y = next[1]\n",
+        "  return (x<xMax) & (x>=0) & (y<yMax) & (y>=0)\n",
+        "def obsF(cur, xMax, yMax):\n",
+        "  directions = [  [-1,1], [0,1],[1,1],\n",
+        "                [-1,0], [0,0], [1,0], \n",
+        "                [-1,-1], [0,-1],[1,-1]]\n",
+        "  directions =[[1,0], [0,0]]\n",
+        "  n_neighbor = len(directions)\n",
+        "  neighbors = [0]*n_neighbor\n",
+        "  probs = np.ones(n_neighbor)\n",
+        "\n",
+        "                   \n",
+        "  for direction in range(len(directions)):\n",
+        "    next = np.sum([cur, directions[direction]], axis= 0)\n",
+        "    neighbors[direction] = next\n",
+        "    if not inBound(next, xMax, yMax):\n",
+        "      probs[direction] = 0\n",
+        "  sum_probs = np.sum(probs)\n",
+        "  for i in range(n_neighbor):\n",
+        "    probs[i] /= sum_probs\n",
+        "\n",
+        "  result = [neighbors, probs]\n",
+        "  return result\n",
+        "def transition( xMax, yMax, targetX, targetY):\n",
+        "  x = xMax\n",
+        "  y = yMax\n",
+        "  \n",
+        "  var = \"location\"\n",
+        "  var2 = \"obsLocation\"\n",
+        "  model()\n",
+        "  observables(var2)\n",
+        "\n",
+        "  actions = ['n', 'w', 's', 'e']\n",
+        "  print(\"module agent\")\n",
+        "  print(\"x\"+\": [0.. 100] init 0;\")\n",
+        "  print(\"y\"+\": [0.. 100] init 0;\")\n",
+        "  print(\"obsX\"+\": [0.. 100] init 0;\")\n",
+        "  print(\"obsY\"+\": [0.. 100] init 0;\")\n",
+        "  for i in range(x):\n",
+        "    for j in range(y):\n",
+        "      cur = [i ,j].copy()\n",
+        "      if i==targetX and j == targetY:\n",
+        "        tp = \"[n] x=targetX & y=targetY : (x'=100)&(y'=100)&(obsX'=100)&(obsY=100)\"\n",
+        "        tp = tp.replace(\"targetX\",str(targetX)).replace(\"targetY\",str(targetY))\n",
+        "        print(tp)\n",
+        "        print(tp.replace(\"[n]\",\"[w]\"))\n",
+        "        print(tp.replace(\"[n]\",\"[s]\"))\n",
+        "        print(tp.replace(\"[n]\",\"[e]\"))\n",
+        "      else:\n",
+        "        for a in actions:\n",
+        "          nextPositions = [None]* (len(actions)+1)\n",
+        "          nextPositionsProbs = [0]* (len(actions)+1)\n",
+        "          for k in range(len(actions)):\n",
+        "            act_prob = actions[k]\n",
+        "            prob = 0.7 if a==act_prob else 0.1\n",
+        "            next = nextPosition(cur, act_prob)\n",
+        "            nextPositions[k+1] = next\n",
+        "            if inBound(next, xMax, yMax):\n",
+        "              nextPositionsProbs[k+1] = prob # prob of going in direction of act_prob\n",
+        "        \n",
+        "          nextPositions[0] = cur\n",
+        "          nextPositionsProbs[0] = 1 - np.sum(nextPositionsProbs) # prob of stay cur\n",
+        "          pre_rule = \"[\"+a+\"] \" + \"x=\"+str(cur[0])+ \" & y=\"+str(cur[1])+ \"-> \"\n",
+        "          rule = \"\"\n",
+        "          ruleB = \"\"\n",
+        "          for k in range(len(nextPositionsProbs)):\n",
+        "            prob_a = nextPositionsProbs[k]\n",
+        "            if prob_a >0 :\n",
+        "              rule += str(nextPositionsProbs[k])[0:3] + \":(\" + var +\"'=\"+state(nextPositions[k]) +\")+\"\n",
+        "              \n",
+        "              observations, observations_probs = obsF(nextPositions[k], xMax, yMax)\n",
+        "              for l in range(len(observations)):\n",
+        "                prob_b = observations_probs[l]\n",
+        "                if prob_b>0:\n",
+        "                  nxtX = str(nextPositions[k][0])\n",
+        "                  nxtY = str(nextPositions[k][1])\n",
+        "                  nxtX_obs = str(observations[l][0])\n",
+        "                  nxtY_obs = str(observations[l][1])\n",
+        "                  #ruleB += str(prob_a* prob_b) + \":(\" + var + \"'=\" + state(nextPositions[k]) + \")\" + \" & (\"+var2+\"'=\" + state(observations[l]) + \")+\"     \n",
+        "                  tp = \"prob_a*prob_b : (x'=nxtX)&(y'=nxtY)&(obsX'=nxtX_obs)&(obsY'=nxtY_obs) +\"\n",
+        "                  tp = tp.replace(\"prob_a*prob_b\", str(prob_a*prob_b))\n",
+        "                  tp = tp.replace(\"nxtX_obs\", nxtX_obs).replace(\"nxtY_obs\", nxtY_obs)\n",
+        "\n",
+        "                  tp = tp.replace(\"nxtX\", nxtX).replace(\"nxtY\", nxtY)\n",
+        "                  ruleB += tp\n",
+        "          rule = rule[:-1] + \";\"\n",
+        "          ruleB = ruleB[:-1]+\";\"\n",
+        "          #print(\"\"+ pre_rule+rule)\n",
+        "          print( pre_rule+ruleB)\n",
+        "  print(\"endmodule\")\n",
+        "  label(var2)\n",
+        "  rewards(var, var2)\n",
+        "transition(3,3, 2,2)   "
+      ],
+      "metadata": {
+        "id": "902QoeCrosSQ"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}

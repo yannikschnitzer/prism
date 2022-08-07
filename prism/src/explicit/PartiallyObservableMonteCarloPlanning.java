@@ -61,17 +61,18 @@ import java.math.BigInteger;
 	private int[] PrismStateToStompyState;
 //	private String [] stompyActions;
 	private ArrayList<Integer> StompyStateToObs;
-	private List<String> varNames;
+	private List<String> mainVarNames;
 	private int numLocalObservations;
 	private ArrayList<Integer> endStates;
 	private int xMIN;
 	private int yMIN;
 	private int xMAX;
 	private int yMAX;
+	private List<String> localVarNames;
 	public POMDPShield(POMDP pomdp, String winningFile, String translateFile, List<String> varNames, ArrayList<Integer> concreteModelEndStates, int [] primaryStates) {
 		winningRegion = new HashMap<Integer, ArrayList<ArrayList<BigInteger>>> ();
 		this.pomdp = pomdp;
-		this.varNames = varNames;
+		this.mainVarNames = varNames;
 		StompyStateToStompyObsIndex = new HashMap<Integer, Integer>();
 		StompyStateToObs = new ArrayList<Integer> ();
 		
@@ -141,32 +142,55 @@ import java.math.BigInteger;
 //		}
 //	}
 	public String getValueFromLine(String str, String feature) 
-	{
-		String value = "";
-		int startIndex = str.indexOf(feature) ;
-//		System.out
-		if (startIndex + feature.length() < str.length() && str.charAt( startIndex + feature.length()) != '	' ){
-			// int type
-			int endIndex = startIndex + feature.length()  + 1;
-			while (endIndex < str.length()) {
-				char end = str.charAt(endIndex);
-				if (end == ',' || Integer.valueOf(end) == 32 || Integer.valueOf(end) == 9)  { //32: space; 9: horizontal tab
-					break;
-				}
-				endIndex++;
-			}
-			value = str.substring(startIndex + feature.length() , endIndex);
+	{	
+		System.out.println(str + "|" + feature);
+		if (!str.contains(feature)) {
+			return "feature not found";
 		}
-		else {
-			//boolean type:
-			if (startIndex > 0 && str.charAt(startIndex - 1) == '!') {
-				value = "false";
-			}
-			value =  "true";
+
+		if (str.contains("!"+feature)) {
+			return "false";
 		}
-		return value;
+		String[] items = str.split("&");
+		for (String item: items) {
+			if (!item.contains(feature)) {
+				continue;
+			}
+			if (!item.contains("=")) {
+				return "true";
+			} else {
+				String[] values = item.split("=");
+				return values[1];
+			}
+		}
+		return "error";
+	}	
+//		
+//		String value = "";
+//		int startIndex = str.indexOf(feature) ;
+////		System.out
+//		if (startIndex + feature.length() < str.length() && str.charAt( startIndex + feature.length()) != '	' ){
+//			// int type
+//			int endIndex = startIndex + feature.length()  + 1;
+//			while (endIndex < str.length()) {
+//				char end = str.charAt(endIndex);
+//				if (end == ',' || Integer.valueOf(end) == 32 || Integer.valueOf(end) == 9)  { //32: space; 9: horizontal tab
+//					break;
+//				}
+//				endIndex++;
+//			}
+//			value = str.substring(startIndex + feature.length() , endIndex);
+//		}
+//		else {
+//			//boolean type:
+//			if (startIndex > 0 && str.charAt(startIndex - 1) == '!') {
+//				value = "false";
+//			}
+//			value =  "true";
+//		}
+//		return value;
 		
-	}
+	
 	public void translate(HashMap<String, Integer> StompyMeaning2State) 
 	{
 //		StompyObsToStompyStates = new ArrayList<ArrayList<Integer>> ();
@@ -200,11 +224,20 @@ import java.math.BigInteger;
 		}
 
 		for (int PrismState = 0; PrismState < pomdp.getNumStates(); PrismState++) {
-			String meaning = pomdp.getStatesList().get(PrismState).toStringNoParentheses();
-//			System.out.println("Prism state= " + PrismState + " " + getStateMeaning(PrismState) + StompyMeaning2State.containsKey(meaning) );
+//		for (int PrismState = 30321; PrismState < 33103; PrismState++) {
+
+			String fullMeaning = pomdp.getStatesList().get(PrismState).toStringNoParentheses();
+			String meaning = pomdp.getStatesList().get(PrismState).toStringNoParentheses(mainVarNames, localVarNames); //TODO
+			System.out.println("Prism state= " + PrismState + " {" + meaning+ "}" + StompyMeaning2State.containsKey(meaning) );	
+
+//			if(StompyMeaning2State.containsKey(meaning) ) {
+//				System.out.println("Prism state= " + PrismState + " " + meaning + StompyMeaning2State.containsKey(meaning) );	
+//			}
+//			
 			int StompyState = -1;
 			if (StompyMeaning2State.containsKey(meaning)){
 				StompyState = StompyMeaning2State.get(meaning);
+				System.out.println("Prism state= " + PrismState + " " + getStateMeaning(PrismState)+ " to StompyState => "+ StompyState + " " + meaning);
 			} else {
 				continue; // prism state has not couterpart in stompystate
 			}
@@ -313,40 +346,53 @@ import java.math.BigInteger;
 					}
 					++observation;
 				} else if (loadingState == 4) {
-					str = str.replace("\"", "").replace(":", "").replace("}", ",");
-					str = str.replace("=", "").replace("[", "").replace("]", "");
-					int state = Integer.parseInt(getValueFromLine(str, " state"));
-					int obs= Integer.parseInt(getValueFromLine(str, " obs"));
+//					str = str.replace("\"", "").replace(":", "").replace("}", ",");
+//					str = str.replace("[", "").replace("]", "").replace(9, "");
+					str = str.replaceAll("[ \t]", "").replace("[", "").replace("]", "").replace("obs=", "observation=");
+					int state = Integer.parseInt(getValueFromLine(str, "state"));
+					int obs= Integer.parseInt(getValueFromLine(str, "observation"));
 					StompyStateToObs.add(obs);
 					String meaning = "";
-					int numberVariables = varNames.size();
+					int numberVariables = mainVarNames.size();
+					ArrayList<String> tempLocalVarNames = new ArrayList<String> (); 
 					for (int i = 0; i < numberVariables; i++) {
-						String varName = varNames.get(i);
+						String varName = mainVarNames.get(i);
+						if(!str.contains(varName)) {
+							continue;
+						}
+						if (localVarNames == null) {
+							tempLocalVarNames.add(varName);
+						}
 						String value = getValueFromLine(str, varName);
-
 						//meaning += varName + "=" + value + ",";
 						if (i > 0) {
 							meaning += ",";
 						}
 						meaning += value;
 					}
+					if (localVarNames == null) {
+						localVarNames = new ArrayList<String>(tempLocalVarNames);
+					}
 					//meaning = "(" + meaning.substring(0, meaning.length()-1) + ")" ;
-//					System.out.println("Stompy " + state + " stomoy obs "+ obs + "{" + meaning + "}");
+					System.out.println("Stompy " + state + " stomoy obs "+ obs + "{" + meaning + "}");
 					StompyMeaning2State.put(meaning, state);
 				}
 			}
 			if (StompyMeaning2State.size() > 0) {
+				System.out.println("load translation");
 				translate(StompyMeaning2State);
 			}else {
 				System.out.println("Fail to load translation");
 			}
 			if (winningRegion.size() == 0) {
-				System.out.println("Fail to load winning region");
+				System.out.println("\n\n\n\nFail to load winning region\n\n\n\n");
 			}else{
 				System.out.println("Winning region loaded.");
 			}
 //			displayWinningRegion();
 //			displayTranslation();
+			System.out.println("main varNames" + mainVarNames.toString());
+			System.out.println("local varNames" + localVarNames.toString());
 			in.close();
 		} catch(IOException e) {
 		}
@@ -430,6 +476,9 @@ import java.math.BigInteger;
 			}
 		}
 	}
+	public void displayStompyMeanin() {
+		
+	}
 	public void displayTranslation() {
 		System.out.println("state information");
 		for (int state: StompyStateToStompyObsIndex.keySet()) {
@@ -484,9 +533,11 @@ import java.math.BigInteger;
 	public HashSet<Integer> filterPrimaryStates(HashSet<Integer> PrismStates) {
 		HashSet<Integer> primaryStates = new HashSet<Integer>();
 		for (int s : PrismStates) {
+			
 			int x = getAX(s);
 			int y = getAY(s);
-//			System.out.println("state"+ s + " " + xMIN + " " +  x  + " "  + xMAX  + " " + yMIN + " "+ y+" " + yMAX  );
+//			System.out.println("state"+ s + " " + xMIN + " x=" +  x  + " "  + xMAX  + " " + yMIN + " y="+ y+" " + yMAX  + (xMIN <= x && x <= xMAX && yMIN <= y && y <= yMAX ));
+//			System.out.println(getStateMeaning(s));
 			if ((xMIN <= x && x <= xMAX && yMIN <= y && y <= yMAX )) {
 				primaryStates.add(s);
 			}
@@ -509,9 +560,9 @@ import java.math.BigInteger;
 	
 	public boolean isSetOfStatesWinning(HashSet<Integer> PrismStates) 
 	{
-//		System.out.println("why is this" + PrismStates);
+		System.out.println("why is this" + PrismStates);
 		PrismStates = filterPrimaryStates(PrismStates);
-//		System.out.println("and why is this" + PrismStates);
+		System.out.println("and why is this" + PrismStates);
 
 		// convert to Stompy obs 
 		HashMap<Integer, HashSet<Integer>> StompyObs2StompyStates = new HashMap<Integer, HashSet<Integer>> ();
@@ -536,7 +587,7 @@ import java.math.BigInteger;
 			
 			//int index = StompyObsToStompyStates.get(StompyObs).indexOf(StompyState);
 			int index = getIndex(StompyState, StompyObs);
-//			System.out.println("state " + state + " stompy state " + StompyState + " stompy obs" + StompyObs + " index " +index);
+			System.out.println("state " + state + " stompy state " + StompyState + " stompy obs" + StompyObs + " index " +index);
 //			displayState(state)
 			if (StompyObs2StompyStates.get(StompyObs) == null) {
 				StompyObs2StompyStates.put(StompyObs, new HashSet<Integer> ());
@@ -594,7 +645,7 @@ import java.math.BigInteger;
 	
 	public String getStateMeaning(int state) 
 	{
-		return pomdp.getStatesList().get(state).toString(varNames);
+		return pomdp.getStatesList().get(state).toString(mainVarNames);
 	}
 	public int getAX(int state) {
 		int ax = -1;
@@ -938,7 +989,7 @@ public class PartiallyObservableMonteCarloPlanning {
 		this.min = min;
 		this.endStates = endStates;
 		this.c = c;
-		this.numSimulations =  Math.pow(2, 16);
+		this.numSimulations =  Math.pow(2, 15);
 		this.verbose = 0;
 		this.gamma = 0.95;
 		this.timeout = 10000;
@@ -1002,7 +1053,7 @@ public class PartiallyObservableMonteCarloPlanning {
 			if (path.contains("winningregion")){
 				loadMainShield(path);
 				loadLocalShield(path);
-				break;
+				return;
 			}
 		}
 		System.out.println("Fail to find directory winningregion");

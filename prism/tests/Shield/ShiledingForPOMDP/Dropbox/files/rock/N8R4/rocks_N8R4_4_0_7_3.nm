@@ -1,0 +1,92 @@
+pomdp
+observables
+started, r4taken, done
+endobservables
+const int N;
+const int xMAX = N-1;
+const int yMAX = N-1;
+const int xMIN = 0;
+const int yMIN = 0;
+const double slippery = 0.1;
+// How likely is a rock a good rock
+const double goodrock = 0.5;
+const int primaryMinX = 4;
+const int primaryMinY = 0;
+const int primaryMaxX = 7;
+const int primaryMaxY = 3;
+const int pad = 2;
+const int areaMinX = max(primaryMinX - pad, xMIN);
+const int areaMinY = max(primaryMinY - pad, yMIN);
+const int areaMaxX = min(primaryMaxX + pad, xMAX);
+const int areaMaxY = min(primaryMaxY + pad, yMAX);
+const r4x = 6;
+const r4y = 2;
+// We are done when we reach max x location
+formula finish = started & (!bad) & (x = xMAX | x = primaryMinX - 1 | x = primaryMinX - 2| y = primaryMinY - 1 | y = primaryMinY - 2 | x = primaryMaxX + 1 | x = primaryMaxX + 2| y = primaryMaxY + 1 | y = primaryMaxY + 2);
+observable "seefinish" = finish;
+formula maxdist = xMAX-xMIN+yMAX-yMIN;
+formula good = finish & done;
+formula r4dist = max(r4x-x,x-r4x) + max(r4y-y,y-r4y);
+formula bad = (r4dist=0 & !r4qual);
+formula normdistr4 = (r4dist <= 1) ? 1 : 2; // min(1+((r4dist-1)/maxdist), 1.0)
+observable "atr4" = r4dist <= 0;
+observable "nearr4" = r4dist <= 1;
+observable "seebad" = bad;
+observable "seegood" = good;
+module master
+started : bool init false;
+done : bool init false;
+
+[placement] !started -> (started'=true);
+[north] started & !done -> true;
+[south] started  & !done -> true;
+[east] started  & !done-> true;
+[west] started & !done -> true;
+[finish] finish | done -> (done'=true);
+endmodule
+module robot
+x : [areaMinX..areaMaxX] init primaryMinX;
+y : [areaMinY..areaMaxX] init primaryMaxX;
+
+[west] true -> (1-slippery): (x'=max(x-1,areaMinX)) + slippery: (x'=max(x-2,areaMinX));
+[east] true -> (1-slippery): (x'=min(x+1,areaMaxX)) + slippery: (x'=min(x+2,areaMaxX));
+[south]  true -> (1-slippery): (y'=min(y+1,areaMaxY)) + slippery: (y'=min(y+2,areaMaxY));
+[north]  true -> (1-slippery): (y'=max(y-1,areaMinY)) + slippery: (y'=max(y-2,areaMinY));
+endmodule
+module rock4
+r4qual : bool init false;
+r4taken : bool init false;
+r4lastobs : bool init false;
+[placement] true -> goodrock : (r4qual'=true) + (1-goodrock) : (r4qual'=false);
+
+[r4sample] r4dist = 0 & started & !done & !bad & !finish & !r4taken-> 1:(r4taken'=(x = r4x & y = r4y & !r4taken));
+[r4sample] r4dist = 0 & started & !done & !bad & !finish & r4taken -> true;
+
+[r4sense] started & !r4taken & !done & !bad & !finish -> (1/normdistr4): (r4lastobs'=r4qual) +  (1-(1/normdistr4)): (r4lastobs'=!r4qual);
+[north] true -> (r4lastobs'=false);
+[south] true -> (r4lastobs'=false);
+[east] true -> (r4lastobs'=false);
+[west] true -> (r4lastobs'=false);
+endmodule
+label "notbad" = !bad;
+label "goal" = good;
+label "rockposition" = (!r4taken & r4x = x & r4y = y);
+rewards "rew"
+[r4sample] r4qual & !r4taken : 100;
+[finish] ((!r4qual) | (r4taken)): 100;
+[finish] true: 20;
+endrewards
+rewards "cos"
+//[r1sample] !r1qual & !r1taken : 10; // no need; cause it won't r1sample is not enabled if !r1qual
+//[r2sample] !r2qual & !r1taken: 10; // no need; cause it won't r1sample is not enabled if !r1qual
+//[r1sample] r1taken : 20;
+//[r2sample] r2taken : 20;
+[finish] !((!r4qual) | (r4taken)): 100;
+bad:20;
+[east] true: 1;
+[west] true: 1;
+[north] true: 1;
+[south] true: 1;
+[r4sense] true: 1;
+[r4sample] true: 1;
+endrewards

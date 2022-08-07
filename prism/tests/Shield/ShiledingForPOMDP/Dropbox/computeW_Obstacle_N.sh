@@ -49,6 +49,26 @@ TIMEOUTCOMMAND="timeout $TO"
 #$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/$1.nm -const N=$2,primaryMinX=$3,primaryMinY=$4,primaryMaxX=$5,primaryMaxY=$6 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/$1-$2-$3-$4-$5-$6-fixpoint.wr" &> logfiles/iterative/$1-$2-$3-fixpoint.log
 #$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/obstacle_6_centralized.nm -const N=$2 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/obstacle_6_centralized-$2-$3-$4-$5-$6-fixpoint.wr" &> logfiles/iterative/$1-$2-fixpoint.log
 #$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/obstacle.nm -const N=6 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/obstacle-6-fixpoint.wr" &> logfiles/iterative/dfixpoint.log
-N=$1
-$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/obstacle_$1_centralized.nm -const N=$1 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/obstacle_$1_centralized-fixpoint.wr" &> logfiles/iterative/obstacle_$1_centralized-fixpoint.wr.log
 
+$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/obstacle_6_centralized.nm -const N=6 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/obstacle_6_centralized-fixpoint.wr" &> logfiles/iterative/obstacle_6_centralized-fixpoint.wr.log
+$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/obstacle_50_centralized.nm -const N=50 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/obstacle_6_centralized-fixpoint.wr" &> logfiles/iterative/obstacle_50_centralized-fixpoint.wr.log
+$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/obstacle_100_centralized.nm -const N=100 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/obstacle_6_centralized-fixpoint.wr" &> logfiles/iterative/obstacle_100_centralized-fixpoint.wr.log
+$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/obstacle_1000_centralized.nm -const N=1000 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/obstacle_6_centralized-fixpoint.wr" &> logfiles/iterative/obstacle_1000_centralized-fixpoint.wr.log
+N=$2
+shieldSizeX=3
+shieldSizeY=3
+maxX=0
+maxY=0
+
+minX=0
+while [ "$minX" -lt "$N" ];do
+  minY=0
+  while [ "$minY" -lt "$N" ];do
+    maxX=`expr $minX + $shieldSizeX - 1`
+    maxY=`expr $minY + $shieldSizeY - 1`
+    echo $minX $minY $maxX $maxY
+    $TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/$1.nm -const N=$2,primaryMinX=$minX,primaryMinY=$minY,primaryMaxX=$maxX,primaryMaxY=$maxY --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/$1-$2-$minX-$minY-$maxX-$maxY-fixpoint.wr" &> logfiles/iterative/$1-$2-$minX-$minY-$maxX-$maxY-fixpoint.log
+    minY=`expr $minY + $shieldSizeY`
+  done
+  minX=`expr $minX + $shieldSizeX`
+done

@@ -133,19 +133,48 @@ module robot
 ax : [axMIN..axMAX] init axMIN;
 ay : [ayMIN..ayMAX] init ayMIN;
 //slipped : bool init false;
-[placement] true -> 1/5:(ax'=15) & (ay'=43) + 1/5:(ax'=33) & (ay'=3) + 1/5:(ax'=26) & (ay'=29) + 1/5:(ax'=16) & (ay'=33) + 1/5:(ax'=5) & (ay'=41) ;
+[placement] true -> 1/4:(ax'=33) & (ay'=3) + 1/4:(ax'=26) & (ay'=29) + 1/4:(ax'=16) & (ay'=33) + 1/4:(ax'=5) &1    (ay'=41) ;
 [west] true -> (1-slippery): (ax'=max(ax-1,areaMinX)) + slippery: (ax'=max(ax-2,areaMinX));
 [east] true -> (1-slippery): (ax'=min(ax+1,areaMaxX)) + slippery: (ax'=min(ax+2,areaMaxX));
 [south]  true -> (1-slippery): (ay'=min(ay+1,areaMaxY)) + slippery: (ay'=min(ay+2,areaMaxY));
 [north]  true -> (1-slippery): (ay'=max(ay-1,areaMinY)) + slippery: (ay'=max(ay-2,areaMinY));
 endmodule
+
 label "goal" = done;
 label "traps" = crash;
 label "notbad" =  !crash;
+
 rewards "cost"
 [north] true : 1;
 [south] true : 1;
 [west] true : 1;
 [east] true : 1;
 crash: 5;
+endrewards
+
+rewards "cos"
+//outbound
+//[r1sample] !r1qual & !r1taken & onr1: 10;
+//[r2sample] !r2qual & !r1taken & onr2: 10;
+//[r1sample] r1taken & onr1 : 100;
+//[r2sample] r2taken & onr2 : 100;
+//[west] x = xMIN : 100;
+//[south] y = yMIN  : 100;
+//[north] y = yMx - 1 : 100;
+[north] true : 1;
+[south] true : 1;
+[west] true : 1;
+[east] true : 1;
+crash: 5;
+crash: 5;
+
+endrewards
+
+rewards "cost"
+
+    [north] true : 1;
+    [south] true : 1;
+    [west] true : 1;
+    [east] true : 1;
+
 endrewards
