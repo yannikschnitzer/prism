@@ -393,13 +393,12 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         int startStateIdx = 0;
         // iterate over initial states
         // -> this should correspond to starting state of MDP + all possible values of b
-        // TODO index of start state in initials not value of it.
         while(initials_it.hasNext()){
             expected_cost = 0;
             int prod_state = initials_it.next();
-            idx_b = prod_mdp.getAutomatonState(startStateIdx);
+            idx_b = prod_mdp.getAutomatonState(prod_state);
             for ( int i =0; i < atoms; i++){
-                double j = p[startStateIdx][choices[startStateIdx]][i];
+                double j = p[prod_state][choices[prod_state]][i];
                 if (j >0){
                     expected_cost += j * max(0, z[i] - b[idx_b]);
                 }
