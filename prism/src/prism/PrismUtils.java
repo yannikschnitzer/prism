@@ -215,9 +215,6 @@ public class PrismUtils
 			} else {
 				diff = measureSupNormRel(d1, d2);
 			}
-			if (diff > value) {
-				System.out.println("XX " + d1 + " ~ " + d2 + " -> " + diff);
-			}
 			value = Math.max(value, diff);
 		}
 		entries = map2.entrySet();
