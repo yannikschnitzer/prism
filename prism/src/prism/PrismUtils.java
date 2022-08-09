@@ -208,19 +208,27 @@ public class PrismUtils
 		for (Entry<X,Double> entry : entries) {
 			double diff;
 			double d1 = entry.getValue();
-			if (map2.get(entry.getKey()) != null) {
-				double d2 = map2.get(entry.getKey());
-				if (abs) {
-					diff = measureSupNormAbs(d1, d2);
-				} else {
-					diff = measureSupNormRel(d1, d2);
-				}
-				if (diff > value) {
-					value = diff;
-				}
+			Double x = map2.get(entry.getKey());
+			double d2 = (x == null) ? 0.0 : x;
+			if (abs) {
+				diff = measureSupNormAbs(d1, d2);
 			} else {
-				return d1;
+				diff = measureSupNormRel(d1, d2);
 			}
+			value = Math.max(value, diff);
+		}
+		entries = map2.entrySet();
+		for (Entry<X,Double> entry : entries) {
+			double diff;
+			double d1 = entry.getValue();
+			Double x = map1.get(entry.getKey());
+			double d2 = (x == null) ? 0.0 : x;
+			if (abs) {
+				diff = measureSupNormAbs(d1, d2);
+			} else {
+				diff = measureSupNormRel(d1, d2);
+			}
+			value = Math.max(value, diff);
 		}
 		return value;
 	}

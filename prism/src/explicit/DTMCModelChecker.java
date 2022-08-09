@@ -2629,6 +2629,11 @@ public class DTMCModelChecker extends ProbModelChecker
 			StateRew other = (StateRew) obj;
 			return r == other.r && s == other.s;
 		}
+		@Override
+		public String toString()
+		{
+			return s+","+r;
+		}
 	}
 
 	/**
@@ -2696,7 +2701,6 @@ public class DTMCModelChecker extends ProbModelChecker
 			//exportRewardDistLine(maxAndDist.first, maxAndDist.second, "distr"+iters+".csv");
 			// Check max diff between iters
 			double diff = PrismUtils.measureSupNorm(rewProbs, rewProbsNew, true);
-			diff = Math.max(diff, PrismUtils.measureSupNorm(rewProbsNew, rewProbs, true));
 			done = diff < termCritEpsilon;
 			if (verbosity >= 1) {
 				mainLog.println(iters+": n="+rewProbs.size() + ", diff=" + diff);
