@@ -2630,14 +2630,26 @@ public class DTMCModelChecker extends ProbModelChecker
 			return r == other.r && s == other.s;
 		}
 	}
-	
+
+	/**
+	 * Compute the full distribution for the reward accumulated until a target is reached and distribution is exported
+	 * to a default location.
+	 * @param dtmc The DTMC
+	 * @param mcRewards The rewards
+	 * @param target Target states
+	 */
+	public ModelCheckerResult computeReachRewardsDistr(DTMC dtmc, MCRewards mcRewards, BitSet target) throws PrismException {
+		return computeReachRewardsDistr(dtmc, mcRewards, target, "prism/distr.csv");
+	}
+
 	/**
 	 * Compute the full distribution for the reward accumulated until a target is reached.
 	 * @param dtmc The DTMC
 	 * @param mcRewards The rewards
 	 * @param target Target states
+	 * @param filename name of file where distribution will be exported
 	 */
-	public ModelCheckerResult computeReachRewardsDistr(DTMC dtmc, MCRewards mcRewards, BitSet target) throws PrismException
+	public ModelCheckerResult computeReachRewardsDistr(DTMC dtmc, MCRewards mcRewards, BitSet target, String filename) throws PrismException
 	{
 		int maxIters = 1000;
 		double termCritEpsilon = 1e-6;
@@ -2697,7 +2709,7 @@ public class DTMCModelChecker extends ProbModelChecker
 
 		// Export the final distribution to a file
 		Pair<Integer,Map<Integer,Double>> maxAndDist = extractRewardDist(rewProbs);
-		exportRewardDist(maxAndDist.first, maxAndDist.second, "prism/distr.csv");
+		exportRewardDist(maxAndDist.first, maxAndDist.second, filename);
 		
 		// Return results
 		Object solnObj[] = new Object[dtmc.getNumStates()];

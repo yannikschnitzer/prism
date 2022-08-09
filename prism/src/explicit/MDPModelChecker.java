@@ -2783,6 +2783,26 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 		timer = System.currentTimeMillis();
 
+		// TODO: add reg VI + DTMC
+		boolean compute_dtmc_vi = true;
+		if(compute_dtmc_vi){
+			DTMCModelChecker vi_mcDTMC= new DTMCModelChecker(this);
+			ModelCheckerResult vi_res = this.computeReachRewards(mdp, mdpRewards, target, min);
+			StateRewardsArray vi_mcRewards = new StateRewardsArray(n); // Compute rewards array
+			for (int s = 0; s < n; s++) {
+				if(target.get(s)) {
+					vi_mcRewards.setStateReward(s,0);
+					// vi_res.strat.update(mdp.getAction(s,0),s);
+				}
+				else {
+					vi_mcRewards.setStateReward(s, mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, ((MDStrategy) vi_res.strat).getChoiceIndex(s)));
+				}
+			}
+			DTMC vi_dtmc = new DTMCFromMDPAndMDStrategy(mdp, (MDStrategy) vi_res.strat);
+			vi_mcDTMC.computeReachRewardsDistr(vi_dtmc, vi_mcRewards, target, "prism/distr_vi.csv");
+
+		}
+
 		int initialState = dtmc.getFirstInitialState();
 		double [] adjusted_dtmc_distr=operator.adjust_support(((TreeMap)dtmc_result.solnObj[initialState]));
 		mainLog.println("Wasserstein p=2 dtmc vs code distributions: "+operator.getW(adjusted_dtmc_distr, initialState));
