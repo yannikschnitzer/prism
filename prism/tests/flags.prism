@@ -1,0 +1,48 @@
+mdp
+const int M = 9;
+const int N = 9;
+const double p=0.12; // with probability p, staying in place occurs due to seeing and control noise
+
+formula office = (r=8 & c=8);
+formula decoration = ( (r=3 & c=5) | (r=3 & c=6) | (r=3 & c=7));
+formula coffee = (r=2 & c=6);
+formula cupboard = (r=1 & c=3);
+formula wall = ((c=4 & (r>0 & r<5)) | (r=6 & (c>5 & c<10)) | (r=3 & c=3) | (r=5 & c=1) | (r=7 & c=5)| (r=7 & c=6));
+
+module robot
+	//define robot position
+	r:[1..N] init 7; //grid row
+	c:[1..M] init 2; //grid column
+
+	// transitions
+	[east]  (c<M | c=M)  -> p/3:(r'=min(r+1, N))+ p/3: (c'=max(c-1, 1))+ p/3: (r'=max(r-1, 1)) + (1-p): (c'=min(c+1, M));
+	[south] (r<N | r=N) -> (1-p):(r'=min(r+1, N)) + p/3: (c'=min(c+1, M)) + p/3:(r'=max(r-1, 1))+ p/3: (c'=max(c-1, 1));
+	[west]  (c>1 | c=1)  -> p/3:(r'=max(r-1, 1))+ p/3:(r'=min(r+1, N))+ p/3: (c'=min(c+1, M)) + (1-p): (c'=max(c-1, 1));
+	[north] (r=1 | r>1)  -> (1-p):(r'=max(r-1, 1)) + p/3: (c'=max(c-1, 1)) + p/3: (c'=min(c+1, M)) + p/3:(r'=min(r+1, N));
+
+
+endmodule
+
+// label "goal" = F(coffee & (F office));
+label "obs" = decoration;
+
+rewards
+
+	[east] !decoration & !wall: 1;
+	[south] !decoration & !wall: 1;
+	[west] !decoration & !wall: 1;
+	[north] !decoration & !wall: 1;
+
+	// wall
+	[east] !decoration & wall: 35;
+	[south] !decoration & wall: 35;
+	[west] !decoration & wall: 35;
+	[north] !decoration & wall: 35;
+
+	// decoration
+    [east] decoration & !wall: 10;
+    [south] decoration & !wall: 10;
+    [west] decoration & !wall: 10;
+    [north] decoration & !wall: 10;
+
+endrewards
