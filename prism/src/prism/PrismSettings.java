@@ -145,7 +145,13 @@ public class PrismSettings implements Observer
 	public static final String PRISM_FAU_ARRAYTHRESHOLD				= "prism.fau.arraythreshold";
 	
 	public static final String PRISM_SHIELD_DIR						= "prism.shield.dir";
-
+	public static final String PRISM_POMCP_NUM_SIMULATIONS			= "prism.pomcp.numSimulations";
+	public static final String PRISM_POMCP_EXPLORATION_CONSTANT		= "prism.pomcp.explorationConstant";
+	public static final String PRISM_POMCP_MAX_DEPTH				= "prism.pomcp.maxDepth";
+	public static final String PRISM_POMCP_NUM_RUNS					= "prism.pomcp.numRuns";
+	public static final String PRISM_POMCP_VERBOSE					= "prism.pomcp.verbose";
+	
+	
 	//Simulator
 	public static final String SIMULATOR_DEFAULT_NUM_SAMPLES		= "simulator.defaultNumSamples";
 	public static final String SIMULATOR_DEFAULT_CONFIDENCE			= "simulator.defaultConfidence";
@@ -388,6 +394,18 @@ public class PrismSettings implements Observer
 																			"For fast adaptive uniformisation (FAU), the length of initial time interval to analyse." },
 			{ STRING_TYPE,		PRISM_SHIELD_DIR,						"Directory for shield files",			"4.7",			"",																	"",
 																			"Directory for shield files." },
+			{ STRING_TYPE,		PRISM_POMCP_NUM_SIMULATIONS,			"Number of simulations for POMCP algorithm",			"4.7",			"",																	"",
+																			"Number of simulations for POMCP algorithm." },
+			{ STRING_TYPE,		PRISM_POMCP_EXPLORATION_CONSTANT,		"Exploration constant for POMCP algorithm",			"4.7",			"",																	"",
+																			"Exploration constant for POMCP algorithm." },
+			{ STRING_TYPE,		PRISM_POMCP_MAX_DEPTH,					"Maximum depth for POMCP algorithm",			"4.7",			"",																	"",
+																			"Maximum depth for POMCP algorithm." },
+			{ STRING_TYPE,		PRISM_POMCP_NUM_RUNS,					"Number of simulations for POMCP algorithm",			"4.7",			"",																	"",
+																			"Number of simulations for POMCP algorithm." },
+			{ STRING_TYPE,		PRISM_POMCP_VERBOSE,					"Verbose for POMCP algorithm",			"4.7",			"",																	"",
+																			"Verbose for POMCP algorithm." },
+
+			
 		},
 		{
 			{ INTEGER_TYPE,		SIMULATOR_DEFAULT_NUM_SAMPLES,			"Default number of samples",			"4.0",		new Integer(1000),			"1,",
@@ -1714,8 +1732,47 @@ public class PrismSettings implements Observer
 				throw new PrismException("Nothing specified for -" + sw + " switch");
 			}
 		}
-		
-		
+
+		else if (sw.equals("nsimulation")) {
+			if (i < args.length - 1) {
+				set(PRISM_POMCP_NUM_SIMULATIONS, args[++i]);
+			} else {
+				throw new PrismException("Nothing specified for -" + sw + " switch");
+			}
+		}
+
+		else if (sw.equals("expconst")) {
+			if (i < args.length - 1) {
+				set(PRISM_POMCP_EXPLORATION_CONSTANT, args[++i]);
+			} else {
+				throw new PrismException("Nothing specified for -" + sw + " switch");
+			}
+		}
+
+
+		else if (sw.equals("maxdepth")) {
+			if (i < args.length - 1) {
+				set(PRISM_POMCP_MAX_DEPTH, args[++i]);
+			} else {
+				throw new PrismException("Nothing specified for -" + sw + " switch");
+			}
+		}
+
+		else if (sw.equals("nruns")) {
+			if (i < args.length - 1) {
+				set(PRISM_POMCP_NUM_RUNS, args[++i]);
+			} else {
+				throw new PrismException("Nothing specified for -" + sw + " switch");
+			}
+		}
+		else if (sw.equals("pomcpverbose")) {
+			if (i < args.length - 1) {
+				set(PRISM_POMCP_VERBOSE, args[++i]);
+			} else {
+				throw new PrismException("Nothing specified for -" + sw + " switch");
+			}
+		}
+				
 		// HIDDEN OPTIONS
 		
 		// export property automaton to file (hidden option)

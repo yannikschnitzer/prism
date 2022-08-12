@@ -947,6 +947,7 @@ public class PartiallyObservableMonteCarloPlanning {
 	private double timeout;
 	private double noParticles;
 	private int K;
+	private int maxDepth;
 	private double[] initialBelief;
 	private POMCPBelief initialBeliefParticles;
 	private double Tree; // Tree
@@ -971,7 +972,7 @@ public class PartiallyObservableMonteCarloPlanning {
 	private POMDPShield mainShield;
 	private boolean useLocalShields;
 	public PartiallyObservableMonteCarloPlanning(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest, ArrayList<Integer> endStates,
-			 double c) 
+			 double constant, int maxDepth) 
 	{
 		/*
 		 * Generator (function): Specifies a function to be used as a blackbox generator for the underlying POMDP dynamics. This will be called during simulations and should take as arguments the indices of a state and an action in the underlying state and action spaces.
@@ -988,12 +989,13 @@ public class PartiallyObservableMonteCarloPlanning {
 		this.target = target;
 		this.min = min;
 		this.endStates = endStates;
-		this.c = c; //constant
+		this.c = constant; //constant
 		this.numSimulations =  Math.pow(2, 15);
 		this.verbose = 0;
 		this.gamma = 0.95;
 		this.timeout = 10000;
 		this.K = 10000;
+		this.maxDepth = maxDepth;
 		initializePOMCP();
 	}
 	public void initializePOMCP() {
@@ -1459,7 +1461,7 @@ public class PartiallyObservableMonteCarloPlanning {
 			System.out.println("starting rollout");
 		}
 		int numStep = 0;
-		while (!done && numStep + TreeDepth < 100  ) {
+		while (!done && numStep + TreeDepth < maxDepth  ) {
 			if(discount < e) {
 				break;
 			}

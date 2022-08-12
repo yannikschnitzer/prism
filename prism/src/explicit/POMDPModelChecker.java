@@ -1795,9 +1795,47 @@ public class POMDPModelChecker extends ProbModelChecker
 		
 //		mainLog.println("E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\translation\\" + modelName + modelArgs +"translate.txt");
 //		mainLog.println("E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\winningregion\\" + modelName + modelArgs +"fixpoint.wr");
+		
+		
+		double discount = 0.95;
 
+		double threshold = 0.001;
+		double timeout = 10000;
+		
+		double numSimulation = Math.pow(2, 15);
+		double constant = 1000;
+		int numEpisodes = 10;
+		int maxDepth = 100;
+		int verbose = 1;
+		
 		String shielddir = getSettings().getString(PrismSettings.PRISM_SHIELD_DIR);
+		String numSimulationS= getSettings().getString(PrismSettings.PRISM_POMCP_NUM_SIMULATIONS);
+		String constantS = getSettings().getString(PrismSettings.PRISM_POMCP_EXPLORATION_CONSTANT);
+		String numEpisodesS = getSettings().getString(PrismSettings.PRISM_POMCP_NUM_RUNS);
+		String maxDepthS = getSettings().getString(PrismSettings.PRISM_POMCP_MAX_DEPTH);
+		String verboseS = getSettings().getString(PrismSettings.PRISM_POMCP_VERBOSE);
+		
 		System.out.println(shielddir + (shielddir == null) + shielddir.length());
+
+		if (numSimulationS.length() > 0) {
+			numSimulation = Double.parseDouble(numSimulationS);
+		}
+		if (constantS.length() > 0 ) {
+			constant = Double.parseDouble(constantS);
+		}
+		
+		if (numEpisodesS.length() > 0 ) {
+			numEpisodes = Integer.parseInt(numEpisodesS);
+		}
+		
+		if (maxDepthS.length() > 0 ) {
+			maxDepth = Integer.parseInt(maxDepthS);
+		}
+		
+		if (verboseS.length() > 0 ) {
+			verbose = Integer.parseInt(verboseS);
+		}
+
 		
 		String resultDirName = "." + System.getProperties().getProperty("file.separator") + "result" + System.getProperties().getProperty("file.separator");
 		
@@ -1819,14 +1857,9 @@ public class POMDPModelChecker extends ProbModelChecker
 //							{2, 1}, // prior shielding; factoerd shield
 //							{4, 1} // on-the-fly; factoer shield
 							};
-		int numEpisodes = 10;
-		double discount = 0.95;
-		double numSimulation = Math.pow(2, 15);
-		double c = 1000;
-		double threshold = 0.001;
-		double timeout = 10000;
+
 //		double noParticles = 1200; 
-		PartiallyObservableMonteCarloPlanning pomcp = new PartiallyObservableMonteCarloPlanning(pomdp, mdpRewards, target, minMax, statesOfInterest, endStates, c);
+		PartiallyObservableMonteCarloPlanning pomcp = new PartiallyObservableMonteCarloPlanning(pomdp, mdpRewards, target, minMax, statesOfInterest, endStates, constant, maxDepth);
 //		String shieldDir =  "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\files\\obstacle\\N50\\winningregion";
 		String shieldDir =  ".\\winningregion";
 
@@ -1860,7 +1893,7 @@ public class POMDPModelChecker extends ProbModelChecker
 				
 				long episodeTime = System.currentTimeMillis();
 				double[] reward = computeReachRewardsPOMCPEpisode(pomcp, pomdp,  mdpRewards,  target,  minMax,  statesOfInterest, endStates, numEpisode,
-																modelName, modelArgs, crashCost, timeStamp, shieldLevel, useLocalShield);
+																modelName, modelArgs, crashCost, timeStamp, shieldLevel, useLocalShield, verbose);
 				if (reward == null) {
 					break;
 				}
@@ -1891,7 +1924,7 @@ public class POMDPModelChecker extends ProbModelChecker
 	
    public double[] computeReachRewardsPOMCPEpisode(PartiallyObservableMonteCarloPlanning pomcp, POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest, 
 			   											ArrayList<Integer> endStates, int episode, String modelName, String modelArgs, String crashCost,
-			   											String timeStamp, int shield, boolean useLocalShield) throws PrismException
+			   											String timeStamp, int shield, boolean useLocalShield, int verbose) throws PrismException
 	{
 		//pomdp.exportToDotFile(mainLog);;
 		long timer = System.currentTimeMillis();
@@ -1907,7 +1940,6 @@ public class POMDPModelChecker extends ProbModelChecker
 		int step = 0;
 		int stepLimit = 50;
 		double gamma = 1;
-		int verbose = 1;
 		
 		String path = "." + System.getProperties().getProperty("file.separator") + "log" + System.getProperties().getProperty("file.separator");
 		
