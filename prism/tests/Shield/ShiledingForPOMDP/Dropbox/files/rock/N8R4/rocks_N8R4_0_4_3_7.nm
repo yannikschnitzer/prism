@@ -14,11 +14,11 @@ const int primaryMinX = 0;
 const int primaryMinY = 4;
 const int primaryMaxX = 3;
 const int primaryMaxY = 7;
-const int pad = 2;
-const int areaMinX = max(primaryMinX - pad, xMIN);
-const int areaMinY = max(primaryMinY - pad, yMIN);
-const int areaMaxX = min(primaryMaxX + pad, xMAX);
-const int areaMaxY = min(primaryMaxY + pad, yMAX);
+const int borderSize = 2;
+const int areaMinX = max(primaryMinX - borderSize, xMIN);
+const int areaMinY = max(primaryMinY - borderSize, yMIN);
+const int areaMaxX = min(primaryMaxX + borderSize, xMAX);
+const int areaMaxY = min(primaryMaxY + borderSize, yMAX);
 const r3x = 3;
 const r3y = 5;
 // We are done when we reach max x location

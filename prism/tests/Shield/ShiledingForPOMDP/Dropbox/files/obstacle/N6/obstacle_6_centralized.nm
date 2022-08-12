@@ -11,11 +11,11 @@ const int primaryMinX = axMIN;
 const int primaryMinY = ayMIN;
 const int primaryMaxX = axMAX;
 const int primaryMaxY = ayMAX;
-const int pad = 2;
-const int areaMinX = max(primaryMinX - pad, axMIN);
-const int areaMinY = max(primaryMinY - pad, ayMIN);
-const int areaMaxX = min(primaryMaxX + pad, axMAX);
-const int areaMaxY = min(primaryMaxY + pad, ayMAX);
+const int borderSize = 2;
+const int areaMinX = max(primaryMinX - borderSize, axMIN);
+const int areaMinY = max(primaryMinY - borderSize, ayMIN);
+const int areaMaxX = min(primaryMaxX + borderSize, axMAX);
+const int areaMaxY = min(primaryMaxY + borderSize, ayMAX);
 const double slippery = 0.1;
 const int ob0x = 4;
 const int ob0y = 4;
@@ -59,7 +59,6 @@ rewards "cost"
 [east] true : 1;
 crash: 5;
 endrewards
-
 rewards "cos"
 [north] true : 1;
 [south] true : 1;
@@ -67,8 +66,6 @@ rewards "cos"
 [east] true : 1;
 crash: 5;
 endrewards
-
 rewards "rew"
-
-done: 10;
+done : 20;
 endrewards

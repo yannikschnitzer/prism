@@ -1,0 +1,26 @@
+pomdp
+observables
+started, r1taken, done
+endobservables
+module master
+started : bool init false;
+done : bool init false;
+
+[placement] !started -> (started'=true);
+[north] started & !done -> true;
+[south] started  & !done -> true;
+[east] started  & !done-> true;
+[west] started & !done -> true;
+[finish] finish | done -> (done'=true);
+endmodule
+module robot
+x : [areaMinX..areaMaxX] init primaryMinX;
+y : [areaMinY..areaMaxX] init primaryMinY;
+
+[west] true -> (1-slippery): (x'=max(x-1,areaMinX)) + slippery: (x'=max(x-2,areaMinX));
+[east] true -> (1-slippery): (x'=min(x+1,areaMaxX)) + slippery: (x'=min(x+2,areaMaxX));
+[south]  true -> (1-slippery): (y'=min(y+1,areaMaxY)) + slippery: (y'=min(y+2,areaMaxY));
+[north]  true -> (1-slippery): (y'=max(y-1,areaMinY)) + slippery: (y'=max(y-2,areaMinY));
+endmodule
+label "notbad" = !bad;
+label "goal" = good;

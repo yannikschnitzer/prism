@@ -59,3 +59,16 @@ rewards "cost"
 [east] true : 1;
 crash: 5;
 endrewards
+
+rewards "cos"
+[north] true : 1;
+[south] true : 1;
+[west] true : 1;
+[east] true : 1;
+crash: 5;
+endrewards
+
+rewards "rew"
+
+done: 10;
+endrewards

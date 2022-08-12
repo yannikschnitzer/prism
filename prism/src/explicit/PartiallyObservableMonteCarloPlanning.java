@@ -477,7 +477,7 @@ import java.math.BigInteger;
 		}
 	}
 	public void displayStompyMeanin() {
-		
+		;
 	}
 	public void displayTranslation() {
 		System.out.println("state information");
@@ -560,9 +560,9 @@ import java.math.BigInteger;
 	
 	public boolean isSetOfStatesWinning(HashSet<Integer> PrismStates) 
 	{
-		System.out.println("why is this" + PrismStates);
+//		System.out.println("why is this" + PrismStates);
 		PrismStates = filterPrimaryStates(PrismStates);
-		System.out.println("and why is this" + PrismStates);
+//		System.out.println("and why is this" + PrismStates);
 
 		// convert to Stompy obs 
 		HashMap<Integer, HashSet<Integer>> StompyObs2StompyStates = new HashMap<Integer, HashSet<Integer>> ();
@@ -587,7 +587,7 @@ import java.math.BigInteger;
 			
 			//int index = StompyObsToStompyStates.get(StompyObs).indexOf(StompyState);
 			int index = getIndex(StompyState, StompyObs);
-			System.out.println("state " + state + " stompy state " + StompyState + " stompy obs" + StompyObs + " index " +index);
+//			System.out.println("state " + state + " stompy state " + StompyState + " stompy obs" + StompyObs + " index " +index);
 //			displayState(state)
 			if (StompyObs2StompyStates.get(StompyObs) == null) {
 				StompyObs2StompyStates.put(StompyObs, new HashSet<Integer> ());
@@ -988,7 +988,7 @@ public class PartiallyObservableMonteCarloPlanning {
 		this.target = target;
 		this.min = min;
 		this.endStates = endStates;
-		this.c = c;
+		this.c = c; //constant
 		this.numSimulations =  Math.pow(2, 15);
 		this.verbose = 0;
 		this.gamma = 0.95;
@@ -1261,11 +1261,12 @@ public class PartiallyObservableMonteCarloPlanning {
 		if (min) {
 			reward *= -1;
 		}
-		boolean d = false; // whether next state is terminal
+		boolean done = false; // whether next state is terminal
 		if (endStates.contains(nextState)){
-			d = true;
+			done = true;
+			reward += mdpRewards.getStateReward(nextState) * gamma;
 		}
-		return new stepReturn(nextState, obs, reward, d);
+		return new stepReturn(nextState, obs, reward, done);
 	}
 	public Object getDefaultAction() {
 		int state = root.getBelief().sample();
@@ -1397,6 +1398,7 @@ public class PartiallyObservableMonteCarloPlanning {
 			}
 			TreeDepth--;
 		}
+		
 		double totalReward = immediateReward + gamma * delayedReward;
 		qnode.increaseN(1);
 		qnode.increaseV(totalReward);
@@ -1478,7 +1480,7 @@ public class PartiallyObservableMonteCarloPlanning {
 			}
 			
 			totalReward += reward * discount;
-//			discount *= gamma;
+			discount *= gamma;
 			numStep++;
 			state = nextState;
 		}

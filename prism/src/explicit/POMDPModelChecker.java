@@ -1696,89 +1696,6 @@ public class POMDPModelChecker extends ProbModelChecker
 	}
 	
 	
-	public ModelCheckerResult computeReachRewardsRTBSS(ArrayList<AlphaMatrix> immediate_reward, double[] weights,  POMDP pomdp, BitSet target,  BitSet statesOfInterest) throws PrismException
-	{ 
-		mainLog.println("start RTBSS");
-		Belief b = pomdp.getInitialBelief();
-		int d = 2;
-		RTBSS(immediate_reward, weights, b,d, pomdp,  target,  statesOfInterest);
-		
-		return null;
-	}
-	public double RTBSS(ArrayList<AlphaMatrix> immediate_reward, double[] weights, Belief b, int d, POMDP pomdp, BitSet target,  BitSet statesOfInterest) throws PrismException
-	{
-		int bestAction = -1;
-		if (d==0) {
-			//return U(b)
-			double reward = Double.NEGATIVE_INFINITY;
-			for (int a=0; a<immediate_reward.size(); a++) {
-				double value = immediate_reward.get(a).value(b, weights, pomdp);
-				if (value>reward)
-					reward = value;
-			}
-			return reward;
-		}
-		
-		ArrayList<Integer> actionList = new ArrayList<Integer> ();
-		actionList.add(0);
-		ArrayList<Double> valueList = new ArrayList<Double>();
-		valueList.add(immediate_reward.get(0).value(b, weights, pomdp));
-		for (int a=1; a<immediate_reward.size(); a++) {
-			double value = immediate_reward.get(a).value(b, weights, pomdp);
-			int insertIndex = -1;
-			for (int i=0; i<valueList.size(); i++) {
-				if (value<valueList.get(i)) {
-					insertIndex = i;
-					break;
-				}
-				insertIndex =i;
-			}
-			actionList.add(insertIndex, a);
-		}
-		
-		double max = Double.NEGATIVE_INFINITY;
-		
-		int Rmax= 3;
-		for (int a : actionList) {
-			int choice = a; ////////////////////////////////////
-			double curReward = immediate_reward.get(a).value(b, weights, pomdp);
-			double heuristic = 0;
-			for (int i=1; i<d+1; i++) {
-				heuristic = Math.pow(0.9, i) * Rmax;
-			}
-			double uBound = curReward+heuristic;
-			if (uBound > max) {
-				int nObservations = pomdp.getNumObservations();
-				for (int o=0; o<nObservations; o++) {
-					Belief b_next = pomdp.getBeliefAfterChoiceAndObservation(b, choice, o);
-					curReward += 0.9 * pomdp.getObservationProbAfterChoice(b, choice, o)* RTBSS(immediate_reward, weights, b_next, d-1, pomdp,  target,  statesOfInterest);
-				}
-				if (curReward > max) {
-					max = curReward;
-					if (d==3) {
-						bestAction = a;
-					}
-				}
-			}
-		}
-		return max;
-	}
-	
-	
-	public List<String> getVarNames(POMDP pomdp)
-	{
-		List<String> varNames = new ArrayList<String> ();
-		for (int i =0; i < pomdp.getVarList().getNumVars(); i++) {
-			varNames.add(pomdp.getVarList().getName(i));
-		}
-		return varNames;
-	}
-	public String getStateMeaning(POMDP pomdp, int state) 
-	{
-		List<String> varNames = getVarNames(pomdp);
-		return pomdp.getStatesList().get(state).toString(varNames);
-	}
-	
 	public ModelCheckerResult computeReachRewardsPOMCP(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean minMax, BitSet statesOfInterest) throws PrismException
 	{
 		int nStates = pomdp.getNumStates();
@@ -1895,17 +1812,17 @@ public class POMDPModelChecker extends ProbModelChecker
 					+ "numEpisodes" + ";" + "undiscounted reward" + ";" + "discounted reward"+ ";" + "numBad" + ";" + "timeSpent" + ";"   
 					+ "average undiscounted reward" + ";" + "average discounted reward" + ";" + "average time spent " + ";" + "average numBad");
 
-		int numEpisodes = 10;
 		int [][] testCases= {
-//							{0, 0}, // no shield
+							{0, 0}, // no shield
 //							{2, 0}, // prior shielding; centralized shield
 //							{4, 0}, // on-the-fly; centrailized shield
-							{2, 1}, // prior shielding; factoerd shield
+//							{2, 1}, // prior shielding; factoerd shield
 //							{4, 1} // on-the-fly; factoer shield
 							};
-//		
+		int numEpisodes = 10;
 		double discount = 0.95;
-		double c = 350;
+		double numSimulation = Math.pow(2, 15);
+		double c = 1000;
 		double threshold = 0.001;
 		double timeout = 10000;
 //		double noParticles = 1200; 
@@ -1913,7 +1830,6 @@ public class POMDPModelChecker extends ProbModelChecker
 //		String shieldDir =  "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\files\\obstacle\\N50\\winningregion";
 		String shieldDir =  ".\\winningregion";
 
-		
 		long timer0 = System.currentTimeMillis();
 		pomcp.loadShiled();
 //		pomcp.loadLocalShield(shieldDir);
@@ -1922,11 +1838,14 @@ public class POMDPModelChecker extends ProbModelChecker
 		System.out.println("Time for load shields" + (System.currentTimeMillis() - timer0));
 		for (int i = 0; i < testCases.length; i++ ) {
 			int shieldLevel = testCases[i][0];
+			System.out.println("shielding level" + shieldLevel);
 			boolean useLocalShield = (testCases[i][1] == 1);
 			pomcp.initializePOMCP();
 			pomcp.setShieldLevel(shieldLevel);
 			pomcp.setUseLocalShields(useLocalShield);
-			pomcp.setNumSimulations(Math.pow(2, 15));
+			
+			pomcp.setNumSimulations(numSimulation);
+			
 			ArrayList<Double>  undiscountedReward = new ArrayList<Double> ();
 			double totalUndiscountedReward = 0;
 			ArrayList<Double> discountedReward = new ArrayList<Double> ();
@@ -1954,7 +1873,7 @@ public class POMDPModelChecker extends ProbModelChecker
 //				double isSafeTrace = reward[2];
 				long timeSpent = ((System.currentTimeMillis() - episodeTime) );
 				totalTime += timeSpent;
-				mainLog.println("Model=" + modelName + modelArgs + crashCost + "; nStates=" + nStates +  "; Shield=" + shieldLevel + "; useLocalShiled"+ useLocalShield + "; Episode=" + numEpisode 
+				mainLog.println("Model=" + modelName + modelArgs + crashCost + "; nStates=" + nStates +  "; Shield=" + shieldLevel + "; useLocalShiled="+ useLocalShield + "; Episode=" + numEpisode 
 								+ "; Total Episodes=" + numEpisodes + "; Undiscounted Reward=" +  reward[0] + "; Discounted Reward=" + reward[1] +  "; numBad=" + reward[2]
 								+"; Time Spent=" + timeSpent
 								+ "; Average undiscounted=" + (totalUndiscountedReward/numEpisode) 
@@ -1986,7 +1905,7 @@ public class POMDPModelChecker extends ProbModelChecker
 		double totalDiscountedReward = 0;
 		double discount = 0.95;
 		int step = 0;
-		int stepLimit = 2;
+		int stepLimit = 50;
 		double gamma = 1;
 		int verbose = 1;
 		
@@ -2093,6 +2012,7 @@ public class POMDPModelChecker extends ProbModelChecker
 		totalReward[1] = totalDiscountedReward;
 		totalReward[2] = numBad;
 //		out.close();
+		System.out.println(mdpRewards.getStateReward(state) + state + pomcp.getStateMeaning(state));
 		System.out.println("action record\n"+actionRecord.toString());
 		return totalReward;
 	}

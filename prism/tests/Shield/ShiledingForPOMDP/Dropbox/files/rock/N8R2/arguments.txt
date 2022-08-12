@@ -1,0 +1,1 @@
+rocks_N8R2_centralized.nm -const N=8 ../../safe.props -prop 2 -exportmodel a.all 

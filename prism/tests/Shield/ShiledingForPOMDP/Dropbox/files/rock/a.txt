@@ -1,0 +1,14 @@
+rewards "rew"
+[finish] true: 20;
+endrewards
+rewards "cos"
+//[r1sample] !r1qual & !r1taken : 10; // no need; cause it won't r1sample is not enabled if !r1qual
+//[r2sample] !r2qual & !r1taken: 10; // no need; cause it won't r1sample is not enabled if !r1qual
+//[r1sample] r1taken : 20;
+//[r2sample] r2taken : 20;
+bad:20;
+[east] true: 1;
+[west] true: 1;
+[north] true: 1;
+[south] true: 1;
+endrewards

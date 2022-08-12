@@ -1,0 +1,23 @@
+pomdp
+observables
+started, r1taken, done
+endobservables
+const int N;
+const int xMAX = N-1;
+const int yMAX = N-1;
+const int xMIN = 0;
+const int yMIN = 0;
+const double slippery = 0.1;
+// How likely is a rock a good rock
+const double goodrock = 0.5;
+const int primaryMinX = 0;
+const int primaryMinY = 0;
+const int primaryMaxX = 3;
+const int primaryMaxY = 3;
+const int borderSize = 2;
+const int areaMinX = max(primaryMinX - borderSize, xMIN);
+const int areaMinY = max(primaryMinY - borderSize, yMIN);
+const int areaMaxX = min(primaryMaxX + borderSize, xMAX);
+const int areaMaxY = min(primaryMaxY + borderSize, yMAX);
+const r1x = 3;
+const r1y = 0;

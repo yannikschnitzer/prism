@@ -1,0 +1,45 @@
+Storm-pomdp 1.7.0
+
+Date: Thu Aug 11 23:09:42 2022
+Command line arguments: --prism /Users/shengsheng/Dropbox/files/rock/N8R2/rocks_N8R2_factored-4-4-4-7-7.nm -const N=8 --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion winningregion/model-fixpoint.wr
+Current working directory: /Users/shengsheng/Dropbox
+
+Time for model input parsing: 0.003s.
+
+Time for model construction: 0.022s.
+
+-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	61
+Transitions: 	289
+Choices: 	193
+Observations: 	4
+Reward Models:  none
+State Labels: 	4 labels
+   * deadlock -> 0 item(s)
+   * init -> 1 item(s)
+   * notbad -> 61 item(s)
+   * goal -> 24 item(s)
+Choice Labels: 	6 labels
+   * placement -> 1 item(s)
+   * south -> 36 item(s)
+   * north -> 36 item(s)
+   * east -> 36 item(s)
+   * west -> 36 item(s)
+   * finish -> 24 item(s)
+-------------------------------------------------------------- 
+Analyzing property 'Pmax=? ["notbad" U "goal"]'
+Write to file winningregion/model-fixpoint.wr.
+Initial state is safe!
+#STATS Number of belief support states: 33558526
+#STATS Total time: 0.021s
+#STATS SAT Calls: 15
+#STATS SAT Calls time: 0.001s
+#STATS Outer iterations: 2
+#STATS Solver initialization time: 0.012s
+#STATS Obtain partial scheduler time: 0.006s
+#STATS Update solver to extend partial scheduler time: 0.000s
+#STATS Update solver with new scheduler time: 0.000s
+#STATS Winning regions update time: 0.000s
+#STATS Graph search time: 0.000s
+Time for POMDP analysis: 0.024ss.

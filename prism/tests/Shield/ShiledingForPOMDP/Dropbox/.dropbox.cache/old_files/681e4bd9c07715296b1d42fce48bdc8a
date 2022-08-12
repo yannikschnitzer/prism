@@ -1,0 +1,11 @@
+module master
+started : bool init false;
+done : bool init false;
+
+[placement] !started -> (started'=true);
+[north] started & !done -> true;
+[south] started  & !done -> true;
+[east] started  & !done-> true;
+[west] started & !done -> true;
+[finish] finish | done -> (done'=true);
+endmodule

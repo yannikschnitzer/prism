@@ -309,3 +309,39 @@ def rocks_N8R4_exit(N, K=4):
         return Model(_example_path("rocks_N8R4_exit.nm"), ProgramAnnotation(_grid_rocks), ["Pmax=? [\"notbad\" U \"goal\"]"], constants=f"N={N}")
     else:
         raise RuntimeError("Rocks is only available with 2 or 3 rocks") 
+
+def rocks_N8R2_factored-4-0-0-3-3(N, K=2):
+    K = int(K)
+    if K == 2:
+        return Model(_example_path("rocks_N8R2_factored-4-0-0-3-3.nm"), ProgramAnnotation(_grid_rocks), ["Pmax=? [\"notbad\" U \"goal\"]"], constants=f"N={N}")
+    else:
+        raise RuntimeError("Rocks is only available with 2 or 3 rocks")
+
+def rocks_N8R2_factored-4-0-4-3-7(N, K=2):
+    K = int(K)
+    if K == 2:
+        return Model(_example_path("rocks_N8R2_factored-4-0-4-3-7.nm"), ProgramAnnotation(_grid_rocks), ["Pmax=? [\"notbad\" U \"goal\"]"], constants=f"N={N}")
+    else:
+        raise RuntimeError("Rocks is only available with 2 or 3 rocks")
+
+
+def rocks_N8R2_factored-4-4-0-7-3(N, K=2):
+    K = int(K)
+    if K == 2:
+        return Model(_example_path("rocks_N8R2_factored-4-4-0-7-3.nm"), ProgramAnnotation(_grid_rocks), ["Pmax=? [\"notbad\" U \"goal\"]"], constants=f"N={N}")
+    else:
+        raise RuntimeError("Rocks is only available with 2 or 3 rocks")
+
+def rocks_N8R2_factored-4-4-4-7-7(N, K=2):
+    K = int(K)
+    if K == 2:
+        return Model(_example_path("rocks_N8R2_factored-4-4-4-7-7.nm"), ProgramAnnotation(_grid_rocks), ["Pmax=? [\"notbad\" U \"goal\"]"], constants=f"N={N}")
+    else:
+        raise RuntimeError("Rocks is only available with 2 or 3 rocks")
+
+def rocks_N8R2_centralized(N, K=2):
+    K = int(K)
+    if K == 2:
+        return Model(_example_path("rocks_N8R2_centralized.nm"), ProgramAnnotation(_grid_rocks), ["Pmax=? [\"notbad\" U \"goal\"]"], constants=f"N={N}")
+    else:
+        raise RuntimeError("Rocks is only available with 2 or 3 rocks")
