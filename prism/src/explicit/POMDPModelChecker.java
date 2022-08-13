@@ -1823,15 +1823,12 @@ public class POMDPModelChecker extends ProbModelChecker
 		if (constantS.length() > 0 ) {
 			constant = Double.parseDouble(constantS);
 		}
-		
 		if (numEpisodesS.length() > 0 ) {
 			numEpisodes = Integer.parseInt(numEpisodesS);
 		}
-		
 		if (maxDepthS.length() > 0 ) {
 			maxDepth = Integer.parseInt(maxDepthS);
 		}
-		
 		if (verboseS.length() > 0 ) {
 			verbose = Integer.parseInt(verboseS);
 		}
@@ -1854,21 +1851,18 @@ public class POMDPModelChecker extends ProbModelChecker
 							{0, 0}, // no shield
 //							{2, 0}, // prior shielding; centralized shield
 //							{4, 0}, // on-the-fly; centrailized shield
-//							{2, 1}, // prior shielding; factoerd shield
+							{2, 1}, // prior shielding; factoerd shield
 //							{4, 1} // on-the-fly; factoer shield
 							};
 
 //		double noParticles = 1200; 
 		PartiallyObservableMonteCarloPlanning pomcp = new PartiallyObservableMonteCarloPlanning(pomdp, mdpRewards, target, minMax, statesOfInterest, endStates, constant, maxDepth);
-//		String shieldDir =  "E:\\Downloads\\prism3\\prism812\\prism\\prism\\tests\\Shield\\ShiledingForPOMDP\\Dropbox\\files\\obstacle\\N50\\winningregion";
 		String shieldDir =  ".\\winningregion";
 
 		long timer0 = System.currentTimeMillis();
 		pomcp.loadShiled();
-//		pomcp.loadLocalShield(shieldDir);
-//		pomcp.loadMainShield(shieldDir);
-		
 		System.out.println("Time for load shields" + (System.currentTimeMillis() - timer0));
+		
 		for (int i = 0; i < testCases.length; i++ ) {
 			int shieldLevel = testCases[i][0];
 			System.out.println("shielding level" + shieldLevel);
