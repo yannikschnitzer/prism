@@ -78,18 +78,12 @@ TIMEOUTCOMMAND="timeout $TO"
 #   --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats \
 #   --exportwinningregion "winningregion/$model-fixpoint.wr" &> logfiles/iterative/$model-fixpoint.wr.log
 
-# MODEL_DIR=/opt/experiments/host/files/rock/N10R4
-# MODEL_FILE=$(ls $MODEL_DIR/*factor*.nm)
-# for path_model in $MODEL_FILE; do
-#   model=$(basename $path_model)
-#   $TIMEOUTCOMMAND $STORM_POMDP --prism ${MODEL_DIR}/${model} --prop "Pmax=? [\"notbad\" U \"goal\"]"  \
-#   --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats \
-#   --exportwinningregion "${MODEL_DIR}/winningregion/${model%.*} -fixpoint.wr" &> "${MODEL_DIR}/log/$${model%.*} -fixpoint.wr.log"
-# done
-
 MODEL_DIR=/opt/experiments/host/files/rock/N10R4
 MODEL_FILE=$(ls $MODEL_DIR/*factor*.nm)
 for path_model in $MODEL_FILE; do
   model=$(basename $path_model)
-  echo ${model%.*}  
+  $TIMEOUTCOMMAND $STORM_POMDP --prism ${MODEL_DIR}/${model} --prop "Pmax=? [\"notbad\" U \"goal\"]"  \
+  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats \
+  --exportwinningregion "${MODEL_DIR}/winningregion/${model%.*} -fixpoint.wr" &> "${MODEL_DIR}/log/$${model%.*} -fixpoint.wr.log"
 done
+
