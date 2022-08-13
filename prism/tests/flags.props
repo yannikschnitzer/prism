@@ -1,11 +1,12 @@
-R(dist)min=?[F(cupboard & F(coffee & (F office)))]
-R(cvar)min=?[F(cupboard & F(coffee & (F office)))]
-Rmin=?[F(cupboard & F(coffee & (F office)))]
-
+// Sequencing
+R(dist)min=?[F(cupboard & (F (coffee & (F office))))]
+R(cvar)min=?[F(cupboard & (F (coffee & (F office))))]
+Rmin=?[F(cupboard & (F (coffee & (F office))))]
+// Avoidance
 R(dist)min=?[(!office) U ((F cupboard) & (F coffee))]
 R(cvar)min=?[(!office) U ((F cupboard) & (F coffee))]
 Rmin=?[(!office) U ((F cupboard) & (F coffee))]
-
-R(dist)min=?[F(cupboard) & (F coffee) & (F office)]
-R(cvar)min=?[F(cupboard) & (F coffee) & (F office)]
-Rmin=?[F(cupboard) & (F coffee) & (F office)]
+// Coverage
+R(dist)min=?[(F cupboard) & (F coffee) & (F office)]
+R(cvar)min=?[(F cupboard) & (F coffee) & (F office)]
+Rmin=?[(F cupboard) & (F coffee) & (F office)]

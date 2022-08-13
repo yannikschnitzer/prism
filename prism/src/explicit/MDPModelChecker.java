@@ -2171,7 +2171,7 @@ public class MDPModelChecker extends ProbModelChecker
 			for (int i = 0; i < n; i++) {
 				strat_name[i] = mdp.getAction(i, strat[i]);
 			}
-			printToFile(strat_name, res.soln, "prism/tests/gridmap/"+"strat_"+n+".dot", n);
+//			printToFile(strat_name, res.soln, "prism/tests/gridmap/vi/"+"strat_"+n+".dot", n);
 
 		}
 		// Export adversary
@@ -2631,7 +2631,7 @@ public class MDPModelChecker extends ProbModelChecker
 		// Start value iteration
 		timer = System.currentTimeMillis();
 
-		// Set up CVAR variables
+		// Set up distribution variables
 		int atoms;
 		int iterations = 150;
 		double error_thresh = 0.01;
@@ -2893,12 +2893,12 @@ public class MDPModelChecker extends ProbModelChecker
 		mainLog.println(" Starting Cvar iteration with method:"+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
 
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
-			atoms = 101;
-			b_atoms = 101;
+			atoms = 76;
+			b_atoms = 76;
 			// TODO make this a point variable or something to be a bit cleaner
-			double b_max = 100;
+			double b_max = 150;
 			double b_min = 0;
-			double v_max = 100;
+			double v_max = 150;
 			double v_min = 0;
 			operator = new DistributionalBellmanCategoricalAugmented(atoms, b_atoms, v_min, v_max, b_min, b_max, n, n_actions, mainLog);
 			operator.initialize(mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.

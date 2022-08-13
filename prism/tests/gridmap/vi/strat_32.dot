@@ -1,0 +1,7 @@
+States
+32
+Policy
+[south, east, west, east, south, south, west, west, south, south, obstacle, obstacle, south, south, west, west, south, south, obstacle, obstacle, south, south, south, south, east, east, null, null, west, west, west, west]
+Alpha value
+0
+14.099,17.143,15.527,15.714,14.286,14.286,15.714,15.714,10.620,17.237,30.000,30.000,10.000,10.000,11.429,11.429,5.505,9.852,30.000,30.000,5.714,5.714,7.143,7.143,1.429,1.429,0.000,0.000,1.429,1.429,2.857,2.857,

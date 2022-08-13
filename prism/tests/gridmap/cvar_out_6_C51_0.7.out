@@ -1,9 +1,0 @@
-States
-6
-Policy
-[north, east, east, south, obstacle, null]
-Alpha value
-0.7
-Max number of actions
-3
-4.799,5.034,0.000,3.730,5.749,0.000,2.571,5.000,4.799,1.159,3.516,0.000,4.000,0.000,0.000,0.000,0.000,0.000,

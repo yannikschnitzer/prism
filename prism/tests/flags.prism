@@ -1,7 +1,7 @@
 mdp
 const int M = 9;
 const int N = 9;
-const double p=0.12; // with probability p, staying in place occurs due to seeing and control noise
+const double p=0.03; // with probability p, staying in place occurs due to seeing and control noise
 
 formula office = (r=8 & c=8);
 formula decoration = ( (r=3 & c=5) | (r=3 & c=6) | (r=3 & c=7));

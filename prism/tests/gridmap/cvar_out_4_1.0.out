@@ -1,9 +1,0 @@
-States
-4
-Policy
-[east, south, east, null]
-Alpha value
-1.0
-Max number of actions
-2
-0.100,0.100,0.100,0.100,0.100,0.100,0.000,0.000,

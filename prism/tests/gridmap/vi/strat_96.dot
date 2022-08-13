@@ -1,0 +1,7 @@
+States
+96
+Policy
+[north, north, north, north, east, north, west, north, south, east, north, west, west, south, east, north, west, north, east, north, north, west, west, east, north, north, west, west, east, north, north, west, east, north, west, west, north, west, north, south, south, west, south, null, west, west, south, null, null, null, south, west, south, null, null, null, null, south, south, south, null, null, null, null, null, south, south, east, null, null, null, null, null, south, east, east, null, null, null, null, null, east, north, null, null, null, null, null, north, null, null, null, null, null, null, null]
+Alpha value
+0
+32.234,31.095,32.298,33.372,29.961,31.019,35.563,34.554,31.027,28.790,63.944,37.638,70.829,30.022,27.538,62.894,39.806,39.796,33.049,25.016,69.383,41.580,40.896,22.342,32.419,60.030,43.180,42.016,20.801,21.921,58.444,43.117,19.269,20.433,18.032,16.878,19.700,15.678,18.803,37.862,14.267,23.940,37.840,0.000,20.076,12.930,37.985,0.000,0.000,0.000,9.591,10.607,37.721,0.000,0.000,0.000,0.000,9.258,8.157,39.776,0.000,0.000,0.000,0.000,0.000,8.148,6.931,3.426,0.000,0.000,0.000,0.000,0.000,7.012,4.706,36.398,0.000,0.000,0.000,0.000,0.000,5.878,6.787,0.000,0.000,0.000,0.000,0.000,6.971,0.000,0.000,0.000,0.000,0.000,0.000,0.000,

@@ -1,0 +1,7 @@
+States
+54
+Policy
+[east, east, east, east, east, east, east, east, east, south, east, east, east, east, south, south, south, south, east, east, south, north, south, north, east, east, south, south, south, south, east, east, east, east, null, null, east, north, east, east, east, east, east, east, east, east, east, east, east, east, north, north, north, north]
+Alpha value
+0
+81.000,82.857,29.572,31.429,25.286,27.143,21.000,22.857,16.714,18.571,15.286,23.571,9.972,16.885,5.206,9.651,51.429,51.429,32.429,34.286,31.000,32.857,75.686,78.571,68.571,68.571,17.143,17.143,65.714,65.714,52.857,52.857,1.429,1.429,0.000,0.000,81.000,85.714,29.572,37.857,24.257,31.171,19.492,23.937,15.714,15.714,14.286,14.286,10.000,10.000,5.714,5.714,51.429,51.429,

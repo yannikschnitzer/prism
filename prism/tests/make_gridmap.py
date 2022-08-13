@@ -49,12 +49,21 @@ def write_gridmap(N, obs, p, goal=None, obs_cost=30):
 
     print(f"Printing with goal:{goal}..")
     r,c = compute_obstacles(N, obs, goal)
+    str_obs =''
+    for i in range(len(r)):
+        if i == (len(r) -1):
+            str_obs+=f'(r={r[i]+1} & c={c[i]+1})'
+        else:
+            str_obs+=f'(r={r[i]+1} & c={c[i]+1}) | '
 
     with open(f'gridmap/gridmap_{N}_{obs}.prism', 'w') as f:
         f.write('mdp\n')
 
         f.write(f'const int N={N}; // N*N grid map\n')
         f.write(f'const double p={p}; // with probability p, a move to a neighboring state state occurs due to seeing and control noise\n')
+        f.write(f'formula wall= ')
+        f.write(str_obs)
+        f.write(';\n')
 
         f.write(f'\nmodule robot\n')
 
@@ -62,46 +71,35 @@ def write_gridmap(N, obs, p, goal=None, obs_cost=30):
         f.write(f'\tr:[1..N] init 1; //grid row\n')
         f.write(f'\tc:[1..N] init 1; //grid column\n')
 
-        f.write(f'\n\t// go to the terminal state when hitting an obstacle')
-
-        f.write(f'\n\t[obstacle] ')
-        str =''
-        for i in range(len(r)):
-            if i == (len(r) -1):
-                f.write(f'(r={r[i]+1} & c={c[i]+1})')
-                str+=f'(r={r[i]+1} & c={c[i]+1})'
-            else:
-                f.write(f'(r={r[i]+1} & c={c[i]+1}) | ')
-                str+=f'(r={r[i]+1} & c={c[i]+1}) | '
-        f.write(f'-> (r\'={goal[0]}) & (c\'={goal[1]});\n')
 
         f.write(f'\n\t// transitions\n')
-        f.write(f'\t[east] (c<N | c=N) & !(')
-        f.write(str); f.write(f')-> p/3:(r\'=min(r+1, N))+ p/3: (c\'=max(c-1, 1))+ p/3: (r\'=max(r-1, 1)) + (1-p): (c\'=min(c+1, N));\n')
+        f.write(f'\t[east] (c<N | c=N) -> p/3:(r\'=min(r+1, N))+ p/3: (c\'=max(c-1, 1))+ p/3: (r\'=max(r-1, 1)) + (1-p): (c\'=min(c+1, N));\n')
 
-        f.write(f'\t[south] (r<N | r=N) & !(')
-        f.write(str); f.write(f')-> (1-p):(r\'=min(r+1, N)) + p/3: (c\'=min(c+1, N)) + p/3:(r\'=min(r+1, N))+ p/3: (c\'=max(c-1, 1));\n')
+        f.write(f'\t[south] (r<N | r=N)-> (1-p):(r\'=min(r+1, N)) + p/3: (c\'=min(c+1, N)) + p/3:(r\'=max(r-1, 1))+ p/3: (c\'=max(c-1, 1));\n')
 
-        f.write(f'\t[west]  (c>1 | c=1) & !(')
-        f.write(str); f.write(f')-> p/3:(r\'=max(r-1, 1))+ p/3:(r\'=min(r+1, N))+ p/3: (c\'=min(c+1, N)) + (1-p): (c\'=max(c-1, 1));\n')
+        f.write(f'\t[west]  (c>1 | c=1)-> p/3:(r\'=max(r-1, 1))+ p/3:(r\'=min(r+1, N))+ p/3: (c\'=min(c+1, N)) + (1-p): (c\'=max(c-1, 1));\n')
 
-        f.write(f'\t[north] (r=1 | r>1) & !(')
-        f.write(str); f.write(f')-> (1-p):(r\'=max(r-1, 1)) + p/3: (c\'=max(c-1, 1)) + p/3: (c\'=min(c+1, N)) + p/3:(r\'=min(r+1, N));\n')
+        f.write(f'\t[north] (r=1 | r>1)-> (1-p):(r\'=max(r-1, 1)) + p/3: (c\'=max(c-1, 1)) + p/3: (c\'=min(c+1, N)) + p/3:(r\'=min(r+1, N));\n')
 
         f.write(f'\n\t// terminal state self-loop to avoid deadlock\n\t[] r={goal[0]} & c={goal[1]} -> true;\n')
 
         f.write(f'endmodule\n')
         f.write(f'\nlabel "goal" = r={goal[0]} & c={goal[1]};\n')
         f.write(f'\nlabel "obs" = ')
-        f.write(str); f.write(';\n')
+        f.write(str_obs); f.write(';\n')
 
         f.write(f'\nrewards\n')
 
-        f.write(f'\t[east] true : 1;\n')
-        f.write(f'\t[south] true : 1;\n')
-        f.write(f'\t[west] true : 1;\n')
-        f.write(f'\t[north] true : 1;\n')
-        f.write(f'\t[obstacle] true : {obs_cost};\n')
+        f.write(f'\t[east] !wall : 1;\n')
+        f.write(f'\t[south] !wall : 1;\n')
+        f.write(f'\t[west] !wall : 1;\n')
+        f.write(f'\t[north] !wall : 1;\n\n')
+
+        f.write(f'\t[east] wall : {obs_cost};\n')
+        f.write(f'\t[south] wall : {obs_cost};\n')
+        f.write(f'\t[west] wall : {obs_cost};\n')
+        f.write(f'\t[north] wall : {obs_cost};\n')
+
         f.write(f'endrewards\n')
 
         f.close()
@@ -109,6 +107,7 @@ def write_gridmap(N, obs, p, goal=None, obs_cost=30):
     with open(f'gridmap/gridmap_{N}_{obs}.props', 'w') as f:
         f.write(f'Rmin=?[F "goal"] // maybe max of Rmin/Pmax for best policy\n')
         f.write(f'R(cvar)min=? [ F "goal" ];\n')
+        f.write(f'R(dist)min=? [ F "goal" ];')
         f.close()
 
 if __name__ == "__main__":
