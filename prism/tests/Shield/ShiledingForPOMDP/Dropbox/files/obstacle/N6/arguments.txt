@@ -1,1 +1,1 @@
-obstacle_6_centralized.nm -const N=6 ..//..//safe.props -prop 2 
+obstacle_N6_centralized.nm ../../safe.props -prop 2 -exportmodel a.all -pomcpverbose 0 

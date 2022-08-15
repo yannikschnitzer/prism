@@ -1,0 +1,33 @@
+Storm-pomdp 1.7.0
+
+Date: Sun Aug 14 11:31:53 2022
+Command line arguments: --prism /Users/shengsheng/Dropbox/files/rock/N8R4/rocks_N8R4_factored-4-0-0-3-3.nm --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/rock/N8R4/winningregion/rocks_N8R4_factored-4-0-0-3-3-fixpoint.wr
+Current working directory: /Users/shengsheng/Dropbox
+
+Time for model input parsing: 0.004s.
+
+Time for model construction: 0.026s.
+
+-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	345
+Transitions: 	2277
+Choices: 	1348
+Observations: 	16
+Reward Models:  none
+State Labels: 	4 labels
+   * deadlock -> 0 item(s)
+   * init -> 1 item(s)
+   * notbad -> 344 item(s)
+   * goal -> 84 item(s)
+Choice Labels: 	8 labels
+   * placement -> 1 item(s)
+   * south -> 259 item(s)
+   * r1sense -> 138 item(s)
+   * north -> 259 item(s)
+   * east -> 259 item(s)
+   * west -> 259 item(s)
+   * r1sample -> 4 item(s)
+   * finish -> 84 item(s)
+-------------------------------------------------------------- 
+Analyzing property 'Pmax=? ["notbad" U "goal"]'

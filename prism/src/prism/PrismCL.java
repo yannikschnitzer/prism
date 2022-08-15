@@ -616,7 +616,7 @@ public class PrismCL implements PrismModelListener
 			printArguments(args);
 			
 			// print command line for reference
-			storeArguments(args);
+//			storeArguments(args);
 
 			// do some processing of the options
 			processOptions();

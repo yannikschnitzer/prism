@@ -1,1 +1,0 @@
-rocks_N8R4.nm -const N=8 ../../safe.props -prop 2 -exportmodel a.all 

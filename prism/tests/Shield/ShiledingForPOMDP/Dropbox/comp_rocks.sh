@@ -78,18 +78,29 @@ TIMEOUTCOMMAND="timeout $TO"
 #   --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats \
 #   --exportwinningregion "winningregion/$model-fixpoint.wr" &> logfiles/iterative/$model-fixpoint.wr.log
 
-# MODEL_DIR=/opt/experiments/host/files/rock/N10R4
-# MODEL_FILE=$(ls $MODEL_DIR/*factor*.nm)
-# for path_model in $MODEL_FILE; do
-#   model=$(basename $path_model)
-#   $TIMEOUTCOMMAND $STORM_POMDP --prism ${MODEL_DIR}/${model} --prop "Pmax=? [\"notbad\" U \"goal\"]"  \
-#   --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats \
-#   --exportwinningregion "${MODEL_DIR}/winningregion/${model%.*} -fixpoint.wr" &> "${MODEL_DIR}/log/$${model%.*} -fixpoint.wr.log"
-# done
-
-MODEL_DIR=/opt/experiments/host/files/rock/N10R4
+MODEL_DIR=/opt/experiments/host/files/rock/N10R6
 MODEL_FILE=$(ls $MODEL_DIR/*factor*.nm)
 for path_model in $MODEL_FILE; do
   model=$(basename $path_model)
-  echo ${model%.*}  
+  echo $model
+  # $TIMEOUTCOMMAND $STORM_POMDP --prism ${MODEL_DIR}/${model} --prop "Pmax=? [\"notbad\" U \"goal\"]"  \
+  # --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats \
+  # --exportwinningregion "${MODEL_DIR}/winningregion/${model%.*}-fixpoint.wr" &> "${MODEL_DIR}/log/$${model%.*}-fixpoint.wr.log"
 done
+
+# rocks_N10R6_factored-5-0-0-4-4.nm
+# rocks_N10R6_factored-5-0-5-4-9.nm
+# rocks_N10R6_factored-5-5-0-9-4.nm
+# rocks_N10R6_factored-5-5-5-9-9.nm
+
+# MODEL_DIR=/opt/experiments/host/files/rock/N10R6
+# model=rocks_N10R6_factored-5-0-0-4-4.nm
+# $TIMEOUTCOMMAND $STORM_POMDP --prism ${MODEL_DIR}/${model} --prop "Pmax=? [\"notbad\" U \"goal\"]"  \
+#   --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats \
+#   --exportwinningregion "${MODEL_DIR}/winningregion/${model%.*}-fixpoint.wr" &> "${MODEL_DIR}/log/$${model%.*}-fixpoint.wr.log"
+
+MODEL_DIR=/opt/experiments/host/files/original
+model=evade.nm
+$TIMEOUTCOMMAND $STORM_POMDP --prism ${MODEL_DIR}/${model} -const N=6,RADIUS=2 --prop "Pmax=? [\"notbad\" U \"goal\"]"  \
+  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats \
+  --exportwinningregion "${MODEL_DIR}/winningregion/${model%.*}-fixpoint.wr" &> "${MODEL_DIR}/log/$${model%.*}-fixpoint.wr.log"

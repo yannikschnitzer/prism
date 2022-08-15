@@ -1,0 +1,50 @@
+Storm-pomdp 1.7.0
+
+Date: Sun Aug 14 15:13:08 2022
+Command line arguments: --prism /Users/shengsheng/Dropbox/files/rock/N8R6/rocks_N8R6_factored-4-0-0-3-3.nm --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/rock/N8R6/winningregion/rocks_N8R6_factored-4-0-0-3-3-fixpoint.wr
+Current working directory: /Users/shengsheng/Dropbox
+
+Time for model input parsing: 0.005s.
+
+Time for model construction: 0.045s.
+
+-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	1366
+Transitions: 	11083
+Choices: 	6328
+Observations: 	64
+Reward Models:  none
+State Labels: 	4 labels
+   * deadlock -> 0 item(s)
+   * init -> 1 item(s)
+   * notbad -> 1360 item(s)
+   * goal -> 252 item(s)
+Choice Labels: 	10 labels
+   * placement -> 1 item(s)
+   * r4sense -> 675 item(s)
+   * east -> 1107 item(s)
+   * north -> 1107 item(s)
+   * r1sense -> 674 item(s)
+   * south -> 1107 item(s)
+   * r1sample -> 20 item(s)
+   * west -> 1107 item(s)
+   * r4sample -> 20 item(s)
+   * finish -> 252 item(s)
+-------------------------------------------------------------- 
+Analyzing property 'Pmax=? ["notbad" U "goal"]'
+Write to file /Users/shengsheng/Dropbox/files/rock/N8R6/winningregion/rocks_N8R6_factored-4-0-0-3-3-fixpoint.wr.
+Write to file /Users/shengsheng/Dropbox/files/rock/N8R6/winningregion/rocks_N8R6_factored-4-0-0-3-3-fixpoint.wr.
+Initial state is safe!
+#STATS Number of belief support states: 11682667931703362524481587601614478
+#STATS Total time: 2905.276s
+#STATS SAT Calls: 25839
+#STATS SAT Calls time: 773.891s
+#STATS Outer iterations: 458
+#STATS Solver initialization time: 1.855s
+#STATS Obtain partial scheduler time: 2079.938s
+#STATS Update solver to extend partial scheduler time: 10.405s
+#STATS Update solver with new scheduler time: 31.394s
+#STATS Winning regions update time: 2.418s
+#STATS Graph search time: 0.012s
+Time for POMDP analysis: 2905.378ss.
