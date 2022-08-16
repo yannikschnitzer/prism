@@ -2658,6 +2658,7 @@ public class DTMCModelChecker extends ProbModelChecker
 	{
 		int maxIters = 1000;
 		double termCritEpsilon = 1e-6;
+		// INFO : default is 1e-6, but should change to 1e-4 or 12-3 if taking too long in large models
 		
 		if (verbosity >= 1) {
 			mainLog.println("DTMC #initial states: " + dtmc.getNumInitialStates());

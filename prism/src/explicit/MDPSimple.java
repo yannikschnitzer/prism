@@ -154,16 +154,16 @@ public class MDPSimple extends MDPExplicit implements NondetModelSimple
 		copyFrom(mdp);
 		int numStates = getNumStates();
 		for (int i = 0; i < numStates; i++) {
-			int numChoices = getNumChoices(i);
+			int numChoices = mdp.getNumChoices(i);
 			for (int j = 0; j < numChoices; j++) {
-				Object action = getAction(i, j);
+				Object action = mdp.getAction(i, j);
 				Distribution distr = new Distribution();
-				Iterator<Map.Entry<Integer, Double>> iter = getTransitionsIterator(i, j);
+				Iterator<Map.Entry<Integer, Double>> iter = mdp.getTransitionsIterator(i, j);
 				while (iter.hasNext()) {
 					Map.Entry<Integer, Double> e = iter.next();
 					distr.set(e.getKey(), e.getValue());
 				}
-				if (action == null) {
+				if (action != null) {
 					addActionLabelledChoice(i, distr, action);
 				} else {
 					addChoice(i, distr);
