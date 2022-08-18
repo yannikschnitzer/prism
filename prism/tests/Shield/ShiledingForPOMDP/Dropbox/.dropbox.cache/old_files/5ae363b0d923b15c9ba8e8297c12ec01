@@ -1,0 +1,33 @@
+Storm-pomdp 1.7.0
+
+Date: Mon Aug 15 16:51:30 2022
+Command line arguments: --prism /Users/shengsheng/Dropbox/files/obstacle/N50/obstacle_N50_factored-10-0-0-9-9.nm --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacle/N50/winningregion/obstacle_N50_factored-10-0-0-9-9-fixpoint.wr
+Current working directory: /Users/shengsheng/Dropbox
+
+Time for model input parsing: 0.017s.
+
+Time for model construction: 0.078s.
+
+-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	140
+Transitions: 	790
+Choices: 	434
+Observations: 	4
+Reward Models:  none
+State Labels: 	5 labels
+   * deadlock -> 0 item(s)
+   * traps -> 2 item(s)
+   * init -> 1 item(s)
+   * notbad -> 138 item(s)
+   * goal -> 39 item(s)
+Choice Labels: 	5 labels
+   * placement -> 1 item(s)
+   * south -> 98 item(s)
+   * north -> 98 item(s)
+   * east -> 98 item(s)
+   * west -> 98 item(s)
+-------------------------------------------------------------- 
+Analyzing property 'Pmax=? ["notbad" U "goal"]'
+ERROR: The program received signal 2 and will be aborted in 3s.
+ABORT.

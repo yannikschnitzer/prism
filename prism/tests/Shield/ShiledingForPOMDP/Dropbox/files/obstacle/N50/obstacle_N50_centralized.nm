@@ -150,15 +150,10 @@ rewards "cost"
 crash: 5;
 endrewards
 rewards "cos"
-//[north] true : 1;
-//[south] true : 1;
-//[west] true : 1;
-//[east] true : 1;
-[north] true : max(ax - axMAX, axMAX - ax) + max(ay - ayMAX, ayMAX - ay);
-[south] true : max(ax - axMAX, axMAX - ax) + max(ay - ayMAX, ayMAX - ay);
-[west] true : max(ax - axMAX, axMAX - ax) + max(ay - ayMAX, ayMAX - ay);
-[east] true : max(ax - axMAX, axMAX - ax) + max(ay - ayMAX, ayMAX - ay);
-
+[north] true : 1;
+[south] true : 1;
+[west] true : 1;
+[east] true : 1;
 crash: 5;
 endrewards
 rewards "rew"

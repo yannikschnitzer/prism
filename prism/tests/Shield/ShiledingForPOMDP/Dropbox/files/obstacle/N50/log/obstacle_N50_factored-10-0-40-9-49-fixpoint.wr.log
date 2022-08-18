@@ -1,0 +1,46 @@
+Storm-pomdp 1.7.0
+
+Date: Mon Aug 15 17:05:57 2022
+Command line arguments: --prism /Users/shengsheng/Dropbox/files/obstacle/N50/obstacle_N50_factored-10-0-40-9-49.nm --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacle/N50/winningregion/obstacle_N50_factored-10-0-40-9-49-fixpoint.wr
+Current working directory: /Users/shengsheng/Dropbox
+
+Time for model input parsing: 0.006s.
+
+Time for model construction: 0.028s.
+
+-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	140
+Transitions: 	789
+Choices: 	434
+Observations: 	4
+Reward Models:  none
+State Labels: 	5 labels
+   * deadlock -> 0 item(s)
+   * traps -> 2 item(s)
+   * init -> 1 item(s)
+   * notbad -> 138 item(s)
+   * goal -> 39 item(s)
+Choice Labels: 	5 labels
+   * placement -> 1 item(s)
+   * south -> 98 item(s)
+   * north -> 98 item(s)
+   * east -> 98 item(s)
+   * west -> 98 item(s)
+-------------------------------------------------------------- 
+Analyzing property 'Pmax=? ["notbad" U "goal"]'
+Write to file /Users/shengsheng/Dropbox/files/obstacle/N50/winningregion/obstacle_N50_factored-10-0-40-9-49-fixpoint.wr.
+Write to file /Users/shengsheng/Dropbox/files/obstacle/N50/winningregion/obstacle_N50_factored-10-0-40-9-49-fixpoint.wr.
+Initial state is safe!
+#STATS Number of belief support states: 316912650057057350923931615234
+#STATS Total time: 150.869s
+#STATS SAT Calls: 16107
+#STATS SAT Calls time: 68.250s
+#STATS Outer iterations: 425
+#STATS Solver initialization time: 0.166s
+#STATS Obtain partial scheduler time: 67.743s
+#STATS Update solver to extend partial scheduler time: 2.251s
+#STATS Update solver with new scheduler time: 9.916s
+#STATS Winning regions update time: 1.269s
+#STATS Graph search time: 0.000s
+Time for POMDP analysis: 150.894ss.

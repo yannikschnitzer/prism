@@ -1,0 +1,442 @@
+PRISM
+=====
+
+Version: 4.7.dev
+Date: Wed Aug 17 17:43:08 EDT 2022
+Hostname: YEW
+Memory limits: cudd=1g, java(heap)=1g
+Command line: prism obstacle_N50_centralized.nm ../../safe.props -prop 2 -exportmodel a.all -pomcpverbose 1
+
+Parsing model file "obstacle_N50_centralized.nm"...
+
+Type:        POMDP
+Modules:     master robot 
+Variables:   start ax ay 
+Observables: start amdone hascrash
+
+Switching to explicit engine, which supports POMDPs...
+
+Parsing properties file "../../safe.props"...
+
+2 properties:
+(1) R{"cos"}min=? [ F "goal" ]
+(2) <<*>> (1*R{"rew"}max=? [ F "goal" ]+1*R{"cos"}min=? [ F "goal" ])
+
+Building model...
+
+Computing reachable states... 2501 states
+Reachable states exploration and model construction done in 0.223 secs.
+Sorting reachable states list...
+
+Time for model construction: 0.258 seconds.
+
+Warning: Deadlocks detected and fixed in 1 states
+
+Type:        POMDP
+States:      2501 (1 initial)
+Obs/unobs:   4/2500
+Transitions: 19600
+Choices:     9998
+Max/avg:     4/4.00
+
+Exporting transition matrix in plain text format to file "a.tra"...
+
+Exporting state rewards in plain text format to file "a.srew"...
+
+Error: Explicit engine does not yet export state rewards for POMDPs.
+
+Error: Export of transition rewards not yet supported by explicit engine.
+
+Exporting list of reachable states in plain text format to file "a.sta"...
+
+Exporting labels and satisfying states in plain text format to file "a.lab"...
+
+---------------------------------------------------------------------
+
+Model checking: <<*>> (1*R{"rew"}max=? [ F "goal" ]+1*R{"cos"}min=? [ F "goal" ])
+
+Starting expected reachability (max)...
+Starting Prob1 (max)...
+Prob1 (max) took 51 iterations and 0.109 seconds.
+Num states2501
+end states[2500]
+++++Initialize shield 0
+obstacle_N50_factored-10-0-0-9-9-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 1
+obstacle_N50_factored-10-0-10-9-19-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 2
+obstacle_N50_factored-10-0-20-9-29-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 3
+obstacle_N50_factored-10-0-30-9-39-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 4
+obstacle_N50_factored-10-0-40-9-49-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 5
+obstacle_N50_factored-10-10-0-19-9-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 6
+obstacle_N50_factored-10-10-10-19-19-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 7
+obstacle_N50_factored-10-10-20-19-29-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 8
+obstacle_N50_factored-10-10-30-19-39-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 9
+obstacle_N50_factored-10-10-40-19-49-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 10
+obstacle_N50_factored-10-20-0-29-9-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 11
+obstacle_N50_factored-10-20-10-29-19-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 12
+obstacle_N50_factored-10-20-20-29-29-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 13
+obstacle_N50_factored-10-20-30-29-39-fixpoint - Copy.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 14
+obstacle_N50_factored-10-20-30-29-39-fixpoint.wr
+State information translated
+Winning region loaded.
+Time for load shields363
+Shield Level0shieldType-1
+shielding level0
+
+ =============== Step 0 Cur state 0shield0
+s=0(start=false,ax=0,ay=0)
+Belief 
+s=0(start=false,ax=0,ay=0)
+[10000.0], 
+
+time for action selection0
+time for update 14
+Action actually taken= placement reward = 0.0 states after action :
+so far is ... safe
+step time20
+
+ =============== Step 1 Cur state 644shield0
+s=644(start=true,ax=12,ay=43)
+Belief 
+s=292(start=true,ax=5,ay=41)
+[1972.0], 
+s=644(start=true,ax=12,ay=43)
+[2037.0], 
+s=834(start=true,ax=16,ay=33)
+[1980.0], 
+s=1330(start=true,ax=26,ay=29)
+[2013.0], 
+s=1654(start=true,ax=33,ay=3)
+[1998.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=-1depth1 o=-1 vmean=-21.779034203503393 v=-713655.3927803992 n=32768.0 Belief Support=[1330, 834, 644, 292, 1654]
+
+
+MCTS layer2
+Id=1depth2 a=north vmean=-21.271920054254064 v=-178407.59349502882 n=8387.0 | Id=-1depth1 o=-1 vmean=-21.779034203503393 v=-713655.3927803992 n=32768.0 Belief Support=[1330, 834, 644, 292, 1654]
+depth2 a=north | 
+
+Id=2depth2 a=south vmean=-22.571546015457276 v=-178405.4997061743 n=7904.0 | Id=-1depth1 o=-1 vmean=-21.779034203503393 v=-713655.3927803992 n=32768.0 Belief Support=[1330, 834, 644, 292, 1654]
+depth2 a=south | 
+
+Id=3depth2 a=east vmean=-21.956785656074263 v=-178420.84024125946 n=8126.0 | Id=-1depth1 o=-1 vmean=-21.779034203503393 v=-713655.3927803992 n=32768.0 Belief Support=[1330, 834, 644, 292, 1654]
+depth2 a=east | 
+
+Id=4depth2 a=west vmean=-21.36528072541109 v=-178421.45933790802 n=8351.0 | Id=-1depth1 o=-1 vmean=-21.779034203503393 v=-713655.3927803992 n=32768.0 Belief Support=[1330, 834, 644, 292, 1654]
+depth2 a=west | 
+
+reach tree print depth 2
+time for action selection2636
+time for update 2
+Action actually taken= south reward = -1.0 states after action :
+so far is ... safe
+step time2640
+
+ =============== Step 2 Cur state 645shield0
+s=645(start=true,ax=12,ay=44)
+Belief 
+s=293(start=true,ax=5,ay=42)
+[2201.0], 
+s=294(start=true,ax=5,ay=43)
+[240.0], 
+s=645(start=true,ax=12,ay=44)
+[2173.0], 
+s=646(start=true,ax=12,ay=45)
+[268.0], 
+s=835(start=true,ax=16,ay=34)
+[2139.0], 
+s=836(start=true,ax=16,ay=35)
+[242.0], 
+s=1332(start=true,ax=26,ay=31)
+[267.0], 
+s=1655(start=true,ax=33,ay=4)
+[2222.0], 
+s=1656(start=true,ax=33,ay=5)
+[248.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=-1depth1 o=-1 vmean=-21.578761862443 v=-707092.8687085322 n=32768.0 Belief Support=[835, 1332, 836, 645, 293, 646, 294, 1655, 1656]
+
+
+MCTS layer2
+Id=71765depth2 a=north vmean=-21.50030420006366 v=-176775.5011329234 n=8222.0 | Id=-1depth1 o=-1 vmean=-21.578761862443 v=-707092.8687085322 n=32768.0 Belief Support=[835, 1332, 836, 645, 293, 646, 294, 1655, 1656]
+depth2 a=north | 
+
+Id=71766depth2 a=south vmean=-21.51785211680217 v=-176769.15513952984 n=8215.0 | Id=-1depth1 o=-1 vmean=-21.578761862443 v=-707092.8687085322 n=32768.0 Belief Support=[835, 1332, 836, 645, 293, 646, 294, 1655, 1656]
+depth2 a=south | 
+
+Id=71767depth2 a=east vmean=-22.003734202531735 v=-176778.00058313995 n=8034.0 | Id=-1depth1 o=-1 vmean=-21.578761862443 v=-707092.8687085322 n=32768.0 Belief Support=[835, 1332, 836, 645, 293, 646, 294, 1655, 1656]
+depth2 a=east | 
+
+Id=71768depth2 a=west vmean=-21.30531660273677 v=-176770.21185290697 n=8297.0 | Id=-1depth1 o=-1 vmean=-21.578761862443 v=-707092.8687085322 n=32768.0 Belief Support=[835, 1332, 836, 645, 293, 646, 294, 1655, 1656]
+depth2 a=west | 
+
+reach tree print depth 2
+time for action selection2336
+time for update 0
+Action actually taken= south reward = -1.0 states after action :
+so far is ... safe
+step time2338
+
+ =============== Step 3 Cur state 646shield0
+s=646(start=true,ax=12,ay=45)
+Belief 
+s=294(start=true,ax=5,ay=43)
+[1990.0], 
+s=295(start=true,ax=5,ay=44)
+[451.0], 
+s=296(start=true,ax=5,ay=45)
+[26.0], 
+s=646(start=true,ax=12,ay=45)
+[1981.0], 
+s=647(start=true,ax=12,ay=46)
+[440.0], 
+s=648(start=true,ax=12,ay=47)
+[35.0], 
+s=836(start=true,ax=16,ay=35)
+[1887.0], 
+s=837(start=true,ax=16,ay=36)
+[457.0], 
+s=838(start=true,ax=16,ay=37)
+[26.0], 
+s=1333(start=true,ax=26,ay=32)
+[223.0], 
+s=1334(start=true,ax=26,ay=33)
+[21.0], 
+s=1656(start=true,ax=33,ay=5)
+[2020.0], 
+s=1657(start=true,ax=33,ay=6)
+[414.0], 
+s=1658(start=true,ax=33,ay=7)
+[29.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=-1depth1 o=-1 vmean=-21.61764526778685 v=-708367.0001348394 n=32768.0 Belief Support=[836, 837, 646, 294, 838, 295, 647, 648, 296, 1333, 1334, 1656, 1657, 1658]
+
+
+MCTS layer2
+Id=146409depth2 a=north vmean=-21.50201121646848 v=-177090.5643788344 n=8236.0 | Id=-1depth1 o=-1 vmean=-21.61764526778685 v=-708367.0001348394 n=32768.0 Belief Support=[836, 837, 646, 294, 838, 295, 647, 648, 296, 1333, 1334, 1656, 1657, 1658]
+depth2 a=north | 
+
+Id=146410depth2 a=south vmean=-21.426992836629726 v=-177094.09579474467 n=8265.0 | Id=-1depth1 o=-1 vmean=-21.61764526778685 v=-708367.0001348394 n=32768.0 Belief Support=[836, 837, 646, 294, 838, 295, 647, 648, 296, 1333, 1334, 1656, 1657, 1658]
+depth2 a=south | 
+
+Id=146411depth2 a=east vmean=-21.894311562722237 v=-177081.19191929745 n=8088.0 | Id=-1depth1 o=-1 vmean=-21.61764526778685 v=-708367.0001348394 n=32768.0 Belief Support=[836, 837, 646, 294, 838, 295, 647, 648, 296, 1333, 1334, 1656, 1657, 1658]
+depth2 a=east | 
+
+Id=146412depth2 a=west vmean=-21.65315418045417 v=-177101.14804193465 n=8179.0 | Id=-1depth1 o=-1 vmean=-21.61764526778685 v=-708367.0001348394 n=32768.0 Belief Support=[836, 837, 646, 294, 838, 295, 647, 648, 296, 1333, 1334, 1656, 1657, 1658]
+depth2 a=west | 
+
+reach tree print depth 2
+time for action selection2373
+time for update 1
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+step time2375
+
+ =============== Step 4 Cur state 696shield0
+s=696(start=true,ax=13,ay=45)
+Belief 
+s=344(start=true,ax=6,ay=43)
+[1785.0], 
+s=345(start=true,ax=6,ay=44)
+[428.0], 
+s=346(start=true,ax=6,ay=45)
+[24.0], 
+s=394(start=true,ax=7,ay=43)
+[185.0], 
+s=395(start=true,ax=7,ay=44)
+[51.0], 
+s=396(start=true,ax=7,ay=45)
+[1.0], 
+s=696(start=true,ax=13,ay=45)
+[1777.0], 
+s=697(start=true,ax=13,ay=46)
+[392.0], 
+s=698(start=true,ax=13,ay=47)
+[34.0], 
+s=746(start=true,ax=14,ay=45)
+[203.0], 
+s=747(start=true,ax=14,ay=46)
+[44.0], 
+s=748(start=true,ax=14,ay=47)
+[3.0], 
+s=886(start=true,ax=17,ay=35)
+[1775.0], 
+s=887(start=true,ax=17,ay=36)
+[427.0], 
+s=888(start=true,ax=17,ay=37)
+[18.0], 
+s=936(start=true,ax=18,ay=35)
+[200.0], 
+s=937(start=true,ax=18,ay=36)
+[40.0], 
+s=938(start=true,ax=18,ay=37)
+[2.0], 
+s=1383(start=true,ax=27,ay=32)
+[209.0], 
+s=1384(start=true,ax=27,ay=33)
+[18.0], 
+s=1433(start=true,ax=28,ay=32)
+[22.0], 
+s=1434(start=true,ax=28,ay=33)
+[3.0], 
+s=1706(start=true,ax=34,ay=5)
+[1902.0], 
+s=1707(start=true,ax=34,ay=6)
+[378.0], 
+s=1708(start=true,ax=34,ay=7)
+[33.0], 
+s=1757(start=true,ax=35,ay=6)
+[41.0], 
+s=1758(start=true,ax=35,ay=7)
+[5.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=-1depth1 o=-1 vmean=-21.988915249992306 v=-720532.7749117479 n=32768.0 Belief Support=[394, 395, 396, 344, 345, 1433, 346, 1434, 1757, 1758, 1383, 936, 1384, 937, 1706, 746, 938, 1707, 747, 748, 1708, 886, 887, 696, 888, 697, 698]
+
+
+MCTS layer2
+Id=219368depth2 a=north vmean=-21.951164684006923 v=-180131.2573969608 n=8206.0 | Id=-1depth1 o=-1 vmean=-21.988915249992306 v=-720532.7749117479 n=32768.0 Belief Support=[394, 395, 396, 344, 345, 1433, 346, 1434, 1757, 1758, 1383, 936, 1384, 937, 1706, 746, 938, 1707, 747, 748, 1708, 886, 887, 696, 888, 697, 698]
+depth2 a=north | 
+
+Id=219369depth2 a=south vmean=-21.507979713903307 v=-180129.33010394018 n=8375.0 | Id=-1depth1 o=-1 vmean=-21.988915249992306 v=-720532.7749117479 n=32768.0 Belief Support=[394, 395, 396, 344, 345, 1433, 346, 1434, 1757, 1758, 1383, 936, 1384, 937, 1706, 746, 938, 1707, 747, 748, 1708, 886, 887, 696, 888, 697, 698]
+depth2 a=south | 
+
+Id=219370depth2 a=east vmean=-22.978539238531177 v=-180128.7690908459 n=7839.0 | Id=-1depth1 o=-1 vmean=-21.988915249992306 v=-720532.7749117479 n=32768.0 Belief Support=[394, 395, 396, 344, 345, 1433, 346, 1434, 1757, 1758, 1383, 936, 1384, 937, 1706, 746, 938, 1707, 747, 748, 1708, 886, 887, 696, 888, 697, 698]
+depth2 a=east | 
+
+Id=219371depth2 a=west vmean=-21.579230752271858 v=-180143.41831996548 n=8348.0 | Id=-1depth1 o=-1 vmean=-21.988915249992306 v=-720532.7749117479 n=32768.0 Belief Support=[394, 395, 396, 344, 345, 1433, 346, 1434, 1757, 1758, 1383, 936, 1384, 937, 1706, 746, 938, 1707, 747, 748, 1708, 886, 887, 696, 888, 697, 698]
+depth2 a=west | 
+
+reach tree print depth 2
+time for action selection2322
+time for update 1
+Action actually taken= east reward = -1.0 states after action :
+so far is ... safe
+step time2325
+
+ =============== Step 5 Cur state 746shield0
+s=746(start=true,ax=14,ay=45)
+Belief 
+s=394(start=true,ax=7,ay=43)
+[1972.0], 
+s=395(start=true,ax=7,ay=44)
+[502.0], 
+s=396(start=true,ax=7,ay=45)
+[24.0], 
+s=444(start=true,ax=8,ay=43)
+[411.0], 
+s=445(start=true,ax=8,ay=44)
+[103.0], 
+s=446(start=true,ax=8,ay=45)
+[5.0], 
+s=494(start=true,ax=9,ay=43)
+[12.0], 
+s=495(start=true,ax=9,ay=44)
+[9.0], 
+s=746(start=true,ax=14,ay=45)
+[1847.0], 
+s=747(start=true,ax=14,ay=46)
+[453.0], 
+s=748(start=true,ax=14,ay=47)
+[33.0], 
+s=796(start=true,ax=15,ay=45)
+[428.0], 
+s=797(start=true,ax=15,ay=46)
+[103.0], 
+s=798(start=true,ax=15,ay=47)
+[5.0], 
+s=846(start=true,ax=16,ay=45)
+[35.0], 
+s=847(start=true,ax=16,ay=46)
+[6.0], 
+s=936(start=true,ax=18,ay=35)
+[1912.0], 
+s=937(start=true,ax=18,ay=36)
+[449.0], 
+s=938(start=true,ax=18,ay=37)
+[16.0], 
+s=986(start=true,ax=19,ay=35)
+[438.0], 
+s=987(start=true,ax=19,ay=36)
+[94.0], 
+s=988(start=true,ax=19,ay=37)
+[2.0], 
+s=1036(start=true,ax=20,ay=35)
+[25.0], 
+s=1037(start=true,ax=20,ay=36)
+[6.0], 
+s=1038(start=true,ax=20,ay=37)
+[1.0], 
+s=1433(start=true,ax=28,ay=32)
+[199.0], 
+s=1434(start=true,ax=28,ay=33)
+[17.0], 
+s=1483(start=true,ax=29,ay=32)
+[59.0], 
+s=1484(start=true,ax=29,ay=33)
+[4.0], 
+s=1533(start=true,ax=30,ay=32)
+[4.0], 
+s=1757(start=true,ax=35,ay=6)
+[438.0], 
+s=1758(start=true,ax=35,ay=7)
+[46.0], 
+s=1806(start=true,ax=36,ay=5)
+[238.0], 
+s=1807(start=true,ax=36,ay=6)
+[87.0], 
+s=1808(start=true,ax=36,ay=7)
+[11.0], 
+s=1857(start=true,ax=37,ay=6)
+[5.0], 
+s=1858(start=true,ax=37,ay=7)
+[1.0], 
+

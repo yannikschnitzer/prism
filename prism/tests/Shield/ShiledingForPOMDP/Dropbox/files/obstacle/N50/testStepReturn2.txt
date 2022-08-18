@@ -1,0 +1,27 @@
+PRISM
+=====
+
+Version: 4.7.dev
+Date: Wed Aug 17 18:12:17 EDT 2022
+Hostname: YEW
+Memory limits: cudd=1g, java(heap)=1g
+Command line: prism obstacle_N50_centralized.nm ../../safe.props -prop 2 -exportmodel a.all -pomcpverbose 1
+
+Parsing model file "obstacle_N50_centralized.nm"...
+
+Type:        POMDP
+Modules:     master robot 
+Variables:   start ax ay 
+Observables: start amdone hascrash
+
+Switching to explicit engine, which supports POMDPs...
+
+Parsing properties file "../../safe.props"...
+
+2 properties:
+(1) R{"cos"}min=? [ F "goal" ]
+(2) <<*>> (1*R{"rew"}max=? [ F "goal" ]+1*R{"cos"}min=? [ F "goal" ])
+
+Building model...
+
+Computing reachable states...

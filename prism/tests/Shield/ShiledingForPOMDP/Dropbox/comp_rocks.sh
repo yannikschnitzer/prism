@@ -44,8 +44,6 @@ echo "Time out is $TO seconds"
 TIMEOUTCOMMAND="timeout $TO"
 #$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/rocks_N8R4_exit.nm -const N=8 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/rocks_N8R4_exit-fixpoint.wr" &> logfiles/iterative/rocks_N8R4_exit-fixpoint.wr.log
 #$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/rocks_N8R4_0_0_3_3.nm -const N=8 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/rocks_N8R4_0_0_3_3-fixpoint.wr" &> logfiles/iterative/rocks_N8R4_0_0_3_3-fixpoint.wr.log
-#$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/rocks_N8R4_0_4_3_7.nm -const N=8 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/rocks_N8R4_0_4_3_7-fixpoint.wr" &> logfiles/iterative/rocks_N8R4_0_4_3_7-fixpoint.wr.log
-#$TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/rocks_N8R4_4_0_3_7.nm -const N=8 --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "winningregion/rocks_N8R4_4_0_3_7-fixpoint.wr" &> logfiles/iterative/rocks_N8R4_4_0_3_7-fixpoint.wr.log
 
 
 # model=rocks_N8R2_factored-4-0-0-3-3
@@ -53,45 +51,16 @@ TIMEOUTCOMMAND="timeout $TO"
 #   --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats \
 #   --exportwinningregion "winningregion/$model-fixpoint.wr" &> logfiles/iterative/$model-fixpoint.wr.log
 
-# model=rocks_N8R2_factored-4-0-4-3-7
-# $TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/$model.nm -const N=8 --prop "Pmax=? [\"notbad\" U \"goal\"]"  \
-#   --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats \
-#   --exportwinningregion "winningregion/$model-fixpoint.wr" &> logfiles/iterative/$model-fixpoint.wr.log
-
-# model=rocks_N8R2_factored-4-4-0-7-3
-# $TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/$model.nm -const N=8 --prop "Pmax=? [\"notbad\" U \"goal\"]"  \
-#   --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats \
-#   --exportwinningregion "winningregion/$model-fixpoint.wr" &> logfiles/iterative/$model-fixpoint.wr.log
-
-# model=rocks_N8R2_factored-4-4-4-7-7
-# $TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/$model.nm -const N=8 --prop "Pmax=? [\"notbad\" U \"goal\"]"  \
-#   --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats \
-#   --exportwinningregion "winningregion/$model-fixpoint.wr" &> logfiles/iterative/$model-fixpoint.wr.log
-
-# model=rocks_N8R2_factored-4-0-0-3-3-test
-# $TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/$model.nm --prop "Pmax=? [\"notbad\" U \"goal\"]"  \
-#   --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats \
-#   --exportwinningregion "winningregion/$model-fixpoint.wr" &> logfiles/iterative/$model-fixpoint.wr.log
-
-# model=rocks_N8R2_centralized
-# $TIMEOUTCOMMAND $STORM_POMDP --prism $MODEL_DIR/$model.nm -const N=8 --prop "Pmax=? [\"notbad\" U \"goal\"]"  \
-#   --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats \
-#   --exportwinningregion "winningregion/$model-fixpoint.wr" &> logfiles/iterative/$model-fixpoint.wr.log
-
-MODEL_DIR=/opt/experiments/host/files/rock/N10R6
+MODEL_DIR=/opt/experiments/host/files/obstacle/N50
 MODEL_FILE=$(ls $MODEL_DIR/*factor*.nm)
 for path_model in $MODEL_FILE; do
   model=$(basename $path_model)
-  echo $model
-  # $TIMEOUTCOMMAND $STORM_POMDP --prism ${MODEL_DIR}/${model} --prop "Pmax=? [\"notbad\" U \"goal\"]"  \
-  # --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats \
-  # --exportwinningregion "${MODEL_DIR}/winningregion/${model%.*}-fixpoint.wr" &> "${MODEL_DIR}/log/$${model%.*}-fixpoint.wr.log"
+  # echo $model
+  $TIMEOUTCOMMAND $STORM_POMDP --prism ${MODEL_DIR}/${model} --prop "Pmax=? [\"notbad\" U \"goal\"]"  \
+  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats \
+  --exportwinningregion "${MODEL_DIR}/winningregion/${model%.*}-fixpoint.wr" &> "${MODEL_DIR}/log/${model%.*}-fixpoint.wr.log"
 done
 
-# rocks_N10R6_factored-5-0-0-4-4.nm
-# rocks_N10R6_factored-5-0-5-4-9.nm
-# rocks_N10R6_factored-5-5-0-9-4.nm
-# rocks_N10R6_factored-5-5-5-9-9.nm
 
 # MODEL_DIR=/opt/experiments/host/files/rock/N10R6
 # model=rocks_N10R6_factored-5-0-0-4-4.nm
@@ -99,8 +68,8 @@ done
 #   --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats \
 #   --exportwinningregion "${MODEL_DIR}/winningregion/${model%.*}-fixpoint.wr" &> "${MODEL_DIR}/log/$${model%.*}-fixpoint.wr.log"
 
-MODEL_DIR=/opt/experiments/host/files/original
-model=evade.nm
-$TIMEOUTCOMMAND $STORM_POMDP --prism ${MODEL_DIR}/${model} -const N=6,RADIUS=2 --prop "Pmax=? [\"notbad\" U \"goal\"]"  \
-  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats \
-  --exportwinningregion "${MODEL_DIR}/winningregion/${model%.*}-fixpoint.wr" &> "${MODEL_DIR}/log/$${model%.*}-fixpoint.wr.log"
+# MODEL_DIR=/opt/experiments/host/files/original
+# model=evade.nm
+# $TIMEOUTCOMMAND $STORM_POMDP --prism ${MODEL_DIR}/${model} -const N=6,RADIUS=2 --prop "Pmax=? [\"notbad\" U \"goal\"]"  \
+#   --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats \
+#   --exportwinningregion "${MODEL_DIR}/winningregion/${model%.*}-fixpoint.wr" &> "${MODEL_DIR}/log/$${model%.*}-fixpoint.wr.log"

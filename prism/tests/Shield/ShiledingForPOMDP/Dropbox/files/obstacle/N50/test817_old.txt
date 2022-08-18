@@ -1,0 +1,201 @@
+PRISM
+=====
+
+Version: 4.7.dev
+Date: Wed Aug 17 17:43:38 EDT 2022
+Hostname: YEW
+Memory limits: cudd=1g, java(heap)=1g
+Command line: prism obstacle_N50_centralized.nm ../../safe.props -prop 2 -exportmodel a.all -pomcpverbose 1
+
+Parsing model file "obstacle_N50_centralized.nm"...
+
+Type:        POMDP
+Modules:     master robot 
+Variables:   start ax ay 
+Observables: start amdone hascrash
+
+Switching to explicit engine, which supports POMDPs...
+
+Parsing properties file "../../safe.props"...
+
+2 properties:
+(1) R{"cos"}min=? [ F "goal" ]
+(2) <<*>> (1*R{"rew"}max=? [ F "goal" ]+1*R{"cos"}min=? [ F "goal" ])
+
+Building model...
+
+Computing reachable states... 2501 states
+Reachable states exploration and model construction done in 0.217 secs.
+Sorting reachable states list...
+
+Time for model construction: 0.257 seconds.
+
+Warning: Deadlocks detected and fixed in 1 states
+
+Type:        POMDP
+States:      2501 (1 initial)
+Obs/unobs:   4/2500
+Transitions: 19600
+Choices:     9998
+Max/avg:     4/4.00
+
+Exporting transition matrix in plain text format to file "a.tra"...
+
+Exporting state rewards in plain text format to file "a.srew"...
+
+Error: Explicit engine does not yet export state rewards for POMDPs.
+
+Error: Export of transition rewards not yet supported by explicit engine.
+
+Exporting list of reachable states in plain text format to file "a.sta"...
+
+Exporting labels and satisfying states in plain text format to file "a.lab"...
+
+---------------------------------------------------------------------
+
+Model checking: <<*>> (1*R{"rew"}max=? [ F "goal" ]+1*R{"cos"}min=? [ F "goal" ])
+
+Starting expected reachability (max)...
+Starting Prob1 (max)...
+Prob1 (max) took 51 iterations and 0.102 seconds.
+Num states2501
+end states[2500]
+++++Initialize shield 0
+obstacle_N50_factored-10-0-0-9-9-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 1
+obstacle_N50_factored-10-0-10-9-19-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 2
+obstacle_N50_factored-10-0-20-9-29-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 3
+obstacle_N50_factored-10-0-30-9-39-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 4
+obstacle_N50_factored-10-0-40-9-49-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 5
+obstacle_N50_factored-10-10-0-19-9-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 6
+obstacle_N50_factored-10-10-10-19-19-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 7
+obstacle_N50_factored-10-10-20-19-29-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 8
+obstacle_N50_factored-10-10-30-19-39-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 9
+obstacle_N50_factored-10-10-40-19-49-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 10
+obstacle_N50_factored-10-20-0-29-9-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 11
+obstacle_N50_factored-10-20-10-29-19-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 12
+obstacle_N50_factored-10-20-20-29-29-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 13
+obstacle_N50_factored-10-20-30-29-39-fixpoint - Copy.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 14
+obstacle_N50_factored-10-20-30-29-39-fixpoint.wr
+State information translated
+Winning region loaded.
+Time for load shields408
+Shield Level0shieldType-1
+shielding level0
+
+ =============== Step 0 Cur state 0shield0
+s=0(start=false,ax=0,ay=0)
+Belief 
+s=0(start=false,ax=0,ay=0)
+[10000.0], 
+
+time for action selection0
+time for update 18
+Action actually taken= placement reward = 0.0 states after action :
+so far is ... safe
+step time23
+
+ =============== Step 1 Cur state 834shield0
+s=834(start=true,ax=16,ay=33)
+Belief 
+s=292(start=true,ax=5,ay=41)
+[1939.0], 
+s=644(start=true,ax=12,ay=43)
+[1995.0], 
+s=834(start=true,ax=16,ay=33)
+[2079.0], 
+s=1330(start=true,ax=26,ay=29)
+[2003.0], 
+s=1654(start=true,ax=33,ay=3)
+[1984.0], 
+
+finishing all 32768.0simulations
+MCTS layer1
+Id=-1depth1 o=-1 vmean=-21.78289001428282 v=-713781.7399880195 n=32768.0 Belief Support=[834, 1330, 644, 292, 1654]
+
+
+MCTS layer2
+Id=1depth2 a=north vmean=-21.212585609820405 v=-178440.27014980925 n=8412.0 | Id=-1depth1 o=-1 vmean=-21.78289001428282 v=-713781.7399880195 n=32768.0 Belief Support=[834, 1330, 644, 292, 1654]
+depth2 a=north | 
+
+Id=2depth2 a=south vmean=-22.55351390799049 v=-178443.40204002074 n=7912.0 | Id=-1depth1 o=-1 vmean=-21.78289001428282 v=-713781.7399880195 n=32768.0 Belief Support=[834, 1330, 644, 292, 1654]
+depth2 a=south | 
+
+Id=3depth2 a=east vmean=-22.047662508192158 v=-178453.7803413073 n=8094.0 | Id=-1depth1 o=-1 vmean=-21.78289001428282 v=-713781.7399880195 n=32768.0 Belief Support=[834, 1330, 644, 292, 1654]
+depth2 a=east | 
+
+Id=4depth2 a=west vmean=-21.3705733481253 v=-178444.28745684627 n=8350.0 | Id=-1depth1 o=-1 vmean=-21.78289001428282 v=-713781.7399880195 n=32768.0 Belief Support=[834, 1330, 644, 292, 1654]
+depth2 a=west | 
+
+reach tree print depth 2
+time for action selection5397
+time for update 1
+Action actually taken= north reward = -1.0 states after action :
+so far is ... safe
+step time5402
+
+ =============== Step 2 Cur state 833shield0
+s=833(start=true,ax=16,ay=32)
+Belief 
+s=290(start=true,ax=5,ay=39)
+[224.0], 
+s=291(start=true,ax=5,ay=40)
+[1833.0], 
+s=642(start=true,ax=12,ay=41)
+[206.0], 
+s=643(start=true,ax=12,ay=42)
+[1805.0], 
+s=832(start=true,ax=16,ay=31)
+[192.0], 
+s=833(start=true,ax=16,ay=32)
+[1818.0], 
+s=1328(start=true,ax=26,ay=27)
+[196.0], 
+s=1329(start=true,ax=26,ay=28)
+[1766.0], 
+s=1652(start=true,ax=33,ay=1)
+[200.0], 
+s=1653(start=true,ax=33,ay=2)
+[1760.0], 
+

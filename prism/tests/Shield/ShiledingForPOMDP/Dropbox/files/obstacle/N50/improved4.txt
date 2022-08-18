@@ -1,0 +1,162 @@
+PRISM
+=====
+
+Version: 4.7.dev
+Date: Wed Aug 17 19:13:57 EDT 2022
+Hostname: YEW
+Memory limits: cudd=1g, java(heap)=1g
+Command line: prism obstacle_N50_centralized.nm ../../safe.props -prop 2 -exportmodel a.all -pomcpverbose 1
+
+Parsing model file "obstacle_N50_centralized.nm"...
+
+Type:        POMDP
+Modules:     master robot 
+Variables:   start ax ay 
+Observables: start amdone hascrash
+
+Switching to explicit engine, which supports POMDPs...
+
+Parsing properties file "../../safe.props"...
+
+2 properties:
+(1) R{"cos"}min=? [ F "goal" ]
+(2) <<*>> (1*R{"rew"}max=? [ F "goal" ]+1*R{"cos"}min=? [ F "goal" ])
+
+Building model...
+
+Computing reachable states... 2501 states
+Reachable states exploration and model construction done in 0.227 secs.
+Sorting reachable states list...
+
+Time for model construction: 0.267 seconds.
+
+Warning: Deadlocks detected and fixed in 1 states
+
+Type:        POMDP
+States:      2501 (1 initial)
+Obs/unobs:   4/2500
+Transitions: 19600
+Choices:     9998
+Max/avg:     4/4.00
+
+Exporting transition matrix in plain text format to file "a.tra"...
+
+Exporting state rewards in plain text format to file "a.srew"...
+
+Error: Explicit engine does not yet export state rewards for POMDPs.
+
+Error: Export of transition rewards not yet supported by explicit engine.
+
+Exporting list of reachable states in plain text format to file "a.sta"...
+
+Exporting labels and satisfying states in plain text format to file "a.lab"...
+
+---------------------------------------------------------------------
+
+Model checking: <<*>> (1*R{"rew"}max=? [ F "goal" ]+1*R{"cos"}min=? [ F "goal" ])
+
+Starting expected reachability (max)...
+Starting Prob1 (max)...
+Prob1 (max) took 51 iterations and 0.103 seconds.
+Num states2501
+end states[2500]
+++++Initialize shield 0
+obstacle_N50_factored-10-0-0-9-9-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 1
+obstacle_N50_factored-10-0-10-9-19-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 2
+obstacle_N50_factored-10-0-20-9-29-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 3
+obstacle_N50_factored-10-0-30-9-39-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 4
+obstacle_N50_factored-10-0-40-9-49-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 5
+obstacle_N50_factored-10-10-0-19-9-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 6
+obstacle_N50_factored-10-10-10-19-19-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 7
+obstacle_N50_factored-10-10-20-19-29-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 8
+obstacle_N50_factored-10-10-30-19-39-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 9
+obstacle_N50_factored-10-10-40-19-49-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 10
+obstacle_N50_factored-10-20-0-29-9-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 11
+obstacle_N50_factored-10-20-10-29-19-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 12
+obstacle_N50_factored-10-20-20-29-29-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 13
+obstacle_N50_factored-10-20-30-29-39-fixpoint - Copy.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 14
+obstacle_N50_factored-10-20-30-29-39-fixpoint.wr
+State information translated
+Winning region loaded.
+Time for load shields358
+Shield Level0shieldType-1
+shielding level0
+
+ =============== Step 0 Cur state 0shield0
+s=0(start=false,ax=0,ay=0)
+Belief 
+s=0(start=false,ax=0,ay=0)
+[10000.0], 
+
+time for action selection0
+
+java.lang.IndexOutOfBoundsException: Index -1 out of bounds for length 4
+    at java.base/jdk.internal.util.Preconditions.outOfBounds(Preconditions.java:64)
+    at java.base/jdk.internal.util.Preconditions.outOfBoundsCheckIndex(Preconditions.java:70)
+    at java.base/jdk.internal.util.Preconditions.checkIndex(Preconditions.java:248)
+    at java.base/java.util.Objects.checkIndex(Objects.java:359)
+    at java.base/java.util.ArrayList.get(ArrayList.java:427)
+    at explicit.rewards.MDPRewardsSimple.getTransitionReward(MDPRewardsSimple.java:187)
+    at explicit.rewards.WeightedSumMDPRewards.getTransitionReward(WeightedSumMDPRewards.java:44)
+    at explicit.PartiallyObservableMonteCarloPlanning.stepReward(PartiallyObservableMonteCarloPlanning.java:1316)
+    at explicit.POMDPModelChecker.computeReachRewardsPOMCPEpisode(POMDPModelChecker.java:1961)
+    at explicit.POMDPModelChecker.computeReachRewardsPOMCP(POMDPModelChecker.java:1855)
+    at explicit.POMDPModelChecker.computeMultiReachRewards(POMDPModelChecker.java:2308)
+    at explicit.ProbModelChecker.checkExpressionWeightedMultiObj(ProbModelChecker.java:687)
+    at explicit.ProbModelChecker.checkExpressionWeightedMultiObj(ProbModelChecker.java:660)
+    at explicit.ProbModelChecker.checkExpressionMultiObj(ProbModelChecker.java:618)
+    at explicit.ProbModelChecker.checkExpressionStrategy(ProbModelChecker.java:578)
+    at explicit.ProbModelChecker.checkExpression(ProbModelChecker.java:520)
+    at explicit.StateModelChecker.checkExpressionFilter(StateModelChecker.java:1004)
+    at explicit.StateModelChecker.checkExpression(StateModelChecker.java:662)
+    at explicit.NonProbModelChecker.checkExpression(NonProbModelChecker.java:76)
+    at explicit.ProbModelChecker.checkExpression(ProbModelChecker.java:536)
+    at explicit.StateModelChecker.check(StateModelChecker.java:577)
+    at prism.Prism.modelCheck(Prism.java:3133)
+    at prism.PrismCL.run(PrismCL.java:407)
+    at prism.PrismCL.go(PrismCL.java:223)
+    at prism.PrismCL.main(PrismCL.java:2743)
+
+Error: Caught unhandled exception, aborting....

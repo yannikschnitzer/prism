@@ -1,0 +1,124 @@
+PRISM
+=====
+
+Version: 4.7.dev
+Date: Wed Aug 17 17:35:28 EDT 2022
+Hostname: YEW
+Memory limits: cudd=1g, java(heap)=1g
+Command line: prism obstacle_N6_centralized.nm ../../safe.props -prop 2 -exportmodel a.all -pomcpverbose 1
+
+Parsing model file "obstacle_N6_centralized.nm"...
+
+Type:        POMDP
+Modules:     master robot 
+Variables:   start ax ay 
+Observables: start amdone hascrash
+
+Switching to explicit engine, which supports POMDPs...
+
+Parsing properties file "../../safe.props"...
+
+2 properties:
+(1) R{"cos"}min=? [ F "goal" ]
+(2) <<*>> (1*R{"rew"}max=? [ F "goal" ]+1*R{"cos"}min=? [ F "goal" ])
+
+Building model...
+
+Computing reachable states... 37 states
+Reachable states exploration and model construction done in 0.013 secs.
+Sorting reachable states list...
+
+Time for model construction: 0.023 seconds.
+
+Warning: Deadlocks detected and fixed in 1 states
+
+Type:        POMDP
+States:      37 (1 initial)
+Obs/unobs:   4/36
+Transitions: 239
+Choices:     142
+Max/avg:     4/3.84
+
+Exporting transition matrix in plain text format to file "a.tra"...
+
+Exporting state rewards in plain text format to file "a.srew"...
+
+Error: Explicit engine does not yet export state rewards for POMDPs.
+
+Error: Export of transition rewards not yet supported by explicit engine.
+
+Exporting list of reachable states in plain text format to file "a.sta"...
+
+Exporting labels and satisfying states in plain text format to file "a.lab"...
+
+---------------------------------------------------------------------
+
+Model checking: <<*>> (1*R{"rew"}max=? [ F "goal" ]+1*R{"cos"}min=? [ F "goal" ])
+
+Starting expected reachability (max)...
+Starting Prob1 (max)...
+Prob1 (max) took 7 iterations and 0.004 seconds.
+Num states37
+end states[36]
+++++Initialize main shield 
+obstacle_6_centralized-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 0
+obstacle_50_factored-10-40-40-49-49-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 1
+obstacle_6_factored-6-0-0-2-2-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 2
+obstacle_6_factored-6-0-3-2-5-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 3
+obstacle_6_factored-6-3-0-5-2-fixpoint.wr
+State information translated
+Winning region loaded.
+++++Initialize shield 4
+obstacle_6_factored-6-3-3-5-5-fixpoint.wr
+State information translated
+Winning region loaded.
+Time for load shields28
+Shield Level0shieldType-1
+shielding level0
+
+ =============== Step 0 Cur state 0shield0
+s=0(start=false,ax=0,ay=0)
+Belief 
+s=0(start=false,ax=0,ay=0)
+[10000.0], 
+
+time for action selection0
+
+java.lang.IndexOutOfBoundsException: Index 4 out of bounds for length 4
+    at java.base/jdk.internal.util.Preconditions.outOfBounds(Preconditions.java:64)
+    at java.base/jdk.internal.util.Preconditions.outOfBoundsCheckIndex(Preconditions.java:70)
+    at java.base/jdk.internal.util.Preconditions.checkIndex(Preconditions.java:248)
+    at java.base/java.util.Objects.checkIndex(Objects.java:359)
+    at java.base/java.util.ArrayList.get(ArrayList.java:427)
+    at explicit.PartiallyObservableMonteCarloPlanning.step(PartiallyObservableMonteCarloPlanning.java:1329)
+    at explicit.POMDPModelChecker.computeReachRewardsPOMCPEpisode(POMDPModelChecker.java:1955)
+    at explicit.POMDPModelChecker.computeReachRewardsPOMCP(POMDPModelChecker.java:1855)
+    at explicit.POMDPModelChecker.computeMultiReachRewards(POMDPModelChecker.java:2304)
+    at explicit.ProbModelChecker.checkExpressionWeightedMultiObj(ProbModelChecker.java:687)
+    at explicit.ProbModelChecker.checkExpressionWeightedMultiObj(ProbModelChecker.java:660)
+    at explicit.ProbModelChecker.checkExpressionMultiObj(ProbModelChecker.java:618)
+    at explicit.ProbModelChecker.checkExpressionStrategy(ProbModelChecker.java:578)
+    at explicit.ProbModelChecker.checkExpression(ProbModelChecker.java:520)
+    at explicit.StateModelChecker.checkExpressionFilter(StateModelChecker.java:1004)
+    at explicit.StateModelChecker.checkExpression(StateModelChecker.java:662)
+    at explicit.NonProbModelChecker.checkExpression(NonProbModelChecker.java:76)
+    at explicit.ProbModelChecker.checkExpression(ProbModelChecker.java:536)
+    at explicit.StateModelChecker.check(StateModelChecker.java:577)
+    at prism.Prism.modelCheck(Prism.java:3133)
+    at prism.PrismCL.run(PrismCL.java:407)
+    at prism.PrismCL.go(PrismCL.java:223)
+    at prism.PrismCL.main(PrismCL.java:2743)
+
+Error: Caught unhandled exception, aborting....
