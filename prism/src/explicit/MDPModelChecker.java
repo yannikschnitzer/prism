@@ -3152,7 +3152,7 @@ public class MDPModelChecker extends ProbModelChecker
 			int idx_b;
 			mainLog.println("Generating random trace");
 //		mainLog.println(mdpStatesList.get(s));
-			PrismFileLog trace_out = new PrismFileLog("prism/tests/traces/distr_cvar_" + settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) + "_policy.csv");
+			PrismFileLog trace_out = new PrismFileLog("prism/tests/traces/distr_cvar_" + settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) + "_trace.csv");
 			trace_out.println("s; actions; policy; b");
 			int pathLen = 0;
 			List<Object> available = new ArrayList<>();
