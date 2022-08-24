@@ -1,0 +1,15 @@
+Storm-pomdp 1.7.0
+
+Date: Tue Aug 23 22:13:55 2022
+Command line arguments: --prism /Users/shengsheng/Dropbox/files/refuel/N6E8/refule_N6E8_centralized-6-0-0-5-5.nm --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/refuel/N6E8/winningregion/refule_N6E8_centralized-6-0-0-5-5-fixpoint.wr
+Current working directory: /Users/shengsheng/Dropbox
+
+ERROR (SpiritErrorHandler.h:27): Parsing error at 69:7:  expecting <integer expression>, here:
+	ay : [auMIN..auMAX] init 0;
+	      ^
+
+libc++abi: terminating with uncaught exception of type storm::exceptions::WrongFormatException: WrongFormatException: Parsing error at 69:7:  expecting <integer expression>, here:
+	ay : [auMIN..auMAX] init 0;
+	      ^
+
+ERROR: The program received signal 6 and will be aborted in 3s.

@@ -1,3 +1,4 @@
+R{"cost"}min=? [F "goal"];
+//<<*>> (1 * R{"rew"}max=? [ F "goal" ] + 1 * R{"cos"}min=? [ F "goal" ]);
+<<*>> (1 * R{"reward"}max=? [ F "goal" ] + 1 * R{"cost"}min=? [ F "goal" ]);
 
-R{"cos"}min=? [F "goal"];
-<<*>> (1 * R{"rew"}max=? [ F "goal" ] + 1 * R{"cos"}min=? [ F "goal" ]);

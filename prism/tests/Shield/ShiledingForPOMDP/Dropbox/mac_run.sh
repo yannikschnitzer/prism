@@ -1,19 +1,27 @@
 #!/bin/bash         
 
 STORM_POMDP="/Users/shengsheng/Downloads/github/storm-test/storm/build/bin/storm-pomdp"
-MODEL_DIR="/Users/shengsheng/Dropbox/files/obstacle/N10"
-
+#MODEL_DIR="/Users/shengsheng/Dropbox/files/obstacles/N10"
+MODEL_DIR="/Users/shengsheng/Dropbox/files/refuel/N6E8"
 
 TO=99998000
 TIMEOUTCOMMAND="timeout $TO"
 
-MODEL_FILE=$(ls $MODEL_DIR/*factor*.nm)
+# MODEL_FILE=$(ls $MODEL_DIR/*factor*.nm)
+# for path_model in $MODEL_FILE; do
+#   model=$(basename $path_model)
+#   #model="refule_N6E8_factored-3-3-0-5-2.nm"
+#   # echo $model
+#   $STORM_POMDP --prism ${MODEL_DIR}/${model} --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "${MODEL_DIR}/winningregion/${model%.*}-fixpoint.wr" &> "${MODEL_DIR}/log/${model%.*}-fixpoint.wr.log"
+# done
+
+
+MODEL_FILE=$(ls $MODEL_DIR/*centralized*.nm)
 for path_model in $MODEL_FILE; do
   model=$(basename $path_model)
-  # echo $model
-  echo "$STORM_POMDP --prism ${MODEL_DIR}/${model} --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "${MODEL_DIR}/winningregion/${model%.*}-fixpoint.wr" &> "${MODEL_DIR}/log/${model%.*}-fixpoint.wr.log""
+  #echo $model
+  $STORM_POMDP --prism ${MODEL_DIR}/${model} --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion "${MODEL_DIR}/winningregion/${model%.*}-fixpoint.wr" &> "${MODEL_DIR}/log/${model%.*}-fixpoint.wr.log"
 done
-
 
 # /Users/shengsheng/Downloads/github/storm-test/storm/build/bin/storm-pomdp --prism /Users/shengsheng/Dropbox/files/obstacle/N50/obstacle_N50_factored-10-0-0-9-9.nm --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacle/N50/winningregion/obstacle_N50_factored-10-0-0-9-9-fixpoint.wr &> /Users/shengsheng/Dropbox/files/obstacle/N50/log/obstacle_N50_factored-10-0-0-9-9-fixpoint.wr.log
 # /Users/shengsheng/Downloads/github/storm-test/storm/build/bin/storm-pomdp --prism /Users/shengsheng/Dropbox/files/obstacle/N50/obstacle_N50_factored-10-0-10-9-19.nm --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacle/N50/winningregion/obstacle_N50_factored-10-0-10-9-19-fixpoint.wr &> /Users/shengsheng/Dropbox/files/obstacle/N50/log/obstacle_N50_factored-10-0-10-9-19-fixpoint.wr.log
@@ -23,14 +31,12 @@ done
 # /Users/shengsheng/Downloads/github/storm-test/storm/build/bin/storm-pomdp --prism /Users/shengsheng/Dropbox/files/obstacle/N50/obstacle_N50_factored-10-10-0-19-9.nm --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacle/N50/winningregion/obstacle_N50_factored-10-10-0-19-9-fixpoint.wr &> /Users/shengsheng/Dropbox/files/obstacle/N50/log/obstacle_N50_factored-10-10-0-19-9-fixpoint.wr.log
 # /Users/shengsheng/Downloads/github/storm-test/storm/build/bin/storm-pomdp --prism /Users/shengsheng/Dropbox/files/obstacle/N50/obstacle_N50_factored-10-10-10-19-19.nm --prop "Pmax=? [\"notbad\" U \"goal\"]"  --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacle/N50/winningregion/obstacle_N50_factored-10-10-10-19-19-fixpoint.wr &> /Users/shengsheng/Dropbox/files/obstacle/N50/log/obstacle_N50_factored-10-10-10-19-19-fixpoint.wr.log
 # /Users/shengsheng/Downloads/github/storm-test/storm/build/bin/storm-pomdp --prism /Users/shengsheng/Dropbox/files/obstacle/N50/obstacle_N50_factored-10-10-20-19-29.nm --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacle/N50/winningregion/obstacle_N50_factored-10-10-20-19-29-fixpoint.wr &> /Users/shengsheng/Dropbox/files/obstacle/N50/log/obstacle_N50_factored-10-10-20-19-29-fixpoint.wr.log
-
 # /Users/shengsheng/Downloads/github/storm-test/storm/build/bin/storm-pomdp --prism /Users/shengsheng/Dropbox/files/obstacle/N50/obstacle_N50_factored-10-10-30-19-39.nm --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacle/N50/winningregion/obstacle_N50_factored-10-10-30-19-39-fixpoint.wr &> /Users/shengsheng/Dropbox/files/obstacle/N50/log/obstacle_N50_factored-10-10-30-19-39-fixpoint.wr.log
-
 # /Users/shengsheng/Downloads/github/storm-test/storm/build/bin/storm-pomdp --prism /Users/shengsheng/Dropbox/files/obstacle/N50/obstacle_N50_factored-10-10-40-19-49.nm --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacle/N50/winningregion/obstacle_N50_factored-10-10-40-19-49-fixpoint.wr &> /Users/shengsheng/Dropbox/files/obstacle/N50/log/obstacle_N50_factored-10-10-40-19-49-fixpoint.wr.log
 # /Users/shengsheng/Downloads/github/storm-test/storm/build/bin/storm-pomdp --prism /Users/shengsheng/Dropbox/files/obstacle/N50/obstacle_N50_factored-10-20-0-29-9.nm --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacle/N50/winningregion/obstacle_N50_factored-10-20-0-29-9-fixpoint.wr &> /Users/shengsheng/Dropbox/files/obstacle/N50/log/obstacle_N50_factored-10-20-0-29-9-fixpoint.wr.log
 # /Users/shengsheng/Downloads/github/storm-test/storm/build/bin/storm-pomdp --prism /Users/shengsheng/Dropbox/files/obstacle/N50/obstacle_N50_factored-10-20-10-29-19.nm --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacle/N50/winningregion/obstacle_N50_factored-10-20-10-29-19-fixpoint.wr &> /Users/shengsheng/Dropbox/files/obstacle/N50/log/obstacle_N50_factored-10-20-10-29-19-fixpoint.wr.log
 # /Users/shengsheng/Downloads/github/storm-test/storm/build/bin/storm-pomdp --prism /Users/shengsheng/Dropbox/files/obstacle/N50/obstacle_N50_factored-10-20-20-29-29.nm --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacle/N50/winningregion/obstacle_N50_factored-10-20-20-29-29-fixpoint.wr &> /Users/shengsheng/Dropbox/files/obstacle/N50/log/obstacle_N50_factored-10-20-20-29-29-fixpoint.wr.log
-/Users/shengsheng/Downloads/github/storm-test/storm/build/bin/storm-pomdp --prism /Users/shengsheng/Dropbox/files/obstacle/N50/obstacle_N50_factored-10-20-30-29-39.nm --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacle/N50/winningregion/obstacle_N50_factored-10-20-30-29-39-fixpoint.wr &> /Users/shengsheng/Dropbox/files/obstacle/N50/log/obstacle_N50_factored-10-20-30-29-39-fixpoint.wr.log
+# /Users/shengsheng/Downloads/github/storm-test/storm/build/bin/storm-pomdp --prism /Users/shengsheng/Dropbox/files/obstacle/N50/obstacle_N50_factored-10-20-30-29-39.nm --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacle/N50/winningregion/obstacle_N50_factored-10-20-30-29-39-fixpoint.wr &> /Users/shengsheng/Dropbox/files/obstacle/N50/log/obstacle_N50_factored-10-20-30-29-39-fixpoint.wr.log
 # /Users/shengsheng/Downloads/github/storm-test/storm/build/bin/storm-pomdp --prism /Users/shengsheng/Dropbox/files/obstacle/N50/obstacle_N50_factored-10-20-40-29-49.nm --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacle/N50/winningregion/obstacle_N50_factored-10-20-40-29-49-fixpoint.wr &> /Users/shengsheng/Dropbox/files/obstacle/N50/log/obstacle_N50_factored-10-20-40-29-49-fixpoint.wr.log
 # /Users/shengsheng/Downloads/github/storm-test/storm/build/bin/storm-pomdp --prism /Users/shengsheng/Dropbox/files/obstacle/N50/obstacle_N50_factored-10-30-0-39-9.nm --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacle/N50/winningregion/obstacle_N50_factored-10-30-0-39-9-fixpoint.wr &> /Users/shengsheng/Dropbox/files/obstacle/N50/log/obstacle_N50_factored-10-30-0-39-9-fixpoint.wr.log
 # /Users/shengsheng/Downloads/github/storm-test/storm/build/bin/storm-pomdp --prism /Users/shengsheng/Dropbox/files/obstacle/N50/obstacle_N50_factored-10-30-10-39-19.nm --prop "Pmax=? [\"notbad\" U \"goal\"]" --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacle/N50/winningregion/obstacle_N50_factored-10-30-10-39-19-fixpoint.wr &> /Users/shengsheng/Dropbox/files/obstacle/N50/log/obstacle_N50_factored-10-30-10-39-19-fixpoint.wr.log

@@ -1,0 +1,10 @@
+prism_state;prism_belief_support;selected_action;available_actions;allowed_actions;state_meaning;safe?;unsafeActions
+0;[0];placement;[placement];[placement];(start=false,fuel=1,ax=0,ay=0);true;[]
+43;[43];west;[south, east, west];[west];(start=true,fuel=1,ax=1,ay=0);true;[east, south]
+1;[1];refuel;[refuel];[refuel];(start=true,fuel=0,ax=0,ay=0);true;[]
+267;[267];south;[south, east];[south, east];(start=true,fuel=8,ax=0,ay=0);true;[]
+251;[251, 252];south;[north, south, east];[north, south, east];(start=true,fuel=7,ax=0,ay=1);true;[]
+219;[219, 220, 221];south;[north, south, east];[north, south, east];(start=true,fuel=6,ax=0,ay=2);true;[]
+185;[184, 185];east;[north, south, east];[north, south, east];(start=true,fuel=5,ax=0,ay=4);true;[]
+161;[160, 161, 154, 155];south;[north, south, east, west];[north, south, west];(start=true,fuel=4,ax=2,ay=4);true;[east]
+126;[120, 126];east;[north, east, west];[north, east];(start=true,fuel=3,ax=2,ay=5);true;[west]

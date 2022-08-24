@@ -1,0 +1,33 @@
+Storm-pomdp 1.7.0
+
+Date: Tue Aug 23 20:58:14 2022
+Command line arguments: --prism /Users/shengsheng/Dropbox/files/refuel/N6E8/refule_N6E8_factored-3-3-0-5-2.nm --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/refuel/N6E8/winningregion/refule_N6E8_factored-3-3-0-5-2-fixpoint.wr
+Current working directory: /Users/shengsheng/Dropbox
+
+Time for model input parsing: 0.002s.
+
+Time for model construction: 0.030s.
+
+-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	689
+Transitions: 	3751
+Choices: 	2218
+Observations: 	46
+Reward Models:  none
+State Labels: 	6 labels
+   * traps -> 14 item(s)
+   * init -> 1 item(s)
+   * stationvisit -> 27 item(s)
+   * deadlock -> 0 item(s)
+   * notbad -> 630 item(s)
+   * goal -> 15 item(s)
+Choice Labels: 	6 labels
+   * placement -> 1 item(s)
+   * north -> 492 item(s)
+   * south -> 508 item(s)
+   * east -> 529 item(s)
+   * west -> 599 item(s)
+   * refuel -> 16 item(s)
+-------------------------------------------------------------- 
+Analyzing property 'Pmax=? ["notbad" U "goal"]'

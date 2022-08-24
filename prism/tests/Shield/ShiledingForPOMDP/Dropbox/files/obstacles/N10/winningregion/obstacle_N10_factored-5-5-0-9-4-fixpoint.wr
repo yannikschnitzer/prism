@@ -1,0 +1,53 @@
+:preamble
+model hash: 864971827602127388
+:winningregion
+16 22 5 1
+16 18446462598732840960;
+22 8932533619121979392;22 5843631622745751552;22 3674369947934392320;22 7148760721008885760;22 7919364440451973120;22 3224326644546142208;22 7034851316371292160;22 954723538583945216;22 13309350759716880384;22 12172521707294162944;22 7869930397667164160;22 5825683194933936128;22 7144718916265181184;22 6672082847949389824;22 6683381429436416000;22 5836880621351206912;22 5897490100320731136;22 11102639718863470592;22 6636265157162958848;22 14489346638646083584;22 6701356245527298048;22 5844009854745706496;
+
+
+:state information
+[!start	& ax=0	& ay=0] & state=0 & obs=3
+[start	& ax=5	& ay=0] & state=1 & obs=1
+[start	& ax=5	& ay=4] & state=2 & obs=1
+[start	& ax=9	& ay=0] & state=3 & obs=2
+[start	& ax=9	& ay=4] & state=4 & obs=1
+[start	& ax=5	& ay=1] & state=5 & obs=2
+[start	& ax=5	& ay=2] & state=6 & obs=1
+[start	& ax=6	& ay=0] & state=7 & obs=1
+[start	& ax=7	& ay=0] & state=8 & obs=1
+[start	& ax=4	& ay=0] & state=9 & obs=0
+[start	& ax=3	& ay=0] & state=10 & obs=2
+[start	& ax=5	& ay=3] & state=11 & obs=1
+[start	& ax=5	& ay=5] & state=12 & obs=0
+[start	& ax=5	& ay=6] & state=13 & obs=0
+[start	& ax=6	& ay=4] & state=14 & obs=1
+[start	& ax=7	& ay=4] & state=15 & obs=2
+[start	& ax=4	& ay=4] & state=16 & obs=0
+[start	& ax=3	& ay=4] & state=17 & obs=0
+[start	& ax=9	& ay=3] & state=18 & obs=1
+[start	& ax=9	& ay=2] & state=19 & obs=1
+[start	& ax=9	& ay=5] & state=20 & obs=0
+[start	& ax=9	& ay=6] & state=21 & obs=0
+[start	& ax=8	& ay=4] & state=22 & obs=1
+[start	& ax=6	& ay=2] & state=23 & obs=1
+[start	& ax=7	& ay=2] & state=24 & obs=1
+[start	& ax=4	& ay=2] & state=25 & obs=0
+[start	& ax=3	& ay=2] & state=26 & obs=0
+[start	& ax=6	& ay=1] & state=27 & obs=1
+[start	& ax=8	& ay=0] & state=28 & obs=1
+[start	& ax=7	& ay=1] & state=29 & obs=1
+[start	& ax=6	& ay=3] & state=30 & obs=1
+[start	& ax=7	& ay=3] & state=31 & obs=1
+[start	& ax=4	& ay=3] & state=32 & obs=0
+[start	& ax=3	& ay=3] & state=33 & obs=2
+[start	& ax=6	& ay=5] & state=34 & obs=0
+[start	& ax=6	& ay=6] & state=35 & obs=0
+[start	& ax=9	& ay=1] & state=36 & obs=1
+[start	& ax=8	& ay=3] & state=37 & obs=1
+[start	& ax=8	& ay=2] & state=38 & obs=1
+[start	& ax=8	& ay=5] & state=39 & obs=0
+[start	& ax=8	& ay=6] & state=40 & obs=0
+[start	& ax=8	& ay=1] & state=41 & obs=1
+[start	& ax=4	& ay=1] & state=42 & obs=0
+[start	& ax=7	& ay=5] & state=43 & obs=0

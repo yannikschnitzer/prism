@@ -1,0 +1,1 @@
+'E:\Downloads\prism3\prism812\prism\prism\tests\Shield\ShiledingForPOMDP\Dropbox\files\obstacle\N6\obstacle_6_centralized.nm' -const N=6 'E:\Downloads\prism3\prism812\prism\prism\tests\Shield\ShiledingForPOMDP\Dropbox\files\safe.props' -prop 1 -ex 

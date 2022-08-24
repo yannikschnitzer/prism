@@ -1746,13 +1746,13 @@ public class POMDPModelChecker extends ProbModelChecker
 		HashSet<Integer> endStates = new HashSet<Integer>();
 		
 		System.out.println("Num states" + nStates);
-		for (int i = 1; i < nStates; i++) {
-			if (!unknownObs.get(pomdp.getObservation(i))) {
-				endStates.add(i);
+		for (int s = 1; s < nStates; s++) {
+			if (!unknownObs.get(pomdp.getObservation(s))) {
+				if (pomdp.getLabelStates("goal").get(s)) {
+					endStates.add(s);
+				}
 			}
 		}
-		
-pomdp.getStatesList();
 		
 		mainLog.println("end states" + endStates.toString());
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -1811,11 +1811,11 @@ pomdp.getStatesList();
 		PartiallyObservableMonteCarloPlanning pomcp = new PartiallyObservableMonteCarloPlanning(pomdp, mdpRewards, target, minMax, statesOfInterest, endStates, constant, maxDepth);
 		
 		int [][] testCases= {
-							{PartiallyObservableMonteCarloPlanning.NO_SHIELD, -1}, // no shield
+//							{PartiallyObservableMonteCarloPlanning.NO_SHIELD, -1}, // no shield
 							{PartiallyObservableMonteCarloPlanning.PRIOR_SHIELD, PartiallyObservableMonteCarloPlanning.CENTRALIZED_SHIELD}, // prior shielding; centralized shield
-							{PartiallyObservableMonteCarloPlanning.ON_THE_FLY_SHIELD, PartiallyObservableMonteCarloPlanning.CENTRALIZED_SHIELD}, // on-the-fly; centrailized shield
-							{PartiallyObservableMonteCarloPlanning.PRIOR_SHIELD, PartiallyObservableMonteCarloPlanning.FACTORED_SHIELD}, // prior shielding; factoerd shield
-							{PartiallyObservableMonteCarloPlanning.ON_THE_FLY_SHIELD, PartiallyObservableMonteCarloPlanning.FACTORED_SHIELD} // on-the-fly; factoer shield
+//							{PartiallyObservableMonteCarloPlanning.ON_THE_FLY_SHIELD, PartiallyObservableMonteCarloPlanning.CENTRALIZED_SHIELD}, // on-the-fly; centrailized shield
+//							{PartiallyObservableMonteCarloPlanning.PRIOR_SHIELD, PartiallyObservableMonteCarloPlanning.FACTORED_SHIELD}, // prior shielding; factoerd shield
+//							{PartiallyObservableMonteCarloPlanning.ON_THE_FLY_SHIELD, PartiallyObservableMonteCarloPlanning.FACTORED_SHIELD} // on-the-fly; factoer shield
 							};
 
 		long timer0 = System.currentTimeMillis();
@@ -1901,7 +1901,7 @@ pomdp.getStatesList();
 		double totalDiscountedReward = 0;
 		double discount = 0.95;
 		int step = 0;
-		int stepLimit = 50;
+		int stepLimit = 500;
 		double gamma = 1;
 		
 		String path = "." + System.getProperties().getProperty("file.separator") + "log" + System.getProperties().getProperty("file.separator");
@@ -1964,7 +1964,8 @@ pomdp.getStatesList();
 				isSafeTrace = false;
 			}
 			availableActions = pomdp.getAvailableActions(state);
-			unsafeActions = pomcp.getRoot().getIllegalActions();
+			unsafeActions =  pomcp.getRootIllegaActions();
+//			unsafeActions = pomcp.getRoot().getIllegalActions();
 			allowedActions = pomdp.getAvailableActions(state);
 			if (unsafeActions != null) {
 				for (int a = availableActions.size() -1 ; a >= 0; a--) {
@@ -1988,11 +1989,12 @@ pomdp.getStatesList();
 			pomcp.update(actionIndex,  obsSample);
 			endTime = System.currentTimeMillis();
 			System.out.println("time for update " +  (endTime - startTime));
+			System.out.println("shielded action" + unsafeActions);
 			
 			totalUndiscountedReward += reward;
 			totalDiscountedReward += reward * gamma;
 			gamma *= discount;
-			if (pomdp.hasLabel("notbad") && !pomdp.getLabelStates("notbad").get(nextState)) {
+			if (pomdp.hasLabel("notbad") && !pomdp.getLabelStates("notbad").get(nextState) && !pomdp.getLabelStates("goal").get(nextState)) {
 				safeTrace = 0;
 				numBad += 1;
 			}
@@ -2009,9 +2011,12 @@ pomdp.getStatesList();
 			//pomcp.displayRoot();
 		    //pomcp.display();
 			state = nextState;
+
 			System.out.println("step time" +  (System.currentTimeMillis() -  stepStartTime));
 		}
-		
+		mainLog.println("\n =============== Step "+ step + " Cur state " + state + "shield" + shield);
+		pomcp.displayState(state);
+
 		// add reward for reaching  last state
 		double reward = mdpRewards.getStateReward(state);
 		totalUndiscountedReward += reward;

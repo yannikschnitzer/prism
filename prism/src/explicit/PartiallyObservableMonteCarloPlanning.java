@@ -560,9 +560,9 @@ import java.math.BigInteger;
 	
 	public boolean isSetOfStatesWinning(HashSet<Integer> PrismStates) 
 	{
-//		System.out.println("why is this" + PrismStates);
+//		System.out.println("Prism states in all area" + PrismStates);
 		PrismStates = filterPrimaryStates(PrismStates);
-//		System.out.println("and why is this" + PrismStates);
+//		System.out.println("Prism states in primary area" + PrismStates);
 
 		// convert to Stompy obs 
 		HashMap<Integer, HashSet<Integer>> StompyObs2StompyStates = new HashMap<Integer, HashSet<Integer>> ();
@@ -579,10 +579,10 @@ import java.math.BigInteger;
 //			System.out.println( "State" + state + " " + getStateMeaning(state) + "stompy State" + StompyState+ " stompy obs" +  StompyObs);
 
 			if (winningRegion.get(StompyObs) == null) { // if not winning support for this obs
-				if (!endStates.contains(state)) { // logic to do // the question is, is the end state in the winning region? if so, no need to add this . // TODO
+//				if (!endStates.contains(state)) { // logic to do // the question is, is the end state in the winning region? if so, no need to add this . // TODO
 //					System.out.println("!endStates.contains(state");
 					return false;
-				}
+//				}
 			}
 			
 			//int index = StompyObsToStompyStates.get(StompyObs).indexOf(StompyState);
@@ -599,9 +599,10 @@ import java.math.BigInteger;
 		}
 
 		for (int StompyObs : StompyObs2StompyStates.keySet()) {
-			if (winningRegion.get(StompyObs) == null) { // if not winning support for this obs
-				return true; // all states are in end states; other wise it would return false above
-			}
+//			if (winningRegion.get(StompyObs) == null) { // if not winning support for this obs //TODO, should it safe just because the action leads to end state // TODO
+//				System.out.println("Hereee");
+//				return true; // all states are in end states; other wise it would return false above
+//			}
 			ArrayList<BigInteger> beliefSupportInBigInteger = getBigIntegerFromStateIndices(StompyObs2StompyStates.get(StompyObs), StompyObs);
 //			System.out.println("Big Integer = "+ beliefSupportInBigInteger.toString() + "obs" + StompyObs + " IsWinning" + isSupportWinning(beliefSupportInBigInteger, StompyObs));
 			if (!isSupportWinning(beliefSupportInBigInteger, StompyObs)) {
@@ -679,15 +680,15 @@ import java.math.BigInteger;
 
  class POMCPNode{
 	private int id;
-	private boolean isONode;
+	private boolean isQNode;
 	private POMCPNode parent;
 	private int h;
-	private Object hAction;
 	private double v;
 	private double n;
 	private POMCPBelief belief;
 	private HashMap<Integer, POMCPNode> children;
-	private HashSet<Object> illegalActions; 
+	private HashSet<Integer> illegalActionIndexes;
+//	private HashSet<Object> illegalActions; 
 	public POMCPNode() 
 	{
 		this.id = -1;
@@ -699,30 +700,47 @@ import java.math.BigInteger;
 		this.parent = null;
 		this.children = null;
 		this.h = -1;
-		this.hAction = -1;
-		this.isONode = true;
+		this.isQNode = false;
 		this.v = 0;
 		this.n = 0;
+		this.illegalActionIndexes = new HashSet<Integer> ();
 		//this.illegalActions = null;
 	}
-	public void addIllegalActions(Object action) {
-		if (illegalActions == null) {
-			illegalActions = new HashSet<Object>();
-		}
-		illegalActions.add(action);
+	public void addIllegalActionIndex(int actionIndex)
+	{
+		removeChild(actionIndex);
+		illegalActionIndexes.add(actionIndex);
 	}
-	public boolean isActionIllegal(Object action) {
-		if (illegalActions == null) {
+	public boolean isActionIndexIllegal(int actionIndex) {
+		if (illegalActionIndexes == null) {
 			return false;
 		}
-		return illegalActions.contains(action);
+		return illegalActionIndexes.contains(actionIndex);
 	}
-	public HashSet<Object> getIllegalActions(){
-		return illegalActions;
-	}
-	public boolean isONode()
+	public HashSet<Integer> getIllegalActionIndexes() 
 	{
-		return isONode;
+		return illegalActionIndexes;
+	}
+	
+//	
+//	public void addIllegalActions(Object action) {
+//		if (illegalActions == null) {
+//			illegalActions = new HashSet<Object>();
+//		}
+//		illegalActions.add(action);
+//	}
+//	public boolean isActionIllegal(Object action) {
+//		if (illegalActions == null) {
+//			return false;
+//		}
+//		return illegalActions.contains(action);
+//	}
+//	public HashSet<Object> getIllegalActions(){
+//		return illegalActions;
+//	}
+	public boolean isQNode()
+	{
+		return isQNode;
 	}
 	public void setID (int id) 
 	{
@@ -736,17 +754,14 @@ import java.math.BigInteger;
 	{
 		this.h = h;
 	}
-	public void setHAction(Object a, boolean isAction) 
+	public void setHAction(boolean isAction) 
 	{
-		if (isAction) {
-			this.hAction = a;
-			this.isONode = false;
-		}
+		this.isQNode = isAction;
 	}
-	public Object getHAction() 
-	{
-		return hAction;
-	}
+//	public Object getHAction() 
+//	{
+//		return hAction;
+//	}
 	public int getH() 
 	{
 		return h;
@@ -776,16 +791,27 @@ import java.math.BigInteger;
 	{
 		return parent;
 	}
-	public HashMap<Integer, POMCPNode> getChildren(){
+	public HashMap<Integer, POMCPNode> getChildren()
+	{
 		return children;
 	}
-	public void addChild(POMCPNode node, int index) {
+	public void addChild(POMCPNode node, int index) 
+	{
 		if (children == null) {
 			children = new HashMap<Integer, POMCPNode> (); 
 		}
 		children.put(index, node);
 	}
-	
+	public void removeChild(int index) {
+		if (children != null) {
+			children.remove(index);
+			if (children.size() == 0 && this.getParent() != null) {
+				POMCPNode qParent = this.getParent();
+				POMCPNode vParent = qParent.getParent();
+				vParent.removeChild(qParent.getH());
+			}
+		}
+	}
 	
 	public void setBelief(POMCPBelief belief) 
 	{
@@ -1050,7 +1076,7 @@ public class PartiallyObservableMonteCarloPlanning {
 			System.out.println("++++Initialize main shield " );
 			System.out.println(fileName);
 			this.isMainShieldAvailable = true;
-			String[] parameters = fileName.split("_");
+			String[] parameters = fileName.split("-");
 			int[] pStates = {0, 0, Integer.parseInt(parameters[1]), Integer.parseInt(parameters[1])}; 
 			String winning = file.toString();
 			mainShield = new POMDPShield(pomdp, winning, winning, varNames, endStates, pStates);
@@ -1439,16 +1465,18 @@ public class PartiallyObservableMonteCarloPlanning {
 		if (shieldLevel == ON_THE_FLY_SHIELD) {
 			vnode.getBelief().addParticle(state);
 			if (shieldLevel == ON_THE_FLY_SHIELD && !isSetOfStatesWinning(vnode.getBelief().getUniqueStatesInt())) {
-//				System.out.println(vnode.getBelief().getUniqueStatesInt() + "is not winning" + TreeDepth);
+//				System.out.println("\n" + vnode.getBelief().getUniqueStatesInt() + "is not winning. TreeDepth = " + TreeDepth);
 				POMCPNode qparent = vnode.getParent();
-				Object parentAction = allActions.get(qparent.getH());
+				int parentActionIndex = qparent.getH();
+				
 				POMCPNode vparent = qparent.getParent();
-				vparent.addIllegalActions(parentAction);
+				vparent.addIllegalActionIndex(parentActionIndex);
+				
+//				vparent.addIllegalActions(parentAction);
 				if (verbose >= 5) {
 					System.out.println("Currnet Node=" + vnode.getID() + " Current belief support" + vnode.getBelief().getUniqueStatesInt()  );
 					System.out.println("Currenting belief support is not winning. ");
-					System.out.println("Action lead to this node= " + parentAction);
-					System.out.println("shield level" + shieldLevel +" shielded action: " + parentAction 
+					System.out.println("shield level" + shieldLevel +" shielded action: " + allActions.get(parentActionIndex)
 							+ "\n adding to illegal actions for it parent node " + vparent.getID() 
 							+ " parent belief support" +  vparent.getBelief().getUniqueStatesInt());
 				}
@@ -1526,7 +1554,7 @@ public class PartiallyObservableMonteCarloPlanning {
 			int actionIndex = getActionIndex(action);
 			POMCPNode qnode = new POMCPNode();
 			qnode.setH(actionIndex);
-			qnode.setHAction(action, true);
+			qnode.setHAction(true);
 			qnode.setParent(vnode);
 			vnode.addChild(qnode, actionIndex);
 		}
@@ -1538,21 +1566,22 @@ public class PartiallyObservableMonteCarloPlanning {
 		List <Object> availableActions = getLegalActions(state);
 		for (Object action : availableActions) {
 			POMCPNode newChild = new POMCPNode ();
+			int actionIndex = actionToIndex.get(action);
+
 //			if (shieldLevel == 2 && TreeDepth == 0 && parent.isActionIllegal(action)) {
 //				 continue;
 //			}
 			if (shieldLevel == PRIOR_SHIELD && TreeDepth == 0 && isActionShieldedForNode(parent, action)) {
-				parent.addIllegalActions(action);
+				parent.addIllegalActionIndex(actionIndex);
 				continue;
 			}
-			int actionIndex = actionToIndex.get(action);
 			newChild.setH(actionIndex);
-			newChild.setHAction(action, true);
+			newChild.setHAction(true);
 			newChild.setParent(parent);;
 			parent.addChild(newChild, actionIndex);
 		}
 		if (parent.getChildren() == null) {
-			System.out.println("May need to add default action");
+			System.out.println("May need to add default action children");
 		}
 
 	}
@@ -1623,9 +1652,8 @@ public class PartiallyObservableMonteCarloPlanning {
 		ArrayList<Integer> actionIndexCandidates = new ArrayList<Integer>(); // if all actions are shielded, randomly pick an action
 		for (int i: children.keySet()) {
 			actionIndexCandidates.add(i);
-			Object action = allActions.get(i);
-			if (shieldLevel == ON_THE_FLY_SHIELD && vnode.isActionIllegal(action)) {
-//				System.out.println("shield level" + shieldLevel + " known illegal action" + action +" for node " + vnode.getID() + " belief support" 	+ vnode.getBelief().getUniqueStatesInt());
+			if (shieldLevel == ON_THE_FLY_SHIELD && vnode.isActionIndexIllegal(i)) {
+//				System.out.println("shield level" + shieldLevel + " known illegal action " + allActions.get(i) +" for node " + vnode.getID() + " belief support" 	+ vnode.getBelief().getUniqueStatesInt());
 				continue;
 			}
 			POMCPNode qnode = children.get(i);
@@ -1666,13 +1694,19 @@ public class PartiallyObservableMonteCarloPlanning {
 		}
 		
 		Random rnd = new Random();
+		if(besta.size() ==0) {
+//			System.out.println("not action available");
+		}
 		if (besta.size() > 0) {
 			int actionIndex = besta.get(rnd.nextInt(besta.size()));
 			return actionIndex;
 		}
 		else {
 			int actionIndex = actionIndexCandidates.get(rnd.nextInt(actionIndexCandidates.size()));
-//			System.out.println("states" + vnode.getBelief().getUniqueStates());
+//			System.out.println("states" + vnode.getBelief().getUniqueStatesInt());
+			POMCPNode qParent = vnode.getParent();
+			POMCPNode vParent = qParent.getParent();
+			vParent.addIllegalActionIndex(qParent.getH());
 			return actionIndex;
 		}
 	}
@@ -1791,6 +1825,15 @@ public class PartiallyObservableMonteCarloPlanning {
 	public HashSet<Integer> getRootBeliefSupportStompy(){
 		return getStompyBeliefSupport(getRootBeliefSupportPrism());
 	}
+	public HashSet<Object> getRootIllegaActions()
+	{
+		HashSet<Integer> illegalActionIndexes = root.getIllegalActionIndexes();
+		HashSet<Object> illegalActions = new HashSet<Object> ();
+		for (int index: illegalActionIndexes) {
+			illegalActions.add(allActions.get(index));
+		}
+		return illegalActions;
+	}
 	public void displayValue(int depth)
 	{
 		Queue<POMCPNode> queue = new LinkedList<POMCPNode>();
@@ -1825,11 +1868,11 @@ public class PartiallyObservableMonteCarloPlanning {
 	public void displayNode(POMCPNode node, int depth)
 	{
 		String info = "";
-		if (node.isONode()){
+		if (!node.isQNode()){
 			info +="Id=" + node.getID()+ "depth" + depth  + " o=" + node.getH() + " vmean=" + (node.getV()/node.getN()) + " v=" + node.getV() + " n=" + node.getN() +" Belief Support=" + node.getBelief().getUniqueStatesInt();
 		}
 		else {
-			info +="Id=" + node.getID() + "depth" + depth + " a=" + node.getHAction() + " vmean=" + (node.getV()/node.getN()) + " v=" + node.getV() + " n=" + node.getN() ;
+			info +="Id=" + node.getID() + "depth" + depth + " a=" + allActions.get(node.getH() ) + " vmean=" + (node.getV()/node.getN()) + " v=" + node.getV() + " n=" + node.getN() ;
 		}
 		POMCPNode parent = node.getParent();
 		if (parent == null) {
@@ -1843,11 +1886,11 @@ public class PartiallyObservableMonteCarloPlanning {
 	public void displayNodeActions(POMCPNode node, int depth)
 	{
 		String info = "";
-		if (node.isONode()){
+		if (!node.isQNode()){
 //			info +="depth" + depth + " obs=" + node.getH()  ;
 		}
 		else {
-			info +="depth" + depth + " a=" + node.getHAction()  ;
+			info +="depth" + depth + " a=" + allActions.get(node.getH() ) ;
 		}
 		POMCPNode parent = node.getParent();
 		if (parent == null) {
@@ -1916,7 +1959,7 @@ public class PartiallyObservableMonteCarloPlanning {
 			System.out.println("shield = " + i );
 			if(!localShield.isSetOfStatesWinning(nextBeliefSupport)) {
 				if (verbose > 0) {
-					System.out.println("shield = " + i + " action = " + action + " action shield for current support " + beliefSupport + " because next" + nextBeliefSupport);
+					System.out.println("Shielded = " + i + " action = " + action + " action shield for current support " + beliefSupport + " because next" + nextBeliefSupport);
 				}
 				return true;
 			}
@@ -1933,7 +1976,6 @@ public class PartiallyObservableMonteCarloPlanning {
 			return false; // no shield available
 		}
 		HashSet<Integer> nextBeliefSupport = getNextBeliefSupport(beliefSupport, action);
-//		System.out.println("Use concetralized shield");
 		if (!mainShield.isSetOfStatesWinning(nextBeliefSupport)) {
 //			System.out.print("action shield for " + beliefSupport);
 			return true; // action should be shielded because next belief support is not winning

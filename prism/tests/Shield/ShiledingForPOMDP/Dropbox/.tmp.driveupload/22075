@@ -1,0 +1,8 @@
+Storm-pomdp 1.7.0
+
+Date: Tue Aug 23 22:14:25 2022
+Command line arguments: --prism /Users/shengsheng/Dropbox/files/refuel/N6E8/refule_N6E8_centralized-6-0-0-5-5.nm hB-prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/refuel/N6E8/winningregion/refule_N6E8_centralized-6-0-0-5-5-fixpoint.wr
+Current working directory: /Users/shengsheng/Dropbox
+
+ERROR (SettingsManager.cpp:498): Too many arguments for option 'prism'.
+ERROR (cli.cpp:183): Unable to parse command line options. Type '/Users/shengsheng/Downloads/github/storm-test/storm/build/bin/storm-pomdp --help' or '/Users/shengsheng/Downloads/github/storm-test/storm/build/bin/storm-pomdp --help all' for help.

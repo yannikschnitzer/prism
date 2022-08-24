@@ -1,0 +1,71 @@
+pomdp
+observables
+start
+endobservables
+const int N = 10;
+const int axMAX = N-1;
+const int ayMAX = N-1;
+const int axMIN = 0;
+const int ayMIN = 0;
+const int primaryMinX = 5;
+const int primaryMinY = 5;
+const int primaryMaxX = 9;
+const int primaryMaxY = 9;
+const int borderSize = 2;
+const int areaMinX = max(primaryMinX - borderSize, axMIN);
+const int areaMinY = max(primaryMinY - borderSize, ayMIN);
+const int areaMaxX = min(primaryMaxX + borderSize, axMAX);
+const int areaMaxY = min(primaryMaxY + borderSize, ayMAX);
+const double slippery = 0.1;
+const int ob3x = 3;
+const int ob3y = 3;
+const int ob4x = 3;
+const int ob4y = 5;
+const int ob6x = 6;
+const int ob6y = 7;
+const int ob7x = 7;
+const int ob7y = 4;
+const int ob8x = 8;
+const int ob8y = 7;
+formula crash = start & ((ax = ob3x & ay = ob3y)|(ax = ob4x & ay = ob4y)|(ax = ob6x & ay = ob6y)|(ax = ob7x & ay = ob7y)|(ax = ob8x & ay = ob8y));
+formula done = start & (!crash) & ((ax = axMAX & ay = ayMAX) | ax = primaryMaxX + 1 | ax = primaryMaxX + 2 | ay = primaryMaxY + 1 | ay = primaryMaxY + 2 |ax = primaryMinX - 1 | ax = primaryMinX - 2 | ay = primaryMinY - 1 | ay = primaryMinY - 2 ) ;
+observable "amdone" = done;
+observable "hascrash" = crash;
+module master
+start : bool init false;
+[placement] !start -> (start'=true);
+[north] start & !done -> true;
+[south] start  & !done -> true;
+[east] start  & !done-> true;
+[west] start & !done -> true;
+endmodule
+module robot
+ax : [axMIN..axMAX] init axMIN;
+ay : [ayMIN..ayMAX] init ayMIN;
+//slipped : bool init false;
+[placement] true ->1/4:(ax'=primaryMinX) & (ay'=primaryMinY) + 1/4:(ax'=primaryMinX) & (ay'=primaryMaxY) + 1/4:(ax'=primaryMaxX) & (ay'=primaryMinY) + 1/4:(ax'=primaryMaxX) & (ay'=primaryMaxY);
+[west] true -> (1-slippery): (ax'=max(ax-1,areaMinX)) + slippery: (ax'=max(ax-2,areaMinX));
+[east] true -> (1-slippery): (ax'=min(ax+1,areaMaxX)) + slippery: (ax'=min(ax+2,areaMaxX));
+[south]  true -> (1-slippery): (ay'=min(ay+1,areaMaxY)) + slippery: (ay'=min(ay+2,areaMaxY));
+[north]  true -> (1-slippery): (ay'=max(ay-1,areaMinY)) + slippery: (ay'=max(ay-2,areaMinY));
+endmodule
+label "goal" = done;
+label "traps" = crash;
+label "notbad" =  !crash;
+rewards "cost"
+[north] true : 1;
+[south] true : 1;
+[west] true : 1;
+[east] true : 1;
+crash: 5;
+endrewards
+rewards "cos"
+[north] true : 1;
+[south] true : 1;
+[west] true : 1;
+[east] true : 1;
+crash: 5;
+endrewards
+rewards "rew"
+done : 20;
+endrewards

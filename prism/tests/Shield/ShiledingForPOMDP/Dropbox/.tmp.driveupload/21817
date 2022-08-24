@@ -1,0 +1,48 @@
+Storm-pomdp 1.7.0
+
+Date: Tue Aug 23 16:21:47 2022
+Command line arguments: --prism /Users/shengsheng/Dropbox/files/refuel/N6E8/refule_N6E8_factored-3-0-0-2-2.nm --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/refuel/N6E8/winningregion/refule_N6E8_factored-3-0-0-2-2-fixpoint.wr
+Current working directory: /Users/shengsheng/Dropbox
+
+Time for model input parsing: 0.013s.
+
+Time for model construction: 0.071s.
+
+-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	270
+Transitions: 	1301
+Choices: 	755
+Observations: 	36
+Reward Models:  none
+State Labels: 	6 labels
+   * traps -> 7 item(s)
+   * init -> 1 item(s)
+   * stationvisit -> 24 item(s)
+   * deadlock -> 0 item(s)
+   * notbad -> 231 item(s)
+   * goal -> 7 item(s)
+Choice Labels: 	6 labels
+   * placement -> 1 item(s)
+   * north -> 171 item(s)
+   * south -> 173 item(s)
+   * east -> 173 item(s)
+   * west -> 171 item(s)
+   * refuel -> 21 item(s)
+-------------------------------------------------------------- 
+Analyzing property 'Pmax=? ["notbad" U "goal"]'
+Write to file /Users/shengsheng/Dropbox/files/refuel/N6E8/winningregion/refule_N6E8_factored-3-0-0-2-2-fixpoint.wr.
+Write to file /Users/shengsheng/Dropbox/files/refuel/N6E8/winningregion/refule_N6E8_factored-3-0-0-2-2-fixpoint.wr.
+Initial state is safe!
+#STATS Number of belief support states: 563499709309178
+#STATS Total time: 2.541s
+#STATS SAT Calls: 943
+#STATS SAT Calls time: 0.751s
+#STATS Outer iterations: 37
+#STATS Solver initialization time: 0.104s
+#STATS Obtain partial scheduler time: 1.424s
+#STATS Update solver to extend partial scheduler time: 0.106s
+#STATS Update solver with new scheduler time: 0.121s
+#STATS Winning regions update time: 0.013s
+#STATS Graph search time: 0.000s
+Time for POMDP analysis: 2.550ss.

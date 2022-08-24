@@ -1,0 +1,15 @@
+Storm-pomdp 1.7.0
+
+Date: Tue Aug 23 15:58:21 2022
+Command line arguments: --prism /Users/shengsheng/Dropbox/files/refuel/N6E8/refule_N6_factored-3-0-3-2-5.nm --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/refuel/N6E8/winningregion/refule_N6_factored-3-0-3-2-5-fixpoint.wr
+Current working directory: /Users/shengsheng/Dropbox
+
+ERROR (SpiritErrorHandler.h:27): Parsing error at 2:1:  expecting <eoi>, here:
+	start
+	^
+
+libc++abi: terminating with uncaught exception of type storm::exceptions::WrongFormatException: WrongFormatException: Parsing error at 2:1:  expecting <eoi>, here:
+	start
+	^
+
+ERROR: The program received signal 6 and will be aborted in 3s.
