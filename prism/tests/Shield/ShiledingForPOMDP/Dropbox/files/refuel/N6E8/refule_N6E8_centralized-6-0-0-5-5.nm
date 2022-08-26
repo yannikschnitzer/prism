@@ -61,8 +61,8 @@ start : bool init false;
 endmodule
 
 module tank
-fuel : [0..fuelCAP] init 1;
-
+//fuel : [0..fuelCAP] init 1;
+fuel : [0..fuelCAP] init 5;
 [refuel] canRefuel -> 1:(fuel'=fuelCAP);
 [north] fuel > 0 & !canRefuel -> 0.7:(fuel'=fuel-1) + 0.3:(fuel'=max(fuel-1,0));
 [south] fuel > 0 & !canRefuel -> 0.7:(fuel'=fuel-1)+ 0.3:(fuel'=max(fuel-1,0));
@@ -74,7 +74,9 @@ endmodule
 module rover
 ax : [axMIN..axMAX] init 0;
 ay : [ayMIN..ayMAX] init 0;
-[placement] true ->  1: (ax'=1) & (ay'=0); //+ 1/4: (ax'=1) & (ay'=1) + 1/4: (ax'=2) & (ay'=1) + 1/4: (ax'=1) & (ay'=3);
+//[placement] true ->  1: (ax'=1) & (ay'=0); //+ 1/4: (ax'=1) & (ay'=1) + 1/4: (ax'=2) & (ay'=1) + 1/4: (ax'=1) & (ay'=3);
+[placement] true ->  1/2: (ax'=4) & (ay'=0) + 1/2: (ax'=3) & (ay'=0);// + 1/4: (ax'=2) & (ay'=1) + 1/4: (ax'=1) & (ay'=3);
+
 [west] westenabled -> (1-slippery): (ax'=max(ax-1,axMIN)) + slippery: (ax'=max(ax-2,axMIN));
 [east] eastenabled -> (1-slippery): (ax'=min(ax+1,axMAX)) + slippery: (ax'=min(ax+2,axMAX));
 [south]  southenabled -> (1-slippery): (ay'=min(ay+1,ayMAX)) + slippery: (ay'=min(ay+2,ayMAX));
@@ -98,6 +100,7 @@ rewards "cost"
 [west] true : 1;
 [east] true : 1;
 [refuel] true : 3;
+//[empty] true : 1;
 endrewards
 
 rewards "reward"

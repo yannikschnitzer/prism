@@ -1812,9 +1812,9 @@ public class POMDPModelChecker extends ProbModelChecker
 		
 		int [][] testCases= {
 //							{PartiallyObservableMonteCarloPlanning.NO_SHIELD, -1}, // no shield
-							{PartiallyObservableMonteCarloPlanning.PRIOR_SHIELD, PartiallyObservableMonteCarloPlanning.CENTRALIZED_SHIELD}, // prior shielding; centralized shield
+//							{PartiallyObservableMonteCarloPlanning.PRIOR_SHIELD, PartiallyObservableMonteCarloPlanning.CENTRALIZED_SHIELD}, // prior shielding; centralized shield
 //							{PartiallyObservableMonteCarloPlanning.ON_THE_FLY_SHIELD, PartiallyObservableMonteCarloPlanning.CENTRALIZED_SHIELD}, // on-the-fly; centrailized shield
-//							{PartiallyObservableMonteCarloPlanning.PRIOR_SHIELD, PartiallyObservableMonteCarloPlanning.FACTORED_SHIELD}, // prior shielding; factoerd shield
+							{PartiallyObservableMonteCarloPlanning.PRIOR_SHIELD, PartiallyObservableMonteCarloPlanning.FACTORED_SHIELD}, // prior shielding; factoerd shield
 //							{PartiallyObservableMonteCarloPlanning.ON_THE_FLY_SHIELD, PartiallyObservableMonteCarloPlanning.FACTORED_SHIELD} // on-the-fly; factoer shield
 							};
 
@@ -2346,8 +2346,6 @@ public class POMDPModelChecker extends ProbModelChecker
 		BitSet targetObs = getObservationsMatchingStates(pomdp, target);
 		
 		mainLog.println("target states obs"+targetObs.size());
-		
-
 		
 		if (targetObs == null) {
 			throw new PrismException("Target for expected reachability is not observable");

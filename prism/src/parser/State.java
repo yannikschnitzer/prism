@@ -258,7 +258,9 @@ public class State implements Comparable<State>
 		}
 		return s;
 	}
-		
+	public Object getValueByIndex(int variableIndex) {
+		return varValues[variableIndex];
+	}
 	/**
 	 * Get string representation, e.g. "(a=0,b=true,c=5)", 
 	 * with variables names (taken from a String list). 
