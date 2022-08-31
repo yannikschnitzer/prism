@@ -1807,10 +1807,10 @@ public class POMDPModelChecker extends ProbModelChecker
 		PartiallyObservableMonteCarloPlanning pomcp = new PartiallyObservableMonteCarloPlanning(pomdp, mdpRewards, target, minMax, statesOfInterest, endStates, constant, maxDepth);
 		
 		String [][] testCases= {
-//							{PartiallyObservableMonteCarloPlanning.NO_SHIELD, ""}, // no shield
-//							{PartiallyObservableMonteCarloPlanning.PRIOR_SHIELD, PartiallyObservableMonteCarloPlanning.CENTRALIZED_SHIELD}, // prior shielding; centralized shield
-//				{PartiallyObservableMonteCarloPlanning.ON_THE_FLY_SHIELD, PartiallyObservableMonteCarloPlanning.CENTRALIZED_SHIELD}, // on-the-fly; centrailized shield
-//							{PartiallyObservableMonteCarloPlanning.ON_THE_FLY_SHIELD, PartiallyObservableMonteCarloPlanning.FACTORED_SHIELD} // on-the-fly; factoer shield
+							{PartiallyObservableMonteCarloPlanning.NO_SHIELD, ""}, // no shield
+							{PartiallyObservableMonteCarloPlanning.PRIOR_SHIELD, PartiallyObservableMonteCarloPlanning.CENTRALIZED_SHIELD}, // prior shielding; centralized shield
+				{PartiallyObservableMonteCarloPlanning.ON_THE_FLY_SHIELD, PartiallyObservableMonteCarloPlanning.CENTRALIZED_SHIELD}, // on-the-fly; centrailized shield
+							{PartiallyObservableMonteCarloPlanning.ON_THE_FLY_SHIELD, PartiallyObservableMonteCarloPlanning.FACTORED_SHIELD}, // on-the-fly; factoer shield
 			{PartiallyObservableMonteCarloPlanning.PRIOR_SHIELD, PartiallyObservableMonteCarloPlanning.FACTORED_SHIELD}, // prior shielding; factoerd shield
 							};
 
