@@ -1,0 +1,330 @@
+:preamble
+model hash: 13647971409163491323
+:winningregion
+33 9 30 9 9 16 3 2 6 3 2 6 6 3 13 2 7 1 3 1 9 2 3 3 2 9 2 3 7 13 6 6 2 1 8 2 3 3 1 3 3 1 4 2 3 2 3 1 1 1 1
+33 18446744071562067968;
+9 18374686479671623680;
+30 18446744056529682432;
+9 8610882487532388352;9 18374686479671623680;
+9 18410715276690587648;
+16 18446462598732840960;
+3 16140901064495857664;
+
+6 18158513697557839872;
+3 16140901064495857664;
+2 13835058055282163712;
+6 18158513697557839872;
+6 18158513697557839872;
+
+13 18444492273895866368;
+2 13835058055282163712;
+7 18302628885633695744;
+1 9223372036854775808;
+3 16140901064495857664;
+
+9 13222568505959776256;9 18374686479671623680;
+
+3 16140901064495857664;
+3 16140901064495857664;
+2 13835058055282163712;
+9 18410715276690587648;
+
+
+7 18302628885633695744;
+13 18444492273895866368;
+6 17870283321406128128;6 17582052945254416384;
+6 17582052945254416384;6 17870283321406128128;
+2 13835058055282163712;
+1 9223372036854775808;
+8 18374686479671623680;
+2 13835058055282163712;
+3 16140901064495857664;
+3 16140901064495857664;
+1 9223372036854775808;
+3 16140901064495857664;
+3 16140901064495857664;
+
+4 17293822569102704640;
+
+3 16140901064495857664;
+2 13835058055282163712;
+
+1 9223372036854775808;
+1 9223372036854775808;
+1 9223372036854775808;
+1 9223372036854775808;
+:state information
+[!start	& fuel=8	& ax=0	& ay=0] & state=0 & obs=48
+[start	& fuel=8	& ax=0	& ay=0] & state=1 & obs=38
+[start	& fuel=8	& ax=0	& ay=2] & state=2 & obs=17
+[start	& fuel=8	& ax=2	& ay=0] & state=3 & obs=47
+[start	& fuel=8	& ax=2	& ay=2] & state=4 & obs=24
+[start	& fuel=7	& ax=0	& ay=1] & state=5 & obs=25
+[start	& fuel=7	& ax=0	& ay=2] & state=6 & obs=25
+[start	& fuel=7	& ax=1	& ay=0] & state=7 & obs=4
+[start	& fuel=7	& ax=2	& ay=0] & state=8 & obs=4
+[start	& fuel=7	& ax=0	& ay=0] & state=9 & obs=42
+[start	& fuel=7	& ax=0	& ay=3] & state=10 & obs=16
+[start	& fuel=7	& ax=0	& ay=4] & state=11 & obs=25
+[start	& fuel=7	& ax=1	& ay=2] & state=12 & obs=0
+[start	& fuel=7	& ax=2	& ay=2] & state=13 & obs=8
+[start	& fuel=7	& ax=2	& ay=1] & state=14 & obs=0
+[start	& fuel=7	& ax=3	& ay=0] & state=15 & obs=28
+[start	& fuel=7	& ax=4	& ay=0] & state=16 & obs=4
+[start	& fuel=7	& ax=2	& ay=3] & state=17 & obs=0
+[start	& fuel=7	& ax=2	& ay=4] & state=18 & obs=0
+[start	& fuel=7	& ax=3	& ay=2] & state=19 & obs=0
+[start	& fuel=7	& ax=4	& ay=2] & state=20 & obs=0
+[start	& fuel=6	& ax=0	& ay=0] & state=21 & obs=42
+[start	& fuel=6	& ax=0	& ay=2] & state=22 & obs=25
+[start	& fuel=6	& ax=0	& ay=3] & state=23 & obs=16
+[start	& fuel=6	& ax=1	& ay=1] & state=24 & obs=0
+[start	& fuel=6	& ax=2	& ay=1] & state=25 & obs=0
+[start	& fuel=6	& ax=0	& ay=1] & state=26 & obs=25
+[start	& fuel=6	& ax=0	& ay=4] & state=27 & obs=16
+[start	& fuel=6	& ax=1	& ay=2] & state=28 & obs=0
+[start	& fuel=6	& ax=2	& ay=2] & state=29 & obs=8
+[start	& fuel=6	& ax=2	& ay=0] & state=30 & obs=4
+[start	& fuel=6	& ax=3	& ay=0] & state=31 & obs=28
+[start	& fuel=6	& ax=4	& ay=0] & state=32 & obs=28
+[start	& fuel=6	& ax=1	& ay=0] & state=33 & obs=4
+[start	& fuel=6	& ax=0	& ay=5] & state=34 & obs=22
+[start	& fuel=6	& ax=1	& ay=4] & state=35 & obs=0
+[start	& fuel=6	& ax=2	& ay=4] & state=36 & obs=0
+[start	& fuel=6	& ax=1	& ay=3] & state=37 & obs=5
+[start	& fuel=6	& ax=3	& ay=2] & state=38 & obs=0
+[start	& fuel=6	& ax=2	& ay=3] & state=39 & obs=0
+[start	& fuel=6	& ax=3	& ay=1] & state=40 & obs=5
+[start	& fuel=6	& ax=4	& ay=1] & state=41 & obs=0
+[start	& fuel=6	& ax=4	& ay=2] & state=42 & obs=0
+[start	& fuel=6	& ax=5	& ay=0] & state=43 & obs=36
+[start	& fuel=6	& ax=2	& ay=5] & state=44 & obs=14
+[start	& fuel=6	& ax=3	& ay=3] & state=45 & obs=8
+[start	& fuel=6	& ax=4	& ay=3] & state=46 & obs=0
+[start	& fuel=6	& ax=3	& ay=4] & state=47 & obs=0
+[start	& fuel=6	& ax=4	& ay=4] & state=48 & obs=13
+[start	& fuel=6	& ax=5	& ay=2] & state=49 & obs=29
+[start	& fuel=5	& ax=0	& ay=1] & state=50 & obs=25
+[start	& fuel=5	& ax=0	& ay=0] & state=51 & obs=42
+[start	& fuel=5	& ax=0	& ay=3] & state=52 & obs=16
+[start	& fuel=5	& ax=0	& ay=4] & state=53 & obs=16
+[start	& fuel=5	& ax=1	& ay=2] & state=54 & obs=0
+[start	& fuel=5	& ax=2	& ay=2] & state=55 & obs=8
+[start	& fuel=5	& ax=1	& ay=0] & state=56 & obs=4
+[start	& fuel=5	& ax=1	& ay=3] & state=57 & obs=5
+[start	& fuel=5	& ax=2	& ay=1] & state=58 & obs=0
+[start	& fuel=5	& ax=3	& ay=1] & state=59 & obs=5
+[start	& fuel=5	& ax=2	& ay=0] & state=60 & obs=4
+[start	& fuel=5	& ax=2	& ay=3] & state=61 & obs=5
+[start	& fuel=5	& ax=4	& ay=1] & state=62 & obs=5
+[start	& fuel=5	& ax=1	& ay=1] & state=63 & obs=0
+[start	& fuel=5	& ax=0	& ay=2] & state=64 & obs=25
+[start	& fuel=5	& ax=1	& ay=4] & state=65 & obs=5
+[start	& fuel=5	& ax=3	& ay=2] & state=66 & obs=5
+[start	& fuel=5	& ax=3	& ay=0] & state=67 & obs=28
+[start	& fuel=5	& ax=4	& ay=0] & state=68 & obs=28
+[start	& fuel=5	& ax=1	& ay=5] & state=69 & obs=14
+[start	& fuel=5	& ax=2	& ay=5] & state=70 & obs=14
+[start	& fuel=5	& ax=2	& ay=4] & state=71 & obs=0
+[start	& fuel=5	& ax=3	& ay=4] & state=72 & obs=0
+[start	& fuel=5	& ax=4	& ay=4] & state=73 & obs=13
+[start	& fuel=5	& ax=3	& ay=3] & state=74 & obs=8
+[start	& fuel=5	& ax=4	& ay=2] & state=75 & obs=0
+[start	& fuel=5	& ax=5	& ay=2] & state=76 & obs=29
+[start	& fuel=5	& ax=4	& ay=3] & state=77 & obs=0
+[start	& fuel=5	& ax=5	& ay=1] & state=78 & obs=29
+[start	& fuel=5	& ax=3	& ay=5] & state=79 & obs=14
+[start	& fuel=5	& ax=4	& ay=5] & state=80 & obs=14
+[start	& fuel=5	& ax=0	& ay=5] & state=81 & obs=22
+[start	& fuel=8	& ax=3	& ay=3] & state=82 & obs=24
+[start	& fuel=5	& ax=5	& ay=3] & state=83 & obs=29
+[start	& fuel=5	& ax=5	& ay=4] & state=84 & obs=29
+[start	& fuel=5	& ax=5	& ay=0] & state=85 & obs=36
+[start	& fuel=4	& ax=0	& ay=0] & state=86 & obs=42
+[start	& fuel=4	& ax=0	& ay=2] & state=87 & obs=25
+[start	& fuel=4	& ax=0	& ay=3] & state=88 & obs=16
+[start	& fuel=4	& ax=1	& ay=1] & state=89 & obs=0
+[start	& fuel=4	& ax=2	& ay=1] & state=90 & obs=0
+[start	& fuel=4	& ax=1	& ay=0] & state=91 & obs=4
+[start	& fuel=4	& ax=1	& ay=3] & state=92 & obs=5
+[start	& fuel=4	& ax=1	& ay=4] & state=93 & obs=5
+[start	& fuel=4	& ax=2	& ay=2] & state=94 & obs=8
+[start	& fuel=4	& ax=3	& ay=2] & state=95 & obs=5
+[start	& fuel=4	& ax=1	& ay=2] & state=96 & obs=0
+[start	& fuel=4	& ax=2	& ay=0] & state=97 & obs=4
+[start	& fuel=4	& ax=3	& ay=0] & state=98 & obs=28
+[start	& fuel=4	& ax=2	& ay=3] & state=99 & obs=5
+[start	& fuel=4	& ax=3	& ay=1] & state=100 & obs=5
+[start	& fuel=4	& ax=4	& ay=1] & state=101 & obs=5
+[start	& fuel=4	& ax=0	& ay=1] & state=102 & obs=25
+[start	& fuel=4	& ax=4	& ay=0] & state=103 & obs=28
+[start	& fuel=4	& ax=0	& ay=4] & state=104 & obs=16
+[start	& fuel=4	& ax=2	& ay=5] & state=105 & obs=14
+[start	& fuel=4	& ax=3	& ay=5] & state=106 & obs=14
+[start	& fuel=4	& ax=0	& ay=5] & state=107 & obs=22
+[start	& fuel=4	& ax=2	& ay=4] & state=108 & obs=5
+[start	& fuel=4	& ax=4	& ay=5] & state=109 & obs=14
+[start	& fuel=4	& ax=1	& ay=5] & state=110 & obs=14
+[start	& fuel=4	& ax=3	& ay=4] & state=111 & obs=0
+[start	& fuel=4	& ax=4	& ay=4] & state=112 & obs=13
+[start	& fuel=4	& ax=3	& ay=3] & state=113 & obs=49
+[start	& fuel=4	& ax=5	& ay=4] & state=114 & obs=29
+[start	& fuel=4	& ax=4	& ay=3] & state=115 & obs=0
+[start	& fuel=4	& ax=5	& ay=2] & state=116 & obs=29
+[start	& fuel=4	& ax=5	& ay=1] & state=117 & obs=29
+[start	& fuel=4	& ax=5	& ay=0] & state=118 & obs=36
+[start	& fuel=4	& ax=5	& ay=3] & state=119 & obs=29
+[start	& fuel=4	& ax=4	& ay=2] & state=120 & obs=5
+[start	& fuel=4	& ax=5	& ay=5] & state=121 & obs=39
+[start	& fuel=7	& ax=3	& ay=1] & state=122 & obs=0
+[start	& fuel=7	& ax=3	& ay=4] & state=123 & obs=0
+[start	& fuel=7	& ax=3	& ay=5] & state=124 & obs=14
+[start	& fuel=7	& ax=4	& ay=3] & state=125 & obs=0
+[start	& fuel=7	& ax=5	& ay=3] & state=126 & obs=29
+[start	& fuel=7	& ax=1	& ay=3] & state=127 & obs=0
+[start	& fuel=3	& ax=0	& ay=1] & state=128 & obs=31
+[start	& fuel=3	& ax=0	& ay=0] & state=129 & obs=40
+[start	& fuel=3	& ax=0	& ay=3] & state=130 & obs=12
+[start	& fuel=3	& ax=0	& ay=4] & state=131 & obs=12
+[start	& fuel=3	& ax=1	& ay=2] & state=132 & obs=1
+[start	& fuel=3	& ax=2	& ay=2] & state=133 & obs=23
+[start	& fuel=3	& ax=1	& ay=0] & state=134 & obs=30
+[start	& fuel=3	& ax=1	& ay=3] & state=135 & obs=2
+[start	& fuel=3	& ax=2	& ay=1] & state=136 & obs=1
+[start	& fuel=3	& ax=3	& ay=1] & state=137 & obs=2
+[start	& fuel=3	& ax=2	& ay=0] & state=138 & obs=30
+[start	& fuel=3	& ax=2	& ay=3] & state=139 & obs=2
+[start	& fuel=3	& ax=4	& ay=1] & state=140 & obs=2
+[start	& fuel=3	& ax=1	& ay=1] & state=141 & obs=1
+[start	& fuel=3	& ax=3	& ay=0] & state=142 & obs=11
+[start	& fuel=3	& ax=1	& ay=4] & state=143 & obs=2
+[start	& fuel=3	& ax=3	& ay=2] & state=144 & obs=2
+[start	& fuel=3	& ax=0	& ay=2] & state=145 & obs=31
+[start	& fuel=3	& ax=4	& ay=0] & state=146 & obs=11
+[start	& fuel=3	& ax=2	& ay=4] & state=147 & obs=2
+[start	& fuel=3	& ax=3	& ay=5] & state=148 & obs=20
+[start	& fuel=3	& ax=4	& ay=5] & state=149 & obs=20
+[start	& fuel=3	& ax=1	& ay=5] & state=150 & obs=20
+[start	& fuel=3	& ax=0	& ay=5] & state=151 & obs=18
+[start	& fuel=3	& ax=3	& ay=4] & state=152 & obs=2
+[start	& fuel=3	& ax=3	& ay=3] & state=153 & obs=10
+[start	& fuel=3	& ax=5	& ay=5] & state=154 & obs=9
+[start	& fuel=3	& ax=2	& ay=5] & state=155 & obs=20
+[start	& fuel=3	& ax=4	& ay=4] & state=156 & obs=27
+[start	& fuel=3	& ax=4	& ay=3] & state=157 & obs=2
+[start	& fuel=3	& ax=5	& ay=4] & state=158 & obs=3
+[start	& fuel=3	& ax=5	& ay=3] & state=159 & obs=3
+[start	& fuel=3	& ax=5	& ay=2] & state=160 & obs=3
+[start	& fuel=3	& ax=4	& ay=2] & state=161 & obs=2
+[start	& fuel=3	& ax=5	& ay=1] & state=162 & obs=3
+[start	& fuel=3	& ax=5	& ay=0] & state=163 & obs=37
+[start	& fuel=6	& ax=5	& ay=1] & state=164 & obs=29
+[start	& fuel=6	& ax=3	& ay=5] & state=165 & obs=14
+[start	& fuel=6	& ax=5	& ay=4] & state=166 & obs=29
+[start	& fuel=6	& ax=4	& ay=5] & state=167 & obs=14
+[start	& fuel=6	& ax=5	& ay=5] & state=168 & obs=39
+[start	& fuel=6	& ax=1	& ay=5] & state=169 & obs=14
+[start	& fuel=6	& ax=5	& ay=3] & state=170 & obs=29
+[start	& fuel=2	& ax=0	& ay=0] & state=171 & obs=40
+[start	& fuel=2	& ax=0	& ay=2] & state=172 & obs=31
+[start	& fuel=2	& ax=0	& ay=3] & state=173 & obs=12
+[start	& fuel=2	& ax=1	& ay=1] & state=174 & obs=1
+[start	& fuel=2	& ax=2	& ay=1] & state=175 & obs=1
+[start	& fuel=2	& ax=1	& ay=0] & state=176 & obs=30
+[start	& fuel=2	& ax=1	& ay=3] & state=177 & obs=2
+[start	& fuel=2	& ax=1	& ay=4] & state=178 & obs=2
+[start	& fuel=2	& ax=2	& ay=2] & state=179 & obs=23
+[start	& fuel=2	& ax=3	& ay=2] & state=180 & obs=2
+[start	& fuel=2	& ax=1	& ay=2] & state=181 & obs=1
+[start	& fuel=2	& ax=2	& ay=0] & state=182 & obs=30
+[start	& fuel=2	& ax=3	& ay=0] & state=183 & obs=11
+[start	& fuel=2	& ax=2	& ay=3] & state=184 & obs=2
+[start	& fuel=2	& ax=3	& ay=1] & state=185 & obs=2
+[start	& fuel=2	& ax=4	& ay=1] & state=186 & obs=2
+[start	& fuel=2	& ax=0	& ay=1] & state=187 & obs=31
+[start	& fuel=2	& ax=4	& ay=0] & state=188 & obs=11
+[start	& fuel=2	& ax=0	& ay=4] & state=189 & obs=12
+[start	& fuel=2	& ax=3	& ay=4] & state=190 & obs=2
+[start	& fuel=2	& ax=3	& ay=3] & state=191 & obs=10
+[start	& fuel=2	& ax=4	& ay=5] & state=192 & obs=20
+[start	& fuel=2	& ax=5	& ay=5] & state=193 & obs=9
+[start	& fuel=2	& ax=2	& ay=5] & state=194 & obs=20
+[start	& fuel=2	& ax=1	& ay=5] & state=195 & obs=20
+[start	& fuel=2	& ax=4	& ay=4] & state=196 & obs=27
+[start	& fuel=2	& ax=4	& ay=3] & state=197 & obs=2
+[start	& fuel=2	& ax=3	& ay=5] & state=198 & obs=6
+[start	& fuel=2	& ax=0	& ay=5] & state=199 & obs=18
+[start	& fuel=2	& ax=5	& ay=4] & state=200 & obs=3
+[start	& fuel=2	& ax=5	& ay=3] & state=201 & obs=44
+[start	& fuel=2	& ax=2	& ay=4] & state=202 & obs=2
+[start	& fuel=2	& ax=5	& ay=2] & state=203 & obs=3
+[start	& fuel=2	& ax=5	& ay=1] & state=204 & obs=3
+[start	& fuel=2	& ax=5	& ay=0] & state=205 & obs=37
+[start	& fuel=2	& ax=4	& ay=2] & state=206 & obs=2
+[start	& fuel=5	& ax=5	& ay=5] & state=207 & obs=39
+[start	& fuel=1	& ax=0	& ay=1] & state=208 & obs=31
+[start	& fuel=1	& ax=0	& ay=0] & state=209 & obs=40
+[start	& fuel=1	& ax=0	& ay=3] & state=210 & obs=12
+[start	& fuel=1	& ax=0	& ay=4] & state=211 & obs=12
+[start	& fuel=1	& ax=1	& ay=2] & state=212 & obs=1
+[start	& fuel=1	& ax=2	& ay=2] & state=213 & obs=23
+[start	& fuel=1	& ax=1	& ay=0] & state=214 & obs=30
+[start	& fuel=1	& ax=1	& ay=3] & state=215 & obs=2
+[start	& fuel=1	& ax=2	& ay=1] & state=216 & obs=1
+[start	& fuel=1	& ax=3	& ay=1] & state=217 & obs=2
+[start	& fuel=1	& ax=2	& ay=0] & state=218 & obs=30
+[start	& fuel=1	& ax=2	& ay=3] & state=219 & obs=2
+[start	& fuel=1	& ax=4	& ay=1] & state=220 & obs=2
+[start	& fuel=1	& ax=1	& ay=1] & state=221 & obs=1
+[start	& fuel=1	& ax=3	& ay=0] & state=222 & obs=11
+[start	& fuel=1	& ax=1	& ay=4] & state=223 & obs=2
+[start	& fuel=1	& ax=3	& ay=2] & state=224 & obs=2
+[start	& fuel=1	& ax=0	& ay=2] & state=225 & obs=31
+[start	& fuel=1	& ax=4	& ay=0] & state=226 & obs=11
+[start	& fuel=1	& ax=4	& ay=4] & state=227 & obs=27
+[start	& fuel=1	& ax=4	& ay=3] & state=228 & obs=2
+[start	& fuel=1	& ax=5	& ay=5] & state=229 & obs=9
+[start	& fuel=1	& ax=3	& ay=5] & state=230 & obs=6
+[start	& fuel=1	& ax=2	& ay=5] & state=231 & obs=20
+[start	& fuel=1	& ax=5	& ay=4] & state=232 & obs=44
+[start	& fuel=1	& ax=5	& ay=3] & state=233 & obs=44
+[start	& fuel=1	& ax=4	& ay=5] & state=234 & obs=6
+[start	& fuel=1	& ax=2	& ay=4] & state=235 & obs=2
+[start	& fuel=1	& ax=1	& ay=5] & state=236 & obs=20
+[start	& fuel=1	& ax=0	& ay=5] & state=237 & obs=18
+[start	& fuel=1	& ax=5	& ay=2] & state=238 & obs=3
+[start	& fuel=1	& ax=3	& ay=4] & state=239 & obs=2
+[start	& fuel=1	& ax=5	& ay=1] & state=240 & obs=3
+[start	& fuel=1	& ax=5	& ay=0] & state=241 & obs=37
+[start	& fuel=1	& ax=4	& ay=2] & state=242 & obs=2
+[start	& fuel=0	& ax=0	& ay=0] & state=243 & obs=33
+[start	& fuel=0	& ax=0	& ay=2] & state=244 & obs=21
+[start	& fuel=0	& ax=0	& ay=3] & state=245 & obs=35
+[start	& fuel=0	& ax=1	& ay=1] & state=246 & obs=46
+[start	& fuel=0	& ax=2	& ay=1] & state=247 & obs=46
+[start	& fuel=0	& ax=1	& ay=0] & state=248 & obs=7
+[start	& fuel=0	& ax=1	& ay=3] & state=249 & obs=34
+[start	& fuel=0	& ax=1	& ay=4] & state=250 & obs=34
+[start	& fuel=0	& ax=2	& ay=2] & state=251 & obs=50
+[start	& fuel=0	& ax=3	& ay=2] & state=252 & obs=34
+[start	& fuel=0	& ax=1	& ay=2] & state=253 & obs=46
+[start	& fuel=0	& ax=2	& ay=0] & state=254 & obs=7
+[start	& fuel=0	& ax=3	& ay=0] & state=255 & obs=32
+[start	& fuel=0	& ax=2	& ay=3] & state=256 & obs=34
+[start	& fuel=0	& ax=3	& ay=1] & state=257 & obs=34
+[start	& fuel=0	& ax=4	& ay=1] & state=258 & obs=34
+[start	& fuel=0	& ax=0	& ay=1] & state=259 & obs=21
+[start	& fuel=0	& ax=4	& ay=0] & state=260 & obs=32
+[start	& fuel=0	& ax=0	& ay=4] & state=261 & obs=35
+[start	& fuel=0	& ax=5	& ay=4] & state=262 & obs=15
+[start	& fuel=0	& ax=5	& ay=3] & state=263 & obs=15
+[start	& fuel=0	& ax=4	& ay=5] & state=264 & obs=45
+[start	& fuel=0	& ax=3	& ay=5] & state=265 & obs=45
+[start	& fuel=0	& ax=2	& ay=4] & state=266 & obs=34
+[start	& fuel=0	& ax=1	& ay=5] & state=267 & obs=26
+[start	& fuel=0	& ax=0	& ay=5] & state=268 & obs=19
+[start	& fuel=0	& ax=2	& ay=5] & state=269 & obs=26
+[start	& fuel=0	& ax=5	& ay=1] & state=270 & obs=43
+[start	& fuel=0	& ax=5	& ay=0] & state=271 & obs=41
+[start	& fuel=0	& ax=4	& ay=2] & state=272 & obs=34
+[start	& fuel=0	& ax=5	& ay=2] & state=273 & obs=43

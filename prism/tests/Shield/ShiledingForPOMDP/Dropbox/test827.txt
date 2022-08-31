@@ -1,0 +1,241 @@
+Storm-pomdp 1.7.0
+
+Date: Sat Aug 27 20:11:11 2022
+Command line arguments: --help all
+Current working directory: /Users/shengsheng/Dropbox
+
+usage: storm-pomdp [options]
+
+##### Module 'general' ##############################################
+--[general:]help (h) <filter> ....................................... Shows available options, arguments and descriptions. <filter> (optional; default: frequent): 'frequent' for frequently used options, 'all' for the complete help, or a regular expression to show help for all matching entities.
+--[general:]version ................................................. Prints the version information.
+--[general:]verbose (v) ............................................. Enables more verbose output.
+--[general:]progress <delay> ........................................ Sets when additional information (if available) about the progress is printed. <delay> (optional; default: 5): The delay to wait (in seconds) between emitting information (0 means never print progress).
+--[general:]precision (eps) <value> ................................. The internally used precision. <value> (in (0, 1); default: 1e-06): The precision to use.
+--[general:]config (c) <filename> ................................... If given, this file will be read and parsed for additional configuration settings. <filename> (existing file): The name of the file from which to read the configuration.
+--[general:]bisimulation (bisim) .................................... Sets whether to perform bisimulation minimization.
+--[general:]parametric .............................................. Sets whether to enable parametric model checking.
+--[general:]exact <valuetype> ....................................... Sets whether to enable exact model checking. <valuetype> (optional; in {rationals, floats}; default: rationals): The kind of datatype used to represent numeric values
+--[general:]sound ................................................... Sets whether to force sound model checking.
+
+##### Module 'io' ###################################################
+--[io:]exportdot <filename> ......................................... If given, the loaded model will be written to the specified file in the dot format. <filename>: The name of the file to which the model is to be written.
+--[io:]dot-maxwidth <width> ......................................... The maximal width for labels in the dot format. For longer lines a linebreak is inserted. Value 0 represents no linebreaks. <width> (default: 0): The maximal line width for the dot format. Default is 0 meaning no linebreaks.
+--[io:]exportbuild <file> <format> .................................. Exports the built model to a file. <file>: The output file. <format> (optional; in {auto, dot, drdd, drn, json}; default: auto): The output format. 'auto' detects from the file extension.
+--[io:]exportjanidot <filename> ..................................... If given, the loaded jani model will be written to the specified file in the dot format. <filename>: The name of the file to which the model is to be written.
+--[io:]exportcdf (cdf) <directory> .................................. Exports the cumulative density function for reward bounded properties into a .csv file. <directory>: A path to an existing directory where the cdf files will be stored.
+--[io:]exportscheduler <filename> ................................... Exports the choices of an optimal scheduler to the given file (if supported by engine). <filename>: The output file. Use file extension '.json' to export in json.
+--[io:]exportresult <filename> ...................................... Exports the result to a given file (if supported by engine). The export will be in json. <filename>: The output file.
+--io:exportexplicit <filename> ...................................... If given, the loaded model will be written to the specified file in the drn format. <filename>: the name of the file to which the model is to be writen.
+--io:no-drn-placeholders ............................................ If given, the exported DRN contains no placeholders
+--io:exportdd <filename> ............................................ If given, the loaded model will be written to the specified file in the drdd format. <filename>: the name of the file to which the model is to be writen.
+--[io:]explicit (exp) <transition filename> <labeling filename> ..... Parses the model given in an explicit (sparse) representation. <transition filename> (existing file): The name of the file from which to read the transitions. <labeling filename> (existing file): The name of the file from which to read the state labeling.
+--[io:]explicit-drn (drn) <drn filename> ............................ Parses the model given in the DRN format. <drn filename> (existing file): The name of the DRN file containing the model.
+--[io:]explicit-imca (imca) <imca filename> ......................... Parses the model given in the IMCA format. <imca filename> (existing file): The name of the imca file containing the model.
+--[io:]prism <filename> ............................................. Parses the model given in the PRISM format. <filename> (existing file): The name of the file from which to read the PRISM input.
+--[io:]jani <filename> .............................................. Parses the model given in the JANI format. <filename> (existing file): The name of the file from which to read the JANI input.
+--[io:]prism2jani ................................................... If set, the input PRISM model is transformed to JANI.
+--[io:]prop (prop) <property or filename> <filter> .................. Specifies the properties to be checked on the model. <property or filename>: The formula or the file containing the formulas. <filter> (optional; default: all): The names of the properties to check.
+--[io:]transrew <filename> .......................................... If given, the transition rewards are read from this file and added to the explicit model. Note that this requires the model to be given as an explicit model (i.e., via --explicit). <filename> (existing file): The file from which to read the transition rewards.
+--[io:]staterew <filename> .......................................... If given, the state rewards are read from this file and added to the explicit model. Note that this requires the model to be given as an explicit model (i.e., via --explicit). <filename> (existing file): The file from which to read the state rewards.
+--[io:]choicelab <filename> ......................................... If given, the choice labels are read from this file and added to the explicit model. Note that this requires the model to be given as an explicit model (i.e., via --explicit). <filename> (existing file): The file from which to read the choice labels.
+--[io:]constants (const) <values> ................................... Specifies the constant replacements to use in symbolic models. Note that this requires the model to be given as an symbolic model (i.e., via --prism or --jani). <values> (default: empty): A comma separated list of constants and their value, e.g. a=1,b=2,c=3.
+--[io:]janiproperty (jprop) <values> ................................ Specifies the properties from the jani model (given by --jani) to be checked. <values> (optional; default: empty): A comma separated list of properties to be checked
+--[io:]steadystate .................................................. Computes the steady state distribution. Result can be exported using --exportresult.
+--[io:]expvisittimes ................................................ Computes the expected number of times each state is visited (DTMC) or the expected time spend in each state (CTMC). Result can be exported using --exportresult.
+--[io:]qvbs (qvbs) <model> <instance-index> <filter> ................ Selects a model from the Quantitative Verification Benchmark Set. <model>: The short model name as in the benchmark set. <instance-index> (optional; default: 0): The selected instance of this model. <filter> (optional; default: empty): The comma separated list of property names to check. Omit to check all, "" to check none.
+--[io:]propsasmulti ................................................. If set, the selected properties are interpreted as a multi-objective formula.
+--[io:]qvbsroot <path> .............................................. Specifies the root directory of the Quantitative Verification Benchmark Set. Default can be set in CMAKE. <path> (default: empty): The path.
+
+##### Module 'core' #################################################
+--[core:]engine (e) <name> .......................................... Sets which engine is used for model building and model checking. <name> (in {sparse, hybrid, dd, dd-to-sparse, jit, expl, abs, automatic, portfolio}; default: sparse): The name of the engine to use.
+--[core:]eqsolver <name> ............................................ Sets which solver is preferred for solving systems of linear equations. <name> (in {gmm++, native, eigen, elimination, topological, acyclic}; default: topological): The name of the solver to prefer.
+--[core:]ddlib <name> ............................................... Sets which library is preferred for decision-diagram operations. <name> (in {cudd, sylvan}; default: sylvan): The name of the library to prefer.
+--[core:]lpsolver <name> ............................................ Sets which LP solver is preferred. <name> (in {gurobi, glpk, z3}; default: glpk): The name of an LP solver.
+--[core:]smtsolver <name> ........................................... Sets which SMT solver is preferred. <name> (in {z3, mathsat}; default: z3): The name of an SMT solver.
+--[core:]statistics (stats) ......................................... Sets whether to display statistics if available.
+--[core:]cuda ....................................................... Sets whether to use CUDA.
+--[core:]enable-tbb (tbb) ........................................... Sets whether to use Intel TBB (if Storm was built with support for TBB).
+
+##### Module 'debug' ################################################
+--[debug:]debug ..................................................... Print debug output.
+--[debug:]trace ..................................................... Print even more debug output.
+--[debug:]additional-checks ......................................... If set, additional sanity checks are performed during execution.
+--[debug:]logfile (l) <filename> .................................... If specified, the log output will also be written to this file. <filename>: The name of the file to write the log.
+--[debug:]test ...................................................... Activate a test setting.
+
+##### Module 'build' ################################################
+--[build:]prismcompat (pc) .......................................... Enables PRISM compatibility. This may be necessary to process some PRISM models.
+--[build:]nofixdl (ndl) ............................................. If the model contains deadlock states, they need to be fixed by setting this option.
+--[build:]buildfull ................................................. If set, include all rewards and labels.
+--[build:]nomaxprog ................................................. If set, the maximum progress assumption is not applied while building the model (relevant for MAs)
+--[build:]buildchoicelab ............................................ If set, also build the choice labels
+--[build:]buildchoiceorig ........................................... If set, also build information that for each choice indicates the part(s) of the input that yielded the choice.
+--[build:]buildstateval ............................................. If set, also build the state valuations
+--[build:]build-all-labels .......................................... If set, build all labels
+--[build:]nobuild ................................................... If set, do not build the model.
+--[build:]explorder (eo) <name> ..................................... Sets which exploration order to use. <name> (in {dfs, bfs}; default: bfs): The name of the exploration order to choose.
+--[build:]explchecks (ec) ........................................... If set, additional checks (if available) are performed during model exploration to debug the model.
+--[build:]build-out-of-bounds-state ................................. If set, a state for out-of-bounds valuations is added
+--[build:]build-overlapping-guards-label ............................ For states where multiple guards are enabled, we add a label (for debugging DTMCs)
+--[build:]no-simplify ............................................... If set, simplification PRISM input is disabled.
+--[build:]int-bits <number> ......................................... Sets the number of bits that is used for unbounded integer variables. <number> (in (0, 63); default: 32): The number of bits.
+--[build:]location-elimination <location-heuristic> <edges-heuristic> If set, location elimination will be performed before the model is built. <location-heuristic> (optional; default: 10): If this number of locations is reached, no further unfolding will be performed <edges-heuristic> (optional; default: 10000): Determines how many new edges may be created by a single elimination
+
+##### Module 'sylvan' ###############################################
+--sylvan:maxmem <value> ............................................. Sets the upper bound of memory available to Sylvan in MB. <value> (default: 4096): The memory available to Sylvan.
+--sylvan:threads <value> ............................................ Sets the number of threads used by Sylvan. <value>: The number of threads available to Sylvan (0 means 'auto-detect').
+
+##### Module 'pomdp' ################################################
+--[pomdp:]nocanonic ................................................. If this is set, actions will not be ordered canonically. Could yield incorrect results.
+--[pomdp:]parametric-drn <filename> ................................. Export the parametric file. <filename>: The name of the file to which to write the model.
+--[pomdp:]qualitativereduction ...................................... Reduces the model size by performing qualitative analysis (E.g. merge states with prob. 1.
+--[pomdp:]uniqueobservations ........................................ Computes the states with a unique observation
+--[pomdp:]selfloopreduction ......................................... Reduces the model size by removing self loop actions
+--[pomdp:]memorybound <bound> ....................................... Sets the maximal number of allowed memory states (1 means memoryless schedulers). <bound> (in (0, +inf); default: 1): The maximal number of memory states.
+--[pomdp:]memorypattern <name> ...................................... Sets the pattern of the considered memory structure <name> (in {trivial, fixedcounter, selectivecounter, ring, fixedring, settablebits, full}; default: full): Pattern name.
+--[pomdp:]belief-exploration <mode> ................................. Analyze the POMDP by exploring the belief state-space. <mode> (optional; in {both, discretize, unfold}; default: both): Sets whether lower, upper, or interval result bounds are computed.
+--[pomdp:]check-fully-observable .................................... Performs standard model checking on the underlying MDP
+--[pomdp:]qualitative-analysis ...................................... Sets the option qualitative analysis
+
+##### Module 'pomdpQualitative' #####################################
+--[pomdpQualitative:]memlesssearch <method> ......................... Search for a qualitative memoryless scheduler <method> (in {one-shot, iterative}; default: iterative): method name
+--[pomdpQualitative:]exportSATcallspath <path> ...................... Export the SAT calls?. <path>: The name of the path to which to write the models.
+--[pomdpQualitative:]lookaheadhorizon <bound> ....................... In reachability in combination with a discrete ranking function, a lookahead is necessary. <bound> (default: 0): The lookahead. Use 0 for the number of states.
+--[pomdpQualitative:]onlydeterministic .............................. Search only for deterministic schedulers
+--[pomdpQualitative:]belsupmc ....................................... Create a symbolic description of the belief-support MDP to use for analysis purposes
+--[pomdpQualitative:]winningregion .................................. Search for the winning region
+--[pomdpQualitative:]lookaheadtype <type> ........................... What type to use for the ranking function <type> (in {bool, int, real}; default: real): The type.
+--pomdpQualitative:validate <level> ................................. Validate algorithm during runtime (for debugging) <level> (default: 0): how regular to apply this validation. Use 0 for never, 1 for the end, and >=2 within computation steps.
+--pomdpQualitative:allstats ......................................... Compute all stats, even if this is expensive.
+--[pomdpQualitative:]printwinningregion ............................. Print Winning Region
+--[pomdpQualitative:]exportwinningregion <path> ..................... Export the winning region. <path>: The name of the file to which to write the winning region.
+--pomdpQualitative:nographprocessing ................................ Prevent graph preprocessing (for debugging)
+
+##### Module 'belexpl' ##############################################
+--[belexpl:]refine <prec> <steps> ................................... Refines the result bounds until reaching either the goal precision or the refinement step limit <prec> (optional; in [0, +inf); default: 0.0001): The goal precision. <steps> (optional; default: 0): The number of allowed refinement steps (0 means no limit).
+--[belexpl:]exploration-time <time> ................................. Sets after which time no further states shall be explored. <time>: In seconds.
+--[belexpl:]resolution <init> <factor> .............................. Sets the resolution of the discretization and how it is increased in case of refinement <init> (in (0, +inf); default: 3): the initial resolution (higher means more precise) <factor> (optional; in (1, +inf); default: 2): Multiplied to the resolution of refined observations (higher means more precise).
+--[belexpl:]obs-threshold <init> <factor> ........................... Only observations whose score is below this threshold will be refined. <init> (in [0, 1]; default: 0.1): initial threshold (higher means more precise <factor> (optional; in [0, 1]; default: 0.1): Controlls how fast the threshold is increased in each refinement step (higher means more precise).
+--[belexpl:]size-threshold <init> <factor> .......................... Sets how many new states are explored or rewired in a refinement step and how this value is increased in case of refinement. <init> (default: 0): initial limit (higher means more precise, 0 means automatic choice) <factor> (optional; in [1, +inf); default: 4): Before each step the new threshold is set to the current state count times this number (higher means more precise).
+--[belexpl:]gap-threshold <init> <factor> ........................... Sets how large the gap between known lower- and upper bounds at a beliefstate needs to be in order to explore <init> (in [0, +inf); default: 0.1): initial threshold (higher means less precise <factor> (optional; in [0, 1]; default: 0.25): Multiplied to the gap in each refinement step (higher means less precise).
+--[belexpl:]scheduler-threshold <init> <factor> ..................... Sets how much worse a sub-optimal choice can be in order to be included in the relevant explored fragment <init> (in [0, +inf); default: 0.001): initial threshold (higher means more precise <factor> (optional; in [1, +inf); default: 1): Multiplied to the threshold in each refinement step (higher means more precise).
+--[belexpl:]numeric-precision <value> ............................... Sets the precision used to determine whether two belief-states are equal. <value> (optional; in [0, 1]; default: 1e-09): the precision
+--[belexpl:]triangulationmode <value> ............................... Sets how to triangulate beliefs when discretizing. <value> (in {dynamic, static}; default: dynamic): the triangulation mode
+
+##### Module 'toparametric' #########################################
+--[toparametric:]mecreduction ....................................... Reduces the model size by analyzing maximal end components
+--[toparametric:]fscmode <type> ..................................... Sets the way the pMC is obtained <type> (in {standard, simple-linear, simple-linear-inverse}; default: standard): type name
+--[toparametric:]transformbinary .................................... Transforms the pomdp to a binary pomdp.
+--[toparametric:]transformsimple .................................... Transforms the pomdp to a binary and simple pomdp.
+--[toparametric:]ensure-constant-reward ............................. Transforms the resulting pMC to a pMC with constant rewards.
+--[toparametric:]simplify-pmc ....................................... After obtaining a pMC, should further simplifications be applied?.
+
+##### Module 'transformation' #######################################
+--[transformation:]eliminate-chains ................................. If set, chains of non-Markovian states are eliminated if the resulting model is a Markov Automaton.
+--[transformation:]ec-label-behavior <behavior> ..................... Sets the behavior of labels for all non-Markovian states. Some options may cause wrong results. <behavior> (in {keep, merge, delete}; default: keep): The behavior how the transformer handles labels of non-Markovian states. 'keep' does not eliminate states with different labels, 'merge' builds the union of labels of all eliminated states, 'delete' only keeps the labels of the last state.
+--[transformation:]to-nondet ........................................ If set, DTMCs/CTMCs are converted to MDPs/MAs (without actual nondeterminism) before model checking.
+--[transformation:]to-discrete ...................................... If set, CTMCs/MAs are converted to DTMCs/MDPs (which might or might not preserve the provided properties).
+
+##### Module 'gmm++' ################################################
+--gmm++:method <name> ............................................... The method to be used for solving linear equation systems with the gmm++ engine. <name> (in {bicgstab, qmr, gmres, jacobi}; default: gmres): The name of the method to use.
+--gmm++:precond <name> .............................................. The preconditioning technique used for solving linear equation systems. <name> (in {ilu, diagonal, none}; default: ilu): The name of the preconditioning method.
+--gmm++:restart <count> ............................................. The number of iteration until restarted methods are actually restarted. <count> (default: 50): The number of iterations.
+--[gmm++:]maxiter (i) <count> ....................................... The maximal number of iterations to perform before iterative solving is aborted. <count>: The maximal iteration count.
+--[gmm++:]precision <value> ......................................... The precision used for detecting convergence of iterative methods. <value> (in (0, 1); default: 1e-06): The precision to achieve.
+
+##### Module 'eigen' ################################################
+--eigen:method <name> ............................................... The method to be used for solving linear equation systems with the eigen solver. <name> (in {sparselu, bicgstab, dgmres, gmres}; default: gmres): The name of the method to use.
+--eigen:precond <name> .............................................. The preconditioning technique used for solving linear equation systems. <name> (in {ilu, diagonal, none}; default: ilu): The name of the preconditioning method.
+--eigen:restart <count> ............................................. The number of iteration until restarted methods are actually restarted. <count> (default: 50): The number of iterations.
+--[eigen:]maxiter (i) <count> ....................................... The maximal number of iterations to perform before iterative solving is aborted. <count>: The maximal iteration count.
+--[eigen:]precision <value> ......................................... The precision used for detecting convergence of iterative methods. <value> (in (0, 1); default: 1e-06): The precision to achieve.
+
+##### Module 'native' ###############################################
+--native:method <name> .............................................. The method to be used for solving linear equation systems with the native engine. <name> (in {jacobi, gaussseidel, sor, walkerchae, power, sound-value-iteration, svi, optimistic-value-iteration, ovi, interval-iteration, ii, ratsearch}; default: jacobi): The name of the method to use.
+--[native:]maxiter (i) <count> ...................................... The maximal number of iterations to perform before iterative solving is aborted. <count>: The maximal iteration count.
+--[native:]precision <value> ........................................ The precision used for detecting convergence of iterative methods. <value> (in (0, 1); default: 1e-06): The precision to achieve.
+--[native:]soromega <value> ......................................... The omega used for SOR. <value> (in (0, 1); default: 0.9): The value of the SOR parameter.
+--[native:]absolute ................................................. Sets whether the relative or the absolute error is considered for detecting convergence.
+--[native:]powmult <name> ........................................... Sets which method multiplication style to prefer for the power method. <name> (in {gaussseidel, regular, gs, r}; default: gaussseidel): The name of a multiplication style.
+--[native:]symmetricupdates ......................................... If set, interval iteration performs an update on both, lower and upper bound in each iteration
+
+##### Module 'elimination' ##########################################
+--elimination:order <name> .......................................... The order that is to be used for the elimination techniques. <name> (in {fw, fwrev, bw, bwrev, rand, spen, dpen, regex}; default: fwrev): The name of the order in which states are chosen for elimination.
+--elimination:method <name> ......................................... The elimination technique to use. <name> (in {state, hybrid}; default: state): The name of the elimination technique to use.
+--elimination:entrylast ............................................. Sets whether the entry states are eliminated last.
+--elimination:sccsize <maxsize> ..................................... Sets the maximal size of the SCCs for which state elimination is applied. <maxsize> (default: 20): The maximal size of an SCC on which state elimination is applied.
+--elimination:use-dedicated-mc ...................................... Sets whether to use the dedicated model elimination checker (only DTMCs).
+
+##### Module 'minmax' ###############################################
+--[minmax:]method <name> ............................................ Sets which min/max linear equation solving technique is preferred. <name> (in {vi, value-iteration, pi, policy-iteration, lp, linear-programming, rs, ratsearch, ii, interval-iteration, svi, sound-value-iteration, ovi, optimistic-value-iteration, topological, vi-to-pi, acyclic}; default: topological): The name of a min/max linear equation solving technique.
+--[minmax:]maxiter (i) <count> ...................................... The maximal number of iterations to perform before iterative solving is aborted. <count>: The maximal iteration count.
+--[minmax:]precision <value> ........................................ The precision used for detecting convergence of iterative methods. <value> (in (0, 1); default: 1e-06): The precision to achieve.
+--[minmax:]absolute ................................................. Sets whether the relative or the absolute error is considered for detecting convergence.
+--[minmax:]vimult <name> ............................................ Sets which method multiplication style to prefer for value iteration. <name> (in {gaussseidel, regular, gs, r}; default: gaussseidel): The name of a multiplication style.
+--[minmax:]symmetricupdates ......................................... If set, interval iteration performs an update on both, lower and upper bound in each iteration
+
+##### Module 'game' #################################################
+--[game:]method <name> .............................................. Sets which game solving technique is preferred. <name> (in {vi, value-iteration, pi, policy-iteration}; default: vi): The name of a game solving technique.
+--[game:]maxiter (i) <count> ........................................ The maximal number of iterations to perform before iterative solving is aborted. <count>: The maximal iteration count.
+--[game:]precision <value> .......................................... The precision used for detecting convergence of iterative methods. <value> (in (0, 1); default: 1e-06): The precision to achieve.
+--[game:]absolute ................................................... Sets whether the relative or the absolute error is considered for detecting convergence.
+
+##### Module 'bisimulation' #########################################
+--bisimulation:type <name> .......................................... Sets the kind of bisimulation quotienting used. <name> (in {strong, weak}; default: strong): The name of the type to use.
+--bisimulation:quot <format> ........................................ Sets the format in which the quotient is extracted (only applies to DD-based bisimulation). <format> (in {sparse, dd}; default: dd): The format of the quotient.
+--[bisimulation:]repr ............................................... Sets whether to use representatives in the quotient rather than block numbers.
+--[bisimulation:]origvars ........................................... Sets whether to use the original variables in the quotient rather than the block variables.
+--[bisimulation:]ddexact ............................................ Sets whether to use exact arithmetic in dd-based bisimulation.
+--[bisimulation:]sigmode <mode> ..................................... Sets the signature computation mode. <mode> (in {eager, lazy}; default: eager): The mode to use.
+--bisimulation:reuse <mode> ......................................... Sets whether to reuse all results. <mode> (in {none, blocks}; default: blocks): The mode to use.
+--bisimulation:init <mode> .......................................... Sets which initial partition mode to use. <mode> (in {regular, finer}; default: finer): The mode to use.
+--bisimulation:refine <mode> ........................................ Sets which refinement mode to use. <mode> (in {full, changed}; default: full): The mode to use.
+
+##### Module 'glpk' #################################################
+--glpk:output ....................................................... If set, the glpk output will be printed to the command line.
+--glpk:nomilppresolver .............................................. Disables glpk's built-in MILP presolver.
+--glpk:inttol <value> ............................................... Sets glpk's precision for integer variables. <value> (in (0, 1); default: 1e-06): The precision to achieve.
+
+##### Module 'exploration' ##########################################
+--exploration:precomp <name> ........................................ Sets the kind of precomputation used. <name> (in {local, global}; default: global): The name of the type to use.
+--exploration:stepsprecomp <count> .................................. Sets the number of exploration steps to perform until a precomputation is triggered. <count> (default: 100000): The number of exploration steps to perform.
+--exploration:pathsprecomp <count> .................................. If set, a precomputation is perfomed periodically after the given number of paths has been sampled. <count> (default: 100000): The number of paths to sample until a precomputation is triggered.
+--exploration:nextstate <name> ...................................... Sets the next-state heuristic to use. <name> (in {probdiffs, prob, unif}; default: probdiffs): The name of the heuristic to use. 'prob' samples according to the probabilities in the system, 'probdiffs' takes into account probabilities and the differences between the current bounds and 'unif' samples uniformly.
+--[exploration:]precision (eps) <value> ............................. The precision to achieve. <value> (in (0, 1); default: 1e-06): The value to use to determine convergence.
+
+##### Module 'resources' ############################################
+--[resources:]timeout (t) <time> .................................... If given, computation will abort after the timeout has been reached. <time> (default: 0): Seconds after which to timeout.
+--[resources:]timemem (tm) .......................................... Prints CPU time and memory consumption at the end.
+--[resources:]signal-timeout <time> ................................. Specifies how much time can pass until termination when receiving a termination signal. <time> (default: 3): Seconds after which to exit the program.
+
+##### Module 'jitbuilder' ###########################################
+--[jitbuilder:]doctor ............................................... Show debugging information on why the jit-based model builder is not working on your system.
+--[jitbuilder:]compiler <name> ...................................... The compiler in the jit-based model builder. <name> (default: c++): The name of the executable. Defaults to c++.
+--[jitbuilder:]storm <dir> .......................................... The include directory of storm. <dir>: The directory that contains the headers of storm.
+--[jitbuilder:]boost <dir> .......................................... The include directory of boost. <dir>: The directory containing the boost headers version >= 1.61.
+--[jitbuilder:]carl <dir> ........................................... The include directory of carl. <dir>: The directory containing the carl headers.
+--[jitbuilder:]cxxflags <flags> ..................................... The flags passed to the compiler. <flags>: The compiler flags.
+--[jitbuilder:]opt <level> .......................................... Sets the optimization level. <level> (default: 3): The level to use.
+
+##### Module 'topological' ##########################################
+--topological:eqsolver <name> ....................................... Sets which solver is considered for solving the underlying equation systems. <name> (in {gmm++, native, eigen, elimination}; default: gmm++): The name of the used solver.
+--topological:minmax <name> ......................................... Sets which minmax method is considered for solving the underlying minmax equation systems. <name> (in {vi, value-iteration, pi, policy-iteration, lp, linear-programming, rs, ratsearch, ii, interval-iteration, svi, sound-value-iteration, ovi, optimistic-value-iteration, vi-to-pi}; default: value-iteration): The name of the used min max method.
+
+##### Module 'modelchecker' #########################################
+--[modelchecker:]filterrewzero ...................................... If set, states with reward zero are filtered out, potentially reducing the size of the equation system
+--[modelchecker:]ltl2datool <filename> .............................. If set, use an external tool to convert LTL formulas to state-based deterministic automata in HOA format <filename>: A script that can be called with a prefix formula and a name for the output automaton.
+
+##### Module 'multiplier' ###########################################
+--multiplier:type <name> ............................................ Sets which type of multiplier is preferred. <name> (in {native, gmmxx}; default: gmmxx): The name of a multiplier.
+
+##### Module 'hints' ################################################
+--hints:states <number> ............................................. Estimate of the number of reachable states <number>: size.
+
+##### Module 'ovi' ##################################################
+--[ovi:]precision-update-factor <factor> ............................ Sets with which factor the precision of the inner value iteration is updated. <factor> (in (0, 1); default: 0.4): The factor.
+--[ovi:]max-verification-iter-factor <factor> ....................... Controls how many verification iterations are performed before guessing a new upper bound. <factor> (in (0, +inf); default: 1): The factor.
+--[ovi:]upper-bound-factor <factor> ................................. Sets with which factor the precision is multiplied to guess the upper bound. <factor> (in (0, +inf); default: 1): The factor.
+--[ovi:]check-upper-only-iter <iter> ................................ Sets the max. iterations OVI will only iterate over the upper bound. <iter> (in (0, +inf); default: 20000): The iterations.
+--[ovi:]no-termination-guarantee (ntg) .............................. If set, we don't take the element-wise minimum for the upper bound, which is often faster but theoretically incomplete.
+

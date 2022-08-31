@@ -23,11 +23,15 @@ const int areaMaxX = min(primaryMaxX + borderSize, axMAX);
 const int areaMaxY = min(primaryMaxY + borderSize, ayMAX);
 const int ob1x = 4;
 const int ob1y = 4;
+const int rf1x = 0;
+const int rf1y = 0;
 const int rf2x = 2;
 const int rf2y = 2;
 const int rf3x = 3;
 const int rf3y = 3;
 
+formula distance = axMAX - ax + ayMAX - ay;
+formula distrf1 = max(rf1x - ax, ax - rf1x) + max(rf1y - ay, ay - rf1y);
 formula westenabled = ax != axMIN;
 formula eastenabled = ax != axMAX;
 formula northenabled = ay != ayMIN;
@@ -61,6 +65,7 @@ endmodule
 module tank
 fuel : [0..fuelCAP] init fuelCAP;
 
+[placement] true -> 1/9: (fuel'=0) + 1/9: (fuel'=1) + 1/9: (fuel'=2) + 1/9: (fuel'=3) + 1/9: (fuel'=4) + 1/9: (fuel'=5) + 1/9: (fuel'=6) + 1/9: (fuel'=7) + 1/9: (fuel'=8);
 [refuel] canRefuel -> 1:(fuel'=fuelCAP);
 [north] fuel > 0 & !canRefuel -> 0.7:(fuel'=fuel-1) + 0.3:(fuel'=max(fuel-1,0));
 [south] fuel > 0 & !canRefuel -> 0.7:(fuel'=fuel-1)+ 0.3:(fuel'=max(fuel-1,0));
@@ -70,7 +75,7 @@ fuel : [0..fuelCAP] init fuelCAP;
 endmodule
 
 module rover
-ax : [areaMinX..areaMaxY] init areaMinX;
+ax : [areaMinX..areaMaxX] init areaMinX;
 ay : [areaMinY..areaMaxY] init areaMinY;
 [placement] true ->1/4:(ax'=primaryMinX) & (ay'=primaryMinY) + 1/4:(ax'=primaryMinX) & (ay'=primaryMaxY) + 1/4:(ax'=primaryMaxX) & (ay'=primaryMinY) + 1/4:(ax'=primaryMaxX) & (ay'=primaryMaxY);
 [west] westenabled -> (1-slippery): (ax'=max(ax-1,axMIN)) + slippery: (ax'=max(ax-2,axMIN));
@@ -101,7 +106,7 @@ endrewards
 rewards "reward"
 done : 10;
 endrewards
-label "goal" = done;
+label "goal" = done & (fuel >= distance | atStation | fuel >= distrf1);
 label "traps" = crash;
 label "stationvisit" = atStation;
 label "notbad" =  !crash & (fuel > 0 | canRefuel);

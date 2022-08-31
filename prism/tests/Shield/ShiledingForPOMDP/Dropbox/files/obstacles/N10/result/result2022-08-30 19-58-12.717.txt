@@ -1,0 +1,3 @@
+TimeStamp;Number of States;Shield Position;Local Shield;Episode;Total Episodes;Undiscounted Reward;Discounted Reward;Number of Bad States;Number of Steps;Time Spent;Average Undiscounted reward;Average Discounted reward;Average time spent ;Average number of Bad States;Average number of Steps;Exploration Constant;Number of Simulations
+2022-08-30 19-58-12.717;101;prior;true;1;2;9.0;2.6144035065054716;0.0;12.0;1622;9.0;2.6144035065054716;1622;0.0;12.0;40.0;32768.0
+2022-08-30 19-58-12.717;101;prior;true;2;2;10.0;3.752003691058392;0.0;11.0;1305;9.5;3.183203598781932;1463;0.0;11.5;40.0;32768.0

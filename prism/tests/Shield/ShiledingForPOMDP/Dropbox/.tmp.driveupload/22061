@@ -1,9 +1,0 @@
-:preamble
-model hash: 13586272962563097884
-:winningregion
-1 1
-1 9223372036854775808;
-1 9223372036854775808;
-:state information
-[!start	& fuel=8	& ax=1	& ay=1] & state=0 & obs=1
-[start	& fuel=8	& ax=1	& ay=1] & state=1 & obs=0

@@ -1,0 +1,32 @@
+Storm-pomdp 1.7.0
+
+Date: Tue Aug 30 18:56:10 2022
+Command line arguments: --prism /Users/shengsheng/Dropbox/files/obstacles/N20/obstacle_N20_centralized-20-0-0-19-19.nm --exportbuild /Users/shengsheng/Dropbox/files/obstacles/N20/log/obstacle_N20_centralized-20-0-0-19-19.dot --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacles/N20/winningregion/obstacle_N20_centralized-20-0-0-19-19-fixpoint.wr
+Current working directory: /Users/shengsheng/Dropbox
+
+Time for model input parsing: 0.019s.
+
+Time for model construction: 0.091s.
+
+-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	401
+Transitions: 	2904
+Choices: 	1538
+Observations: 	4
+Reward Models:  none
+State Labels: 	5 labels
+   * deadlock -> 0 item(s)
+   * traps -> 20 item(s)
+   * init -> 1 item(s)
+   * notbad -> 381 item(s)
+   * goal -> 1 item(s)
+Choice Labels: 	5 labels
+   * placement -> 1 item(s)
+   * south -> 379 item(s)
+   * north -> 379 item(s)
+   * east -> 379 item(s)
+   * west -> 379 item(s)
+-------------------------------------------------------------- 
+Write to file /Users/shengsheng/Dropbox/files/obstacles/N20/log/obstacle_N20_centralized-20-0-0-19-19.dot.
+Analyzing property 'Pmax=? ["notbad" U "goal"]'

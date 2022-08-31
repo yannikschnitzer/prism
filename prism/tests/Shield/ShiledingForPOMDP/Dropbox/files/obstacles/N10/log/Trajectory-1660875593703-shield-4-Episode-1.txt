@@ -1,6 +1,0 @@
-prism_state;prism_belief_support;selected_action;available_actions;allowed_actions;state_meaning;safe?;unsafeActions
-0;[0];placement;[placement];[placement];(start=false,ax=0,ay=0);true;[]
-57;[48, 65, 53, 25, 57];south;[north, south, east, west];[south, west];(start=true,ax=5,ay=6);true;[east, north]
-58;[49, 50, 66, 67, 54, 55, 26, 58, 59, 27];south;[north, south, east, west];[];(start=true,ax=5,ay=7);true;[east, south, north, west]
-59;[50, 67, 69, 55, 56, 57, 59, 27, 28, 60];south;[north, south, east, west];[];(start=true,ax=5,ay=8);true;[east, south, north, west]
-60;[50, 69, 70, 56, 57, 58, 59, 28, 60, 30];east;[north, south, east, west];[];(start=true,ax=5,ay=9);true;[east, south, north, west]

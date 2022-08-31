@@ -1,0 +1,7 @@
+:preamble
+model hash: 13644328526706011332
+:winningregion
+1
+
+:state information
+[!start	& fuel=0	& ax=1	& ay=0] & state=0 & obs=0

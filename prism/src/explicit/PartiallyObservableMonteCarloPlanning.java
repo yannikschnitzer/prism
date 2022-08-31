@@ -227,7 +227,8 @@ import java.math.BigInteger;
 			StompyStateToPrismState.put(s, new ArrayList<Integer>());
 		}
 
-		for (int PrismState = 0; PrismState < pomdp.getNumStates(); PrismState++) {
+		int numStates = pomdp.getNumStates();
+		for (int PrismState = 0; PrismState < numStates; PrismState++) {
 //		for (int PrismState = 30321; PrismState < 33103; PrismState++) {
 
 			String fullMeaning = pomdp.getStatesList().get(PrismState).toStringNoParentheses();
@@ -238,22 +239,24 @@ import java.math.BigInteger;
 //				System.out.println("Prism state= " + PrismState + " " + meaning + StompyMeaning2State.containsKey(meaning) );	
 //			}
 //			
-			int StompyState = -1;
+			int StompyState ;
 			if (StompyMeaning2State.containsKey(meaning)){
 				StompyState = StompyMeaning2State.get(meaning);
 //				System.out.println("Prism state= " + PrismState + " " + getStateMeaning(PrismState)+ " to StompyState => "+ StompyState + " " + meaning);
 			} else {
-				continue; // prism state has not couterpart in stompystate
+//				continue; // prism state has not couterpart in stompystate
+				StompyState = -1;
 			}
-			
+			System.out.println("Prism state= " + PrismState + " " + getStateMeaning(PrismState)+ " to StompyState => "+ StompyState + " " + meaning);
+
 			PrismStateToStompyState[PrismState] =  StompyState; //key
 			
 //			System.out.println("Prism state= " + PrismState + " " + getStateMeaning(PrismState)+ " to StompyState => "+ StompyState + " " + meaning);
-			
-			ArrayList<Integer> tp = StompyStateToPrismState.get(StompyState);
-			tp.add(PrismState);
-			StompyStateToPrismState.put(StompyState, tp);
-			
+			if (StompyState != -1) {
+				ArrayList<Integer> tp = StompyStateToPrismState.get(StompyState);
+				tp.add(PrismState);
+				StompyStateToPrismState.put(StompyState, tp); // TODO Is this necessary? 
+			}
 //			PrismObsToStompyObs[pomdp.getObservation(PrismState)] = StompyStateToObs.get(StompyState);// StompyStateToObs[StompyState];
 //			System.out.println(pomdp.getObservation(PrismState) + "xxx" + StompyStateToObs.get(StompyState));
 //			StompyObsToPrismObs[StompyStateToObs.get(StompyState)] = pomdp.getObservation(PrismState);
@@ -565,18 +568,17 @@ import java.math.BigInteger;
 	public boolean isSetOfStatesWinning(HashSet<Integer> PrismStates) 
 	{
 //		System.out.println("Prism states in all area" + PrismStates);
-		PrismStates = filterPrimaryStates(PrismStates);
+//		PrismStates = filterPrimaryStates(PrismStates);
 //		System.out.println("Prism states in primary area" + PrismStates);
 
 		// convert to Stompy obs 
 		HashMap<Integer, HashSet<Integer>> StompyObs2StompyStates = new HashMap<Integer, HashSet<Integer>> ();
 		for (int state : PrismStates) {
-//			System.out.println( "State" + state + " " + getStateMeaning(state)+ "");
 
 			int StompyState = PrismStateToStompyState[state];
 			if(StompyState < 0) {
 				// this state is not modeled in this shield
-				System.out.println("? this state is not model");
+//				System.out.println("? this state is not model");
 				continue;
 			}
 			int StompyObs = StompyStateToObs.get(StompyState);
@@ -601,7 +603,18 @@ import java.math.BigInteger;
 			StompyStates.add(index); 
 			StompyObs2StompyStates.put(StompyObs, StompyStates);
 		}
-
+		
+		if (PrismStates.size() > 0 && StompyObs2StompyStates.size() == 0) {
+			
+			System.out.println("These states are not modeled in local shield." + xMIN + " " + yMIN);
+			for (int state: PrismStates) {
+				int StompyState = PrismStateToStompyState[state];
+//				int StompyObs = StompyStateToObs.get(StompyState);
+				System.out.println( "State" + state + " " + getStateMeaning(state) + "stompy State" + StompyState);
+			}
+			return false;
+		}
+		
 		for (int StompyObs : StompyObs2StompyStates.keySet()) {
 //			if (winningRegion.get(StompyObs) == null) { // if not winning support for this obs //TODO, should it safe just because the action leads to end state // TODO
 //				System.out.println("Hereee");
@@ -803,10 +816,6 @@ import java.math.BigInteger;
 	{
 		return belief;
 	}
-	public void addBeliefParticle(int s) 
-	{
-		belief.addParticle(s);
-	}
 	public POMCPNode getChildByActionIndex(int index) {
 		if (children != null && children.containsKey(index)) {
 			return children.get(index);
@@ -859,7 +868,7 @@ import java.math.BigInteger;
 	 public ArrayList<Integer> getParticles(){
 		 return particles;
 	 }
-	 public Integer sample() 
+	 public int sample() 
 	 {
 		 Random rnd = new Random();
 		 return particles.get(rnd.nextInt(particles.size()));
@@ -867,20 +876,19 @@ import java.math.BigInteger;
 	 public void addParticle(Integer s) 
 	 {
 		 particles.add(s);
-//		 uniqueStates.set(s);
-		 uniqueStatesInt.add(s);
 	 }
-//	 public BitSet getUniqueStates() 
-//	 {
-//		 return uniqueStates;
-//	 }
-	 public HashSet<Integer> getUniqueStatesInt(){
+	 public boolean isStateInBeliefSupport(int state)
+	 {
+		 return uniqueStatesInt.contains(state);
+	 }
+	 public void updateBeliefSupport(int state) 
+	 {
+		 uniqueStatesInt.add(state);
+	 }
+	 public HashSet<Integer> getUniqueStatesInt()
+	 {
 		 return uniqueStatesInt;
 	 }
-//	 public boolean isStateInBelief(int s) 
-//	 {
-//		 return uniqueStates.get(s);
-//	 }
 	 public void displayUniqueStates() 
 	 {
 		if(particles.size()==0) 
@@ -944,46 +952,43 @@ public class PartiallyObservableMonteCarloPlanning {
 	private double noParticles;
 	private int K;
 	private int maxDepth;
-	private double[] initialBelief;
-	private POMCPBelief initialBeliefParticles;
-	private double Tree; // Tree
-	ArrayList<Object> allActions; 
-	Map <Object, Integer> actionToIndex;
+	private double[] initialBeliefDistribution;
+	private double [][] UCB;
+	private POMCPBelief initialBelief;
+	private int TreeDepth;
+	private int PeakTreeDepth;
+
 	private POMCPNode root;
 	private POMDP pomdp;
+	private ArrayList<Object> allActions; 
+	private Map <Object, Integer> actionToIndex;
 	private MDPRewards mdpRewards;
 	private HashMap<Integer, Double> rewardFunction;
 	private BitSet target;
 	private boolean min;
 	private BitSet statesOfInterest;
-//	private ArrayList<Integer> endStates;
 	private HashSet<Integer> endStates;
-//	private int nodeCount;
-	private int TreeDepth;
-	private int PeakTreeDepth;
-	private double [][] UCB;
-	private int shieldLevel;
-	private Map<Integer, HashSet<Integer>> stateSuccessors;
 	private List<String> varNames;
 	private int variableIndexX;
 	private int variableIndexY;
+	private HashMap<Integer, HashSet<Integer>> stateSuccessorsHashSet;
+	private HashMap<Integer, ArrayList<Integer>> stateSuccessorArrayList;
+	private HashMap<Integer, ArrayList<Double>> stateSuccessorCumProb;
+
+	private String shieldLevel;
 	private ArrayList<POMDPShield> localShields;
 	private POMDPShield mainShield;
 	private boolean useLocalShields;
 	private boolean isMainShieldAvailable;
 	private boolean isLocalShieldAvailable;
-	
-	private HashMap<Integer, HashSet<Integer>> stateSuccessorsHashSet;
-	private HashMap<Integer, ArrayList<Integer>> stateSuccessorArrayList;
-	private HashMap<Integer, ArrayList<Double>> stateSuccessorCumProb;
-
-	public static final int NO_SHIELD = 0;
-	public static final int PRIOR_SHIELD = 2;
-	public static final int ON_THE_FLY_SHIELD = 4;
-	public static final int CENTRALIZED_SHIELD = 0;
-	public static final int FACTORED_SHIELD = 1;
 	private int shieldSize;
 	private int gridSize;
+	
+	public static final String NO_SHIELD = "none";
+	public static final String PRIOR_SHIELD = "prior";
+	public static final String ON_THE_FLY_SHIELD = "onTheFly";
+	public static final String CENTRALIZED_SHIELD = "centrailized";
+	public static final String FACTORED_SHIELD = "factored";
 	public PartiallyObservableMonteCarloPlanning(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest, HashSet<Integer> endStates,
 			 double constant, int maxDepth) 
 	{
@@ -1016,121 +1021,30 @@ public class PartiallyObservableMonteCarloPlanning {
 	public void initializePOMCP() {
 		this.TreeDepth = 0;
 		this.PeakTreeDepth = 0;
+		initialUCB(10000, 100);
 		initializeVariables();
 		getAllActions();
 		setActionToIndex();
-		//root.getBelief().disaplyParticles();
-		initialUCB(10000, 100);
-		this.shieldLevel = 0; 
+		this.shieldLevel = NO_SHIELD; 
 		this.useLocalShields = false;
-		stateSuccessors = new HashMap<Integer, HashSet<Integer>> ();
-		rewardFunction = new HashMap<Integer, Double> (); 
+		this.rewardFunction = new HashMap<Integer, Double> (); 
 		initializeStates();
 
 	}
 	public void resetRoot() {
-		this.initialBelief = pomdp.getInitialBeliefInDist();
-		this.initialBeliefParticles = new POMCPBelief();
+		this.initialBeliefDistribution = pomdp.getInitialBeliefInDist();
+		this.initialBelief = new POMCPBelief();
 		//TODO
 		for (int p = 0; p < K; p ++) {
-			int s = drawStateFromBelief(this.initialBelief);
-			this.initialBeliefParticles.addParticle(s);
+			int s = drawStateFromBelief(this.initialBeliefDistribution);
+			this.initialBelief.addParticle(s);
+			this.initialBelief.updateBeliefSupport(s);
 		}
 		
 		this.root = new POMCPNode();
-		root.setBelief(this.initialBeliefParticles);
+		root.setBelief(this.initialBelief);
 	}
 	
-	public void loadMainShield(String shieldDir) {
-		File files = new File(shieldDir);
-		File[] array = files.listFiles();
-		for (int i = 0; i < array.length; i++) {
-			if (!array[i].isFile() ) {
-				continue;
-			}
-			File file = array[i];
-			String fileName = array[i].getName(); 
-			if (!fileName.contains("centralized")) {
-				continue;
-			}
-			System.out.println("++++Initialize main shield " );
-			System.out.println(fileName);
-			this.isMainShieldAvailable = true;
-			String[] parameters = fileName.split("-");
-			
-//			gridSize = Integer.parseInt(parameters[1]);
-//			shieldSize = gridSize;
-			int[] pStates = {0, 0, Integer.parseInt(parameters[1]), Integer.parseInt(parameters[1])}; 
-			
-			String winning = file.toString();
-			mainShield = new POMDPShield(pomdp, winning,  varNames, endStates, pStates);
-			break;
-		}
-	}
-	
-	public void loadShiled() 
-	{
-		File files = new File(".");
-		File[] array = files.listFiles();
-		for (int i = 0; i < array.length; i++) {
-			String path = array[i].getPath();
-			if (path.contains("winningregion")){
-				loadMainShield(path);
-				loadLocalShield(path);
-				return;
-			}
-		}
-		System.out.println("Fail to find directory winningregion");
-	}
-	
-	public void setUseLocalShields(boolean use) 
-	{
-		useLocalShields = use;
-	}
-	public void setShieldLevel(int level) 
-	{
-		shieldLevel = level;
-	}
-	public void loadLocalShield(String shieldDir) 
-	{
-		localShields = new ArrayList<POMDPShield> ();
-		File files = new File(shieldDir);
-		File[] array = files.listFiles();
-		ArrayList<String> fileNames = new ArrayList<String> ();
-		for (int i = 0; i < array.length; i++) {
-			if (!array[i].isFile()) {
-				continue;
-			}
-			String fileName = array[i].getName(); 
-			if (!fileName.contains("factor")) {
-				continue;
-			}
-			fileNames.add(fileName);
-		}
-		Collections.sort(fileNames);
-		for (int i = 0; i < fileNames.size(); i++) {
-			String fileName = fileNames.get(i);
-			System.out.println("++++Initialize shield index = " + localShields.size() + ", shieldName = "+ fileName);
-			String winning = shieldDir + System.getProperties().getProperty("file.separator") + fileName;
-			this.isLocalShieldAvailable = true;
-			String[] parameters = fileName.split("-");
-			int[] pStates = {Integer.parseInt(parameters[2]), Integer.parseInt(parameters[3]), Integer.parseInt(parameters[4]), Integer.parseInt(parameters[5])}; 
-			
-			shieldSize = Integer.parseInt(parameters[1]);
-			gridSize = Integer.parseInt(parameters[5]) + 1;
-			
-			POMDPShield localShield = new POMDPShield(pomdp, winning, varNames, endStates, pStates);
-			localShields.add(localShield);
-		}
-	}
-	public boolean hasMainShield() 
-	{
-		return this.isMainShieldAvailable;
-	}
-	public boolean hasLocalShield() 
-	{
-		return this.isLocalShieldAvailable;
-	}
 	
 	public double fastUCB(int N, int n, double logN) 
 	{
@@ -1140,6 +1054,7 @@ public class PartiallyObservableMonteCarloPlanning {
 		if (n == 0)
 			return Double.POSITIVE_INFINITY;
 		else
+//			System.out.println("N=" + N + ", n=" + n);
 			return this.c * Math.sqrt(logN / n);
 	}
 	public void initialUCB(int UCB_N, int UCB_n)
@@ -1161,40 +1076,6 @@ public class PartiallyObservableMonteCarloPlanning {
 	public void setVerbose(int v) 
 	{
 		verbose = v;
-	}
-	public void getAllActions()
-	{
-		allActions = new ArrayList<Object> ();
-		for (int s = 0; s < pomdp.getNumStates();s++) {
-			List <Object> availableActionsForState = pomdp.getAvailableActions(s);
-			for (Object a: availableActionsForState) {
-				if (!allActions.contains(a) & a!= null) {
-					allActions.add(a);
-				}
-			}
-		}
-	}
-	public Object getActionByActionIndex(int index) {
-		return allActions.get(index);
-	}
-	public void setActionToIndex()
-	{
-		actionToIndex = new HashMap<Object, Integer>();
-		for (int i = 0; i < allActions.size(); i++) {
-			actionToIndex.put(allActions.get(i), i);
-		}
-	}
-	public Integer getActionIndex(Object action) 
-	{
-		if (allActions.size() <= 0) {
-			return -1;
-		}
-		for (int a = 0; a< allActions.size(); a++) {
-			if (allActions.get(a) == action) {
-				return a;
-			}
-		}
-		return -1;
 	}
 	
 	public void setRoot(POMCPNode node) 
@@ -1266,11 +1147,440 @@ public class PartiallyObservableMonteCarloPlanning {
 			if (obsSample == obs) {
 				if (!child.getBelief().getUniqueStatesInt().contains(nextState)) {
 				}
-				child.addBeliefParticle(nextState);
+				child.getBelief().addParticle(nextState);
+				child.getBelief().updateBeliefSupport(nextState);
 				childBeliefSize += 1;
 			}
 		}
 	}
+	
+	public int drawStateFromDistr(ArrayList<Double> distr) // TODO can be improved?
+	{
+		int state = 0;
+		double randomThreshold = Math.random();
+		double cumulativeProb = 0;
+		for (int i = 0; i < distr.size(); i++) {
+			cumulativeProb += distr.get(i);
+			if (cumulativeProb >= randomThreshold) {
+				state = i;
+				break;
+			}
+		}
+		return state; 
+	}
+	
+	public int getDefaultAction() {
+//		int state = root.getBelief().sample();
+//		List<Object> availableActions = pomdp.getAvailableActions(state);
+////		System.out.println("state" + state + "default action" + availableActions.get(0) + ( availableActions.size() == 1));
+//		return availableActions.get(0);
+		return 0;
+	}
+	public int selectAction() 
+	{
+		boolean distableTrue = false;
+		if (distableTrue) {
+			return -1;
+		}
+		else {
+			UCTSearch();
+		}
+		int actionIndex = GreedyUCB(root, false);
+		return actionIndex;
+	}
+	public void UCTSearch()
+	{
+		for (int n = 0; n < numSimulations; n++) {
+			int state = root.getBelief().sample();
+//			if(!root.getBelief().getUniqueStates().get(state)){
+//				System.out.println("err" + state);
+//				root.getBelief().displayUniqueStates();
+//			}
+			if (verbose >= 2 ) {
+				System.out.println("=============Start UCT search  sample state" + state + " num Seracrh" + n);
+			}
+			TreeDepth = 0;
+			PeakTreeDepth =0;
+			double reward = simulateV(state, root);
+			if (verbose >= 2 ) {
+				System.out.println("==MCTSMCT after Num Simulation = " + n);
+				System.out.println("MCTSMCTS");
+				displayValue(1);
+				System.out.println("===");
+			}
+		}
+		if (verbose >=1) {
+			System.out.println("finishing all " + numSimulations + "simulations");
+			displayValue(2);
+		}
+	}
+	public double simulateV(int state, POMCPNode vnode)
+	{
+		// original code would do actionSelectionFirst, and then do the add particle for only the first layer
+		PeakTreeDepth = TreeDepth;
+		if (vnode.getChildren() == null) {
+			expand(vnode, state);
+		}
+		if (TreeDepth >= maxDepth) {
+			return 0;
+		}
+		
+		// TODO check later for shielding logic
+		if (TreeDepth == 1 && shieldLevel != ON_THE_FLY_SHIELD) {
+			vnode.getBelief().addParticle(state); //add sample for only first layer
+			vnode.getBelief().updateBeliefSupport(state);
+
+		}
+		int actionIndex = GreedyUCB(vnode, true);
+
+		if (shieldLevel == ON_THE_FLY_SHIELD) {
+			vnode.getBelief().addParticle(state); //add sample for every layer
+			if (!vnode.getBelief().isStateInBeliefSupport(state)) { // only check when a new unique particle is to be added
+				vnode.getBelief().updateBeliefSupport(state);
+				if (!isSetOfStatesWinning(vnode.getBelief().getUniqueStatesInt())) {
+	//				System.out.println("\n" + vnode.getBelief().getUniqueStatesInt() + "is not winning. TreeDepth = " + TreeDepth);
+					POMCPNode qparent = vnode.getParent();
+					int parentActionIndex = qparent.getH();
+					POMCPNode vparent = qparent.getParent();
+					vparent.addIllegalActionIndex(parentActionIndex);
+					if (verbose >= 5) {
+						System.out.println("Currnet Node=" + vnode.getID() + " Current belief support" + vnode.getBelief().getUniqueStatesInt()  );
+						System.out.println("Currenting belief support is not winning. ");
+						System.out.println("shield level" + shieldLevel +" shielded action: " + allActions.get(parentActionIndex)
+								+ "\n adding to illegal actions for it parent node " + vparent.getID() 
+								+ " parent belief support" +  vparent.getBelief().getUniqueStatesInt());
+					}
+	//				System.out.println("after" + vparent.getIllegalActions());
+				} else {
+					if (verbose >= 5) {
+						System.out.println("safe. Current Belief Support" + vnode.getBelief().getUniqueStatesInt() + " vnode ID="+ vnode.getID() );
+					}
+				}
+			}		
+		}
+		
+		POMCPNode qnode = vnode.getChildByActionIndex(actionIndex);
+		double totalReward = simulateQ(state, qnode, actionIndex);
+		vnode.increaseV(totalReward);
+//		vnode.increaseN(1);
+		return totalReward;
+	}
+	public double simulateQ(int state, POMCPNode qnode, int actionIndex) 
+	{
+		double delayedReward = 0;
+		int nextState = step(state, actionIndex);
+		int observation = pomdp.getObservation(nextState);
+		boolean done = endStates.contains(nextState);
+		double immediateReward = stepReward(state, actionIndex);
+		double totalReward = 0;
+		
+		if (verbose >= 3) {
+			System.out.println("uct action=" +  allActions.get(actionIndex) + " reward=" + immediateReward );
+			displayState(nextState);
+		}
+		
+		state = nextState; 
+		POMCPNode vnode = null;
+		if (qnode.checkChildByObservationIndex(observation)){
+			vnode = qnode.getChildByObservationIndex(observation);
+		}
+
+		int paraExpandCount = 1;
+		if (vnode == null && !done && qnode.getN() >= paraExpandCount) {
+			vnode = new POMCPNode();
+//			expand(vnode, state);
+			vnode = expandNode(state);			
+			vnode.setH(observation);
+			vnode.setParent(qnode);
+			qnode.addChild(vnode, observation);
+		}
+		
+		if(!done) {
+			TreeDepth++;
+			if(vnode != null) {
+				delayedReward = simulateV(state, vnode);
+			}
+			else {
+				delayedReward = rollout(state);	
+			}
+			TreeDepth--;
+		} else {
+			// add reward for reaching  last state
+			totalReward += mdpRewards.getStateReward(state);
+		}
+		
+		totalReward += immediateReward + gamma * delayedReward;
+		qnode.increaseV(totalReward);
+		return totalReward;
+	
+	}
+	public POMCPNode expandNode(int state)
+	{
+		POMCPNode vnode = new POMCPNode ();
+		vnode.getBelief().addParticle(state);
+		List <Object> availableActions = getLegalActions(state);
+		for (Object action : availableActions) {
+			int actionIndex = getActionIndex(action);
+			POMCPNode qnode = new POMCPNode();
+			qnode.setH(actionIndex);
+			qnode.setHAction(true);
+			qnode.setParent(vnode);
+			vnode.addChild(qnode, actionIndex);
+		}
+		return vnode;
+	}
+	
+	public void expand(POMCPNode parent, int state)
+	{	
+		List <Object> availableActions = getLegalActions(state);
+		for (Object action : availableActions) {
+			POMCPNode newChild = new POMCPNode ();
+			int actionIndex = actionToIndex.get(action);
+//			if (shieldLevel == 2 && TreeDepth == 0 && parent.isActionIllegal(action)) {
+//				 continue;
+//			}
+			if (shieldLevel == PRIOR_SHIELD && TreeDepth == 0 && isActionShieldedForNode(parent, action)) {
+				parent.addIllegalActionIndex(actionIndex);
+				continue;
+			}
+			newChild.setH(actionIndex);
+			newChild.setHAction(true);
+			newChild.setParent(parent);;
+			parent.addChild(newChild, actionIndex);
+		}
+		
+		if (parent.getChildren() == null) {
+//			System.out.println("Add default available actions");
+			for (Object action : availableActions) {
+				POMCPNode newChild = new POMCPNode ();
+				int actionIndex = actionToIndex.get(action);
+				newChild.setH(actionIndex);
+				newChild.setHAction(true);
+				newChild.setParent(parent);;
+				parent.addChild(newChild, actionIndex);
+			}
+		}
+
+	}
+	public double rollout(int state)
+	{
+		double totalReward = 0;
+		double discount = 1; // 1 as in original code 
+		boolean done = false;
+		if (verbose >= 3) {
+			System.out.println("starting rollout");
+		}
+		int numStep = 0;
+		int remainTree = maxDepth - TreeDepth;
+		while (!done && numStep < remainTree  ) {
+			// get random action
+			int numChoices = pomdp.getNumChoices(state);
+			Random rnd = new Random();
+			int randomChoice = rnd.nextInt(numChoices);
+			if (numChoices <= 0) {
+				break;
+			}
+			Object randomAction = pomdp.getAction(state, randomChoice);
+			
+			int actionIndex = actionToIndex.get(randomAction);
+			int nextState = step(state, actionIndex);
+			double reward = stepReward(state, actionIndex);
+			done = endStates.contains(nextState);
+
+			if (verbose >= 4) {
+				System.out.println("verbose= "+ verbose + " state= " + state + " rollout action=" + randomAction + " reward=" + reward + " discountR=" + reward*discount + " depth=" + numStep + " totalR=" + totalReward);
+				displayState(nextState);
+			}
+			
+			totalReward += reward * discount;
+			discount *= gamma;
+			numStep++;
+			state = nextState;
+		}
+		// add reward for reaching  last state
+		totalReward += mdpRewards.getStateReward(state);
+		
+		if (verbose >= 3) {
+			System.out.println("Ending rollout after " + numStep + "steps, with total reward" + totalReward );
+		}
+		return totalReward;
+	}
+
+	
+	public int GreedyUCB(POMCPNode vnode, boolean ucb) 
+	{
+		ArrayList<Integer> besta = new ArrayList<Integer> ();
+		double bestq = Double.NEGATIVE_INFINITY;
+		int N = (int) vnode.getN();
+		double logN = Math.log(N + 1);
+		HashMap<Integer, POMCPNode> children = vnode.getChildren();
+		ArrayList<Integer> actionIndexCandidates = new ArrayList<Integer>(); // if all actions are shielded, randomly pick an action
+		for (int i: children.keySet()) {
+			actionIndexCandidates.add(i);
+			if (shieldLevel == ON_THE_FLY_SHIELD && vnode.isActionIndexIllegal(i)) {
+//				System.out.println("shield level" + shieldLevel + " known illegal action " + allActions.get(i) +" for node " + vnode.getID() + " belief support" 	+ vnode.getBelief().getUniqueStatesInt());
+				continue;
+			}
+			POMCPNode qnode = children.get(i);
+			int n = (int) qnode.getN();
+			double q = qnode.getV();
+			
+			if(n == 0) {
+				return i;
+			}
+			if (ucb) {
+				q += fastUCB(N, n, logN);
+			}
+			if (q >= bestq) {
+				if (q > bestq) {
+					besta.clear();
+				}
+				bestq = q;
+				besta.add(i);
+			}
+//			if ( !ucb  && shieldLevel == 1  && isActionShieldedForNode(vnode, action) ) { // shiled only apply to the most up level
+////				System.out.println("shield Level = "+shieldLevel+ " Shielded Action = "  + action);
+//				continue;
+//			}
+//			if (shieldLevel == 3 && vnode.isActionIllegal(action)) {
+////				System.out.println("shield level" + shieldLevel + " known illegal action" 
+////									+ action +" for node " + vnode.getID() + " belief support" 
+////									+ vnode.getBelief().getUniqueStatesInt());
+//				continue;
+//			}
+//			if (shieldLevel == 3 && isActionShieldedForNode(vnode, action)) {
+////				System.out.println("shield level" + shieldLevel +" shielded action: " + action 
+////									+ "\n adding to illegal actions for node " + vnode.getID() 
+////									+ " belief support" +  vnode.getBelief().getUniqueStatesInt());
+//				vnode.addIllegalActions(action);
+//				continue;
+//			}
+//			
+		}
+		
+		Random rnd = new Random();
+		if(besta.size() ==0) {
+//			System.out.println("not action available");
+		}
+		if (besta.size() > 0) {
+			int actionIndex = besta.get(rnd.nextInt(besta.size()));
+			return actionIndex;
+		}
+		else {
+			int actionIndex = actionIndexCandidates.get(rnd.nextInt(actionIndexCandidates.size()));
+//			System.out.println("states" + vnode.getBelief().getUniqueStatesInt());
+			POMCPNode qParent = vnode.getParent();
+			POMCPNode vParent = qParent.getParent();
+			vParent.addIllegalActionIndex(qParent.getH());
+			return actionIndex;
+		}
+	}
+
+	public int drawStateFromBelief(double[] belief) 
+	{
+		int state = 0;
+		double randomThreshold = Math.random();
+		double cumulativeProb = 0;
+		for (int i = 0; i < belief.length; i++) {
+			cumulativeProb += belief[i];
+			if (cumulativeProb >= randomThreshold) {
+				state = i;
+				break;
+			}
+		}
+		return state; 
+	}
+
+	public void display()
+	{
+		ArrayList<POMCPNode> q = new ArrayList<POMCPNode> ();
+		ArrayList<POMCPNode> q2= new ArrayList<POMCPNode> ();
+		q.add(root);
+		int layer = 0;
+		while (q.size()>0) {
+			int size = q.size();
+			q2.clear();
+			System.out.println("============="+q.size()+"layer = "+ layer++);
+			for (int i = 0; i < size; i++) {
+				POMCPNode cur = q.get(i);
+				HashMap<Integer, POMCPNode> children = cur.getChildren();
+				if (children != null) {
+					for (int j = 0; j < children.size(); j++) {
+						if (children.get(j).getH()!= -1) {
+							q2.add(children.get(j));
+						}
+					}
+				}
+			}
+			ArrayList<POMCPNode> temp = q;
+			q = q2;
+			q2 = temp;
+		}
+	}
+	public void displayRootBelief() 
+	{
+		int numStates = pomdp.getNumStates();
+		double [] beliefDist = root.getBelief().getDist(numStates);
+		System.out.println("Belief ");
+		for (int s = 0; s < numStates; s++) {
+			if (beliefDist[s] > 0) {
+				displayState(s);
+				System.out.println( "["+ beliefDist[s] + "], ");
+			}
+		}
+		System.out.println("");
+	}
+	
+	public void displayRoot()
+	{
+		System.out.println("Root" + root.getH());
+		root.getBelief().displayUniqueStates();
+		System.out.println("__________");
+	}
+	public void displayVar() 
+	{
+		String variables = "";
+		for (int i =0; i < pomdp.getVarList().getNumVars(); i++) {
+			variables += pomdp.getVarList().getName(i) + ",";
+		}
+		System.out.println(variables);
+	}
+
+	public void getAllActions()
+	{
+		allActions = new ArrayList<Object> ();
+		for (int s = 0; s < pomdp.getNumStates();s++) {
+			List <Object> availableActionsForState = pomdp.getAvailableActions(s);
+			for (Object a: availableActionsForState) {
+				if (!allActions.contains(a) & a!= null) {
+					allActions.add(a);
+				}
+			}
+		}
+	}
+	public Object getActionByActionIndex(int index) {
+		return allActions.get(index);
+	}
+	public void setActionToIndex()
+	{
+		actionToIndex = new HashMap<Object, Integer>();
+		for (int i = 0; i < allActions.size(); i++) {
+			actionToIndex.put(allActions.get(i), i);
+		}
+	}
+	public Integer getActionIndex(Object action) 
+	{
+		if (allActions.size() <= 0) {
+			return -1;
+		}
+		for (int a = 0; a< allActions.size(); a++) {
+			if (allActions.get(a) == action) {
+				return a;
+			}
+		}
+		return -1;
+	}
+	
 	public void initializeStates() 
 	{
 		stateSuccessorsHashSet = new HashMap<Integer, HashSet<Integer>>();
@@ -1354,7 +1664,7 @@ public class PartiallyObservableMonteCarloPlanning {
 		return nextState;
 	}
 	
-	public int stepC(int state, int actionIndex)
+	public int stepC(int state, int actionIndex) //TODO can be deleted
 	{
 		Object action = allActions.get(actionIndex);
 		if(!pomdp.getAvailableActions(state).contains(action)) {
@@ -1379,253 +1689,6 @@ public class PartiallyObservableMonteCarloPlanning {
 //		return new stepReturn(nextState, reward );
 		return nextState;
 	}
-	
-	public int drawStateFromDistr(ArrayList<Double> distr) 
-	{
-		int state = 0;
-		double randomThreshold = Math.random();
-		double cumulativeProb = 0;
-		for (int i = 0; i < distr.size(); i++) {
-			cumulativeProb += distr.get(i);
-			if (cumulativeProb >= randomThreshold) {
-				state = i;
-				break;
-			}
-		}
-		return state; 
-	}
-	
-	public int getDefaultAction() {
-//		int state = root.getBelief().sample();
-//		List<Object> availableActions = pomdp.getAvailableActions(state);
-////		System.out.println("state" + state + "default action" + availableActions.get(0) + ( availableActions.size() == 1));
-//		return availableActions.get(0);
-		return 0;
-	}
-	public int selectAction() 
-	{
-		boolean distableTrue = false;
-		if (distableTrue) {
-			return -1;
-		}
-		else {
-			UCTSearch();
-		}
-		int actionIndex = GreedyUCB(root, false);
-		return actionIndex;
-	}
-	public void UCTSearch()
-	{
-		for (int n = 0; n < numSimulations; n++) {
-			int state = root.getBelief().sample();
-//			if(!root.getBelief().getUniqueStates().get(state)){
-//				System.out.println("err" + state);
-//				root.getBelief().displayUniqueStates();
-//			}
-			if (verbose >= 2 ) {
-				System.out.println("=============Start UCT search  sample state" + state + " num Seracrh" + n);
-			}
-			TreeDepth = 0;
-			PeakTreeDepth =0;
-			double reward = simulateV(state, root);
-			if (verbose >= 2 ) {
-				System.out.println("==MCTSMCT after Num Simulation = " + n);
-				System.out.println("MCTSMCTS");
-				displayValue(1);
-				System.out.println("===");
-			}
-		}
-		if (verbose >=1) {
-			System.out.println("finishing all " + numSimulations + "simulations");
-			displayValue(2);
-		}
-	}
-	public double simulateV(int state, POMCPNode vnode)
-	{
-		// original code would do actionSelectionFirst, and then do the add particle for only the first layer
-		PeakTreeDepth = TreeDepth;
-		if (vnode.getChildren() == null) {
-			expand(vnode, state);
-		}
-		if (TreeDepth >= maxDepth) {
-			return 0;
-		}
-		
-		// TODO check later for shielding logic
-		// For shield 1; add sample for only first layer
-		if (TreeDepth == 1 && shieldLevel < ON_THE_FLY_SHIELD) {
-			vnode.getBelief().addParticle(state);
-		}
-		int actionIndex = GreedyUCB(vnode, true);
-
-		// For shield 4; add sample for every layer		
-		if (shieldLevel == ON_THE_FLY_SHIELD) {
-			vnode.getBelief().addParticle(state);
-			if (shieldLevel == ON_THE_FLY_SHIELD && !isSetOfStatesWinning(vnode.getBelief().getUniqueStatesInt())) {
-//				System.out.println("\n" + vnode.getBelief().getUniqueStatesInt() + "is not winning. TreeDepth = " + TreeDepth);
-				POMCPNode qparent = vnode.getParent();
-				int parentActionIndex = qparent.getH();
-				
-				POMCPNode vparent = qparent.getParent();
-				vparent.addIllegalActionIndex(parentActionIndex);
-				
-//				vparent.addIllegalActions(parentAction);
-				if (verbose >= 5) {
-					System.out.println("Currnet Node=" + vnode.getID() + " Current belief support" + vnode.getBelief().getUniqueStatesInt()  );
-					System.out.println("Currenting belief support is not winning. ");
-					System.out.println("shield level" + shieldLevel +" shielded action: " + allActions.get(parentActionIndex)
-							+ "\n adding to illegal actions for it parent node " + vparent.getID() 
-							+ " parent belief support" +  vparent.getBelief().getUniqueStatesInt());
-				}
-//				System.out.println("after" + vparent.getIllegalActions());
-			} else {
-				if (verbose >= 5) {
-					System.out.println("safe. Current Belief Support" + vnode.getBelief().getUniqueStatesInt() + " vnode ID="+ vnode.getID() );
-				}
-			}
-		}
-		
-		POMCPNode qnode = vnode.getChildByActionIndex(actionIndex);
-		double totalReward = simulateQ(state, qnode, actionIndex);
-		vnode.increaseV(totalReward);
-//		vnode.increaseN(1);
-		return totalReward;
-	}
-	public double simulateQ(int state, POMCPNode qnode, int actionIndex) 
-	{
-		double delayedReward = 0;
-		int nextState = step(state, actionIndex);
-		int observation = pomdp.getObservation(nextState);
-		boolean done = endStates.contains(nextState);
-		double immediateReward = stepReward(state, actionIndex);
-		double totalReward = 0;
-		
-		if (verbose >= 3) {
-			System.out.println("uct action=" +  allActions.get(actionIndex) + " reward=" + immediateReward );
-			displayState(nextState);
-		}
-		
-		state = nextState; 
-		POMCPNode vnode = null;
-		if (qnode.checkChildByObservationIndex(observation)){
-			vnode = qnode.getChildByObservationIndex(observation);
-		}
-
-		int paraExpandCount = 1;
-		if (vnode == null && !done && qnode.getN() >= paraExpandCount) {
-			vnode = new POMCPNode();
-//			expand(vnode, state);
-			vnode = expandNode(state);			
-			vnode.setH(observation);
-			vnode.setParent(qnode);
-			qnode.addChild(vnode, observation);
-		}
-		
-		if(!done) { // 0: ! terminal
-			TreeDepth++;
-			if(vnode != null) {
-				delayedReward = simulateV(state, vnode);
-			}
-			else {
-				delayedReward = rollout(state);	
-			}
-			TreeDepth--;
-		} else {
-			// add reward for reaching  last state
-			totalReward += mdpRewards.getStateReward(state);
-		}
-		
-		totalReward += immediateReward + gamma * delayedReward;
-//		qnode.increaseN(1);
-		qnode.increaseV(totalReward);
-		return totalReward;
-	
-	}
-//	
-	public POMCPNode expandNode(int state)
-	{
-		POMCPNode vnode = new POMCPNode ();
-		vnode.addBeliefParticle(state);
-		List <Object> availableActions = getLegalActions(state);
-		for (Object action : availableActions) {
-			int actionIndex = getActionIndex(action);
-			POMCPNode qnode = new POMCPNode();
-			qnode.setH(actionIndex);
-			qnode.setHAction(true);
-			qnode.setParent(vnode);
-			vnode.addChild(qnode, actionIndex);
-		}
-		return vnode;
-	}
-	
-	public void expand(POMCPNode parent, int state)
-	{	
-		List <Object> availableActions = getLegalActions(state);
-		for (Object action : availableActions) {
-			POMCPNode newChild = new POMCPNode ();
-			int actionIndex = actionToIndex.get(action);
-
-//			if (shieldLevel == 2 && TreeDepth == 0 && parent.isActionIllegal(action)) {
-//				 continue;
-//			}
-			if (shieldLevel == PRIOR_SHIELD && TreeDepth == 0 && isActionShieldedForNode(parent, action)) {
-				parent.addIllegalActionIndex(actionIndex);
-				continue;
-			}
-			newChild.setH(actionIndex);
-			newChild.setHAction(true);
-			newChild.setParent(parent);;
-			parent.addChild(newChild, actionIndex);
-		}
-		if (parent.getChildren() == null) {
-			System.out.println("May need to add default action children");
-		}
-
-	}
-	public double rollout(int state)
-	{
-		double totalReward = 0;
-		double discount = 1; // 1 as in original code 
-		boolean done = false;
-		if (verbose >= 3) {
-			System.out.println("starting rollout");
-		}
-		int numStep = 0;
-		int remainTree = maxDepth - TreeDepth;
-		while (!done && numStep < remainTree  ) {
-			// get random action
-			int numChoices = pomdp.getNumChoices(state);
-			Random rnd = new Random();
-			int randomChoice = rnd.nextInt(numChoices);
-			if (numChoices <= 0) {
-				break;
-			}
-			Object randomAction = pomdp.getAction(state, randomChoice);
-			
-			int actionIndex = actionToIndex.get(randomAction);
-			int nextState = step(state, actionIndex);
-			double reward = stepReward(state, actionIndex);
-			done = endStates.contains(nextState);
-
-			if (verbose >= 4) {
-				System.out.println("verbose= "+ verbose + " state= " + state + " rollout action=" + randomAction + " reward=" + reward + " discountR=" + reward*discount + " depth=" + numStep + " totalR=" + totalReward);
-				displayState(nextState);
-			}
-			
-			totalReward += reward * discount;
-			discount *= gamma;
-			numStep++;
-			state = nextState;
-		}
-		// add reward for reaching  last state
-		totalReward += mdpRewards.getStateReward(state);
-		
-		if (verbose >= 3) {
-			System.out.println("Ending rollout after " + numStep + "steps, with total reward" + totalReward );
-		}
-		return totalReward;
-	}
-	
 	public List<Object> getLegalActions(int state)
 	{
 		List <Object> availableActions = pomdp.getAvailableActions(state);
@@ -1639,150 +1702,6 @@ public class PartiallyObservableMonteCarloPlanning {
 		return availableActions;
 	}
 	
-	public int GreedyUCB(POMCPNode vnode, boolean ucb) 
-	{
-		ArrayList<Integer> besta = new ArrayList<Integer> ();
-		double bestq = Double.NEGATIVE_INFINITY;
-		int N = (int) vnode.getN();
-		double logN = Math.log(N + 1);
-		HashMap<Integer, POMCPNode> children = vnode.getChildren();
-		ArrayList<Integer> actionIndexCandidates = new ArrayList<Integer>(); // if all actions are shielded, randomly pick an action
-		for (int i: children.keySet()) {
-			actionIndexCandidates.add(i);
-			if (shieldLevel == ON_THE_FLY_SHIELD && vnode.isActionIndexIllegal(i)) {
-				System.out.println("shield level" + shieldLevel + " known illegal action " + allActions.get(i) +" for node " + vnode.getID() + " belief support" 	+ vnode.getBelief().getUniqueStatesInt());
-				continue;
-			}
-			POMCPNode qnode = children.get(i);
-			int n = (int) qnode.getN();
-			double q = qnode.getV();
-			
-			if(n == 0) {
-				return i;
-			}
-			if (ucb) {
-				q += fastUCB(N, n, logN);
-			}
-			if (q >= bestq) {
-				if (q > bestq) {
-					besta.clear();
-				}
-				bestq = q;
-				besta.add(i);
-			}
-			if (!ucb) {
-				System.out.println("q = " + q + "a = " + i);
-			}
-//			if ( !ucb  && shieldLevel == 1  && isActionShieldedForNode(vnode, action) ) { // shiled only apply to the most up level
-////				System.out.println("shield Level = "+shieldLevel+ " Shielded Action = "  + action);
-//				continue;
-//			}
-//			if (shieldLevel == 3 && vnode.isActionIllegal(action)) {
-////				System.out.println("shield level" + shieldLevel + " known illegal action" 
-////									+ action +" for node " + vnode.getID() + " belief support" 
-////									+ vnode.getBelief().getUniqueStatesInt());
-//				continue;
-//			}
-//			if (shieldLevel == 3 && isActionShieldedForNode(vnode, action)) {
-////				System.out.println("shield level" + shieldLevel +" shielded action: " + action 
-////									+ "\n adding to illegal actions for node " + vnode.getID() 
-////									+ " belief support" +  vnode.getBelief().getUniqueStatesInt());
-//				vnode.addIllegalActions(action);
-//				continue;
-//			}
-//			
-		}
-		
-		Random rnd = new Random();
-		if(besta.size() ==0) {
-//			System.out.println("not action available");
-		}
-		if (besta.size() > 0) {
-			int actionIndex = besta.get(rnd.nextInt(besta.size()));
-			return actionIndex;
-		}
-		else {
-			int actionIndex = actionIndexCandidates.get(rnd.nextInt(actionIndexCandidates.size()));
-//			System.out.println("states" + vnode.getBelief().getUniqueStatesInt());
-			POMCPNode qParent = vnode.getParent();
-			POMCPNode vParent = qParent.getParent();
-			vParent.addIllegalActionIndex(qParent.getH());
-			return actionIndex;
-		}
-	}
-
-	public int drawStateFromBelief(double[] belief) 
-	{
-		int state = 0;
-		double randomThreshold = Math.random();
-		double cumulativeProb = 0;
-		for (int i = 0; i < belief.length; i++) {
-			cumulativeProb += belief[i];
-			if (cumulativeProb >= randomThreshold) {
-				state = i;
-				break;
-			}
-		}
-		return state; 
-	}
-
-
-	
-	
-	public void display()
-	{
-		ArrayList<POMCPNode> q = new ArrayList<POMCPNode> ();
-		ArrayList<POMCPNode> q2= new ArrayList<POMCPNode> ();
-		q.add(root);
-		int layer = 0;
-		while (q.size()>0) {
-			int size = q.size();
-			q2.clear();
-			System.out.println("============="+q.size()+"layer = "+ layer++);
-			for (int i = 0; i < size; i++) {
-				POMCPNode cur = q.get(i);
-				HashMap<Integer, POMCPNode> children = cur.getChildren();
-				if (children != null) {
-					for (int j = 0; j < children.size(); j++) {
-						if (children.get(j).getH()!= -1) {
-							q2.add(children.get(j));
-						}
-					}
-				}
-			}
-			ArrayList<POMCPNode> temp = q;
-			q = q2;
-			q2 = temp;
-		}
-	}
-	public void displayRootBelief() 
-	{
-		int numStates = pomdp.getNumStates();
-		double [] beliefDist = root.getBelief().getDist(numStates);
-		System.out.println("Belief ");
-		for (int s = 0; s < numStates; s++) {
-			if (beliefDist[s] > 0) {
-				displayState(s);
-				System.out.println( "["+ beliefDist[s] + "], ");
-			}
-		}
-		System.out.println("");
-	}
-	
-	public void displayRoot()
-	{
-		System.out.println("Root" + root.getH());
-		root.getBelief().displayUniqueStates();
-		System.out.println("__________");
-	}
-	public void displayVar() 
-	{
-		String variables = "";
-		for (int i =0; i < pomdp.getVarList().getNumVars(); i++) {
-			variables += pomdp.getVarList().getName(i) + ",";
-		}
-		System.out.println(variables);
-	}
 	public void initializeVariables() 
 	{
 		varNames = new ArrayList<String>();
@@ -1812,7 +1731,7 @@ public class PartiallyObservableMonteCarloPlanning {
 	{
 		List<String> varNames = getVarNames();
 		System.out.println("s=" + state + pomdp.getStatesList().get(state).toString( varNames));
-		List<Object> availableActions = pomdp.getAvailableActions(state);
+//		List<Object> availableActions = pomdp.getAvailableActions(state);
 //		System.out.println("Available actions");
 //		for (Object a: availableActions) {
 //			System.out.print(a + " ");
@@ -1912,7 +1831,6 @@ public class PartiallyObservableMonteCarloPlanning {
 		}
 	}
 
-	
 	public HashSet<Integer> getNextBeliefSupport(HashSet<Integer> beliefSupport, Object action)
 	{
 		HashSet<Integer> nextBeliefSupport = new HashSet<Integer> ();
@@ -1925,8 +1843,10 @@ public class PartiallyObservableMonteCarloPlanning {
 	
 	public HashSet<Integer> getNextStates(int state, Object action)
 	{
-		int key = state * 100 + getActionIndex(action);
-		if (stateSuccessors.get(key) == null) {
+		int actionIndex = actionToIndex.get(action);
+		int key = getKeyByStateActionIndex(state, actionIndex);
+		
+		if (stateSuccessorsHashSet.get(key) == null) {
 			HashSet<Integer> nextStates = new HashSet<Integer>();
 			int choice = pomdp.getChoiceByAction(state, action);
 			Iterator<Entry<Integer, Double>> iter = pomdp.getTransitionsIterator(state, choice);
@@ -1935,9 +1855,9 @@ public class PartiallyObservableMonteCarloPlanning {
 				int nextState = trans.getKey();
 				nextStates.add(nextState);
 			}
-			stateSuccessors.put(key, nextStates);
+			stateSuccessorsHashSet.put(key, nextStates);
 		}
-		return stateSuccessors.get(key);
+		return stateSuccessorsHashSet.get(key);
 	}
 	
 	public boolean isActionShieldedForNode(POMCPNode node, Object action) // Main interface checking if action should be shielded
@@ -1960,14 +1880,9 @@ public class PartiallyObservableMonteCarloPlanning {
 		
 		int x = getAX(state);
 		int y = getAY(state);
-		
-//		int shieldSize = shieldSizes;
-//		int gridSize = gridSizes;
-//		int shieldSize = 3;
-//		int gridSize = 6;
 		int shieldIndex = (x / shieldSize)* (gridSize / shieldSize) + (y / shieldSize) ;
-		System.out.println(state + " get " + getStateMeaning(state) + "x " + x+ ", y= " + y + "sheild index" + shieldIndex);
-		return shieldIndex;
+//		System.out.println(state + " get " + getStateMeaning(state) + "x " + x + ", y= " + y + "sheild index" + shieldIndex);
+		return shieldIndex; 
 	}
 	public boolean isActionShieldedForStatesByLocalShileds(HashSet<Integer> beliefSupport, Object action) 
 	{
@@ -1978,57 +1893,38 @@ public class PartiallyObservableMonteCarloPlanning {
 		if (verbose > 0) {
 			System.out.println("considering if to shield action "  + action + " next suport" + nextBeliefSupport);
 		}
-		HashMap<Integer, HashSet<Integer>> shieldIndexToBeliefSupport = new HashMap<Integer, HashSet<Integer>> ();
-		for (int state: nextBeliefSupport) {
-			int shieldIndex = getShieldIndex(state);
-			if (!shieldIndexToBeliefSupport.containsKey(shieldIndex)) {
-				HashSet<Integer> belief = new HashSet<Integer>();
-				shieldIndexToBeliefSupport.put(shieldIndex, belief);
-			}
-			shieldIndexToBeliefSupport.get(shieldIndex).add(state);
+		if (isSetOfStatesWinningByLocalShields(nextBeliefSupport)) {
+			return false;
+		} else {
+			return true;
 		}
-		for (int shieldIndex: shieldIndexToBeliefSupport.keySet()) {
-			System.out.println("shield = " + shieldIndex );
-			POMDPShield localShield = localShields.get(shieldIndex);
-			HashSet<Integer> beliefSupportToCheck = shieldIndexToBeliefSupport.get(shieldIndex);
-			if(!localShield.isSetOfStatesWinning(beliefSupportToCheck)) {
-				if (verbose > 0) {
-					System.out.println("SS Shielded = " + shieldIndex + " action = " + action + " action shield for current support " + beliefSupportToCheck + " because next" + nextBeliefSupport);
-				}
-				return true;
-			}
-		}
-		if (verbose > 0) {
-			System.out.println("Not shielded: action "  + action);
-		}
-		return false;
 	}
-	public boolean isActionShieldedForStatesByLocalShileds3(HashSet<Integer>beliefSupport, Object action) 
-	{
-		if (localShields == null) {
-			return false; // no local shields available
-		}
-		HashSet<Integer> nextBeliefSupport = getNextBeliefSupport(beliefSupport, action);
-		if (verbose > 0) {
-			System.out.println("considering if to shield action "  + action + " next suport" + nextBeliefSupport);
-		}
-		
-		int numLocalShields = localShields.size();
-		for (int i = 0; i < numLocalShields; i++) {
-			POMDPShield localShield = localShields.get(i);
-			System.out.println("shield = " + i );
-			if(!localShield.isSetOfStatesWinning(nextBeliefSupport)) {
-				if (verbose > 0) {
-					System.out.println("Shielded = " + i + " action = " + action + " action shield for current support " + beliefSupport + " because next" + nextBeliefSupport);
-				}
-				return true;
-			}
-		}
-		if (verbose > 0) {
-			System.out.println("Not shielded: action "  + action);
-		}
-		return false;
-	}
+//	public boolean isActionShieldedForStatesByLocalShileds3(HashSet<Integer>beliefSupport, Object action) //TODO delete
+//	{
+//		if (localShields == null) {
+//			return false; // no local shields available
+//		}
+//		HashSet<Integer> nextBeliefSupport = getNextBeliefSupport(beliefSupport, action);
+//		if (verbose > 0) {
+//			System.out.println("considering if to shield action "  + action + " next suport" + nextBeliefSupport);
+//		}
+//		
+//		int numLocalShields = localShields.size();
+//		for (int i = 0; i < numLocalShields; i++) {
+//			POMDPShield localShield = localShields.get(i);
+//			System.out.println("shield = " + i );
+//			if(!localShield.isSetOfStatesWinning(nextBeliefSupport)) {
+//				if (verbose > 0) {
+//					System.out.println("Shielded = " + i + " action = " + action + " action shield for current support " + beliefSupport + " because next" + nextBeliefSupport);
+//				}
+//				return true;
+//			}
+//		}
+//		if (verbose > 0) {
+//			System.out.println("Not shielded: action "  + action);
+//		}
+//		return false;
+//	}
 	public boolean isActionShieldedForStatesByMainShield(HashSet<Integer> beliefSupport, Object action) 
 	{
 		if (mainShield == null) {
@@ -2059,16 +1955,115 @@ public class PartiallyObservableMonteCarloPlanning {
 		if (localShields == null) {
 			return true; // no shield available
 		}
-		for (int i = 0; i < localShields.size(); i++) {
-			POMDPShield localShield = localShields.get(i);
-			if (!localShield.isSetOfStatesWinning(beliefSupport)) {
-//				System.out.println("shield" + i);
+		HashMap<Integer, HashSet<Integer>> shieldIndexToBeliefSupport = new HashMap<Integer, HashSet<Integer>> ();
+		for (int state: beliefSupport) {
+			int shieldIndex = getShieldIndex(state);
+			if (!shieldIndexToBeliefSupport.containsKey(shieldIndex)) {
+				HashSet<Integer> belief = new HashSet<Integer>();
+				shieldIndexToBeliefSupport.put(shieldIndex, belief);
+			}
+			shieldIndexToBeliefSupport.get(shieldIndex).add(state);
+		}
+		for (int shieldIndex: shieldIndexToBeliefSupport.keySet()) {
+			POMDPShield localShield = localShields.get(shieldIndex);
+			HashSet<Integer> beliefSupportToCheck = shieldIndexToBeliefSupport.get(shieldIndex);
+			if(!localShield.isSetOfStatesWinning(beliefSupportToCheck)) {
 				return false;
 			}
 		}
 		return true;
 	}
+
+	public void loadMainShield(String shieldDir) {
+		File files = new File(shieldDir);
+		File[] array = files.listFiles();
+		for (int i = 0; i < array.length; i++) {
+			if (!array[i].isFile() ) {
+				continue;
+			}
+			File file = array[i];
+			String fileName = array[i].getName(); 
+			if (!fileName.contains("centralized")) {
+				continue;
+			}
+			System.out.println("++++Initialize main shield " );
+			System.out.println(fileName);
+			this.isMainShieldAvailable = true;
+			String[] parameters = fileName.split("-");
+			
+//			gridSize = Integer.parseInt(parameters[1]);
+//			shieldSize = gridSize;
+			int[] pStates = {0, 0, Integer.parseInt(parameters[1]), Integer.parseInt(parameters[1])}; 
+			
+			String winning = file.toString();
+			mainShield = new POMDPShield(pomdp, winning,  varNames, endStates, pStates);
+			break;
+		}
+	}
 	
+	public void loadShiled() 
+	{
+		File files = new File(".");
+		File[] array = files.listFiles();
+		for (int i = 0; i < array.length; i++) {
+			String path = array[i].getPath();
+			if (path.contains("winningregion")){
+				loadMainShield(path);
+				loadLocalShield(path);
+				return;
+			}
+		}
+		System.out.println("Fail to find directory winningregion");
+	}
+	
+	public void setUseLocalShields(boolean use) 
+	{
+		useLocalShields = use;
+	}
+	public void setShieldLevel(String level) 
+	{
+		shieldLevel = level;
+	}
+	public void loadLocalShield(String shieldDir) 
+	{
+		localShields = new ArrayList<POMDPShield> ();
+		File files = new File(shieldDir);
+		File[] array = files.listFiles();
+		ArrayList<String> fileNames = new ArrayList<String> ();
+		for (int i = 0; i < array.length; i++) {
+			if (!array[i].isFile()) {
+				continue;
+			}
+			String fileName = array[i].getName(); 
+			if (!fileName.contains("factor")) {
+				continue;
+			}
+			fileNames.add(fileName);
+		}
+		Collections.sort(fileNames);
+		for (int i = 0; i < fileNames.size(); i++) {
+			String fileName = fileNames.get(i);
+			System.out.println("++++Initialize shield index = " + localShields.size() + ", shieldName = "+ fileName);
+			String winning = shieldDir + System.getProperties().getProperty("file.separator") + fileName;
+			this.isLocalShieldAvailable = true;
+			String[] parameters = fileName.split("-");
+			int[] pStates = {Integer.parseInt(parameters[2]), Integer.parseInt(parameters[3]), Integer.parseInt(parameters[4]), Integer.parseInt(parameters[5])}; 
+			
+			shieldSize = Integer.parseInt(parameters[1]);
+			gridSize = Integer.parseInt(parameters[5]) + 1;
+			
+			POMDPShield localShield = new POMDPShield(pomdp, winning, varNames, endStates, pStates);
+			localShields.add(localShield);
+		}
+	}
+	public boolean hasMainShield() 
+	{
+		return this.isMainShieldAvailable;
+	}
+	public boolean hasLocalShield() 
+	{
+		return this.isLocalShieldAvailable;
+	}	
 	
 //	public int getDistanceToEndState(int state) {
 //		for(int endState: endStates) {

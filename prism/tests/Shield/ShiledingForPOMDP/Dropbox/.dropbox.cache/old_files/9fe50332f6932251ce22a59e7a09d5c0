@@ -1,0 +1,18 @@
+:preamble
+model hash: 3375950879047345137
+:winningregion
+1 2 1 1 1 1
+
+
+
+1 9223372036854775808;
+1 9223372036854775808;
+1 9223372036854775808;
+:state information
+[!start	& fuel=1	& ax=1	& ay=0] & state=0 & obs=5
+[start	& fuel=1	& ax=4	& ay=0] & state=1 & obs=4
+[start	& fuel=0	& ax=4	& ay=1] & state=2 & obs=1
+[start	& fuel=0	& ax=4	& ay=2] & state=3 & obs=1
+[start	& fuel=1	& ax=1	& ay=0] & state=4 & obs=3
+[start	& fuel=0	& ax=3	& ay=0] & state=5 & obs=2
+[start	& fuel=0	& ax=2	& ay=0] & state=6 & obs=0

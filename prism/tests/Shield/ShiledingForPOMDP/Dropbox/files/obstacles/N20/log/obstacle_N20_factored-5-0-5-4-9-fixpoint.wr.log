@@ -1,0 +1,47 @@
+Storm-pomdp 1.7.0
+
+Date: Tue Aug 30 17:19:57 2022
+Command line arguments: --prism /Users/shengsheng/Dropbox/files/obstacles/N20/obstacle_N20_factored-5-0-5-4-9.nm --exportbuild /Users/shengsheng/Dropbox/files/obstacles/N20/log/obstacle_N20_factored-5-0-5-4-9.dot --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacles/N20/winningregion/obstacle_N20_factored-5-0-5-4-9-fixpoint.wr
+Current working directory: /Users/shengsheng/Dropbox
+
+Time for model input parsing: 0.002s.
+
+Time for model construction: 0.022s.
+
+-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	55
+Transitions: 	209
+Choices: 	124
+Observations: 	4
+Reward Models:  none
+State Labels: 	5 labels
+   * deadlock -> 0 item(s)
+   * traps -> 4 item(s)
+   * init -> 1 item(s)
+   * notbad -> 51 item(s)
+   * goal -> 27 item(s)
+Choice Labels: 	5 labels
+   * placement -> 1 item(s)
+   * south -> 23 item(s)
+   * north -> 23 item(s)
+   * east -> 23 item(s)
+   * west -> 23 item(s)
+-------------------------------------------------------------- 
+Write to file /Users/shengsheng/Dropbox/files/obstacles/N20/log/obstacle_N20_factored-5-0-5-4-9.dot.
+Analyzing property 'Pmax=? ["notbad" U "goal"]'
+Write to file /Users/shengsheng/Dropbox/files/obstacles/N20/winningregion/obstacle_N20_factored-5-0-5-4-9-fixpoint.wr.
+Write to file /Users/shengsheng/Dropbox/files/obstacles/N20/winningregion/obstacle_N20_factored-5-0-5-4-9-fixpoint.wr.
+Initial state is safe!
+#STATS Number of belief support states: 142606350
+#STATS Total time: 0.200s
+#STATS SAT Calls: 209
+#STATS SAT Calls time: 0.044s
+#STATS Outer iterations: 16
+#STATS Solver initialization time: 0.016s
+#STATS Obtain partial scheduler time: 0.116s
+#STATS Update solver to extend partial scheduler time: 0.011s
+#STATS Update solver with new scheduler time: 0.009s
+#STATS Winning regions update time: 0.001s
+#STATS Graph search time: 0.000s
+Time for POMDP analysis: 0.204ss.

@@ -1,0 +1,2 @@
+TimeStamp;Number of States;Shield Position;Local Shield;Episode;Total Episodes;Undiscounted Reward;Discounted Reward;Number of Bad States;Time Spent;Average Undiscounted reward;Average Discounted reward;Average time spent ;Average number of Bad States;Exploration Constant;Number of Simulations
+1661370200936;270;2;false;1;2;-44.0;-21.274032966422357;0.0;19375;-44.0;-21.274032966422357;19375;0.0;400.0;32768.0

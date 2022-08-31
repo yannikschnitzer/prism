@@ -1,0 +1,50 @@
+Storm-pomdp 1.7.0
+
+Date: Sun Aug 28 21:32:22 2022
+Command line arguments: --prism /Users/shengsheng/Dropbox/files/refuel/N6E8/refule_N6E8_factored-3-3-3-5-5.nm --exportbuild /Users/shengsheng/Dropbox/files/refuel/N6E8/log/refule_N6E8_factored-3-3-3-5-5.dot --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/refuel/N6E8/winningregion/refule_N6E8_factored-3-3-3-5-5-fixpoint.wr
+Current working directory: /Users/shengsheng/Dropbox
+
+Time for model input parsing: 0.004s.
+
+Time for model construction: 0.026s.
+
+-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	154
+Transitions: 	416
+Choices: 	259
+Observations: 	32
+Reward Models:  none
+State Labels: 	6 labels
+   * traps -> 7 item(s)
+   * init -> 1 item(s)
+   * stationvisit -> 9 item(s)
+   * deadlock -> 0 item(s)
+   * notbad -> 130 item(s)
+   * goal -> 45 item(s)
+Choice Labels: 	7 labels
+   * placement -> 1 item(s)
+   * refuel -> 8 item(s)
+   * east -> 30 item(s)
+   * west -> 45 item(s)
+   * north -> 45 item(s)
+   * south -> 30 item(s)
+   * done -> 32 item(s)
+-------------------------------------------------------------- 
+Write to file /Users/shengsheng/Dropbox/files/refuel/N6E8/log/refule_N6E8_factored-3-3-3-5-5.dot.
+Analyzing property 'Pmax=? ["notbad" U "goal"]'
+Write to file /Users/shengsheng/Dropbox/files/refuel/N6E8/winningregion/refule_N6E8_factored-3-3-3-5-5-fixpoint.wr.
+Write to file /Users/shengsheng/Dropbox/files/refuel/N6E8/winningregion/refule_N6E8_factored-3-3-3-5-5-fixpoint.wr.
+Initial state may not be safe.
+#STATS Number of belief support states: 4458180
+#STATS Total time: 0.071s
+#STATS SAT Calls: 50
+#STATS SAT Calls time: 0.006s
+#STATS Outer iterations: 4
+#STATS Solver initialization time: 0.018s
+#STATS Obtain partial scheduler time: 0.039s
+#STATS Update solver to extend partial scheduler time: 0.003s
+#STATS Update solver with new scheduler time: 0.002s
+#STATS Winning regions update time: 0.000s
+#STATS Graph search time: 0.000s
+Time for POMDP analysis: 0.075ss.

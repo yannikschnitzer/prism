@@ -1,3 +1,0 @@
-prism_state;prism_belief_support;selected_action;available_actions;allowed_actions;state_meaning;safe?;unsafeActions
-0;[0];placement;[placement];[placement];(start=false,ax=0,ay=0);true;[]
-53;[48, 65, 53, 57, 25];south;[north, south, east, west];[south, west];(start=true,ax=5,ay=2);true;[east, north]

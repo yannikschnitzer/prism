@@ -1,0 +1,36 @@
+Storm-pomdp 1.7.0
+
+Date: Sun Aug 28 21:32:22 2022
+Command line arguments: --prism /Users/shengsheng/Dropbox/files/refuel/N6E8/refule_N6E8_factored-3-3-0-5-2.nm --exportbuild /Users/shengsheng/Dropbox/files/refuel/N6E8/log/refule_N6E8_factored-3-3-0-5-2.dot --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/refuel/N6E8/winningregion/refule_N6E8_factored-3-3-0-5-2-fixpoint.wr
+Current working directory: /Users/shengsheng/Dropbox
+
+Time for model input parsing: 0.004s.
+
+Time for model construction: 0.023s.
+
+-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	129
+Transitions: 	371
+Choices: 	244
+Observations: 	23
+Reward Models:  none
+State Labels: 	6 labels
+   * traps -> 7 item(s)
+   * init -> 1 item(s)
+   * stationvisit -> 16 item(s)
+   * deadlock -> 0 item(s)
+   * notbad -> 109 item(s)
+   * goal -> 55 item(s)
+Choice Labels: 	6 labels
+   * placement -> 2 item(s)
+   * east -> 43 item(s)
+   * west -> 43 item(s)
+   * north -> 28 item(s)
+   * south -> 43 item(s)
+   * done -> 10 item(s)
+-------------------------------------------------------------- 
+Write to file /Users/shengsheng/Dropbox/files/refuel/N6E8/log/refule_N6E8_factored-3-3-0-5-2.dot.
+ERROR (MakePOMDPCanonic.cpp:237): Multiple actions with label 'placement' exist in state id 0.
+libc++abi: terminating with uncaught exception of type storm::exceptions::AmbiguousModelException: AmbiguousModelException: Multiple actions with label 'placement' exist in state id 0.
+ERROR: The program received signal 6 and will be aborted in 3s.

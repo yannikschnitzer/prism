@@ -1,0 +1,1159 @@
+digraph model {
+	0 [ label = "0[!start	& fuel=8	& ax=1	& ay=0]: {init, notbad}<18>" ];
+	1 [ label = "1[start	& fuel=0	& ax=3	& ay=0]: {}<17>" ];
+	2 [ label = "2[start	& fuel=1	& ax=3	& ay=0]: {notbad}<3>" ];
+	3 [ label = "3[start	& fuel=2	& ax=3	& ay=0]: {notbad}<3>" ];
+	4 [ label = "4[start	& fuel=3	& ax=3	& ay=0]: {notbad}<3>" ];
+	5 [ label = "5[start	& fuel=4	& ax=3	& ay=0]: {notbad}<5>" ];
+	6 [ label = "6[start	& fuel=5	& ax=3	& ay=0]: {notbad}<5>" ];
+	7 [ label = "7[start	& fuel=6	& ax=3	& ay=0]: {notbad}<5>" ];
+	8 [ label = "8[start	& fuel=7	& ax=3	& ay=0]: {notbad}<5>" ];
+	9 [ label = "9[start	& fuel=8	& ax=3	& ay=0]: {notbad}<19>" ];
+	10 [ label = "10[start	& fuel=0	& ax=3	& ay=1]: {}<7>" ];
+	11 [ label = "11[start	& fuel=0	& ax=3	& ay=2]: {}<7>" ];
+	12 [ label = "12[start	& fuel=0	& ax=4	& ay=0]: {}<17>" ];
+	13 [ label = "13[start	& fuel=1	& ax=1	& ay=0]: {goal, notbad}<14>" ];
+	14 [ label = "14[start	& fuel=0	& ax=2	& ay=0]: {}<2>" ];
+	15 [ label = "15[start	& fuel=0	& ax=1	& ay=0]: {}<2>" ];
+	16 [ label = "16[start	& fuel=1	& ax=3	& ay=1]: {notbad}<6>" ];
+	17 [ label = "17[start	& fuel=1	& ax=3	& ay=2]: {notbad}<6>" ];
+	18 [ label = "18[start	& fuel=1	& ax=4	& ay=0]: {notbad}<3>" ];
+	19 [ label = "19[start	& fuel=1	& ax=2	& ay=0]: {notbad}<14>" ];
+	20 [ label = "20[start	& fuel=2	& ax=3	& ay=1]: {notbad}<6>" ];
+	21 [ label = "21[start	& fuel=2	& ax=3	& ay=2]: {notbad}<6>" ];
+	22 [ label = "22[start	& fuel=2	& ax=4	& ay=0]: {notbad}<3>" ];
+	23 [ label = "23[start	& fuel=3	& ax=1	& ay=0]: {goal, notbad}<14>" ];
+	24 [ label = "24[start	& fuel=2	& ax=2	& ay=0]: {goal, notbad}<14>" ];
+	25 [ label = "25[start	& fuel=2	& ax=1	& ay=0]: {goal, notbad}<14>" ];
+	26 [ label = "26[start	& fuel=3	& ax=3	& ay=1]: {notbad}<6>" ];
+	27 [ label = "27[start	& fuel=3	& ax=3	& ay=2]: {notbad}<6>" ];
+	28 [ label = "28[start	& fuel=3	& ax=4	& ay=0]: {notbad}<3>" ];
+	29 [ label = "29[start	& fuel=3	& ax=2	& ay=0]: {goal, notbad}<14>" ];
+	30 [ label = "30[start	& fuel=4	& ax=3	& ay=1]: {notbad}<4>" ];
+	31 [ label = "31[start	& fuel=4	& ax=3	& ay=2]: {notbad}<4>" ];
+	32 [ label = "32[start	& fuel=4	& ax=4	& ay=0]: {notbad}<5>" ];
+	33 [ label = "33[start	& fuel=5	& ax=1	& ay=0]: {goal, notbad}<1>" ];
+	34 [ label = "34[start	& fuel=4	& ax=2	& ay=0]: {goal, notbad}<1>" ];
+	35 [ label = "35[start	& fuel=4	& ax=1	& ay=0]: {goal, notbad}<1>" ];
+	36 [ label = "36[start	& fuel=5	& ax=3	& ay=1]: {notbad}<4>" ];
+	37 [ label = "37[start	& fuel=5	& ax=3	& ay=2]: {notbad}<4>" ];
+	38 [ label = "38[start	& fuel=5	& ax=4	& ay=0]: {notbad}<5>" ];
+	39 [ label = "39[start	& fuel=5	& ax=2	& ay=0]: {goal, notbad}<1>" ];
+	40 [ label = "40[start	& fuel=6	& ax=3	& ay=1]: {notbad}<4>" ];
+	41 [ label = "41[start	& fuel=6	& ax=3	& ay=2]: {notbad}<4>" ];
+	42 [ label = "42[start	& fuel=6	& ax=4	& ay=0]: {notbad}<5>" ];
+	43 [ label = "43[start	& fuel=7	& ax=1	& ay=0]: {goal, notbad}<1>" ];
+	44 [ label = "44[start	& fuel=6	& ax=2	& ay=0]: {goal, notbad}<1>" ];
+	45 [ label = "45[start	& fuel=6	& ax=1	& ay=0]: {goal, notbad}<1>" ];
+	46 [ label = "46[start	& fuel=7	& ax=3	& ay=1]: {notbad}<4>" ];
+	47 [ label = "47[start	& fuel=7	& ax=3	& ay=2]: {notbad}<4>" ];
+	48 [ label = "48[start	& fuel=7	& ax=4	& ay=0]: {notbad}<5>" ];
+	49 [ label = "49[start	& fuel=7	& ax=2	& ay=0]: {goal, notbad}<1>" ];
+	50 [ label = "50[start	& fuel=0	& ax=3	& ay=3]: {goal, notbad, stationvisit}<16>" ];
+	51 [ label = "51[start	& fuel=0	& ax=4	& ay=1]: {}<7>" ];
+	52 [ label = "52[start	& fuel=1	& ax=1	& ay=1]: {notbad}<12>" ];
+	53 [ label = "53[start	& fuel=0	& ax=2	& ay=1]: {}<11>" ];
+	54 [ label = "54[start	& fuel=0	& ax=1	& ay=1]: {}<11>" ];
+	55 [ label = "55[start	& fuel=0	& ax=3	& ay=4]: {}<11>" ];
+	56 [ label = "56[start	& fuel=0	& ax=4	& ay=2]: {}<7>" ];
+	57 [ label = "57[start	& fuel=1	& ax=1	& ay=2]: {notbad}<12>" ];
+	58 [ label = "58[start	& fuel=0	& ax=2	& ay=2]: {goal, notbad, stationvisit}<16>" ];
+	59 [ label = "59[start	& fuel=0	& ax=1	& ay=2]: {}<11>" ];
+	60 [ label = "60[start	& fuel=1	& ax=3	& ay=3]: {goal, notbad, stationvisit}<15>" ];
+	61 [ label = "61[start	& fuel=1	& ax=4	& ay=1]: {notbad}<6>" ];
+	62 [ label = "62[start	& fuel=1	& ax=2	& ay=1]: {notbad}<12>" ];
+	63 [ label = "63[start	& fuel=1	& ax=3	& ay=4]: {notbad}<12>" ];
+	64 [ label = "64[start	& fuel=1	& ax=4	& ay=2]: {notbad}<6>" ];
+	65 [ label = "65[start	& fuel=1	& ax=2	& ay=2]: {goal, notbad, stationvisit}<15>" ];
+	66 [ label = "66[start	& fuel=2	& ax=3	& ay=3]: {goal, notbad, stationvisit}<15>" ];
+	67 [ label = "67[start	& fuel=2	& ax=4	& ay=1]: {notbad}<6>" ];
+	68 [ label = "68[start	& fuel=3	& ax=1	& ay=1]: {goal, notbad}<12>" ];
+	69 [ label = "69[start	& fuel=2	& ax=2	& ay=1]: {notbad}<12>" ];
+	70 [ label = "70[start	& fuel=2	& ax=1	& ay=1]: {goal, notbad}<12>" ];
+	71 [ label = "71[start	& fuel=2	& ax=3	& ay=4]: {notbad}<12>" ];
+	72 [ label = "72[start	& fuel=2	& ax=4	& ay=2]: {notbad}<6>" ];
+	73 [ label = "73[start	& fuel=3	& ax=1	& ay=2]: {goal, notbad}<12>" ];
+	74 [ label = "74[start	& fuel=2	& ax=2	& ay=2]: {goal, notbad, stationvisit}<15>" ];
+	75 [ label = "75[start	& fuel=2	& ax=1	& ay=2]: {notbad}<12>" ];
+	76 [ label = "76[start	& fuel=3	& ax=3	& ay=3]: {goal, notbad, stationvisit}<15>" ];
+	77 [ label = "77[start	& fuel=3	& ax=4	& ay=1]: {notbad}<6>" ];
+	78 [ label = "78[start	& fuel=3	& ax=2	& ay=1]: {goal, notbad}<12>" ];
+	79 [ label = "79[start	& fuel=3	& ax=3	& ay=4]: {goal, notbad}<12>" ];
+	80 [ label = "80[start	& fuel=3	& ax=4	& ay=2]: {notbad}<6>" ];
+	81 [ label = "81[start	& fuel=3	& ax=2	& ay=2]: {goal, notbad, stationvisit}<15>" ];
+	82 [ label = "82[start	& fuel=4	& ax=3	& ay=3]: {goal, notbad, stationvisit}<13>" ];
+	83 [ label = "83[start	& fuel=4	& ax=4	& ay=1]: {notbad}<4>" ];
+	84 [ label = "84[start	& fuel=5	& ax=1	& ay=1]: {goal, notbad}<9>" ];
+	85 [ label = "85[start	& fuel=4	& ax=2	& ay=1]: {goal, notbad}<9>" ];
+	86 [ label = "86[start	& fuel=4	& ax=1	& ay=1]: {goal, notbad}<9>" ];
+	87 [ label = "87[start	& fuel=4	& ax=3	& ay=4]: {goal, notbad}<9>" ];
+	88 [ label = "88[start	& fuel=4	& ax=4	& ay=2]: {notbad}<4>" ];
+	89 [ label = "89[start	& fuel=5	& ax=1	& ay=2]: {goal, notbad}<9>" ];
+	90 [ label = "90[start	& fuel=4	& ax=2	& ay=2]: {goal, notbad, stationvisit}<13>" ];
+	91 [ label = "91[start	& fuel=4	& ax=1	& ay=2]: {goal, notbad}<9>" ];
+	92 [ label = "92[start	& fuel=5	& ax=3	& ay=3]: {goal, notbad, stationvisit}<13>" ];
+	93 [ label = "93[start	& fuel=5	& ax=4	& ay=1]: {notbad}<4>" ];
+	94 [ label = "94[start	& fuel=5	& ax=2	& ay=1]: {goal, notbad}<9>" ];
+	95 [ label = "95[start	& fuel=5	& ax=3	& ay=4]: {goal, notbad}<9>" ];
+	96 [ label = "96[start	& fuel=5	& ax=4	& ay=2]: {notbad}<4>" ];
+	97 [ label = "97[start	& fuel=5	& ax=2	& ay=2]: {goal, notbad, stationvisit}<13>" ];
+	98 [ label = "98[start	& fuel=6	& ax=3	& ay=3]: {goal, notbad, stationvisit}<13>" ];
+	99 [ label = "99[start	& fuel=6	& ax=4	& ay=1]: {notbad}<4>" ];
+	100 [ label = "100[start	& fuel=7	& ax=1	& ay=1]: {goal, notbad}<9>" ];
+	101 [ label = "101[start	& fuel=6	& ax=2	& ay=1]: {goal, notbad}<9>" ];
+	102 [ label = "102[start	& fuel=6	& ax=1	& ay=1]: {goal, notbad}<9>" ];
+	103 [ label = "103[start	& fuel=6	& ax=3	& ay=4]: {goal, notbad}<9>" ];
+	104 [ label = "104[start	& fuel=6	& ax=4	& ay=2]: {notbad}<4>" ];
+	105 [ label = "105[start	& fuel=7	& ax=1	& ay=2]: {goal, notbad}<9>" ];
+	106 [ label = "106[start	& fuel=6	& ax=2	& ay=2]: {goal, notbad, stationvisit}<13>" ];
+	107 [ label = "107[start	& fuel=6	& ax=1	& ay=2]: {goal, notbad}<9>" ];
+	108 [ label = "108[start	& fuel=0	& ax=4	& ay=3]: {}<11>" ];
+	109 [ label = "109[start	& fuel=0	& ax=4	& ay=4]: {traps}<0>" ];
+	110 [ label = "110[start	& fuel=1	& ax=4	& ay=3]: {notbad}<12>" ];
+	111 [ label = "111[start	& fuel=1	& ax=4	& ay=4]: {traps}<10>" ];
+	112 [ label = "112[start	& fuel=2	& ax=4	& ay=3]: {notbad}<12>" ];
+	113 [ label = "113[start	& fuel=2	& ax=4	& ay=4]: {traps}<10>" ];
+	114 [ label = "114[start	& fuel=3	& ax=4	& ay=3]: {goal, notbad}<12>" ];
+	115 [ label = "115[start	& fuel=3	& ax=4	& ay=4]: {traps}<10>" ];
+	116 [ label = "116[start	& fuel=4	& ax=4	& ay=3]: {goal, notbad}<9>" ];
+	117 [ label = "117[start	& fuel=4	& ax=4	& ay=4]: {traps}<8>" ];
+	118 [ label = "118[start	& fuel=5	& ax=4	& ay=3]: {goal, notbad}<9>" ];
+	119 [ label = "119[start	& fuel=5	& ax=4	& ay=4]: {traps}<8>" ];
+	"0c0" [shape = "point"];
+	0 -> "0c0" [ label = "{placement}"]
+;
+	"0c0" -> 1 [ label= "0.1111111111" ];
+	"0c0" -> 2 [ label= "0.1111111111" ];
+	"0c0" -> 3 [ label= "0.1111111111" ];
+	"0c0" -> 4 [ label= "0.1111111111" ];
+	"0c0" -> 5 [ label= "0.1111111111" ];
+	"0c0" -> 6 [ label= "0.1111111111" ];
+	"0c0" -> 7 [ label= "0.1111111111" ];
+	"0c0" -> 8 [ label= "0.1111111111" ];
+	"0c0" -> 9 [ label= "0.1111111111" ];
+	"1c0" [shape = "point"];
+	1 -> "1c0" [ label = "{}"]
+;
+	"1c0" -> 1 [ label= "1" ];
+	"2c0" [shape = "point"];
+	2 -> "2c0" [ label = "{south}"]
+;
+	"2c0" -> 10 [ label= "0.7" ];
+	"2c0" -> 11 [ label= "0.3" ];
+	"2c1" [shape = "point"];
+	2 -> "2c1" [ label = "{east}"]
+;
+	"2c1" -> 12 [ label= "0.7" ];
+	"2c1" -> 13 [ label= "0.3" ];
+	"2c2" [shape = "point"];
+	2 -> "2c2" [ label = "{west}"]
+;
+	"2c2" -> 14 [ label= "0.7" ];
+	"2c2" -> 15 [ label= "0.3" ];
+	"3c0" [shape = "point"];
+	3 -> "3c0" [ label = "{south}"]
+;
+	"3c0" -> 16 [ label= "0.7" ];
+	"3c0" -> 17 [ label= "0.3" ];
+	"3c1" [shape = "point"];
+	3 -> "3c1" [ label = "{east}"]
+;
+	"3c1" -> 13 [ label= "0.3" ];
+	"3c1" -> 18 [ label= "0.7" ];
+	"3c2" [shape = "point"];
+	3 -> "3c2" [ label = "{west}"]
+;
+	"3c2" -> 13 [ label= "0.3" ];
+	"3c2" -> 19 [ label= "0.7" ];
+	"4c0" [shape = "point"];
+	4 -> "4c0" [ label = "{south}"]
+;
+	"4c0" -> 20 [ label= "0.7" ];
+	"4c0" -> 21 [ label= "0.3" ];
+	"4c1" [shape = "point"];
+	4 -> "4c1" [ label = "{east}"]
+;
+	"4c1" -> 22 [ label= "0.7" ];
+	"4c1" -> 23 [ label= "0.3" ];
+	"4c2" [shape = "point"];
+	4 -> "4c2" [ label = "{west}"]
+;
+	"4c2" -> 24 [ label= "0.7" ];
+	"4c2" -> 25 [ label= "0.3" ];
+	"5c0" [shape = "point"];
+	5 -> "5c0" [ label = "{south}"]
+;
+	"5c0" -> 26 [ label= "0.7" ];
+	"5c0" -> 27 [ label= "0.3" ];
+	"5c1" [shape = "point"];
+	5 -> "5c1" [ label = "{east}"]
+;
+	"5c1" -> 23 [ label= "0.3" ];
+	"5c1" -> 28 [ label= "0.7" ];
+	"5c2" [shape = "point"];
+	5 -> "5c2" [ label = "{west}"]
+;
+	"5c2" -> 23 [ label= "0.3" ];
+	"5c2" -> 29 [ label= "0.7" ];
+	"6c0" [shape = "point"];
+	6 -> "6c0" [ label = "{south}"]
+;
+	"6c0" -> 30 [ label= "0.7" ];
+	"6c0" -> 31 [ label= "0.3" ];
+	"6c1" [shape = "point"];
+	6 -> "6c1" [ label = "{east}"]
+;
+	"6c1" -> 32 [ label= "0.7" ];
+	"6c1" -> 33 [ label= "0.3" ];
+	"6c2" [shape = "point"];
+	6 -> "6c2" [ label = "{west}"]
+;
+	"6c2" -> 34 [ label= "0.7" ];
+	"6c2" -> 35 [ label= "0.3" ];
+	"7c0" [shape = "point"];
+	7 -> "7c0" [ label = "{south}"]
+;
+	"7c0" -> 36 [ label= "0.7" ];
+	"7c0" -> 37 [ label= "0.3" ];
+	"7c1" [shape = "point"];
+	7 -> "7c1" [ label = "{east}"]
+;
+	"7c1" -> 33 [ label= "0.3" ];
+	"7c1" -> 38 [ label= "0.7" ];
+	"7c2" [shape = "point"];
+	7 -> "7c2" [ label = "{west}"]
+;
+	"7c2" -> 33 [ label= "0.3" ];
+	"7c2" -> 39 [ label= "0.7" ];
+	"8c0" [shape = "point"];
+	8 -> "8c0" [ label = "{south}"]
+;
+	"8c0" -> 40 [ label= "0.7" ];
+	"8c0" -> 41 [ label= "0.3" ];
+	"8c1" [shape = "point"];
+	8 -> "8c1" [ label = "{east}"]
+;
+	"8c1" -> 42 [ label= "0.7" ];
+	"8c1" -> 43 [ label= "0.3" ];
+	"8c2" [shape = "point"];
+	8 -> "8c2" [ label = "{west}"]
+;
+	"8c2" -> 44 [ label= "0.7" ];
+	"8c2" -> 45 [ label= "0.3" ];
+	"9c0" [shape = "point"];
+	9 -> "9c0" [ label = "{south}"]
+;
+	"9c0" -> 46 [ label= "0.7" ];
+	"9c0" -> 47 [ label= "0.3" ];
+	"9c1" [shape = "point"];
+	9 -> "9c1" [ label = "{east}"]
+;
+	"9c1" -> 43 [ label= "0.3" ];
+	"9c1" -> 48 [ label= "0.7" ];
+	"9c2" [shape = "point"];
+	9 -> "9c2" [ label = "{west}"]
+;
+	"9c2" -> 43 [ label= "0.3" ];
+	"9c2" -> 49 [ label= "0.7" ];
+	"10c0" [shape = "point"];
+	10 -> "10c0" [ label = "{}"]
+;
+	"10c0" -> 10 [ label= "1" ];
+	"11c0" [shape = "point"];
+	11 -> "11c0" [ label = "{}"]
+;
+	"11c0" -> 11 [ label= "1" ];
+	"12c0" [shape = "point"];
+	12 -> "12c0" [ label = "{}"]
+;
+	"12c0" -> 12 [ label= "1" ];
+	"13c0" [shape = "point"];
+	13 -> "13c0" [ label = "{}"]
+;
+	"13c0" -> 13 [ label= "1" ];
+	"14c0" [shape = "point"];
+	14 -> "14c0" [ label = "{}"]
+;
+	"14c0" -> 14 [ label= "1" ];
+	"15c0" [shape = "point"];
+	15 -> "15c0" [ label = "{}"]
+;
+	"15c0" -> 15 [ label= "1" ];
+	"16c0" [shape = "point"];
+	16 -> "16c0" [ label = "{north}"]
+;
+	"16c0" -> 1 [ label= "1" ];
+	"16c1" [shape = "point"];
+	16 -> "16c1" [ label = "{south}"]
+;
+	"16c1" -> 11 [ label= "0.7" ];
+	"16c1" -> 50 [ label= "0.3" ];
+	"16c2" [shape = "point"];
+	16 -> "16c2" [ label = "{east}"]
+;
+	"16c2" -> 51 [ label= "0.7" ];
+	"16c2" -> 52 [ label= "0.3" ];
+	"16c3" [shape = "point"];
+	16 -> "16c3" [ label = "{west}"]
+;
+	"16c3" -> 53 [ label= "0.7" ];
+	"16c3" -> 54 [ label= "0.3" ];
+	"17c0" [shape = "point"];
+	17 -> "17c0" [ label = "{north}"]
+;
+	"17c0" -> 1 [ label= "0.3" ];
+	"17c0" -> 10 [ label= "0.7" ];
+	"17c1" [shape = "point"];
+	17 -> "17c1" [ label = "{south}"]
+;
+	"17c1" -> 50 [ label= "0.7" ];
+	"17c1" -> 55 [ label= "0.3" ];
+	"17c2" [shape = "point"];
+	17 -> "17c2" [ label = "{east}"]
+;
+	"17c2" -> 56 [ label= "0.7" ];
+	"17c2" -> 57 [ label= "0.3" ];
+	"17c3" [shape = "point"];
+	17 -> "17c3" [ label = "{west}"]
+;
+	"17c3" -> 58 [ label= "0.7" ];
+	"17c3" -> 59 [ label= "0.3" ];
+	"18c0" [shape = "point"];
+	18 -> "18c0" [ label = "{south}"]
+;
+	"18c0" -> 51 [ label= "0.7" ];
+	"18c0" -> 56 [ label= "0.3" ];
+	"18c1" [shape = "point"];
+	18 -> "18c1" [ label = "{east}"]
+;
+	"18c1" -> 13 [ label= "1" ];
+	"18c2" [shape = "point"];
+	18 -> "18c2" [ label = "{west}"]
+;
+	"18c2" -> 1 [ label= "0.7" ];
+	"18c2" -> 14 [ label= "0.3" ];
+	"19c0" [shape = "point"];
+	19 -> "19c0" [ label = "{done}"]
+;
+	"19c0" -> 19 [ label= "1" ];
+	"20c0" [shape = "point"];
+	20 -> "20c0" [ label = "{north}"]
+;
+	"20c0" -> 2 [ label= "1" ];
+	"20c1" [shape = "point"];
+	20 -> "20c1" [ label = "{south}"]
+;
+	"20c1" -> 17 [ label= "0.7" ];
+	"20c1" -> 60 [ label= "0.3" ];
+	"20c2" [shape = "point"];
+	20 -> "20c2" [ label = "{east}"]
+;
+	"20c2" -> 52 [ label= "0.3" ];
+	"20c2" -> 61 [ label= "0.7" ];
+	"20c3" [shape = "point"];
+	20 -> "20c3" [ label = "{west}"]
+;
+	"20c3" -> 52 [ label= "0.3" ];
+	"20c3" -> 62 [ label= "0.7" ];
+	"21c0" [shape = "point"];
+	21 -> "21c0" [ label = "{north}"]
+;
+	"21c0" -> 2 [ label= "0.3" ];
+	"21c0" -> 16 [ label= "0.7" ];
+	"21c1" [shape = "point"];
+	21 -> "21c1" [ label = "{south}"]
+;
+	"21c1" -> 60 [ label= "0.7" ];
+	"21c1" -> 63 [ label= "0.3" ];
+	"21c2" [shape = "point"];
+	21 -> "21c2" [ label = "{east}"]
+;
+	"21c2" -> 57 [ label= "0.3" ];
+	"21c2" -> 64 [ label= "0.7" ];
+	"21c3" [shape = "point"];
+	21 -> "21c3" [ label = "{west}"]
+;
+	"21c3" -> 57 [ label= "0.3" ];
+	"21c3" -> 65 [ label= "0.7" ];
+	"22c0" [shape = "point"];
+	22 -> "22c0" [ label = "{south}"]
+;
+	"22c0" -> 61 [ label= "0.7" ];
+	"22c0" -> 64 [ label= "0.3" ];
+	"22c1" [shape = "point"];
+	22 -> "22c1" [ label = "{east}"]
+;
+	"22c1" -> 13 [ label= "1" ];
+	"22c2" [shape = "point"];
+	22 -> "22c2" [ label = "{west}"]
+;
+	"22c2" -> 2 [ label= "0.7" ];
+	"22c2" -> 19 [ label= "0.3" ];
+	"23c0" [shape = "point"];
+	23 -> "23c0" [ label = "{}"]
+;
+	"23c0" -> 23 [ label= "1" ];
+	"24c0" [shape = "point"];
+	24 -> "24c0" [ label = "{}"]
+;
+	"24c0" -> 24 [ label= "1" ];
+	"25c0" [shape = "point"];
+	25 -> "25c0" [ label = "{}"]
+;
+	"25c0" -> 25 [ label= "1" ];
+	"26c0" [shape = "point"];
+	26 -> "26c0" [ label = "{north}"]
+;
+	"26c0" -> 3 [ label= "1" ];
+	"26c1" [shape = "point"];
+	26 -> "26c1" [ label = "{south}"]
+;
+	"26c1" -> 21 [ label= "0.7" ];
+	"26c1" -> 66 [ label= "0.3" ];
+	"26c2" [shape = "point"];
+	26 -> "26c2" [ label = "{east}"]
+;
+	"26c2" -> 67 [ label= "0.7" ];
+	"26c2" -> 68 [ label= "0.3" ];
+	"26c3" [shape = "point"];
+	26 -> "26c3" [ label = "{west}"]
+;
+	"26c3" -> 69 [ label= "0.7" ];
+	"26c3" -> 70 [ label= "0.3" ];
+	"27c0" [shape = "point"];
+	27 -> "27c0" [ label = "{north}"]
+;
+	"27c0" -> 3 [ label= "0.3" ];
+	"27c0" -> 20 [ label= "0.7" ];
+	"27c1" [shape = "point"];
+	27 -> "27c1" [ label = "{south}"]
+;
+	"27c1" -> 66 [ label= "0.7" ];
+	"27c1" -> 71 [ label= "0.3" ];
+	"27c2" [shape = "point"];
+	27 -> "27c2" [ label = "{east}"]
+;
+	"27c2" -> 72 [ label= "0.7" ];
+	"27c2" -> 73 [ label= "0.3" ];
+	"27c3" [shape = "point"];
+	27 -> "27c3" [ label = "{west}"]
+;
+	"27c3" -> 74 [ label= "0.7" ];
+	"27c3" -> 75 [ label= "0.3" ];
+	"28c0" [shape = "point"];
+	28 -> "28c0" [ label = "{south}"]
+;
+	"28c0" -> 67 [ label= "0.7" ];
+	"28c0" -> 72 [ label= "0.3" ];
+	"28c1" [shape = "point"];
+	28 -> "28c1" [ label = "{east}"]
+;
+	"28c1" -> 23 [ label= "1" ];
+	"28c2" [shape = "point"];
+	28 -> "28c2" [ label = "{west}"]
+;
+	"28c2" -> 3 [ label= "0.7" ];
+	"28c2" -> 24 [ label= "0.3" ];
+	"29c0" [shape = "point"];
+	29 -> "29c0" [ label = "{}"]
+;
+	"29c0" -> 29 [ label= "1" ];
+	"30c0" [shape = "point"];
+	30 -> "30c0" [ label = "{north}"]
+;
+	"30c0" -> 4 [ label= "1" ];
+	"30c1" [shape = "point"];
+	30 -> "30c1" [ label = "{south}"]
+;
+	"30c1" -> 27 [ label= "0.7" ];
+	"30c1" -> 76 [ label= "0.3" ];
+	"30c2" [shape = "point"];
+	30 -> "30c2" [ label = "{east}"]
+;
+	"30c2" -> 68 [ label= "0.3" ];
+	"30c2" -> 77 [ label= "0.7" ];
+	"30c3" [shape = "point"];
+	30 -> "30c3" [ label = "{west}"]
+;
+	"30c3" -> 68 [ label= "0.3" ];
+	"30c3" -> 78 [ label= "0.7" ];
+	"31c0" [shape = "point"];
+	31 -> "31c0" [ label = "{north}"]
+;
+	"31c0" -> 4 [ label= "0.3" ];
+	"31c0" -> 26 [ label= "0.7" ];
+	"31c1" [shape = "point"];
+	31 -> "31c1" [ label = "{south}"]
+;
+	"31c1" -> 76 [ label= "0.7" ];
+	"31c1" -> 79 [ label= "0.3" ];
+	"31c2" [shape = "point"];
+	31 -> "31c2" [ label = "{east}"]
+;
+	"31c2" -> 73 [ label= "0.3" ];
+	"31c2" -> 80 [ label= "0.7" ];
+	"31c3" [shape = "point"];
+	31 -> "31c3" [ label = "{west}"]
+;
+	"31c3" -> 73 [ label= "0.3" ];
+	"31c3" -> 81 [ label= "0.7" ];
+	"32c0" [shape = "point"];
+	32 -> "32c0" [ label = "{south}"]
+;
+	"32c0" -> 77 [ label= "0.7" ];
+	"32c0" -> 80 [ label= "0.3" ];
+	"32c1" [shape = "point"];
+	32 -> "32c1" [ label = "{east}"]
+;
+	"32c1" -> 23 [ label= "1" ];
+	"32c2" [shape = "point"];
+	32 -> "32c2" [ label = "{west}"]
+;
+	"32c2" -> 4 [ label= "0.7" ];
+	"32c2" -> 29 [ label= "0.3" ];
+	"33c0" [shape = "point"];
+	33 -> "33c0" [ label = "{}"]
+;
+	"33c0" -> 33 [ label= "1" ];
+	"34c0" [shape = "point"];
+	34 -> "34c0" [ label = "{}"]
+;
+	"34c0" -> 34 [ label= "1" ];
+	"35c0" [shape = "point"];
+	35 -> "35c0" [ label = "{}"]
+;
+	"35c0" -> 35 [ label= "1" ];
+	"36c0" [shape = "point"];
+	36 -> "36c0" [ label = "{north}"]
+;
+	"36c0" -> 5 [ label= "1" ];
+	"36c1" [shape = "point"];
+	36 -> "36c1" [ label = "{south}"]
+;
+	"36c1" -> 31 [ label= "0.7" ];
+	"36c1" -> 82 [ label= "0.3" ];
+	"36c2" [shape = "point"];
+	36 -> "36c2" [ label = "{east}"]
+;
+	"36c2" -> 83 [ label= "0.7" ];
+	"36c2" -> 84 [ label= "0.3" ];
+	"36c3" [shape = "point"];
+	36 -> "36c3" [ label = "{west}"]
+;
+	"36c3" -> 85 [ label= "0.7" ];
+	"36c3" -> 86 [ label= "0.3" ];
+	"37c0" [shape = "point"];
+	37 -> "37c0" [ label = "{north}"]
+;
+	"37c0" -> 5 [ label= "0.3" ];
+	"37c0" -> 30 [ label= "0.7" ];
+	"37c1" [shape = "point"];
+	37 -> "37c1" [ label = "{south}"]
+;
+	"37c1" -> 82 [ label= "0.7" ];
+	"37c1" -> 87 [ label= "0.3" ];
+	"37c2" [shape = "point"];
+	37 -> "37c2" [ label = "{east}"]
+;
+	"37c2" -> 88 [ label= "0.7" ];
+	"37c2" -> 89 [ label= "0.3" ];
+	"37c3" [shape = "point"];
+	37 -> "37c3" [ label = "{west}"]
+;
+	"37c3" -> 90 [ label= "0.7" ];
+	"37c3" -> 91 [ label= "0.3" ];
+	"38c0" [shape = "point"];
+	38 -> "38c0" [ label = "{south}"]
+;
+	"38c0" -> 83 [ label= "0.7" ];
+	"38c0" -> 88 [ label= "0.3" ];
+	"38c1" [shape = "point"];
+	38 -> "38c1" [ label = "{east}"]
+;
+	"38c1" -> 33 [ label= "1" ];
+	"38c2" [shape = "point"];
+	38 -> "38c2" [ label = "{west}"]
+;
+	"38c2" -> 5 [ label= "0.7" ];
+	"38c2" -> 34 [ label= "0.3" ];
+	"39c0" [shape = "point"];
+	39 -> "39c0" [ label = "{}"]
+;
+	"39c0" -> 39 [ label= "1" ];
+	"40c0" [shape = "point"];
+	40 -> "40c0" [ label = "{north}"]
+;
+	"40c0" -> 6 [ label= "1" ];
+	"40c1" [shape = "point"];
+	40 -> "40c1" [ label = "{south}"]
+;
+	"40c1" -> 37 [ label= "0.7" ];
+	"40c1" -> 92 [ label= "0.3" ];
+	"40c2" [shape = "point"];
+	40 -> "40c2" [ label = "{east}"]
+;
+	"40c2" -> 84 [ label= "0.3" ];
+	"40c2" -> 93 [ label= "0.7" ];
+	"40c3" [shape = "point"];
+	40 -> "40c3" [ label = "{west}"]
+;
+	"40c3" -> 84 [ label= "0.3" ];
+	"40c3" -> 94 [ label= "0.7" ];
+	"41c0" [shape = "point"];
+	41 -> "41c0" [ label = "{north}"]
+;
+	"41c0" -> 6 [ label= "0.3" ];
+	"41c0" -> 36 [ label= "0.7" ];
+	"41c1" [shape = "point"];
+	41 -> "41c1" [ label = "{south}"]
+;
+	"41c1" -> 92 [ label= "0.7" ];
+	"41c1" -> 95 [ label= "0.3" ];
+	"41c2" [shape = "point"];
+	41 -> "41c2" [ label = "{east}"]
+;
+	"41c2" -> 89 [ label= "0.3" ];
+	"41c2" -> 96 [ label= "0.7" ];
+	"41c3" [shape = "point"];
+	41 -> "41c3" [ label = "{west}"]
+;
+	"41c3" -> 89 [ label= "0.3" ];
+	"41c3" -> 97 [ label= "0.7" ];
+	"42c0" [shape = "point"];
+	42 -> "42c0" [ label = "{south}"]
+;
+	"42c0" -> 93 [ label= "0.7" ];
+	"42c0" -> 96 [ label= "0.3" ];
+	"42c1" [shape = "point"];
+	42 -> "42c1" [ label = "{east}"]
+;
+	"42c1" -> 33 [ label= "1" ];
+	"42c2" [shape = "point"];
+	42 -> "42c2" [ label = "{west}"]
+;
+	"42c2" -> 6 [ label= "0.7" ];
+	"42c2" -> 39 [ label= "0.3" ];
+	"43c0" [shape = "point"];
+	43 -> "43c0" [ label = "{}"]
+;
+	"43c0" -> 43 [ label= "1" ];
+	"44c0" [shape = "point"];
+	44 -> "44c0" [ label = "{}"]
+;
+	"44c0" -> 44 [ label= "1" ];
+	"45c0" [shape = "point"];
+	45 -> "45c0" [ label = "{}"]
+;
+	"45c0" -> 45 [ label= "1" ];
+	"46c0" [shape = "point"];
+	46 -> "46c0" [ label = "{north}"]
+;
+	"46c0" -> 7 [ label= "1" ];
+	"46c1" [shape = "point"];
+	46 -> "46c1" [ label = "{south}"]
+;
+	"46c1" -> 41 [ label= "0.7" ];
+	"46c1" -> 98 [ label= "0.3" ];
+	"46c2" [shape = "point"];
+	46 -> "46c2" [ label = "{east}"]
+;
+	"46c2" -> 99 [ label= "0.7" ];
+	"46c2" -> 100 [ label= "0.3" ];
+	"46c3" [shape = "point"];
+	46 -> "46c3" [ label = "{west}"]
+;
+	"46c3" -> 101 [ label= "0.7" ];
+	"46c3" -> 102 [ label= "0.3" ];
+	"47c0" [shape = "point"];
+	47 -> "47c0" [ label = "{north}"]
+;
+	"47c0" -> 7 [ label= "0.3" ];
+	"47c0" -> 40 [ label= "0.7" ];
+	"47c1" [shape = "point"];
+	47 -> "47c1" [ label = "{south}"]
+;
+	"47c1" -> 98 [ label= "0.7" ];
+	"47c1" -> 103 [ label= "0.3" ];
+	"47c2" [shape = "point"];
+	47 -> "47c2" [ label = "{east}"]
+;
+	"47c2" -> 104 [ label= "0.7" ];
+	"47c2" -> 105 [ label= "0.3" ];
+	"47c3" [shape = "point"];
+	47 -> "47c3" [ label = "{west}"]
+;
+	"47c3" -> 106 [ label= "0.7" ];
+	"47c3" -> 107 [ label= "0.3" ];
+	"48c0" [shape = "point"];
+	48 -> "48c0" [ label = "{south}"]
+;
+	"48c0" -> 99 [ label= "0.7" ];
+	"48c0" -> 104 [ label= "0.3" ];
+	"48c1" [shape = "point"];
+	48 -> "48c1" [ label = "{east}"]
+;
+	"48c1" -> 43 [ label= "1" ];
+	"48c2" [shape = "point"];
+	48 -> "48c2" [ label = "{west}"]
+;
+	"48c2" -> 7 [ label= "0.7" ];
+	"48c2" -> 44 [ label= "0.3" ];
+	"49c0" [shape = "point"];
+	49 -> "49c0" [ label = "{}"]
+;
+	"49c0" -> 49 [ label= "1" ];
+	"50c0" [shape = "point"];
+	50 -> "50c0" [ label = "{}"]
+;
+	"50c0" -> 50 [ label= "1" ];
+	"51c0" [shape = "point"];
+	51 -> "51c0" [ label = "{}"]
+;
+	"51c0" -> 51 [ label= "1" ];
+	"52c0" [shape = "point"];
+	52 -> "52c0" [ label = "{done}"]
+;
+	"52c0" -> 52 [ label= "1" ];
+	"53c0" [shape = "point"];
+	53 -> "53c0" [ label = "{}"]
+;
+	"53c0" -> 53 [ label= "1" ];
+	"54c0" [shape = "point"];
+	54 -> "54c0" [ label = "{}"]
+;
+	"54c0" -> 54 [ label= "1" ];
+	"55c0" [shape = "point"];
+	55 -> "55c0" [ label = "{}"]
+;
+	"55c0" -> 55 [ label= "1" ];
+	"56c0" [shape = "point"];
+	56 -> "56c0" [ label = "{}"]
+;
+	"56c0" -> 56 [ label= "1" ];
+	"57c0" [shape = "point"];
+	57 -> "57c0" [ label = "{done}"]
+;
+	"57c0" -> 57 [ label= "1" ];
+	"58c0" [shape = "point"];
+	58 -> "58c0" [ label = "{}"]
+;
+	"58c0" -> 58 [ label= "1" ];
+	"59c0" [shape = "point"];
+	59 -> "59c0" [ label = "{}"]
+;
+	"59c0" -> 59 [ label= "1" ];
+	"60c0" [shape = "point"];
+	60 -> "60c0" [ label = "{}"]
+;
+	"60c0" -> 60 [ label= "1" ];
+	"61c0" [shape = "point"];
+	61 -> "61c0" [ label = "{north}"]
+;
+	"61c0" -> 12 [ label= "1" ];
+	"61c1" [shape = "point"];
+	61 -> "61c1" [ label = "{south}"]
+;
+	"61c1" -> 56 [ label= "0.7" ];
+	"61c1" -> 108 [ label= "0.3" ];
+	"61c2" [shape = "point"];
+	61 -> "61c2" [ label = "{east}"]
+;
+	"61c2" -> 52 [ label= "1" ];
+	"61c3" [shape = "point"];
+	61 -> "61c3" [ label = "{west}"]
+;
+	"61c3" -> 10 [ label= "0.7" ];
+	"61c3" -> 53 [ label= "0.3" ];
+	"62c0" [shape = "point"];
+	62 -> "62c0" [ label = "{done}"]
+;
+	"62c0" -> 62 [ label= "1" ];
+	"63c0" [shape = "point"];
+	63 -> "63c0" [ label = "{done}"]
+;
+	"63c0" -> 63 [ label= "1" ];
+	"64c0" [shape = "point"];
+	64 -> "64c0" [ label = "{north}"]
+;
+	"64c0" -> 12 [ label= "0.3" ];
+	"64c0" -> 51 [ label= "0.7" ];
+	"64c1" [shape = "point"];
+	64 -> "64c1" [ label = "{south}"]
+;
+	"64c1" -> 108 [ label= "0.7" ];
+	"64c1" -> 109 [ label= "0.3" ];
+	"64c2" [shape = "point"];
+	64 -> "64c2" [ label = "{east}"]
+;
+	"64c2" -> 57 [ label= "1" ];
+	"64c3" [shape = "point"];
+	64 -> "64c3" [ label = "{west}"]
+;
+	"64c3" -> 11 [ label= "0.7" ];
+	"64c3" -> 58 [ label= "0.3" ];
+	"65c0" [shape = "point"];
+	65 -> "65c0" [ label = "{}"]
+;
+	"65c0" -> 65 [ label= "1" ];
+	"66c0" [shape = "point"];
+	66 -> "66c0" [ label = "{}"]
+;
+	"66c0" -> 66 [ label= "1" ];
+	"67c0" [shape = "point"];
+	67 -> "67c0" [ label = "{north}"]
+;
+	"67c0" -> 18 [ label= "1" ];
+	"67c1" [shape = "point"];
+	67 -> "67c1" [ label = "{south}"]
+;
+	"67c1" -> 64 [ label= "0.7" ];
+	"67c1" -> 110 [ label= "0.3" ];
+	"67c2" [shape = "point"];
+	67 -> "67c2" [ label = "{east}"]
+;
+	"67c2" -> 52 [ label= "1" ];
+	"67c3" [shape = "point"];
+	67 -> "67c3" [ label = "{west}"]
+;
+	"67c3" -> 16 [ label= "0.7" ];
+	"67c3" -> 62 [ label= "0.3" ];
+	"68c0" [shape = "point"];
+	68 -> "68c0" [ label = "{}"]
+;
+	"68c0" -> 68 [ label= "1" ];
+	"69c0" [shape = "point"];
+	69 -> "69c0" [ label = "{done}"]
+;
+	"69c0" -> 69 [ label= "1" ];
+	"70c0" [shape = "point"];
+	70 -> "70c0" [ label = "{}"]
+;
+	"70c0" -> 70 [ label= "1" ];
+	"71c0" [shape = "point"];
+	71 -> "71c0" [ label = "{done}"]
+;
+	"71c0" -> 71 [ label= "1" ];
+	"72c0" [shape = "point"];
+	72 -> "72c0" [ label = "{north}"]
+;
+	"72c0" -> 18 [ label= "0.3" ];
+	"72c0" -> 61 [ label= "0.7" ];
+	"72c1" [shape = "point"];
+	72 -> "72c1" [ label = "{south}"]
+;
+	"72c1" -> 110 [ label= "0.7" ];
+	"72c1" -> 111 [ label= "0.3" ];
+	"72c2" [shape = "point"];
+	72 -> "72c2" [ label = "{east}"]
+;
+	"72c2" -> 57 [ label= "1" ];
+	"72c3" [shape = "point"];
+	72 -> "72c3" [ label = "{west}"]
+;
+	"72c3" -> 17 [ label= "0.7" ];
+	"72c3" -> 65 [ label= "0.3" ];
+	"73c0" [shape = "point"];
+	73 -> "73c0" [ label = "{}"]
+;
+	"73c0" -> 73 [ label= "1" ];
+	"74c0" [shape = "point"];
+	74 -> "74c0" [ label = "{}"]
+;
+	"74c0" -> 74 [ label= "1" ];
+	"75c0" [shape = "point"];
+	75 -> "75c0" [ label = "{done}"]
+;
+	"75c0" -> 75 [ label= "1" ];
+	"76c0" [shape = "point"];
+	76 -> "76c0" [ label = "{}"]
+;
+	"76c0" -> 76 [ label= "1" ];
+	"77c0" [shape = "point"];
+	77 -> "77c0" [ label = "{north}"]
+;
+	"77c0" -> 22 [ label= "1" ];
+	"77c1" [shape = "point"];
+	77 -> "77c1" [ label = "{south}"]
+;
+	"77c1" -> 72 [ label= "0.7" ];
+	"77c1" -> 112 [ label= "0.3" ];
+	"77c2" [shape = "point"];
+	77 -> "77c2" [ label = "{east}"]
+;
+	"77c2" -> 68 [ label= "1" ];
+	"77c3" [shape = "point"];
+	77 -> "77c3" [ label = "{west}"]
+;
+	"77c3" -> 20 [ label= "0.7" ];
+	"77c3" -> 69 [ label= "0.3" ];
+	"78c0" [shape = "point"];
+	78 -> "78c0" [ label = "{}"]
+;
+	"78c0" -> 78 [ label= "1" ];
+	"79c0" [shape = "point"];
+	79 -> "79c0" [ label = "{}"]
+;
+	"79c0" -> 79 [ label= "1" ];
+	"80c0" [shape = "point"];
+	80 -> "80c0" [ label = "{north}"]
+;
+	"80c0" -> 22 [ label= "0.3" ];
+	"80c0" -> 67 [ label= "0.7" ];
+	"80c1" [shape = "point"];
+	80 -> "80c1" [ label = "{south}"]
+;
+	"80c1" -> 112 [ label= "0.7" ];
+	"80c1" -> 113 [ label= "0.3" ];
+	"80c2" [shape = "point"];
+	80 -> "80c2" [ label = "{east}"]
+;
+	"80c2" -> 73 [ label= "1" ];
+	"80c3" [shape = "point"];
+	80 -> "80c3" [ label = "{west}"]
+;
+	"80c3" -> 21 [ label= "0.7" ];
+	"80c3" -> 74 [ label= "0.3" ];
+	"81c0" [shape = "point"];
+	81 -> "81c0" [ label = "{}"]
+;
+	"81c0" -> 81 [ label= "1" ];
+	"82c0" [shape = "point"];
+	82 -> "82c0" [ label = "{}"]
+;
+	"82c0" -> 82 [ label= "1" ];
+	"83c0" [shape = "point"];
+	83 -> "83c0" [ label = "{north}"]
+;
+	"83c0" -> 28 [ label= "1" ];
+	"83c1" [shape = "point"];
+	83 -> "83c1" [ label = "{south}"]
+;
+	"83c1" -> 80 [ label= "0.7" ];
+	"83c1" -> 114 [ label= "0.3" ];
+	"83c2" [shape = "point"];
+	83 -> "83c2" [ label = "{east}"]
+;
+	"83c2" -> 68 [ label= "1" ];
+	"83c3" [shape = "point"];
+	83 -> "83c3" [ label = "{west}"]
+;
+	"83c3" -> 26 [ label= "0.7" ];
+	"83c3" -> 78 [ label= "0.3" ];
+	"84c0" [shape = "point"];
+	84 -> "84c0" [ label = "{}"]
+;
+	"84c0" -> 84 [ label= "1" ];
+	"85c0" [shape = "point"];
+	85 -> "85c0" [ label = "{}"]
+;
+	"85c0" -> 85 [ label= "1" ];
+	"86c0" [shape = "point"];
+	86 -> "86c0" [ label = "{}"]
+;
+	"86c0" -> 86 [ label= "1" ];
+	"87c0" [shape = "point"];
+	87 -> "87c0" [ label = "{}"]
+;
+	"87c0" -> 87 [ label= "1" ];
+	"88c0" [shape = "point"];
+	88 -> "88c0" [ label = "{north}"]
+;
+	"88c0" -> 28 [ label= "0.3" ];
+	"88c0" -> 77 [ label= "0.7" ];
+	"88c1" [shape = "point"];
+	88 -> "88c1" [ label = "{south}"]
+;
+	"88c1" -> 114 [ label= "0.7" ];
+	"88c1" -> 115 [ label= "0.3" ];
+	"88c2" [shape = "point"];
+	88 -> "88c2" [ label = "{east}"]
+;
+	"88c2" -> 73 [ label= "1" ];
+	"88c3" [shape = "point"];
+	88 -> "88c3" [ label = "{west}"]
+;
+	"88c3" -> 27 [ label= "0.7" ];
+	"88c3" -> 81 [ label= "0.3" ];
+	"89c0" [shape = "point"];
+	89 -> "89c0" [ label = "{}"]
+;
+	"89c0" -> 89 [ label= "1" ];
+	"90c0" [shape = "point"];
+	90 -> "90c0" [ label = "{}"]
+;
+	"90c0" -> 90 [ label= "1" ];
+	"91c0" [shape = "point"];
+	91 -> "91c0" [ label = "{}"]
+;
+	"91c0" -> 91 [ label= "1" ];
+	"92c0" [shape = "point"];
+	92 -> "92c0" [ label = "{}"]
+;
+	"92c0" -> 92 [ label= "1" ];
+	"93c0" [shape = "point"];
+	93 -> "93c0" [ label = "{north}"]
+;
+	"93c0" -> 32 [ label= "1" ];
+	"93c1" [shape = "point"];
+	93 -> "93c1" [ label = "{south}"]
+;
+	"93c1" -> 88 [ label= "0.7" ];
+	"93c1" -> 116 [ label= "0.3" ];
+	"93c2" [shape = "point"];
+	93 -> "93c2" [ label = "{east}"]
+;
+	"93c2" -> 84 [ label= "1" ];
+	"93c3" [shape = "point"];
+	93 -> "93c3" [ label = "{west}"]
+;
+	"93c3" -> 30 [ label= "0.7" ];
+	"93c3" -> 85 [ label= "0.3" ];
+	"94c0" [shape = "point"];
+	94 -> "94c0" [ label = "{}"]
+;
+	"94c0" -> 94 [ label= "1" ];
+	"95c0" [shape = "point"];
+	95 -> "95c0" [ label = "{}"]
+;
+	"95c0" -> 95 [ label= "1" ];
+	"96c0" [shape = "point"];
+	96 -> "96c0" [ label = "{north}"]
+;
+	"96c0" -> 32 [ label= "0.3" ];
+	"96c0" -> 83 [ label= "0.7" ];
+	"96c1" [shape = "point"];
+	96 -> "96c1" [ label = "{south}"]
+;
+	"96c1" -> 116 [ label= "0.7" ];
+	"96c1" -> 117 [ label= "0.3" ];
+	"96c2" [shape = "point"];
+	96 -> "96c2" [ label = "{east}"]
+;
+	"96c2" -> 89 [ label= "1" ];
+	"96c3" [shape = "point"];
+	96 -> "96c3" [ label = "{west}"]
+;
+	"96c3" -> 31 [ label= "0.7" ];
+	"96c3" -> 90 [ label= "0.3" ];
+	"97c0" [shape = "point"];
+	97 -> "97c0" [ label = "{}"]
+;
+	"97c0" -> 97 [ label= "1" ];
+	"98c0" [shape = "point"];
+	98 -> "98c0" [ label = "{}"]
+;
+	"98c0" -> 98 [ label= "1" ];
+	"99c0" [shape = "point"];
+	99 -> "99c0" [ label = "{north}"]
+;
+	"99c0" -> 38 [ label= "1" ];
+	"99c1" [shape = "point"];
+	99 -> "99c1" [ label = "{south}"]
+;
+	"99c1" -> 96 [ label= "0.7" ];
+	"99c1" -> 118 [ label= "0.3" ];
+	"99c2" [shape = "point"];
+	99 -> "99c2" [ label = "{east}"]
+;
+	"99c2" -> 84 [ label= "1" ];
+	"99c3" [shape = "point"];
+	99 -> "99c3" [ label = "{west}"]
+;
+	"99c3" -> 36 [ label= "0.7" ];
+	"99c3" -> 94 [ label= "0.3" ];
+	"100c0" [shape = "point"];
+	100 -> "100c0" [ label = "{}"]
+;
+	"100c0" -> 100 [ label= "1" ];
+	"101c0" [shape = "point"];
+	101 -> "101c0" [ label = "{}"]
+;
+	"101c0" -> 101 [ label= "1" ];
+	"102c0" [shape = "point"];
+	102 -> "102c0" [ label = "{}"]
+;
+	"102c0" -> 102 [ label= "1" ];
+	"103c0" [shape = "point"];
+	103 -> "103c0" [ label = "{}"]
+;
+	"103c0" -> 103 [ label= "1" ];
+	"104c0" [shape = "point"];
+	104 -> "104c0" [ label = "{north}"]
+;
+	"104c0" -> 38 [ label= "0.3" ];
+	"104c0" -> 93 [ label= "0.7" ];
+	"104c1" [shape = "point"];
+	104 -> "104c1" [ label = "{south}"]
+;
+	"104c1" -> 118 [ label= "0.7" ];
+	"104c1" -> 119 [ label= "0.3" ];
+	"104c2" [shape = "point"];
+	104 -> "104c2" [ label = "{east}"]
+;
+	"104c2" -> 89 [ label= "1" ];
+	"104c3" [shape = "point"];
+	104 -> "104c3" [ label = "{west}"]
+;
+	"104c3" -> 37 [ label= "0.7" ];
+	"104c3" -> 97 [ label= "0.3" ];
+	"105c0" [shape = "point"];
+	105 -> "105c0" [ label = "{}"]
+;
+	"105c0" -> 105 [ label= "1" ];
+	"106c0" [shape = "point"];
+	106 -> "106c0" [ label = "{}"]
+;
+	"106c0" -> 106 [ label= "1" ];
+	"107c0" [shape = "point"];
+	107 -> "107c0" [ label = "{}"]
+;
+	"107c0" -> 107 [ label= "1" ];
+	"108c0" [shape = "point"];
+	108 -> "108c0" [ label = "{}"]
+;
+	"108c0" -> 108 [ label= "1" ];
+	"109c0" [shape = "point"];
+	109 -> "109c0" [ label = "{}"]
+;
+	"109c0" -> 109 [ label= "1" ];
+	"110c0" [shape = "point"];
+	110 -> "110c0" [ label = "{done}"]
+;
+	"110c0" -> 110 [ label= "1" ];
+	"111c0" [shape = "point"];
+	111 -> "111c0" [ label = "{}"]
+;
+	"111c0" -> 111 [ label= "1" ];
+	"112c0" [shape = "point"];
+	112 -> "112c0" [ label = "{done}"]
+;
+	"112c0" -> 112 [ label= "1" ];
+	"113c0" [shape = "point"];
+	113 -> "113c0" [ label = "{}"]
+;
+	"113c0" -> 113 [ label= "1" ];
+	"114c0" [shape = "point"];
+	114 -> "114c0" [ label = "{}"]
+;
+	"114c0" -> 114 [ label= "1" ];
+	"115c0" [shape = "point"];
+	115 -> "115c0" [ label = "{}"]
+;
+	"115c0" -> 115 [ label= "1" ];
+	"116c0" [shape = "point"];
+	116 -> "116c0" [ label = "{}"]
+;
+	"116c0" -> 116 [ label= "1" ];
+	"117c0" [shape = "point"];
+	117 -> "117c0" [ label = "{}"]
+;
+	"117c0" -> 117 [ label= "1" ];
+	"118c0" [shape = "point"];
+	118 -> "118c0" [ label = "{}"]
+;
+	"118c0" -> 118 [ label= "1" ];
+	"119c0" [shape = "point"];
+	119 -> "119c0" [ label = "{}"]
+;
+	"119c0" -> 119 [ label= "1" ];
+}
