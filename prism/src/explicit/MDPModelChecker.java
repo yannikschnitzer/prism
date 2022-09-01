@@ -2801,9 +2801,8 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 
 		operator.writeToFile(dtmc.getFirstInitialState(), null);
-		MDPSimple mdpToSimulate = new MDPSimple(mdp); // FIXME this isnt working and generating an empty MDP for some reason
+		MDPSimple mdpToSimulate = new MDPSimple(mdp);
 		if(gen_trace) {
-			mainLog.println("Generating random trace");
 			exportTrace(mdpToSimulate, target, strat, "exp");
 		}
 
@@ -2832,7 +2831,6 @@ public class MDPModelChecker extends ProbModelChecker
 			}
 
 			if(gen_trace) {
-				mainLog.println("Generating random trace");
 				exportTrace(mdpToSimulate, target, (MDStrategy) vi_res.strat, "vi");
 			}
 

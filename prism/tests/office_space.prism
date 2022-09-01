@@ -14,6 +14,7 @@ module robot
 	c:[1..M] init 1; //grid column
 
 	// transitions
+	[wait] !wall & !decoration -> 1.0: (r'=r);
 	[east]  (c<M | c=M)  -> p/3:(r'=min(r+1, N))+ p/3: (c'=max(c-1, 1))+ p/3: (r'=max(r-1, 1)) + (1-p): (c'=min(c+1, M));
 	[south] (r<N | r=N) -> (1-p):(r'=min(r+1, N)) + p/3: (c'=min(c+1, M)) + p/3:(r'=max(r-1, 1))+ p/3: (c'=max(c-1, 1));
 	[west]  (c>1 | c=1)  -> p/3:(r'=max(r-1, 1))+ p/3:(r'=min(r+1, N))+ p/3: (c'=min(c+1, M)) + (1-p): (c'=max(c-1, 1));
@@ -28,7 +29,7 @@ endmodule
 label "obs" = decoration;
 
 rewards
-
+    [wait] !decoration & !wall: 1;
 	[east] !decoration & !wall: 1;
 	[south] !decoration & !wall: 1;
 	[west] !decoration & !wall: 1;
