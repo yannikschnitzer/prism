@@ -1,0 +1,47 @@
+Storm-pomdp 1.7.0
+
+Date: Wed Aug 31 00:29:52 2022
+Command line arguments: --prism /Users/shengsheng/Dropbox/files/rock/N8R2/rocks_N8R2_factored-4-4-4-7-7.nm --exportbuild /Users/shengsheng/Dropbox/files/rock/N8R2/log/rocks_N8R2_factored-4-4-4-7-7.dot --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/rock/N8R2/winningregion/rocks_N8R2_factored-4-4-4-7-7-fixpoint.wr
+Current working directory: /Users/shengsheng/Dropbox
+
+Time for model input parsing: 0.003s.
+
+Time for model construction: 0.026s.
+
+-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	99
+Transitions: 	517
+Choices: 	325
+Observations: 	4
+Reward Models:  none
+State Labels: 	4 labels
+   * deadlock -> 0 item(s)
+   * init -> 1 item(s)
+   * notbad -> 99 item(s)
+   * goal -> 34 item(s)
+Choice Labels: 	6 labels
+   * placement -> 1 item(s)
+   * south -> 64 item(s)
+   * north -> 64 item(s)
+   * east -> 64 item(s)
+   * west -> 64 item(s)
+   * finish -> 34 item(s)
+-------------------------------------------------------------- 
+Write to file /Users/shengsheng/Dropbox/files/rock/N8R2/log/rocks_N8R2_factored-4-4-4-7-7.dot.
+Analyzing property 'Pmax=? ["notbad" U "goal"]'
+Write to file /Users/shengsheng/Dropbox/files/rock/N8R2/winningregion/rocks_N8R2_factored-4-4-4-7-7-fixpoint.wr.
+Write to file /Users/shengsheng/Dropbox/files/rock/N8R2/winningregion/rocks_N8R2_factored-4-4-4-7-7-fixpoint.wr.
+Initial state is safe!
+#STATS Number of belief support states: 35433480190
+#STATS Total time: 0.061s
+#STATS SAT Calls: 33
+#STATS SAT Calls time: 0.007s
+#STATS Outer iterations: 2
+#STATS Solver initialization time: 0.022s
+#STATS Obtain partial scheduler time: 0.028s
+#STATS Update solver to extend partial scheduler time: 0.002s
+#STATS Update solver with new scheduler time: 0.000s
+#STATS Winning regions update time: 0.000s
+#STATS Graph search time: 0.000s
+Time for POMDP analysis: 0.080ss.

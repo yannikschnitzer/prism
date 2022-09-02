@@ -1,0 +1,14 @@
+prism_state;prism_belief_support;selected_action;available_actions;allowed_actions;state_meaning;is_bad_state;reward;shielded_actions
+0;[0];placement;[placement];[placement];(start=false,ax=0,ay=0);false;0.0;[]
+65;[48, 65, 53, 57, 25];south;[north, south, east, west];[south, west];(start=true,ax=6,ay=4);false;-1.0;[east, north]
+66;[49, 66, 50, 67, 54, 55, 26, 58, 27, 59];south;[north, south, east, west];[];(start=true,ax=6,ay=5);false;-1.0;[east, south, north, west]
+67;[50, 67, 69, 55, 56, 57, 59, 27, 60, 28];east;[north, south, east, west];[];(start=true,ax=6,ay=6);false;-1.0;[east, south, north, west]
+77;[65, 66, 67, 37, 69, 70, 38, 76, 77, 79, 47, 48, 80, 87, 89, 60];west;[north, south, east, west];[west];(start=true,ax=7,ay=6);false;-1.0;[east, south, north]
+57;[66, 67, 69, 37, 70, 38, 40, 77, 45, 46, 79, 47, 17, 49, 50, 18, 55, 56, 57, 59, 27, 28, 60];east;[north, south, east, west];[];(start=true,ax=5,ay=6);false;-1.0;[east, south, north, west]
+67;[65, 66, 67, 69, 70, 76, 77, 79, 80, 86, 87, 89, 90, 27, 28, 97, 99, 37, 38, 47, 48, 50, 55, 56, 57, 58, 59, 60];south;[north, south, east, west];[];(start=true,ax=6,ay=6);true;-1.0;[east, south, north, west]
+68;[68, 88, 29];south;[north, south, east, west];[north, south];(start=true,ax=6,ay=7);false;-6.0;[east, west]
+69;[69, 70, 89, 90, 30];east;[north, south, east, west];[south, east, west];(start=true,ax=6,ay=8);false;-1.0;[north]
+79;[80, 50, 99, 40, 89, 90, 79];east;[north, south, east, west];[south, east, west];(start=true,ax=7,ay=8);false;-1.0;[north]
+89;[50, 99, 70, 89, 90, 60];south;[north, south, east, west];[south, east, west];(start=true,ax=8,ay=8);false;-1.0;[north]
+90;[50, 70, 90, 60];east;[north, south, east, west];[south, east, west];(start=true,ax=8,ay=9);false;-1.0;[north]
+100;[100];notApplicable;notApplicable;notApplicable;(start=true,ax=9,ay=9);false;20.0;true

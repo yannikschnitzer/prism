@@ -1,9 +1,0 @@
-Storm-pomdp 1.7.0
-
-Date: Sat Aug 27 10:47:22 2022
-Command line arguments: --prism /Users/shengsheng/Dropbox/files/refuel/N6E8/refule_N6E8_factored-3-3-0-5-2.nm --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/refuel/N6E8/winningregion/refule_N6E8_factored-3-3-0-5-2-fixpoint.wr
-Current working directory: /Users/shengsheng/Dropbox
-
-ERROR (PrismParser.cpp:772): Action reward refers to illegal action 'refuel'.
-libc++abi: terminating with uncaught exception of type storm::exceptions::WrongFormatException: WrongFormatException: Action reward refers to illegal action 'refuel'.
-ERROR: The program received signal 6 and will be aborted in 3s.

@@ -1,0 +1,47 @@
+Storm-pomdp 1.7.0
+
+Date: Tue Aug 30 21:04:52 2022
+Command line arguments: --prism /Users/shengsheng/Dropbox/files/obstacles/N50/obstacle_N50_factored-5-25-45-29-49.nm --exportbuild /Users/shengsheng/Dropbox/files/obstacles/N50/log/obstacle_N50_factored-5-25-45-29-49.dot --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacles/N50/winningregion/obstacle_N50_factored-5-25-45-29-49-fixpoint.wr
+Current working directory: /Users/shengsheng/Dropbox
+
+Time for model input parsing: 0.003s.
+
+Time for model construction: 0.024s.
+
+-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	56
+Transitions: 	224
+Choices: 	131
+Observations: 	4
+Reward Models:  none
+State Labels: 	5 labels
+   * deadlock -> 0 item(s)
+   * traps -> 1 item(s)
+   * init -> 1 item(s)
+   * notbad -> 55 item(s)
+   * goal -> 29 item(s)
+Choice Labels: 	5 labels
+   * placement -> 1 item(s)
+   * south -> 25 item(s)
+   * north -> 25 item(s)
+   * east -> 25 item(s)
+   * west -> 25 item(s)
+-------------------------------------------------------------- 
+Write to file /Users/shengsheng/Dropbox/files/obstacles/N50/log/obstacle_N50_factored-5-25-45-29-49.dot.
+Analyzing property 'Pmax=? ["notbad" U "goal"]'
+Write to file /Users/shengsheng/Dropbox/files/obstacles/N50/winningregion/obstacle_N50_factored-5-25-45-29-49-fixpoint.wr.
+Write to file /Users/shengsheng/Dropbox/files/obstacles/N50/winningregion/obstacle_N50_factored-5-25-45-29-49-fixpoint.wr.
+Initial state is safe!
+#STATS Number of belief support states: 570425344
+#STATS Total time: 0.059s
+#STATS SAT Calls: 49
+#STATS SAT Calls time: 0.008s
+#STATS Outer iterations: 3
+#STATS Solver initialization time: 0.018s
+#STATS Obtain partial scheduler time: 0.028s
+#STATS Update solver to extend partial scheduler time: 0.002s
+#STATS Update solver with new scheduler time: 0.000s
+#STATS Winning regions update time: 0.000s
+#STATS Graph search time: 0.000s
+Time for POMDP analysis: 0.063ss.

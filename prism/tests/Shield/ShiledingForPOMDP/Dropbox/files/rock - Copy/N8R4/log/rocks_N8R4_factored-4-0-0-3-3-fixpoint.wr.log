@@ -1,0 +1,48 @@
+Storm-pomdp 1.7.0
+
+Date: Sun Aug 14 15:10:29 2022
+Command line arguments: --prism /Users/shengsheng/Dropbox/files/rock/N8R4/rocks_N8R4_factored-4-0-0-3-3.nm --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/rock/N8R4/winningregion/rocks_N8R4_factored-4-0-0-3-3-fixpoint.wr
+Current working directory: /Users/shengsheng/Dropbox
+
+Time for model input parsing: 0.015s.
+
+Time for model construction: 0.075s.
+
+-------------------------------------------------------------- 
+Model type: 	POMDP (sparse)
+States: 	345
+Transitions: 	2277
+Choices: 	1348
+Observations: 	16
+Reward Models:  none
+State Labels: 	4 labels
+   * deadlock -> 0 item(s)
+   * init -> 1 item(s)
+   * notbad -> 344 item(s)
+   * goal -> 84 item(s)
+Choice Labels: 	8 labels
+   * placement -> 1 item(s)
+   * south -> 259 item(s)
+   * r1sense -> 138 item(s)
+   * north -> 259 item(s)
+   * east -> 259 item(s)
+   * west -> 259 item(s)
+   * r1sample -> 4 item(s)
+   * finish -> 84 item(s)
+-------------------------------------------------------------- 
+Analyzing property 'Pmax=? ["notbad" U "goal"]'
+Write to file /Users/shengsheng/Dropbox/files/rock/N8R4/winningregion/rocks_N8R4_factored-4-0-0-3-3-fixpoint.wr.
+Write to file /Users/shengsheng/Dropbox/files/rock/N8R4/winningregion/rocks_N8R4_factored-4-0-0-3-3-fixpoint.wr.
+Initial state is safe!
+#STATS Number of belief support states: 9367487227614986524
+#STATS Total time: 34.062s
+#STATS SAT Calls: 2592
+#STATS SAT Calls time: 7.226s
+#STATS Outer iterations: 72
+#STATS Solver initialization time: 0.100s
+#STATS Obtain partial scheduler time: 25.645s
+#STATS Update solver to extend partial scheduler time: 0.386s
+#STATS Update solver with new scheduler time: 0.567s
+#STATS Winning regions update time: 0.062s
+#STATS Graph search time: 0.000s
+Time for POMDP analysis: 34.079ss.

@@ -2,7 +2,7 @@ pomdp
 observables
 started, r1taken, r1lastobs, done
 endobservables
-const int N;
+const int N=8;
 const int xMAX = N-1;
 const int yMAX = N-1;
 const int xMIN = 0;
@@ -11,18 +11,18 @@ const double slippery = 0.1;
 // How likely is a rock a good rock
 const double goodrock = 0.5;
 const int primaryMinX = 0;
-const int primaryMinY = 4;
-const int primaryMaxX = 3;
+const int primaryMinY = 2;
+const int primaryMaxX = 5;
 const int primaryMaxY = 7;
 const int borderSize = 2;
 const int areaMinX = max(primaryMinX - borderSize, xMIN);
 const int areaMinY = max(primaryMinY - borderSize, yMIN);
 const int areaMaxX = min(primaryMaxX + borderSize, xMAX);
 const int areaMaxY = min(primaryMaxY + borderSize, yMAX);
-const r1x = 3;
+const r1x = 0;
 const r1y = 5;
 const r2x = 6;
-const r2y = 2;
+const r2y = 1;
 // We are done when we reach max x location
 formula finish = started & (!bad) & (x = xMAX | x = primaryMinX - 1 | x = primaryMinX - 2| y = primaryMinY - 1 | y = primaryMinY - 2 | x = primaryMaxX + 1 | x = primaryMaxX + 2| y = primaryMaxY + 1 | y = primaryMaxY + 2);
 observable "seefinish" = finish;
@@ -75,12 +75,12 @@ r1lastobs : bool init false;
 endmodule
 label "notbad" = !bad;
 label "goal" = good;
-rewards "rew"
+rewards "reward"
 [r1sample] r1qual & !r1taken : 100;
 [finish] ((!r1qual) | (r1taken)): 100;
 [finish] true: 20;
 endrewards
-rewards "cos"
+rewards "cost"
 //[r1sample] !r1qual & !r1taken : 10; // no need; cause it won't r1sample is not enabled if !r1qual
 //[r2sample] !r2qual & !r1taken: 10; // no need; cause it won't r1sample is not enabled if !r1qual
 //[r1sample] r1taken : 20;

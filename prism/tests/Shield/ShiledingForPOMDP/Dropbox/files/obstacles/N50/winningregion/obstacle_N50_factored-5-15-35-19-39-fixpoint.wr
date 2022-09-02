@@ -1,0 +1,75 @@
+:preamble
+model hash: 802001830860683872
+:winningregion
+25 39 1 1
+25 18446743523953737728;
+39 18446744073675997184;
+
+1 9223372036854775808;
+:state information
+[!start	& ax=0	& ay=0] & state=0 & obs=3
+[start	& ax=15	& ay=35] & state=1 & obs=0
+[start	& ax=15	& ay=39] & state=2 & obs=0
+[start	& ax=19	& ay=35] & state=3 & obs=0
+[start	& ax=19	& ay=39] & state=4 & obs=0
+[start	& ax=15	& ay=34] & state=5 & obs=1
+[start	& ax=15	& ay=33] & state=6 & obs=1
+[start	& ax=15	& ay=36] & state=7 & obs=0
+[start	& ax=15	& ay=37] & state=8 & obs=0
+[start	& ax=16	& ay=35] & state=9 & obs=0
+[start	& ax=17	& ay=35] & state=10 & obs=0
+[start	& ax=14	& ay=35] & state=11 & obs=1
+[start	& ax=13	& ay=35] & state=12 & obs=1
+[start	& ax=15	& ay=38] & state=13 & obs=0
+[start	& ax=15	& ay=40] & state=14 & obs=1
+[start	& ax=15	& ay=41] & state=15 & obs=1
+[start	& ax=16	& ay=39] & state=16 & obs=0
+[start	& ax=17	& ay=39] & state=17 & obs=0
+[start	& ax=14	& ay=39] & state=18 & obs=1
+[start	& ax=13	& ay=39] & state=19 & obs=1
+[start	& ax=19	& ay=34] & state=20 & obs=1
+[start	& ax=19	& ay=33] & state=21 & obs=1
+[start	& ax=19	& ay=36] & state=22 & obs=0
+[start	& ax=19	& ay=37] & state=23 & obs=0
+[start	& ax=20	& ay=35] & state=24 & obs=1
+[start	& ax=21	& ay=35] & state=25 & obs=1
+[start	& ax=18	& ay=35] & state=26 & obs=0
+[start	& ax=19	& ay=38] & state=27 & obs=0
+[start	& ax=19	& ay=40] & state=28 & obs=1
+[start	& ax=19	& ay=41] & state=29 & obs=1
+[start	& ax=20	& ay=39] & state=30 & obs=1
+[start	& ax=21	& ay=39] & state=31 & obs=1
+[start	& ax=18	& ay=39] & state=32 & obs=0
+[start	& ax=16	& ay=36] & state=33 & obs=0
+[start	& ax=17	& ay=36] & state=34 & obs=0
+[start	& ax=14	& ay=36] & state=35 & obs=1
+[start	& ax=13	& ay=36] & state=36 & obs=1
+[start	& ax=16	& ay=37] & state=37 & obs=0
+[start	& ax=17	& ay=37] & state=38 & obs=0
+[start	& ax=14	& ay=37] & state=39 & obs=1
+[start	& ax=13	& ay=37] & state=40 & obs=1
+[start	& ax=16	& ay=34] & state=41 & obs=1
+[start	& ax=16	& ay=33] & state=42 & obs=1
+[start	& ax=17	& ay=34] & state=43 & obs=1
+[start	& ax=17	& ay=33] & state=44 & obs=1
+[start	& ax=16	& ay=38] & state=45 & obs=0
+[start	& ax=17	& ay=38] & state=46 & obs=0
+[start	& ax=14	& ay=38] & state=47 & obs=1
+[start	& ax=13	& ay=38] & state=48 & obs=1
+[start	& ax=16	& ay=40] & state=49 & obs=1
+[start	& ax=16	& ay=41] & state=50 & obs=1
+[start	& ax=17	& ay=40] & state=51 & obs=1
+[start	& ax=17	& ay=41] & state=52 & obs=1
+[start	& ax=20	& ay=36] & state=53 & obs=1
+[start	& ax=21	& ay=36] & state=54 & obs=1
+[start	& ax=18	& ay=36] & state=55 & obs=0
+[start	& ax=20	& ay=37] & state=56 & obs=1
+[start	& ax=21	& ay=37] & state=57 & obs=1
+[start	& ax=18	& ay=37] & state=58 & obs=0
+[start	& ax=18	& ay=34] & state=59 & obs=1
+[start	& ax=18	& ay=33] & state=60 & obs=1
+[start	& ax=20	& ay=38] & state=61 & obs=1
+[start	& ax=21	& ay=38] & state=62 & obs=2
+[start	& ax=18	& ay=38] & state=63 & obs=0
+[start	& ax=18	& ay=40] & state=64 & obs=1
+[start	& ax=18	& ay=41] & state=65 & obs=1

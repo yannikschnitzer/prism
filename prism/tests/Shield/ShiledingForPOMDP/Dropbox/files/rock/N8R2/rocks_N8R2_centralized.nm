@@ -2,7 +2,7 @@ pomdp
 observables
 started, r1taken, r1lastobs, r2taken, r2lastobs, done
 endobservables
-const int N;
+const int N=8;
 const int xMAX = N-1;
 const int yMAX = N-1;
 const int xMIN = 0;
@@ -19,10 +19,10 @@ const int areaMinX = max(primaryMinX - borderSize, xMIN);
 const int areaMinY = max(primaryMinY - borderSize, yMIN);
 const int areaMaxX = min(primaryMaxX + borderSize, xMAX);
 const int areaMaxY = min(primaryMaxY + borderSize, yMAX);
-const r1x = 3;
+const r1x = 0;
 const r1y = 5;
 const r2x = 6;
-const r2y = 2;
+const r2y = 1;
 // We are done when we reach max x location
 formula finish = started & x = xMAX;
 observable "seefinish" = finish;
@@ -53,8 +53,8 @@ done : bool init false;
 [finish] finish | done -> (done'=true);
 endmodule
 module robot
-x : [areaMinX..areaMaxX] init 0;
-y : [areaMinY..areaMaxX] init 0;
+x : [areaMinX..areaMaxX] init primaryMinX;
+y : [areaMinY..areaMaxX] init primaryMinY;
 
 [west] true -> (1-slippery): (x'=max(x-1,areaMinX)) + slippery: (x'=max(x-2,areaMinX));
 [east] true -> (1-slippery): (x'=min(x+1,areaMaxX)) + slippery: (x'=min(x+2,areaMaxX));
@@ -93,25 +93,25 @@ r2lastobs : bool init false;
 endmodule
 label "notbad" = !bad;
 label "goal" = good;
-rewards "rew"
+rewards "reward"
 [r1sample] r1qual & !r1taken : 100;
 [r2sample] r2qual & !r2taken : 100;
 [finish] ((!r1qual & !r2qual) | (r1taken | r2taken)): 100;
-//[finish] true: 20;
+[finish] true: 20;
 endrewards
-rewards "cos"
+rewards "cost"
 //[r1sample] !r1qual & !r1taken : 10; // no need; cause it won't r1sample is not enabled if !r1qual
 //[r2sample] !r2qual & !r1taken: 10; // no need; cause it won't r1sample is not enabled if !r1qual
 //[r1sample] r1taken : 20;
 //[r2sample] r2taken : 20;
 [finish] !((!r1qual & !r2qual) | (r1taken | r2taken)): 100;
-bad:5;
-//[east] true: 1;
-//[west] true: 1;
-//[north] true: 1;
-//[south] true: 1;
-//[r1sense] true: 1;
-//[r2sense] true: 1;
-//[r1sample] true: 1;
-//[r2sample] true: 1;
+bad:20;
+[east] true: 1;
+[west] true: 1;
+[north] true: 1;
+[south] true: 1;
+[r1sense] true: 1;
+[r2sense] true: 1;
+[r1sample] true: 1;
+[r2sample] true: 1;
 endrewards

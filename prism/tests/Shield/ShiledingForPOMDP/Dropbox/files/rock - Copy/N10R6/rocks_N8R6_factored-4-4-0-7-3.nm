@@ -1,0 +1,129 @@
+pomdp
+observables
+started, r5taken, r5lastobs, r6taken, r6lastobs, done
+endobservables
+const int N=8;
+const int xMAX = N-1;
+const int yMAX = N-1;
+const int xMIN = 0;
+const int yMIN = 0;
+const double slippery = 0.1;
+// How likely is a rock a good rock
+const double goodrock = 0.5;
+const int primaryMinX = 2;
+const int primaryMinY = 0;
+const int primaryMaxX = 7;
+const int primaryMaxY = 5;
+const int borderSize = 2;
+const int areaMinX = max(primaryMinX - borderSize, xMIN);
+const int areaMinY = max(primaryMinY - borderSize, yMIN);
+const int areaMaxX = min(primaryMaxX + borderSize, xMAX);
+const int areaMaxY = min(primaryMaxY + borderSize, yMAX);
+const r1x = 0;
+const r1y = 3;
+const r2x = 1;
+const r2y = 1;
+const r3x = 1;
+const r3y = 6;
+const r4x = 3;
+const r4y = 7;
+const r5x = 6;
+const r5y = 0;
+const r6x = 6;
+const r6y = 5;
+// We are done when we reach max x location
+formula finish = started & (!bad) & (x = xMAX | x = primaryMinX - 1 | x = primaryMinX - 2| y = primaryMinY - 1 | y = primaryMinY - 2 | x = primaryMaxX + 1 | x = primaryMaxX + 2| y = primaryMaxY + 1 | y = primaryMaxY + 2);
+observable "seefinish" = finish;
+formula maxdist = xMAX-xMIN+yMAX-yMIN;
+// Currently we are not setting extra requirement for reaching good
+formula good = finish & done;
+formula r1dist = max(r1x-x,x-r1x) + max(r1y-y,y-r1y);
+formula r2dist = max(r2x-x,x-r2x) + max(r2y-y,y-r2y);
+formula r3dist = max(r3x-x,x-r3x) + max(r3y-y,y-r3y);
+formula r4dist = max(r4x-x,x-r4x) + max(r4y-y,y-r4y);
+formula r5dist = max(r5x-x,x-r5x) + max(r5y-y,y-r5y);
+formula r6dist = max(r6x-x,x-r6x) + max(r6y-y,y-r6y);
+//not sure if to include the rocks on the border... currently do not consider them
+formula bad = (r5dist=0 & !r5qual) | (r6dist=0 & !r6qual);
+formula normdistr5 = (r5dist <= 1) ? 1 : 2; // min(1+((r5dist-1)/maxdist), 1.0)
+formula normdistr6 = (r6dist <= 1) ? 1 : 2; // min(1+((r6dist-1)/maxdist), 1.0)
+observable "atr5" = r5dist <= 0;
+observable "atr6" = r6dist <= 0;
+observable "nearr5" = r5dist <= 1;
+observable "nearr6" = r6dist <= 1;
+observable "seebad" = bad;
+observable "seegood" = good;
+module master
+started : bool init false;
+done : bool init false;
+
+[placement] !started -> (started'=true);
+[north] started & !done -> true;
+[south] started  & !done -> true;
+[east] started  & !done-> true;
+[west] started & !done -> true;
+[finish] finish | done -> (done'=true);
+endmodule
+module robot
+x : [areaMinX..areaMaxX] init primaryMinX;
+y : [areaMinY..areaMaxX] init primaryMinY;
+
+[west] true -> (1-slippery): (x'=max(x-1,areaMinX)) + slippery: (x'=max(x-2,areaMinX));
+[east] true -> (1-slippery): (x'=min(x+1,areaMaxX)) + slippery: (x'=min(x+2,areaMaxX));
+[south]  true -> (1-slippery): (y'=min(y+1,areaMaxY)) + slippery: (y'=min(y+2,areaMaxY));
+[north]  true -> (1-slippery): (y'=max(y-1,areaMinY)) + slippery: (y'=max(y-2,areaMinY));
+endmodule
+module rock5
+r5qual : bool init false;
+r5taken : bool init false;
+r5lastobs : bool init false;
+[placement] true -> goodrock : (r5qual'=true) + (1-goodrock) : (r5qual'=false);
+
+[r5sample] r5dist = 0 & started & !done & !bad & !finish & !r5taken-> 1:(r5taken'=(x = r5x & y = r5y & !r5taken));
+[r5sample] r5dist = 0 & started & !done & !bad & !finish & r5taken -> true;
+
+[r5sense] started & !r5taken & !done & !bad & !finish -> (1/normdistr5): (r5lastobs'=r5qual) +  (1-(1/normdistr5)): (r5lastobs'=!r5qual);
+[north] true -> (r5lastobs'=false);
+[south] true -> (r5lastobs'=false);
+[east] true -> (r5lastobs'=false);
+[west] true -> (r5lastobs'=false);
+endmodule
+module rock6
+r6qual : bool init false;
+r6taken : bool init false;
+r6lastobs : bool init false;
+[placement] true -> goodrock : (r6qual'=true) + (1-goodrock) : (r6qual'=false);
+
+[r6sample] r6dist = 0 & started & !done & !bad & !finish & !r6taken-> 1:(r6taken'=(x = r6x & y = r6y & !r6taken));
+[r6sample] r6dist = 0 & started & !done & !bad & !finish & r6taken -> true;
+
+[r6sense] started & !r6taken & !done & !bad & !finish -> (1/normdistr6): (r6lastobs'=r6qual) +  (1-(1/normdistr6)): (r6lastobs'=!r6qual);
+[north] true -> (r6lastobs'=false);
+[south] true -> (r6lastobs'=false);
+[east] true -> (r6lastobs'=false);
+[west] true -> (r6lastobs'=false);
+endmodule
+label "notbad" = !bad;
+label "goal" = good;
+rewards "rew"
+[r5sample] r5qual & !r5taken : 100;
+[r6sample] r6qual & !r6taken : 100;
+[finish] ((!r5qual & !r6qual) | (r5taken | r6taken)): 100;
+[finish] true: 20;
+endrewards
+rewards "cos"
+//[r1sample] !r1qual & !r1taken : 10; // no need; cause it won't r1sample is not enabled if !r1qual
+//[r2sample] !r2qual & !r1taken: 10; // no need; cause it won't r1sample is not enabled if !r1qual
+//[r1sample] r1taken : 20;
+//[r2sample] r2taken : 20;
+[finish] !((!r5qual & !r6qual) | (r5taken | r6taken)): 100;
+bad:20;
+[east] true: 1;
+[west] true: 1;
+[north] true: 1;
+[south] true: 1;
+[r5sense] true: 1;
+[r6sense] true: 1;
+[r5sample] true: 1;
+[r6sample] true: 1;
+endrewards

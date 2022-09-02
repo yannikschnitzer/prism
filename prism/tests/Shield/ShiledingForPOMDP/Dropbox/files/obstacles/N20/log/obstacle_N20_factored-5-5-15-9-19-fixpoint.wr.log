@@ -1,12 +1,12 @@
 Storm-pomdp 1.7.0
 
-Date: Tue Aug 30 17:20:02 2022
+Date: Tue Aug 30 20:43:58 2022
 Command line arguments: --prism /Users/shengsheng/Dropbox/files/obstacles/N20/obstacle_N20_factored-5-5-15-9-19.nm --exportbuild /Users/shengsheng/Dropbox/files/obstacles/N20/log/obstacle_N20_factored-5-5-15-9-19.dot --prop 'Pmax=? ["notbad" U "goal"]' --buildstateval --build-all-labels --qualitative-analysis --memlesssearch iterative --winningregion -stats --exportwinningregion /Users/shengsheng/Dropbox/files/obstacles/N20/winningregion/obstacle_N20_factored-5-5-15-9-19-fixpoint.wr
 Current working directory: /Users/shengsheng/Dropbox
 
 Time for model input parsing: 0.002s.
 
-Time for model construction: 0.022s.
+Time for model construction: 0.034s.
 
 -------------------------------------------------------------- 
 Model type: 	POMDP (sparse)
@@ -34,14 +34,14 @@ Write to file /Users/shengsheng/Dropbox/files/obstacles/N20/winningregion/obstac
 Write to file /Users/shengsheng/Dropbox/files/obstacles/N20/winningregion/obstacle_N20_factored-5-5-15-9-19-fixpoint.wr.
 Initial state is safe!
 #STATS Number of belief support states: 545259526
-#STATS Total time: 0.243s
+#STATS Total time: 0.271s
 #STATS SAT Calls: 242
-#STATS SAT Calls time: 0.057s
+#STATS SAT Calls time: 0.066s
 #STATS Outer iterations: 19
-#STATS Solver initialization time: 0.017s
-#STATS Obtain partial scheduler time: 0.139s
-#STATS Update solver to extend partial scheduler time: 0.013s
-#STATS Update solver with new scheduler time: 0.012s
-#STATS Winning regions update time: 0.001s
+#STATS Solver initialization time: 0.019s
+#STATS Obtain partial scheduler time: 0.152s
+#STATS Update solver to extend partial scheduler time: 0.014s
+#STATS Update solver with new scheduler time: 0.014s
+#STATS Winning regions update time: 0.002s
 #STATS Graph search time: 0.000s
-Time for POMDP analysis: 0.247ss.
+Time for POMDP analysis: 0.323ss.

@@ -247,7 +247,7 @@ import java.math.BigInteger;
 //				continue; // prism state has not couterpart in stompystate
 				StompyState = -1;
 			}
-			System.out.println("Prism state= " + PrismState + " " + getStateMeaning(PrismState)+ " to StompyState => "+ StompyState + " " + meaning);
+//			System.out.println("Prism state= " + PrismState + " " + getStateMeaning(PrismState)+ " to StompyState => "+ StompyState + " " + meaning);
 
 			PrismStateToStompyState[PrismState] =  StompyState; //key
 			

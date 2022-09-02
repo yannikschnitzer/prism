@@ -1,0 +1,11 @@
+prism_state;prism_belief_support;selected_action;available_actions;allowed_actions;state_meaning;is_bad_state;reward;shielded_actions
+0;[0];placement;[placement];[placement];(start=false,ax=0,ay=0);false;0.0;[]
+57;[48, 65, 53, 57, 25];south;[north, south, east, west];[north, south, east, west];(start=true,ax=5,ay=6);false;-1.0;[]
+58;[49, 66, 50, 67, 54, 55, 26, 58, 59, 27];east;[north, south, east, west];[north, south, east, west];(start=true,ax=5,ay=7);true;-1.0;[]
+68;[36, 68, 75];east;[north, south, east, west];[north, south, east, west];(start=true,ax=6,ay=7);false;-6.0;[]
+78;[85, 56, 46, 78, 95];south;[north, south, east, west];[north, south, east, west];(start=true,ax=7,ay=7);false;-1.0;[]
+79;[48, 80, 96, 97, 86, 87, 57, 58, 47, 79];east;[north, south, east, west];[north, south, east, west];(start=true,ax=7,ay=8);false;-1.0;[]
+89;[96, 97, 99, 67, 89, 57, 90, 58, 77, 78];south;[north, south, east, west];[north, south, east, west];(start=true,ax=8,ay=8);false;-1.0;[]
+90;[80, 97, 98, 99, 69, 90, 58, 59, 60, 78, 79];south;[north, south, east, west];[north, south, east, west];(start=true,ax=8,ay=9);false;-1.0;[]
+90;[80, 98, 99, 70, 90, 59, 60, 79];east;[north, south, east, west];[north, south, east, west];(start=true,ax=8,ay=9);false;-1.0;[]
+100;[100];notApplicable;notApplicable;notApplicable;(start=true,ax=9,ay=9);false;20.0;true

@@ -17,7 +17,7 @@ const int areaMinY = max(primaryMinY - borderSize, ayMIN);
 const int areaMaxX = min(primaryMaxX + borderSize, axMAX);
 const int areaMaxY = min(primaryMaxY + borderSize, ayMAX);
 const double slippery = 0.1;
-formula crash = start & ();
+formula crash = false; // no obstacle
 formula done = start & (!crash) & ((ax = axMAX & ay = ayMAX) | ax = primaryMaxX + 1 | ax = primaryMaxX + 2 | ay = primaryMaxY + 1 | ay = primaryMaxY + 2 |ax = primaryMinX - 1 | ax = primaryMinX - 2 | ay = primaryMinY - 1 | ay = primaryMinY - 2 ) ;
 observable "amdone" = done;
 observable "hascrash" = crash;
