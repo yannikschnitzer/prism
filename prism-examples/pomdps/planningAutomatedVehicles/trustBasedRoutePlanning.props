@@ -1,7 +1,7 @@
+// commnad line example: ../../../prism/bin/prism trustBasedRoutePlanning.prism trustBasedRoutePlanning.props -prop 1 -const w1=0:0.01:1  -exportresults stdout
+
 const double w1;
 const double w2 = 1.0 - w1;
-
-// commnad line example: bin/prism trustBasedRoutePlanning.prism trustBasedRoutePlanning.props -prop 1 -const w1=0:0.01:1 -ex
 
 <<*>> (w1 * R{"destinationTrust"}max=? [ F "end" ] + w2 * R{"satisfaction"}max=? [ F "end" ]);
 <<*>> (w1 * R{"destinationTrust"}max=? [ F "end" ] + w2 * R{"distance"}min=? [ F "end" ]);
