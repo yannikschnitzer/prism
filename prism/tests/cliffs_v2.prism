@@ -1,7 +1,7 @@
 mdp
 const int N=4;
 const int M=12;
-const double p=0.21; // with probability p, a move to a neighboring state state occurs due to seeing and control noise
+const double p=0.2; // with probability p, a move to a neighboring state state occurs due to seeing and control noise
 formula wall = (r=4 & c=2) | (r=4 & c=3) | (r=4 & c=4) | (r=4 & c=5) | (r=4 & c=6) | (r=4 & c=7) | (r=4 & c=8) | (r=4 & c=9) | (r=4 & c=10) | (r=4 & c=11);
 
 module robot
@@ -30,9 +30,9 @@ rewards
 	[west] !wall : 1;
 	[north] !wall : 1;
 
-	[east] wall : 35;
-    [south] wall : 35;
-    [west] wall : 35;
-    [north] wall : 35;
+	[east] wall : 25;
+    [south] wall : 25;
+    [west] wall : 25;
+    [north] wall : 25;
 
 endrewards

@@ -385,6 +385,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         double [] res = new double [3]; // contains the min index + min cvar.
         double cvar = 0;
         res [1] = Float.POSITIVE_INFINITY;
+        res[2] = -1;
         double expected_cost =0;
         int idx_b = 0;
 
@@ -426,8 +427,13 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
         //  Update product mdp initial state to correct b
         if (prod_mdp.productModel instanceof ModelExplicit) {
-            ((ModelExplicit) prod_mdp.productModel).clearInitialStates();
-            ((ModelExplicit) prod_mdp.productModel).addInitialState((int)cvar_info[2]);
+            if ((int)cvar_info[2] != -1) {
+                ((ModelExplicit) prod_mdp.productModel).clearInitialStates();
+                ((ModelExplicit) prod_mdp.productModel).addInitialState((int) cvar_info[2]);
+            }
+            else {
+                throw new PrismException("Error: stategy was not able to find an initial state.");
+            }
         }
         else {
             throw new PrismException("Error updating initial states productMDP is not an instance of ModelExplicit");

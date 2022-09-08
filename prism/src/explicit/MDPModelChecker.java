@@ -2812,6 +2812,7 @@ public class MDPModelChecker extends ProbModelChecker
 			mainLog.println("---------------------------------------\nStarting PRISM VI");
 			DTMCModelChecker vi_mcDTMC= new DTMCModelChecker(this);
 			ModelCheckerResult vi_res = this.computeReachRewards(mdp, mdpRewards, target, min);
+			mainLog.println("\nVI result in initial state:"+ vi_res.soln[mdp.getFirstInitialState()]);
 			StateRewardsArray vi_mcRewards = new StateRewardsArray(n); // Compute rewards array
 			for (int s = 0; s < n; s++) {
 				if(target.get(s)) {
@@ -2938,12 +2939,12 @@ public class MDPModelChecker extends ProbModelChecker
 		mainLog.println(" Starting Cvar iteration with method:"+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
 
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
-			atoms = 76;
-			b_atoms = 76;
+			atoms = 101;
+			b_atoms = 101;
 			// TODO make this a point variable or something to be a bit cleaner
-			double b_max = 150;
+			double b_max = 100;
 			double b_min = 0;
-			double v_max = 150;
+			double v_max = 100;
 			double v_min = 0;
 			operator = new DistributionalBellmanCategoricalAugmented(atoms, b_atoms, v_min, v_max, b_min, b_max, n, n_actions, mainLog);
 			operator.initialize(mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
@@ -3179,7 +3180,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 		int initialState = dtmc.getFirstInitialState();
 
-		ModelCheckerResult dtmc_result =mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, product_target);
+		ModelCheckerResult dtmc_result =mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, product_target,"prism/distr_dtmc_cvar.csv");
 		// take dtmc_result.solnObject
 		// adjust to be on the same scale
 		//
