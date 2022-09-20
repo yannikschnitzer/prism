@@ -2,3 +2,11 @@
 R{"time"}min=? [ (F w1) & (F w2) & (F w6) ]
 R(dist){"time"}min=? [ (F w1) & (F w2) & (F w6) ]
 R(cvar){"time"}min=? [ (F w1) & (F w2) & (F w6) ]
+// Coverage 2
+R{"time"}min=? [ (F w1) & (F w3) & (F w6) ]
+R(dist){"time"}min=? [ (F w1) & (F w3) & (F w6) ]
+R(cvar){"time"}min=? [ (F w1) & (F w3) & (F w6) ]
+// Sequencing
+R{"time"}min=? [ F (w1 & (F (w2 & (F w4))))]
+R(dist){"time"}min=? [ F (w1 & (F (w2 & (F w4)))) ]
+R(cvar){"time"}min=? [ F (w1 & (F (w2 & (F w4)))) ]

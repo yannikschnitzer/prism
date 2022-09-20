@@ -26,7 +26,7 @@ module robot
 endmodule
 
 // label "goal" = F(coffee & (F office));
-label "obs" = decoration;
+label "obs" = (decoration );
 
 rewards
     [wait] !decoration & !wall: 1;
@@ -36,15 +36,15 @@ rewards
 	[north] !decoration & !wall: 1;
 
 	// wall
-	[east] !decoration & wall: 35;
-	[south] !decoration & wall: 35;
-	[west] !decoration & wall: 35;
-	[north] !decoration & wall: 35;
+	[east] !decoration & wall: 30;
+	[south] !decoration & wall: 30;
+	[west] !decoration & wall: 30;
+	[north] !decoration & wall: 30;
 
 	// decoration
-    [east] decoration & !wall: 10;
-    [south] decoration & !wall: 10;
-    [west] decoration & !wall: 10;
-    [north] decoration & !wall: 10;
+    [east] decoration & !wall: 20;
+    [south] decoration & !wall: 20;
+    [west] decoration & !wall: 20;
+    [north] decoration & !wall: 20;
 
 endrewards

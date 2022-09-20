@@ -2634,6 +2634,7 @@ public class MDPModelChecker extends ProbModelChecker
 		// Set up distribution variables
 		int atoms;
 		int iterations = 150;
+		int min_iter = 20;
 		double error_thresh = 0.01;
 		double error_thresh_cvar = 2;
 		double gamma = 1;
@@ -2664,10 +2665,14 @@ public class MDPModelChecker extends ProbModelChecker
 			double v_min = 0;
 			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
+			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
+			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+" - error thresh:"+error_thresh);
 		} else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
-			atoms = 1000;
+			atoms = 5000;
+			error_thresh = 1.0/(atoms*10);
 			operator = new DistributionalBellmanQR(atoms, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
+			mainLog.println("----- Parameters:\natoms:"+atoms+" - alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+" - error thresh:"+error_thresh);
 		}
 		else{
 			atoms=101;
@@ -2728,18 +2733,17 @@ public class MDPModelChecker extends ProbModelChecker
 			states = unknownStates.iterator();
 			max_dist = 0.0;
 
-			ArrayList<Integer> bad = new ArrayList<>();
-			// TODO max metric dist instead of max cvar distance.
+			//ArrayList<Integer> bad = new ArrayList<>();
 			while (states.hasNext()) {
 				final int s = states.nextInt();
 				double tempo = operator.getW(temp_p[s], s);
-				if(tempo > max_dist){bad.add(s);}
+				//if(tempo > max_dist){bad.add(s);}
 				max_dist = max(max_dist, tempo);
 
 				operator.update(temp_p[s], s);
 			}
 			mainLog.println("Max Wp dist :"+(max_dist) + " error Wp:" + (error_thresh) +" at iter:"+iters);
-			if ((max_dist <error_thresh)&(iters>10)) {
+			if ((max_dist <error_thresh)&(iters>min_iter)) {
 				break;
 			}
 
@@ -2760,9 +2764,9 @@ public class MDPModelChecker extends ProbModelChecker
 		mainLog.print("]\n");
 
 		// Policy
-		mainLog.println("\nPolicy");
-		//Arrays.toString(policy);
-		mainLog.println(Arrays.toString(policy));
+//		mainLog.println("\nPolicy");
+//		//Arrays.toString(policy);
+//		mainLog.println(Arrays.toString(policy));
 
 		timer = System.currentTimeMillis() - timer;
 		if (verbosity >= 1) {
@@ -2792,7 +2796,8 @@ public class MDPModelChecker extends ProbModelChecker
 
 		int initialState = dtmc.getFirstInitialState();
 		double [] adjusted_dtmc_distr=operator.adjust_support(((TreeMap)dtmc_result.solnObj[initialState]));
-		mainLog.println("Wasserstein p=2 dtmc vs code distributions: "+operator.getW(adjusted_dtmc_distr, initialState));
+
+		mainLog.println("Wasserstein p="+(settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51) ? "2" : "1")+" dtmc vs code distributions: "+operator.getW(adjusted_dtmc_distr, initialState));
 
 		if (check_reach_dtmc){
 			BitSet obs_states= mdp.getLabelStates(bad_states_label);
@@ -3193,7 +3198,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 		double [] adjusted_dtmc_distr=operator.adjust_support(((TreeMap)dtmc_result.solnObj[initialState]));
 		mainLog.println(adjusted_dtmc_distr);
-		mainLog.println("Wasserstein p=2 dtmc vs code distributions: "+operator.getW(adjusted_dtmc_distr, initialState, pol[initialState]));
+		mainLog.println("Wasserstein p="+(settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51) ? "2" : "1")+" dtmc vs code distributions: "+operator.getW(adjusted_dtmc_distr, initialState, pol[initialState]));
 
 
 		if (check_reach_dtmc){

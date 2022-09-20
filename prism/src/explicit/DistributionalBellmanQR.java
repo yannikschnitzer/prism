@@ -107,24 +107,22 @@ public class DistributionalBellmanQR extends DistributionalBellman {
     @Override
     public double getW(double[] dist1, double[] dist2) {
         double sum = 0;
-        double cum_p=0;
+
         for (int i =0; i<atoms; i++)
         {
-            cum_p += p[i];
-            sum+= pow((dist1[i]* cum_p - dist2[i]* cum_p),2) ;
+            sum+= abs((dist1[i]) - (dist2[i]));
         }
-        return sqrt(sum);
+        return sum* (1.0/atoms);
     }
 
     @Override
     public double getW(double[] dist1, int state) {
         double sum = 0;
-        double cum_p=0;
         for (int i =0; i<atoms; i++)
         {
-            sum+= pow(((dist1[i])*cum_p - (z[state][i])*cum_p), 2);
+            sum+= abs((dist1[i]) - (z[state][i]));
         }
-        return sqrt(sum);
+        return sum* (1.0/atoms);
     }
 
     public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, int numTransitions, double gamma, double state_reward)
@@ -180,8 +178,23 @@ public class DistributionalBellmanQR extends DistributionalBellman {
 
     @Override
     public double[] adjust_support(TreeMap distr) {
-        //TODO
-        return new double[0];
+        int entry_key; double entry_val;
+        double [] m ;
+        ArrayList<MapEntry<Double, Double>> multimap = new ArrayList<>();
+        for(Object e: distr.entrySet())
+        {
+            entry_key = (int) ((Map.Entry<?, ?>) e).getKey();
+            entry_val = (double) ((Map.Entry<?, ?>) e).getValue();
+            multimap.add(new MapEntry<Double, Double>(entry_val, (double) entry_key));
+        }
+
+        // Sort the list based on values
+        multimap.sort(Map.Entry.comparingByValue());
+
+        // Consolidate based on probability
+        m = consolidate(multimap.iterator());
+
+        return m;
     }
 
     @Override
