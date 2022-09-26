@@ -42,14 +42,12 @@ prism/\.settings/
 prism/.ipynb_checkpoints/
 
 # distribution + experiment files
-prism/tests/gridmap/*.out
+/prism/tests/gridmap/*.out
 tests/gridmap/*.out
-prism/tests/experiments/
+/prism/tests/experiments/
 tests/experiments/
-prism/distr*.csv
-distr*.csv
-prism/tests/traces/
-tests/traces/
+/prism/distr*.csv
+/prism/tests/traces/
 
 #IDEA java IDE
 .idea/
