@@ -477,10 +477,10 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
             pw.println("r,p,z");
             for (int r = 0; r < atoms; r++) {
                 double val = z[state][action][r];
-                pw.println(r + "," +p[r]+","+ val);
+                pw.println(val + "," +p[r]+","+ tau_hat[r]);
             }
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
+            // Auto-generated catch block
             e.printStackTrace();
         }
     }

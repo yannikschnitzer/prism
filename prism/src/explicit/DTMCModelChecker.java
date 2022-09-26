@@ -2657,7 +2657,7 @@ public class DTMCModelChecker extends ProbModelChecker
 	public ModelCheckerResult computeReachRewardsDistr(DTMC dtmc, MCRewards mcRewards, BitSet target, String filename) throws PrismException
 	{
 		int maxIters = 1000;
-		double termCritEpsilon = 1e-6;
+		double termCritEpsilon = 1e-4;
 		// INFO : default is 1e-6, but should change to 1e-4 or 12-3 if taking too long in large models
 		
 		if (verbosity >= 1) {

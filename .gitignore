@@ -39,8 +39,11 @@ prism/\.settings/
 
 # Python jupyter Lab
 .ipynb_checkpoints/
-/prims/tests/gridmap/*.out
-/prims/tests/experiments/*
+prism/.ipynb_checkpoints/
+
+# distribution + experiment files
+prism/tests/gridmap/*.out
+prism/tests/experiments/
 
 #IDEA java IDE
 .idea/

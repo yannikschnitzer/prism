@@ -2641,6 +2641,7 @@ public class MDPModelChecker extends ProbModelChecker
 		double alpha=0.5;
 		boolean check_reach_dtmc = true;
 		boolean gen_trace = true;
+		boolean compute_dtmc_vi = false;
 		String bad_states_label = "obs";
 		long iteration_timer; long max_iteration_timer=-1;
 
@@ -2812,7 +2813,6 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 
 		// Calling regular Value Iteration for comparison metrics.
-		boolean compute_dtmc_vi = true;
 		if(compute_dtmc_vi){
 			mainLog.println("---------------------------------------\nStarting PRISM VI");
 			DTMCModelChecker vi_mcDTMC= new DTMCModelChecker(this);
@@ -2941,7 +2941,7 @@ public class MDPModelChecker extends ProbModelChecker
 		unknown_original.andNot(target);
 		unknown_original.andNot(inf);
 
-		mainLog.println(" Starting Cvar iteration with method:"+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
+		mainLog.println(" Starting Cvar iteration with method: "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
 
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
 			atoms = 101;
