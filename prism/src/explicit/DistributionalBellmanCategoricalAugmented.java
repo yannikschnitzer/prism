@@ -41,7 +41,12 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         this.atoms = atoms;
         this.z = new double[atoms];
         this.b = new double[b_atoms];
-        this.delta_z = (vmax - vmin) / (atoms -1);
+        if (atoms > 1) {
+            this.delta_z = (vmax - vmin) / (atoms - 1);
+        }
+        else {
+            this.delta_z = 0;
+        }
         this.v_min = vmin;
         this.v_max = vmax;
         this.b_min = bmin;
@@ -62,7 +67,11 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
         // Initialize slack variable atoms 
         this.b_atoms = b_atoms;
-        this.delta_b = (bmax - bmin) / (b_atoms -1);
+        if (b_atoms >1) {
+            this.delta_b = (bmax - bmin) / (b_atoms - 1);
+        } else {
+            this.delta_b = 0;
+        }
         for (int i = 0; i < b_atoms; i++) {
             this.b[i] = (bmin + i *this.delta_b);
         }
@@ -77,7 +86,12 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         alpha = el.alpha;
         atoms = el.atoms;
         z = Arrays.copyOf(el.z, atoms);
-        delta_z = (el.v_max - el.v_min) / (atoms -1);
+        if (el.atoms > 1) {
+            delta_z = (el.v_max - el.v_min) / (atoms - 1);
+        }
+        else{
+            delta_z = 0;
+        }
         v_min = el.v_min;
         v_max = el.v_max;
         b_min = el.b_min;
@@ -158,12 +172,15 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     public double [] update_support(double gamma, double state_reward, double []sum_p){
 
         double [] m = new double [atoms];
+        double index = 0;
         // INFO do I need to use transition probability -> prob not since R(s,a) and not R(s,a,s')
 
         for (int j =0; j<atoms; j++){
             
             double temp = max(v_min, min(v_max, state_reward+gamma*z[j]));
-            double index = (temp - v_min)/delta_z;
+            if (delta_z > 0) {
+                index = (temp - v_min) / delta_z;
+            }
             int l= (int) floor(index); int u= (int) ceil(index);
 
             if ( l- u != 0){
@@ -182,8 +199,10 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     // choosing lower index -> intuition :"we have used less budget than we actually have"
     // opposite of chap 7 -> they take floor since they are doing max and we are doing min -> cost approach
     public int getClosestB(double temp_b){
-        double new_b = max(b_min, min(temp_b,b_max));
-        double index = new_b/delta_b;
+        double new_b = max(b_min, min(temp_b,b_max)); double index = 0;
+        if (delta_b > 0){
+            index = new_b/delta_b;
+        }
         int l= (int) floor(index); int u= (int) ceil(index);
 
         double diff_l = abs(b[(int) index] - b[l]);
@@ -462,7 +481,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     @Override
     public double [] adjust_support(TreeMap distr)
     {
-        int entry_key; double entry_val; double temp; double index;
+        int entry_key; double entry_val; double temp; double index=0;
         double [] m = new double[atoms];
 
         for(Object e: distr.entrySet())
@@ -471,8 +490,9 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
             entry_val = (double) ((Map.Entry<?, ?>) e).getValue();
 
             temp = max(v_min, min(v_max, entry_key));
-            index = (temp - v_min)/delta_z;
-
+            if (delta_z > 0) {
+                index = (temp - v_min) / delta_z;
+            }
             int l= (int) floor(index); int u= (int) ceil(index);
 
             if ( l- u != 0){

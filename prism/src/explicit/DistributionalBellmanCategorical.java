@@ -28,7 +28,12 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
         super();
         this.atoms = atoms;
         this.z = new double[atoms];
-        this.delta_z = (vmax - vmin) / (atoms -1);
+        if (atoms > 1) {
+            this.delta_z = (vmax - vmin) / (atoms - 1);
+        }
+        else {
+                this.delta_z = 0;
+        }
         this.v_min = vmin;
         this.v_max = vmax;
         this.numStates = numStates;
@@ -82,10 +87,12 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
     public double [] update_support(double gamma, double state_reward, double []sum_p){
 
         double [] m = new double [atoms];
-
+        double b = 0;
         for (int j =0; j<atoms; j++){
             double temp = max(v_min, min(v_max, state_reward+gamma*z[j]));
-            double b = (temp - v_min)/delta_z;
+            if (delta_z > 0.0) {
+                 b = (temp - v_min)/delta_z;
+            }
             int l= (int) floor(b); int u= (int) ceil(b);
 
             if ( l- u != 0){
@@ -110,7 +117,7 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
 
     @Override
     public double[] adjust_support(TreeMap distr) {
-        int entry_key; double entry_val; double temp; double index;
+        int entry_key; double entry_val; double temp; double index = 0;
         double [] m = new double[atoms];
 
         for(Object e: distr.entrySet())
@@ -119,8 +126,9 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
             entry_val = (double) ((Map.Entry<?, ?>) e).getValue();
 
             temp = max(v_min, min(v_max, entry_key));
-            index = (temp - v_min)/delta_z;
-
+            if (delta_z >0) {
+                index = (temp - v_min) / delta_z;
+            }
             int l= (int) floor(index); int u= (int) ceil(index);
 
             if ( l- u != 0){

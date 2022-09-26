@@ -62,7 +62,12 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
 
         // Initialize slack variable atoms
         this.b_atoms = b_atoms;
-        this.delta_b = (bmax - bmin) / (b_atoms -1);
+        if (b_atoms > 1) {
+            this.delta_b = (bmax - bmin) / (b_atoms - 1);
+        } else {
+            this.delta_b = 0;
+        }
+
         for (int i = 0; i < b_atoms; i++) {
             this.b[i] = (bmin + i *this.delta_b);
         }
@@ -166,14 +171,22 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
 
     // Interpolate to find the closest b index
     public int getClosestB(double temp_b){
-        double new_b = max(b_min, min(temp_b,b_max));
-        double index = new_b/delta_b;
+        double new_b = max(b_min, min(temp_b,b_max)); double index = 0;
+        if (delta_b > 0){
+            index = new_b/delta_b;
+        }
         int l= (int) floor(index); int u= (int) ceil(index);
 
-        //  right now I'm choosing a slightly more conservative approach by
-        // choosing lower index -> intuition :"we have used less budget than we actually have"
-        // opposite of chap 7 -> they take floor since they are doing max and we are doing min -> cost approach
-        return l;
+        double diff_l = abs(b[(int) index] - b[l]);
+        double diff_u = abs(b[u] - b[(int) index]);
+
+        // check which index is closest:
+        if (diff_u >= diff_l){
+            return l;
+        }
+        else {
+            return u;
+        }
     }
 
     @Override
