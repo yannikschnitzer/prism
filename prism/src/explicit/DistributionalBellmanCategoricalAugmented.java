@@ -309,8 +309,6 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         return res;
     }
 
-
-    // TODO: change following functions to take into account slack variable
     @Override
     public double getVar(double [] probs, double lim){
         double sum_p = 0.0;
@@ -367,7 +365,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         {
             cum_p[0] += dist1[i];
             cum_p[1] += dist2[i];
-            sum+= pow((cum_p[0] - cum_p[1]), 2);
+            sum+= pow((cum_p[0] - cum_p[1]), 2) * delta_z;
         }
         return sqrt(sum);
     }
@@ -382,7 +380,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         {
             cum_p[0] += dist1[i];
             cum_p[1] += p[state][idx_a][i];
-            sum+= pow((cum_p[0] - cum_p[1]), 2);
+            sum+= pow((cum_p[0] - cum_p[1]), 2) * delta_z;
         }
         return sqrt(sum);
     }

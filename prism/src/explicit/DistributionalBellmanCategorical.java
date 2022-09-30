@@ -211,7 +211,7 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
         double sum = 0;
         for (int i =0; i<atoms; i++)
         {
-            sum+= pow(((delta_z)*dist1[i] - (delta_z)*dist2[i]), 2);
+            sum+= pow((dist1[i] - dist2[i]), 2) * (delta_z);
         }
         return sqrt(sum);
     }
@@ -222,7 +222,7 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
         double sum = 0;
         for (int i =0; i<atoms; i++)
         {
-            sum+=  pow(((delta_z) *dist1[i] - (delta_z) *p[state][i]), 2);
+            sum+=  pow((dist1[i] - p[state][i]), 2) * (delta_z) ;
         }
         return sqrt(sum);
     }
