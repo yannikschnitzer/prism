@@ -360,7 +360,6 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     {
         double sum = 0;
         double [] cum_p = new double[2];
-
         for (int i =0; i<atoms; i++)
         {
             cum_p[0] += dist1[i];

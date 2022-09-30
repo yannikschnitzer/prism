@@ -209,9 +209,12 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
     public double getW(double[] dist1, double[] dist2)
     {
         double sum = 0;
+        double [] cum_p = new double[2];
         for (int i =0; i<atoms; i++)
         {
-            sum+= pow((dist1[i] - dist2[i]), 2) * (delta_z);
+            cum_p[0] += dist1[i];
+            cum_p[1] += dist2[i];
+            sum+= pow((cum_p[0] - cum_p[1]), 2) * delta_z;
         }
         return sqrt(sum);
     }
@@ -220,9 +223,12 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
     public double getW(double [] dist1, int state)
     {
         double sum = 0;
+        double [] cum_p = new double[2];
         for (int i =0; i<atoms; i++)
         {
-            sum+=  pow((dist1[i] - p[state][i]), 2) * (delta_z) ;
+            cum_p[0] += dist1[i];
+            cum_p[1] += p[state][i];
+            sum+= pow((cum_p[0] - cum_p[1]), 2) * delta_z;
         }
         return sqrt(sum);
     }
