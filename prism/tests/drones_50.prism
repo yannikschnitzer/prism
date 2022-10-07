@@ -1,18 +1,18 @@
 mdp
-const int M = 5;
-const int N = 5;
-const int B = 10;
-const double p=0.3; // with probability p, staying in place occurs due to seeing and control noise
+const int M = 40;
+const int N = 40;
+const int B = 60;
+const double p=0.05; // with probability p, staying in place occurs due to seeing and control noise
 
-formula area1 = (r=1 & c=3);
-formula area2 = (r=3 & c=1);
-formula area3 = (r=5 & c=3);
-formula regen = (r=3 & c=3);
+formula area1 = (r=1 & c=20);
+formula area2 = (r=20 & c=1);
+formula area3 = (r=40 & c=20);
+formula regen = (r > 18 & r < 22) & (c > 18 & c < 22);
 formula drained = (battery=0);
 
 module robot
 	//define robot position
-	r:[1..N] init 4; //grid row
+	r:[1..N] init 1; //grid row
 	c:[1..M] init 1; //grid column
 	battery:[0..B] init B; // battery level
 
@@ -25,13 +25,13 @@ module robot
 
     // transitions battery regeneration
     [east]  (c<M | c=M) & regen -> p/3:(r'=min(r+1, N)) &(battery'=min(battery+2, B))+ p/3: (c'=max(c-1, 1))&(battery'=min(battery+2, B))+ p/3: (r'=max(r-1, 1)) &(battery'=min(battery+2, B))+ (1-p): (c'=min(c+1, M))&(battery'=min(battery+2, B));
-    [south] (r<N | r=N) & regen-> (1-p):(r'=min(r+1, N)) &(battery'=min(battery+2, B))+ p/3: (c'=min(c+1, M)) &(battery'=min(battery+2, B))+ p/3:(r'=r'=max(r-1, 1))&(battery'=min(battery+2, B))+ p/3: (c'=max(c-1, 1))&(battery'=min(battery+2, B));
+    [south] (r<N | r=N) & regen-> (1-p):(r'=min(r+1, N)) &(battery'=min(battery+2, B))+ p/3: (c'=min(c+1, M)) &(battery'=min(battery+2, B))+ p/3:(r'=max(r-1, 1))&(battery'=min(battery+2, B))+ p/3: (c'=max(c-1, 1))&(battery'=min(battery+2, B));
     [west]  (c>1 | c=1) & regen -> p/3:(r'=max(r-1, 1))&(battery'=min(battery+2, B))+ p/3:(r'=min(r+1, N))&(battery'=min(battery+2, B))+ p/3: (c'=min(c+1, M)) &(battery'=min(battery+2, B))+ (1-p): (c'=max(c-1, 1))&(battery'=min(battery+2, B));
     [north] (r=1 | r>1) & regen -> (1-p):(r'=max(r-1, 1)) &(battery'=min(battery+2, B))+ p/3: (c'=max(c-1, 1))&(battery'=min(battery+2, B)) + p/3: (c'=min(c+1, M)) &(battery'=min(battery+2, B))+ p/3:(r'=min(r+1, N))&(battery'=min(battery+2, B));
     [wait]  regen  -> 1: (r'=r) &(c'=c) & (battery'=min(battery+2, B));
 
 	// terminal state self-loop to avoid deadlock
-	[rescue] drained -> 1: (r'=3) &(c'=3);
+	[rescue] drained -> 1: (r'=20) &(c'=20);
 
 endmodule
 
@@ -46,6 +46,6 @@ rewards
 	[wait] !drained: 1;
 
 	// drained
-    [rescue] drained: 50;
+    [rescue] drained: 150;
 
 endrewards

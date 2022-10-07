@@ -2647,6 +2647,11 @@ public class DTMCModelChecker extends ProbModelChecker
 		return computeReachRewardsDistr(dtmc, mcRewards, target, "prism/distr.csv");
 	}
 
+
+	enum DistrTermCrit {
+		NON_TARGET, // Probability left in non-target states
+		SUCC_DIFF // Convergence based on difference between iters
+	};
 	/**
 	 * Compute the full distribution for the reward accumulated until a target is reached.
 	 * @param dtmc The DTMC
@@ -2656,11 +2661,7 @@ public class DTMCModelChecker extends ProbModelChecker
 	 */
 	public ModelCheckerResult computeReachRewardsDistr(DTMC dtmc, MCRewards mcRewards, BitSet target, String filename) throws PrismException
 	{
-		
-		enum DistrTermCrit {
-				NON_TARGET, // Probability left in non-target states
-				SUCC_DIFF // Convergence based on difference between iters 
-		};
+
 		DistrTermCrit distrTermCrit = DistrTermCrit.NON_TARGET;
 		int maxIters = 1000;
 		double termCritEpsilon = 1e-4;
