@@ -2656,6 +2656,12 @@ public class DTMCModelChecker extends ProbModelChecker
 	 */
 	public ModelCheckerResult computeReachRewardsDistr(DTMC dtmc, MCRewards mcRewards, BitSet target, String filename) throws PrismException
 	{
+		
+		enum DistrTermCrit {
+				NON_TARGET, // Probability left in non-target states
+				SUCC_DIFF // Convergence based on difference between iters 
+		};
+		DistrTermCrit distrTermCrit = DistrTermCrit.NON_TARGET;
 		int maxIters = 1000;
 		double termCritEpsilon = 1e-4;
 		// INFO : default is 1e-6, but should change to 1e-4 or 12-3 if taking too long in large models
@@ -2680,32 +2686,59 @@ public class DTMCModelChecker extends ProbModelChecker
 			HashMap<StateRew, Double> rewProbsNew = new HashMap<>();
 			// For each state/rew in the current iter
 			Iterator<Map.Entry<StateRew, Double>> it = rewProbs.entrySet().iterator();
+			double pNonTarget = 0.0;
 			while(it.hasNext()) {
 			    Map.Entry<StateRew, Double> entry1 = it.next();
 				StateRew sr = entry1.getKey();
 				double val = entry1.getValue();
 				int s = sr.s;
 				int r = sr.r;
-				// For each DTMC transition in the current state
-				Iterator<Entry<Integer,Double>> iter = dtmc.getTransitionsIterator(s);
-				while (iter.hasNext()) {
-					Entry<Integer,Double> entry = iter.next();
-					double prob = val * entry.getValue();
-					int sNext = entry.getKey();
-					// TODO: check rewards are integers
-					int rNext = r + (target.get(s) ? 0 : (int) mcRewards.getStateReward(s));
-					Double valLookup = rewProbsNew.get(new StateRew(sNext, rNext));
-					rewProbsNew.put(new StateRew(sNext, rNext), valLookup == null ? prob : prob + valLookup);
+				// Target states are absorbing (and zero-reward)
+				if (target.get(s)) {
+					rewProbsNew.put(new StateRew(s, r), val);
+				}
+				// Non-target: For each DTMC transition in the current state...
+				else {
+					Iterator<Entry<Integer, Double>> iter = dtmc.getTransitionsIterator(s);
+					while (iter.hasNext()) {
+						Entry<Integer, Double> entry = iter.next();
+						double prob = val * entry.getValue();
+						int sNext = entry.getKey();
+						// TODO: check rewards are integers
+						int rNext = r + (int) mcRewards.getStateReward(s);
+						Double valLookup = rewProbsNew.get(new StateRew(sNext, rNext));
+						double valNext = valLookup == null ? prob : prob + valLookup;
+						rewProbsNew.put(new StateRew(sNext, rNext), valNext);
+						// Update total prob of non-target states in rewProbsNew
+						if (!target.get(sNext)) {
+							pNonTarget += valNext;
+						}
+					}
 				}
 			}
+			
 			//Pair<Integer,Map<Integer,Double>> maxAndDist = extractRewardDist(rewProbsNew);
 			//exportRewardDistLine(maxAndDist.first, maxAndDist.second, "distr"+iters+".csv");
-			// Check max diff between iters
-			double diff = PrismUtils.measureSupNorm(rewProbs, rewProbsNew, true);
-			done = diff < termCritEpsilon;
-			if (verbosity >= 1) {
-				mainLog.println(iters+": n="+rewProbs.size() + ", diff=" + diff);
+			
+			// Check convergence
+			switch (distrTermCrit ) {
+			case SUCC_DIFF:
+				// Check max diff between iters
+				double diff = PrismUtils.measureSupNorm(rewProbs, rewProbsNew, true);
+				done = diff < termCritEpsilon;
+				if (verbosity >= 1) {
+					mainLog.println(iters+": n="+rewProbs.size() + ", diff=" + diff);
+				}
+				break;
+			case NON_TARGET:
+			default:
+				done = pNonTarget < termCritEpsilon;
+				if (verbosity >= 1) {
+					mainLog.println(iters+": n="+rewProbs.size() + ", pNonTarget=" + pNonTarget);
+				}
+				break;
 			}
+			
 			// Swap vectors for next iter
 			rewProbs = rewProbsNew;
 		}
