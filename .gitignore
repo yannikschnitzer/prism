@@ -48,6 +48,7 @@ tests/gridmap/*.out
 tests/experiments/
 /prism/distr*.csv
 /prism/tests/traces/
+*.log
 
 #IDEA java IDE
 .idea/

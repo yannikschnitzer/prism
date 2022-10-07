@@ -2680,7 +2680,7 @@ public class MDPModelChecker extends ProbModelChecker
 			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+" - error thresh:"+error_thresh);
 		} else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
 			atoms = 5000;
-			error_thresh = 0.15; //1.0/(atoms)*10;
+			error_thresh = 1.0/(atoms)*10; // 0.7 for uav
 			operator = new DistributionalBellmanQR(atoms, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
 			logger.println("----- Parameters:\natoms:" + atoms + " - alpha:" + alpha + " - discount:" + gamma + " - max iterations:" + iterations + " - error thresh:" + error_thresh);
@@ -2877,7 +2877,7 @@ public class MDPModelChecker extends ProbModelChecker
 			}
 
 		}
-
+		logger.close();
 		// Store results
 		ModelCheckerResult res = new ModelCheckerResult();
 		res.soln = Arrays.copyOf(action_cvar, action_cvar.length); // FIXME make it based on y parameter and iterate over columns to get result
@@ -2993,10 +2993,10 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 		else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
 			atoms = 100;
-			b_atoms = 1;
+			b_atoms = 26;
 			double b_max = 1000;
 			double b_min = 0;
-			error_thresh = 0.5;//1.0/atoms*3.1;
+			error_thresh = 1.0/atoms*3.1; // 0.7 for uav
 			operator = new DistributionalBellmanQRAugmented(atoms, b_atoms, b_min, b_max, n, n_actions, mainLog);
 			operator.initialize(mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
 			logger.println("----- Parameters:\natoms:"+atoms+" - b_atoms:"+b_atoms+" - bmin:"+b_min+" - bmax:"+b_max);
@@ -3218,7 +3218,7 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 
 		operator.writeToFile(initialState, pol[initialState], null);
-
+		logger.close();
 		// Store results
 		//FIXME value im returning is policy not value
 		ModelCheckerResult res = new ModelCheckerResult();
