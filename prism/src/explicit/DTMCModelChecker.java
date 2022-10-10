@@ -2712,7 +2712,7 @@ public class DTMCModelChecker extends ProbModelChecker
 						rewProbsNew.put(new StateRew(sNext, rNext), valNext);
 						// Update total prob of non-target states in rewProbsNew
 						if (!target.get(sNext)) {
-							pNonTarget += valNext;
+							pNonTarget += prob;
 						}
 					}
 				}
