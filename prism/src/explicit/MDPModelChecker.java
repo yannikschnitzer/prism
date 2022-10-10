@@ -2644,9 +2644,9 @@ public class MDPModelChecker extends ProbModelChecker
 		double gamma = 1;
 		double alpha=0.5;
 		boolean check_reach_dtmc = true;
-		boolean check_reach_dtmc_distr = true;
+		boolean check_reach_dtmc_distr = false;
 		boolean check_reach_dtmc_vi = true;
-		boolean check_reach_dtmc_distr_vi = true;
+		boolean check_reach_dtmc_distr_vi = false;
 		boolean gen_trace = true;
 		boolean compute_dtmc_vi = true;
 		String bad_states_label = "obs";
@@ -2667,8 +2667,8 @@ public class MDPModelChecker extends ProbModelChecker
 
 
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
-			atoms = 101;
-			double v_max = 2000;
+			atoms = 201;
+			double v_max = 800;
 			double v_min = 0;
 			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
@@ -2945,6 +2945,7 @@ public class MDPModelChecker extends ProbModelChecker
 		double alpha = 0.7;
 		String bad_states_label = "obs";
 		boolean check_reach_dtmc = true;
+		boolean check_reach_dtmc_distr= false;
 		boolean gen_trace = true;
 
 		String c51 = "C51";
@@ -2962,12 +2963,12 @@ public class MDPModelChecker extends ProbModelChecker
 		mainLog.println(" Starting Cvar iteration with method: "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
 
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
-			atoms = 101;
-			b_atoms = 11;
+			atoms = 41;
+			b_atoms = 21;
 			// TODO make this a point variable or something to be a bit cleaner
-			double b_max = 1000;
+			double b_max = 800;
 			double b_min = 0;
-			double v_max = 1000;
+			double v_max = 800;
 			double v_min = 0;
 			operator = new DistributionalBellmanCategoricalAugmented(atoms, b_atoms, v_min, v_max, b_min, b_max, n, n_actions, mainLog);
 			operator.initialize(mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
@@ -3148,18 +3149,19 @@ public class MDPModelChecker extends ProbModelChecker
 		DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
 
 		int initialState = dtmc.getFirstInitialState();
-		timer = System.currentTimeMillis();
-		ModelCheckerResult dtmc_result =mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, product_target,"prism/distr_dtmc_cvar.csv");
-		timer = System.currentTimeMillis() - timer;
-		if (verbosity >= 1) {
-			mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
-			mainLog.println(" : " + timer / 1000.0 + " seconds.");
+		if (check_reach_dtmc_distr) {
+			timer = System.currentTimeMillis();
+			ModelCheckerResult dtmc_result = mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, product_target, "prism/distr_dtmc_cvar.csv");
+			timer = System.currentTimeMillis() - timer;
+			if (verbosity >= 1) {
+				mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
+				mainLog.println(" : " + timer / 1000.0 + " seconds.");
+			}
+
+			double [] adjusted_dtmc_distr=operator.adjust_support(((TreeMap)dtmc_result.solnObj[initialState]));
+			mainLog.println(adjusted_dtmc_distr);
+			mainLog.println("Wasserstein p="+(settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51) ? "2" : "1")+" dtmc vs code distributions: "+operator.getW(adjusted_dtmc_distr, initialState, pol[initialState]));
 		}
-
-		double [] adjusted_dtmc_distr=operator.adjust_support(((TreeMap)dtmc_result.solnObj[initialState]));
-		mainLog.println(adjusted_dtmc_distr);
-		mainLog.println("Wasserstein p="+(settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51) ? "2" : "1")+" dtmc vs code distributions: "+operator.getW(adjusted_dtmc_distr, initialState, pol[initialState]));
-
 		if (check_reach_dtmc){
 			BitSet obs_states= cvar_mdp.getProductModel().getLabelStates(bad_states_label);
 			timer = System.currentTimeMillis();
