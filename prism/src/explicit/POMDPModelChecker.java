@@ -1775,6 +1775,7 @@ public class POMDPModelChecker extends ProbModelChecker
 		String verboseS = getSettings().getString(PrismSettings.PRISM_POMCP_VERBOSE);
 		
 
+
 		if (numSimulationS.length() > 0) {
 			numSimulation = Double.parseDouble(numSimulationS);
 		}
@@ -1805,22 +1806,24 @@ public class POMDPModelChecker extends ProbModelChecker
 		out.close();
 
 		PartiallyObservableMonteCarloPlanning pomcp = new PartiallyObservableMonteCarloPlanning(pomdp, mdpRewards, target, minMax, statesOfInterest, endStates, constant, maxDepth);
-		
-		String [][] testCases= {
-//							{PartiallyObservableMonteCarloPlanning.NO_SHIELD, ""}, // no shield
-							{PartiallyObservableMonteCarloPlanning.PRIOR_SHIELD, PartiallyObservableMonteCarloPlanning.CENTRALIZED_SHIELD}, // prior shielding; centralized shield
-				{PartiallyObservableMonteCarloPlanning.ON_THE_FLY_SHIELD, PartiallyObservableMonteCarloPlanning.CENTRALIZED_SHIELD}, // on-the-fly; centrailized shield
-//							{PartiallyObservableMonteCarloPlanning.ON_THE_FLY_SHIELD, PartiallyObservableMonteCarloPlanning.FACTORED_SHIELD}, // on-the-fly; factoer shield
-			{PartiallyObservableMonteCarloPlanning.PRIOR_SHIELD, PartiallyObservableMonteCarloPlanning.FACTORED_SHIELD}, // prior shielding; factoerd shield
-							};
-
 		long timer0 = System.currentTimeMillis();
 		pomcp.loadShiled();
 		System.out.println("Time for load shields" + (System.currentTimeMillis() - timer0));
 		
-		for (int i = 0; i < testCases.length; i++ ) {
-			String shieldLevel = testCases[i][0];
-			String shieldType = testCases[i][1];
+		String [][] shiledSettings= {
+				{PartiallyObservableMonteCarloPlanning.NO_SHIELD, ""}, // no shield
+				{PartiallyObservableMonteCarloPlanning.PRIOR_SHIELD, PartiallyObservableMonteCarloPlanning.CENTRALIZED_SHIELD}, // prior shielding; centralized shield
+				{PartiallyObservableMonteCarloPlanning.ON_THE_FLY_SHIELD, PartiallyObservableMonteCarloPlanning.CENTRALIZED_SHIELD}, // on-the-fly; centrailized shield
+				{PartiallyObservableMonteCarloPlanning.PRIOR_SHIELD, PartiallyObservableMonteCarloPlanning.FACTORED_SHIELD}, // prior shielding; factoerd shield
+				{PartiallyObservableMonteCarloPlanning.ON_THE_FLY_SHIELD, PartiallyObservableMonteCarloPlanning.FACTORED_SHIELD}, // on-the-fly; factoer shield
+				};
+
+		String[] testCases = getSettings().getString(PrismSettings.PRISM_SHIELD_DIR).split(";");
+		
+		for (int t = 0; t < testCases.length; t++ ) {
+			int i = Integer.valueOf(testCases[t]);
+			String shieldLevel = shiledSettings[i][0];
+			String shieldType = shiledSettings[i][1];
 			System.out.println("Shield Level" + shieldLevel + "shieldType" + shieldType);
 			if (shieldType == PartiallyObservableMonteCarloPlanning.CENTRALIZED_SHIELD && !pomcp.hasMainShield()) {
 				continue;
@@ -2299,25 +2302,27 @@ public class POMDPModelChecker extends ProbModelChecker
 		timer = System.currentTimeMillis();
 		mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
 
-		// Compute rewards 
-		res = computeMultiReachRewardsFixedGrid(pomdp, weights, mdpRewardsList, target, min, statesOfInterest.nextSetBit(0));
-
-		// Finished expected reachability
-		timer = System.currentTimeMillis() - timer;
-		mainLog.println("Expected reachability took " + timer / 1000.0 + " seconds.");
-
-		// Update time taken
-		res.timeTaken = timer / 1000.0;
-		
-//		 for verification of POMCP algorithms
-//		// Build a combined reward structure
-//		int numRewards = weights.size();
-//		WeightedSumMDPRewards mdpRewardsWeighted = new WeightedSumMDPRewards();
-//		for (int i = 0; i < numRewards; i++) {
-//			mdpRewardsWeighted.addRewards(weights.get(i), mdpRewardsList.get(i));
-//		}
-//		// min == false
-//		computeReachRewardsPOMCP(pomdp, mdpRewardsWeighted, target, min, statesOfInterest);
+		//TODO  use POMCP rather than tranditional method
+//		// Compute rewards 
+//		res = computeMultiReachRewardsFixedGrid(pomdp, weights, mdpRewardsList, target, min, statesOfInterest.nextSetBit(0));
+//
+//		// Finished expected reachability
+//		timer = System.currentTimeMillis() - timer;
+//		mainLog.println("Expected reachability took " + timer / 1000.0 + " seconds.");
+//
+//		// Update time taken
+//		res.timeTaken = timer / 1000.0;
+//
+		//TODO
+		///202203 temp code; for verification of POMCP algorithms
+		// Build a combined reward structure
+		int numRewards = weights.size();
+		WeightedSumMDPRewards mdpRewardsWeighted = new WeightedSumMDPRewards();
+		for (int i = 0; i < numRewards; i++) {
+			mdpRewardsWeighted.addRewards(weights.get(i), mdpRewardsList.get(i));
+		}
+		// min == false
+		computeReachRewardsPOMCP(pomdp, mdpRewardsWeighted, target, min, statesOfInterest);
 		////////////
 		
 		
