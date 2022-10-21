@@ -2644,7 +2644,7 @@ public class DTMCModelChecker extends ProbModelChecker
 	 * @param target Target states
 	 */
 	public ModelCheckerResult computeReachRewardsDistr(DTMC dtmc, MCRewards mcRewards, BitSet target) throws PrismException {
-		return computeReachRewardsDistr(dtmc, mcRewards, target, "prism/distr.csv");
+		return computeReachRewardsDistr(dtmc, mcRewards, target, "prism/distr.csv", null);
 	}
 
 
@@ -2659,12 +2659,15 @@ public class DTMCModelChecker extends ProbModelChecker
 	 * @param target Target states
 	 * @param filename name of file where distribution will be exported
 	 */
-	public ModelCheckerResult computeReachRewardsDistr(DTMC dtmc, MCRewards mcRewards, BitSet target, String filename) throws PrismException
+	public ModelCheckerResult computeReachRewardsDistr(DTMC dtmc, MCRewards mcRewards, BitSet target, String filename, Double epsilon) throws PrismException
 	{
 
 		DistrTermCrit distrTermCrit = DistrTermCrit.NON_TARGET;
 		int maxIters = 1000;
 		double termCritEpsilon = 1e-4;
+		if (epsilon != null) {
+			termCritEpsilon = epsilon;
+		}
 		// INFO : default is 1e-6, but should change to 1e-4 or 12-3 if taking too long in large models
 		
 		if (verbosity >= 1) {

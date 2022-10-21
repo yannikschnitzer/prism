@@ -26,9 +26,7 @@
 
 package explicit;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
@@ -39,6 +37,9 @@ import common.IntSet;
 import common.IterableBitSet;
 import common.IterableStateSet;
 import common.StopWatch;
+import csv.BasicReader;
+import csv.CsvFormatException;
+import csv.CsvReader;
 import explicit.modelviews.EquivalenceRelationInteger;
 import explicit.modelviews.MDPDroppedAllChoices;
 import explicit.modelviews.MDPEquiv;
@@ -2643,10 +2644,11 @@ public class MDPModelChecker extends ProbModelChecker
 		double error_thresh_cvar = 2;
 		double gamma = 1;
 		double alpha=0.5;
+		Double dtmc_epsilon = null;
 		boolean check_reach_dtmc = true;
-		boolean check_reach_dtmc_distr = false;
+		boolean check_reach_dtmc_distr = true;
 		boolean check_reach_dtmc_vi = true;
-		boolean check_reach_dtmc_distr_vi = false;
+		boolean check_reach_dtmc_distr_vi = true;
 		boolean gen_trace = true;
 		boolean compute_dtmc_vi = true;
 		String bad_states_label = "obs";
@@ -2667,16 +2669,24 @@ public class MDPModelChecker extends ProbModelChecker
 
 
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
-			atoms = 201;
-			double v_max = 800;
-			double v_min = 0;
+			// TODO remove this in final version
+			String [] params = readParams(null);
+			atoms = Integer.parseInt(params[0]);
+			double v_min = Double.parseDouble(params[1]);
+			double v_max = Double.parseDouble(params[2]);
+			dtmc_epsilon = Double.parseDouble(params[4]);
+
 			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
 			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
 			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+" - error thresh:"+error_thresh);
 		} else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
-			atoms = 5000;
-			error_thresh = 1.0/(atoms)*10; // 0.7 for uav
+			String [] params = readParams(null);
+			mainLog.print(params);
+			atoms = Integer.parseInt(params[0]);
+			error_thresh = Double.parseDouble(params[3]); // 0.7 for uav
+			dtmc_epsilon = Double.parseDouble(params[4]);
+
 			operator = new DistributionalBellmanQR(atoms, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
 			mainLog.println("----- Parameters:\natoms:"+atoms+" - alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+" - error thresh:"+error_thresh);
@@ -2795,7 +2805,7 @@ public class MDPModelChecker extends ProbModelChecker
 		DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
 		if(check_reach_dtmc_distr) {
 			timer = System.currentTimeMillis();
-			ModelCheckerResult dtmc_result = mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, target, "prism/distr_dtmc_exp.csv");
+			ModelCheckerResult dtmc_result = mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, target, "prism/distr_dtmc_exp.csv", dtmc_epsilon);
 			timer = System.currentTimeMillis() - timer;
 			if (verbosity >= 1) {
 				mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
@@ -2847,7 +2857,7 @@ public class MDPModelChecker extends ProbModelChecker
 			DTMC vi_dtmc = new DTMCFromMDPAndMDStrategy(mdp, (MDStrategy) vi_res.strat);
 			if (check_reach_dtmc_distr_vi) {
 				timer = System.currentTimeMillis();
-				vi_mcDTMC.computeReachRewardsDistr(vi_dtmc, vi_mcRewards, target, "prism/distr_dtmc_vi.csv");
+				vi_mcDTMC.computeReachRewardsDistr(vi_dtmc, vi_mcRewards, target, "prism/distr_dtmc_vi.csv", dtmc_epsilon);
 				timer = System.currentTimeMillis() - timer;
 				if (verbosity >= 1) {
 					mainLog.print("\nDTMC computation VI");
@@ -2939,13 +2949,13 @@ public class MDPModelChecker extends ProbModelChecker
 		int atoms;
 		int iterations = 1500;
 		double error_thresh = 0.01;
-		double error_thresh_cvar = 2;
+		Double dtmc_epsilon = null;
 		int min_iter = 50;
 		double gamma = 1;
 		double alpha = 0.7;
 		String bad_states_label = "obs";
 		boolean check_reach_dtmc = true;
-		boolean check_reach_dtmc_distr= false;
+		boolean check_reach_dtmc_distr= true;
 		boolean gen_trace = true;
 
 		String c51 = "C51";
@@ -2963,24 +2973,35 @@ public class MDPModelChecker extends ProbModelChecker
 		mainLog.println(" Starting Cvar iteration with method: "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
 
 		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
-			atoms = 41;
-			b_atoms = 21;
 			// TODO make this a point variable or something to be a bit cleaner
-			double b_max = 800;
-			double b_min = 0;
-			double v_max = 800;
-			double v_min = 0;
+			String [] params = readParams(null);
+			atoms = Integer.parseInt(params[0]);
+			double v_min = Double.parseDouble(params[1]);
+			double v_max = Double.parseDouble(params[2]);
+			dtmc_epsilon = Double.parseDouble(params[4]);
+
+			params = readParams("prism/tests/params_b.csv");
+			b_atoms = Integer.parseInt(params[0]);
+			double b_min = Double.parseDouble(params[1]);
+			double b_max = Double.parseDouble(params[2]);
+
 			operator = new DistributionalBellmanCategoricalAugmented(atoms, b_atoms, v_min, v_max, b_min, b_max, n, n_actions, mainLog);
 			operator.initialize(mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
 			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min+" - b_atoms:"+b_atoms+" - bmin:"+b_min+" - bmax:"+b_max);
 			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+" - error thresh:"+error_thresh);
 		}
 		else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
-			atoms = 100;
-			b_atoms = 26;
-			double b_max = 1000;
-			double b_min = 0;
-			error_thresh = 1.0/atoms*3.1; // 0.7 for uav
+			//error_thresh = 1.0/atoms*3.1; // 0.7 for uav
+			String [] params = readParams(null);
+			atoms = Integer.parseInt(params[0]);
+			error_thresh = Double.parseDouble(params[3]);
+			dtmc_epsilon = Double.parseDouble(params[4]);
+
+			params = readParams("prism/tests/params_b.csv");
+			b_atoms = Integer.parseInt(params[0]);
+			double b_min = Double.parseDouble(params[1]);
+			double b_max = Double.parseDouble(params[2]);
+
 			operator = new DistributionalBellmanQRAugmented(atoms, b_atoms, b_min, b_max, n, n_actions, mainLog);
 			operator.initialize(mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
 			mainLog.println("----- Parameters:\natoms:"+atoms+" - b_atoms:"+b_atoms+" - bmin:"+b_min+" - bmax:"+b_max);
@@ -3151,7 +3172,7 @@ public class MDPModelChecker extends ProbModelChecker
 		int initialState = dtmc.getFirstInitialState();
 		if (check_reach_dtmc_distr) {
 			timer = System.currentTimeMillis();
-			ModelCheckerResult dtmc_result = mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, product_target, "prism/distr_dtmc_cvar.csv");
+			ModelCheckerResult dtmc_result = mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, product_target, "prism/distr_dtmc_cvar.csv", dtmc_epsilon);
 			timer = System.currentTimeMillis() - timer;
 			if (verbosity >= 1) {
 				mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
@@ -3199,6 +3220,27 @@ public class MDPModelChecker extends ProbModelChecker
 		res.numIters = iterations;
 		res.timeTaken = (System.currentTimeMillis() - total_timer) / 1000.0;
 		return res;
+	}
+
+	public String[] readParams(String filename)
+	{
+		if (filename == null){
+			filename = "prism/tests/params_vi.csv";
+		}
+		String [] params = null;
+		try {
+			BasicReader r = new BasicReader.Wrapper(new FileReader(filename));
+			CsvReader reader = new CsvReader(r, true, true, true, CsvReader.COMMA, CsvReader.LF);
+			params = reader.nextRecord();
+
+			r.close();
+			reader.close();
+
+		} catch (IOException | CsvFormatException e) {
+			e.printStackTrace();
+		}
+
+		return params;
 	}
 
 	public void printToFile(Object [] policy, double [] value, String filename, int n)
