@@ -18,7 +18,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     int atoms = 1;
     double delta_z = 1;
     double [] z ;
-    double [][][] p;
+    double [][] p;
     int n_actions = 4;
     double v_min ;
     double v_max ;
@@ -57,7 +57,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         df = new DecimalFormat("0.000");
 
         // INFO right now saving augmented state-action distributions
-        this.p = new double[numStates][n_actions][atoms];
+        this.p = new double[numStates][atoms];
 
         // Initialize distribution atoms 
         for (int i = 0; i < atoms; i++) {
@@ -106,11 +106,9 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         b = Arrays.copyOf(el.b, b_atoms);
 
         // Deep copy distribution
-        this.p = new double[numStates][n_actions][atoms];
+        this.p = new double[numStates][atoms];
         for (int s=0; s<numStates; s++) {
-            for (int a = 0; a < n_actions; a++) {
-                p[s][a] = Arrays.copyOf(el.p[s][a], atoms);
-            }
+            p[s] = Arrays.copyOf(el.p[s], atoms);
         }
 
         // Deep Copy product MDP
@@ -132,38 +130,33 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         numStates = prod_mdp.getProductModel().getNumStates();
 
         mainLog.println("#b: "+b_atoms+ " atoms: "+atoms+" Max Choices: "+n_actions);
-        mainLog.println("Size of probability array: "+numStates*n_actions*atoms);
+        mainLog.println("Size of probability array: "+numStates*atoms);
 
-        this.p = new double[numStates][n_actions][atoms];
+        this.p = new double[numStates][atoms];
         double [] temp2 = new double[atoms];
         temp2[0] =1.0;
 
         for (int i = 0; i < numStates; i++) {
-            for (int a = 0; a<n_actions; a++){
-                this.p[i][a]= Arrays.copyOf(temp2, temp2.length);
-            }
+            this.p[i]= Arrays.copyOf(temp2, temp2.length);
         }
     }
 
 
-    public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, int [] choices, int numTransitions, double gamma, double state_reward)
+    public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, int numTransitions, double gamma, double state_reward)
     {
-        double [] res = update_probabilities(trans_it, choices);
+        double [] res = update_probabilities(trans_it);
         res = update_support(gamma, state_reward, res);
         return res;
     }
 
     // updates probabilities for 1 action
-    public double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it, int [] choices) {
+    public double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it) {
         double [] sum_p= new double[atoms];
-        int action = 0;
 
         while (trans_it.hasNext()) {
             Map.Entry<Integer, Double> e = trans_it.next();
             for (int j = 0; j < atoms; j++) {
-                action  = choices[e.getKey()];
-
-                sum_p[j] += e.getValue() * p[e.getKey()][action][j];
+                sum_p[j] += e.getValue() * p[e.getKey()][j];
             }
         }
         return sum_p;
@@ -236,36 +229,27 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         mainLog.println("------- state:"+s);
         int idx_b = prod_mdp.getAutomatonState(s);
         mainLog.println("------ b:"+df.format(b[idx_b]));
-        for (int j =0; j< prod_mdp.productModel.getNumChoices(s); j++) {
-            mainLog.print("[");
-            Arrays.stream(p[s][j]).forEach(e -> mainLog.print(df.format(e) + ", "));
-            mainLog.print("]\n");
-        }
-
-
-    }
-
-    public void display(int s, int [] choices) {
-        double[] doubles = p[s][choices[s]];
         mainLog.print("[");
-        Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
+        Arrays.stream(p[s]).forEach(e -> mainLog.print(df.format(e) + ", "));
         mainLog.print("]\n");
     }
 
+//    public void display(int s) {
+//        double[] doubles = p[s];
+//        mainLog.print("[");
+//        Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
+//        mainLog.print("]\n");
+//    }
+
     @Override
-    public void update(double [] temp, int state, int action){
-        p[state][action] = Arrays.copyOf(temp, temp.length);
+    public void update(double [] temp, int state){
+        p[state]= Arrays.copyOf(temp, temp.length);
     }
 
 
     @Override
-    public double[][] getDist(int s) {
+    public double[] getDist(int s) {
         return p[s];
-    }
-
-    @Override
-    public double[] getDist(int s, int a) {
-        return p[s][a];
     }
 
     // TODO probably rename this
@@ -371,14 +355,14 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
     // Wp with p=2
     @Override
-    public double getW(double [] dist1, int state, int idx_a)
+    public double getW(double [] dist1, int state)
     {
         double sum = 0;
         double [] cum_p = new double[2];
         for (int i =0; i<atoms; i++)
         {
             cum_p[0] += dist1[i];
-            cum_p[1] += p[state][idx_a][i];
+            cum_p[1] += p[state][i];
             sum+= pow((cum_p[0] - cum_p[1]), 2) * delta_z;
         }
         return sqrt(sum);
@@ -391,13 +375,13 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 //        KolmogorovSmirnovTest test = new KolmogorovSmirnovTest();
 //    }
 
-    public double [][][] getP ()
+    public double [][] getP ()
     {
         return p;
     }
 
     // Find the starting that minimizes CVAR at initial state based on a given alpha
-    public double [] computeStartingB( double alpha, int [] choices){
+    public double [] computeStartingB( double alpha){
         double [] res = new double [3]; // contains the min index + min cvar.
         double cvar = 0;
         res [1] = Float.POSITIVE_INFINITY;
@@ -415,7 +399,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
             int prod_state = initials_it.next();
             idx_b = prod_mdp.getAutomatonState(prod_state);
             for ( int i =0; i < atoms; i++){
-                double j = p[prod_state][choices[prod_state]][i];
+                double j = p[prod_state][i];
                 if (j >0){
                     expected_cost += j * max(0, z[i] - b[idx_b]);
                 }
@@ -436,7 +420,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         int prodNumStates = prod_mdp.getProductModel().getNumStates();
         int [] res = new int [prodNumStates];
 
-        double [] cvar_info = computeStartingB(alpha, choices);
+        double [] cvar_info = computeStartingB(alpha);
         int idx_b = (int) cvar_info[0];
 
         mainLog.println("b :"+b[idx_b] + " cvar = " + cvar_info[1]+" start="+cvar_info[2]);
@@ -458,7 +442,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         mainLog.println("\nV[0] at state: " + (int)cvar_info[2]
                 + " original model:" + prod_mdp.getModelState((int)cvar_info[2])
                 + " b:"+ b[idx_b] + " alpha:" + alpha);
-        this.display((int)cvar_info[2], choices);
+        this.display((int)cvar_info[2]);
 
         double r ;
         for (int i = 0; i < prodNumStates; i++) {
@@ -523,12 +507,12 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     public double [] getB() {return b;}
 
     @Override
-    public void writeToFile(int state, int action, String filename){
+    public void writeToFile(int state, String filename){
         if (filename == null) {filename="distr_cvar_c51.csv";}
         try (PrintWriter pw = new PrintWriter(new File("prism/"+filename))) {
             pw.println("r,p,z");
             for (int r = 0; r < atoms; r++) {
-                Double prob = p[state][action][r];
+                Double prob = p[state][r];
                 prob = (prob == null) ? 0.0 : prob;
                 pw.println(r + "," + prob+","+z[r]);
             }

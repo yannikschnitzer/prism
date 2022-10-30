@@ -2738,7 +2738,7 @@ public class MDPModelChecker extends ProbModelChecker
 					action_val[s][choice] = operator.getExpValue(m);
 					save_p[choice] = Arrays.copyOf(m, m.length);
 				}
-
+				 // TODO optimize this to be consistent with cvar distr VI
 				int min_i = 0;
 				min_v = Float.POSITIVE_INFINITY;
 				for (int i =0; i<numChoices; i++) {
@@ -3060,6 +3060,7 @@ public class MDPModelChecker extends ProbModelChecker
 				Arrays.fill(action_val[s], Float.POSITIVE_INFINITY);
 				double min_magic = Float.POSITIVE_INFINITY;
 				int min_a = 0;
+				double [] save_p = new double[atoms];
 
 				for (int choice = 0; choice < numChoices; choice++) { // aka action
 					double[] m;
@@ -3067,19 +3068,18 @@ public class MDPModelChecker extends ProbModelChecker
 					Iterator<Entry<Integer, Double>> it = cvar_mdp.getProductModel().getTransitionsIterator(s, choice);
 
 					reward = mdpRewards.getStateReward(model_s) + mdpRewards.getTransitionReward(model_s, choice);
-					m = operator.step(it, choices, numTransitions, gamma, reward);
+					m = operator.step(it, numTransitions, gamma, reward);
 
 					action_val[s][choice] = operator.getMagic(m, cvar_mdp.getAutomatonState(s));
 					if (action_val[s][choice] < min_magic) {
 						min_a = choice;
 						min_magic = action_val[s][choice];
+						save_p = Arrays.copyOf(m, m.length);
 					}
-
-					temp_p.update(m, s, choice);
 				}
 				policy[s] = cvar_mdp.getProductModel().getAction(s, min_a);
 				choices[s] = min_a;
-
+				temp_p.update(save_p, s);
 			}
 
 			states = unknownStates.iterator();
@@ -3090,15 +3090,13 @@ public class MDPModelChecker extends ProbModelChecker
 
 			while (states.hasNext()) {
 				final int s = states.nextInt();
-				for (int choice = 0; choice < cvar_mdp.getProductModel().getNumChoices(s); choice++) {
-					int b = cvar_mdp.getAutomatonState(s);
-					action = choices[s];
-					double tempo = operator.getW(temp_p.getDist(s, action), s, action);
-					max_dist = max(max_dist, tempo);
-					max_cvar_dist = max(max_cvar_dist,
-							abs(operator.getValueCvar(temp_p.getDist(s, action), alpha, b) - operator.getValueCvar(operator.getDist(s, action), alpha, b)));
-					operator.update(temp_p.getDist(s, choice), s, choice);
-				}
+				int b = cvar_mdp.getAutomatonState(s);
+				double tempo = operator.getW(temp_p.getDist(s), s);
+				max_dist = max(max_dist, tempo);
+//				max_cvar_dist = max(max_cvar_dist,
+//						abs(operator.getValueCvar(temp_p.getDist(s), alpha, b) - operator.getValueCvar(operator.getDist(s), alpha, b)));
+				operator.update(temp_p.getDist(s), s);
+
 			}
 
 			mainLog.println("Max Wp dist :"+(max_dist) + " error Wp:" + (error_thresh) +" at iter:"+iters);
@@ -3113,7 +3111,7 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 
 		mainLog.println("\nV[0] at " + (iters + 1) + " with method " + settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
-		operator.display(0, choices);
+		operator.display(cvar_mdp.getProductModel().getFirstInitialState());
 
 		// Policy
 //		mainLog.println("\nPolicy");
@@ -3181,7 +3179,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 			double [] adjusted_dtmc_distr=operator.adjust_support(((TreeMap)dtmc_result.solnObj[initialState]));
 			mainLog.println(adjusted_dtmc_distr);
-			mainLog.println("Wasserstein p="+(settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51) ? "2" : "1")+" dtmc vs code distributions: "+operator.getW(adjusted_dtmc_distr, initialState, pol[initialState]));
+			mainLog.println("Wasserstein p="+(settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51) ? "2" : "1")+" dtmc vs code distributions: "+operator.getW(adjusted_dtmc_distr, initialState));
 		}
 		if (check_reach_dtmc){
 			BitSet obs_states= cvar_mdp.getProductModel().getLabelStates(bad_states_label);
@@ -3212,7 +3210,7 @@ public class MDPModelChecker extends ProbModelChecker
 			printToFile(policy, action_val, alpha, b_atoms, operator.getB(), starting, "gridmap/cvar_out_"+n+"_"+ settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) +"_"+alpha+".out", n, mdp.getMaxNumChoices());
 		}
 
-		operator.writeToFile(initialState, pol[initialState], null);
+		operator.writeToFile(initialState, null);
 		// Store results
 		//FIXME value im returning is policy not value
 		ModelCheckerResult res = new ModelCheckerResult();

@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
+ // FIXME : this class structure needs to be adjusted.
 public abstract class DistributionalBellmanAugmented {
     public int b_atoms;
     public double [] b;
@@ -23,7 +24,7 @@ public abstract class DistributionalBellmanAugmented {
 
     public void setAlpha(double a){ alpha=a;}
 
-    public abstract double [] step(Iterator<Map.Entry<Integer, Double>> trans_it,  int [] choices, int numTransitions, double gamma, double state_reward);
+    public abstract double [] step(Iterator<Map.Entry<Integer, Double>> trans_it,  int numTransitions, double gamma, double state_reward);
 
     public abstract double getExpValue(double [] temp);
 
@@ -35,17 +36,13 @@ public abstract class DistributionalBellmanAugmented {
 
     public abstract double getProbThreshold(double[] probs, double lim);
 
-    // Wp with p=2
     public abstract double getW(double[] dist1, double[] dist2);
 
-    // Wp with p=2
-    public abstract double getW(double [] dist1, int state, int idx_a);
+    public abstract double getW(double [] dist1, int state);
 
-    public abstract void update(double[] temp, int state, int action);
+    public abstract void update(double[] temp, int state);
 
-    public abstract double[][] getDist(int s);
-
-    public abstract double [] getDist(int s, int a);
+    public abstract double[] getDist(int s);
 
     public abstract double getMagic(double [] temp, int idx_b);
 
@@ -60,8 +57,6 @@ public abstract class DistributionalBellmanAugmented {
 
     public abstract void display(int s);
 
-    public abstract void display(int i, int[] choices);
-
     public abstract int[] getStrategy(MDPRewards mdpRewards, StateRewardsArray rewardsArray, int [] choices, double alpha) throws PrismException;
 
     public abstract double [] adjust_support(TreeMap distr);
@@ -74,5 +69,5 @@ public abstract class DistributionalBellmanAugmented {
 
     public abstract double [] getB();
 
-    public abstract void writeToFile(int state, int action, String filename);
+    public abstract void writeToFile(int state, String filename);
 }

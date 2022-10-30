@@ -18,7 +18,7 @@ import static java.lang.Math.sqrt;
 public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugmented {
     int atoms = 1;
 //    double delta_z = 1;
-    double [][][] z ;
+    double [][] z ;
     double [] p;
     int n_actions = 4;
     double b_min; double b_max;
@@ -41,7 +41,7 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
         super();
         this.atoms = atoms;
         // TODO potentially remove creation of array here
-        this.z = new double[numStates][n_actions][atoms];
+        this.z = new double[numStates][atoms];
         this.b = new double[b_atoms];
         this.p = new double[atoms];
         this.tau_hat = new double[atoms];
@@ -96,11 +96,9 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
         b = Arrays.copyOf(el.b, b_atoms);
 
         // Deep copy distribution
-        this.z = new double[numStates][n_actions][atoms];
+        this.z = new double[numStates][atoms];
         for (int s=0; s<numStates; s++) {
-            for (int a = 0; a < n_actions; a++) {
-                z[s][a] = Arrays.copyOf(el.z[s][a], atoms);
-            }
+            z[s] = Arrays.copyOf(el.z[s], atoms);
         }
 
         // Deep Copy product MDP
@@ -122,13 +120,13 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
         numStates = prod_mdp.getProductModel().getNumStates();
 
         mainLog.println("#b: "+b_atoms+ " atoms: "+atoms+" Max Choices: "+n_actions);
-        mainLog.println("Size of probability array: "+numStates*n_actions*atoms);
+        mainLog.println("Size of probability array: "+numStates*atoms);
 
-        this.z = new double[numStates][n_actions][atoms];
+        this.z = new double[numStates][atoms];
     }
 
 
-    public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, int [] choices, int numTransitions, double gamma, double state_reward)
+    public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, int numTransitions, double gamma, double state_reward)
     {
         ArrayList<MapEntry<Double, Double>> multimap = new ArrayList<>();
         double [] result;
@@ -137,8 +135,7 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
         while (trans_it.hasNext()) {
             Map.Entry<Integer, Double> e = trans_it.next();
             for (int j = 0; j < atoms; j++) {
-                action  = choices[e.getKey()];
-                multimap.add(new MapEntry<>(delta_p * e.getValue(), gamma*z[e.getKey()][action][j] + state_reward));
+                multimap.add(new MapEntry<>(delta_p * e.getValue(), gamma*z[e.getKey()][j] + state_reward));
             }
         }
 
@@ -196,7 +193,6 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
         }
     }
 
-    // FIXME remove one of these
     @Override
     public void display(MDP mdp) {
         for (int s=0; s<numStates; s++) {
@@ -209,36 +205,27 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
         mainLog.println("------- state:"+s);
         int idx_b = prod_mdp.getAutomatonState(s);
         mainLog.println("------ b:"+df.format(b[idx_b]));
-        for (int j =0; j< prod_mdp.productModel.getNumChoices(s); j++) {
-            mainLog.print("[");
-            Arrays.stream(z[s][j]).forEach(e -> mainLog.print(df.format(e) + ", "));
-            mainLog.print("]\n");
-        }
-
-
-    }
-
-    public void display(int s, int [] choices) {
-        double[] doubles = z[s][choices[s]];
         mainLog.print("[");
-        Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
+        Arrays.stream(z[s]).forEach(e -> mainLog.print(df.format(e) + ", "));
         mainLog.print("]\n");
     }
 
+//    public void display(int s, int [] choices) {
+//        double[] doubles = z[s][choices[s]];
+//        mainLog.print("[");
+//        Arrays.stream(doubles).forEach(e -> mainLog.print(df.format(e) + ", "));
+//        mainLog.print("]\n");
+//    }
+
     @Override
-    public void update(double [] temp, int state, int action){
-        z[state][action] = Arrays.copyOf(temp, temp.length);
+    public void update(double [] temp, int state){
+        z[state] = Arrays.copyOf(temp, temp.length);
     }
 
 
     @Override
-    public double[][] getDist(int s) {
+    public double[] getDist(int s) {
         return z[s];
-    }
-
-    @Override
-    public double[] getDist(int s, int a) {
-        return z[s][a];
     }
 
     // TODO probably rename this
@@ -348,12 +335,12 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
 
     // Wp with p=1
     @Override
-    public double getW(double [] dist1, int state, int idx_a)
+    public double getW(double [] dist1, int state)
     {
         double sum = 0;
         for (int i =0; i<atoms; i++)
         {
-            sum+= abs((dist1[i]) - (z[state][idx_a][i]));
+            sum+= abs((dist1[i]) - (z[state][i]));
         }
         return sum* (1.0/atoms);
     }
@@ -365,13 +352,13 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
 //        KolmogorovSmirnovTest test = new KolmogorovSmirnovTest();
 //    }
 
-    public double [][][] getZ ()
+    public double [][] getZ ()
     {
         return z;
     }
 
     // Find the starting that minimizes CVAR at initial state based on a given alpha
-    public double [] computeStartingB( double alpha, int [] choices){
+    public double [] computeStartingB( double alpha){
         double [] res = new double [3]; // contains the min index + min cvar.
         double cvar = 0;
         res [1] = Float.POSITIVE_INFINITY;
@@ -388,7 +375,7 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
             int prod_state = initials_it.next();
             idx_b = prod_mdp.getAutomatonState(prod_state);
             for ( int i =0; i < atoms; i++){
-                double j = z[prod_state][choices[prod_state]][i];
+                double j = z[prod_state][i];
                 if (j >0){
                     expected_cost += p[i] * max(0, j - b[idx_b]);
                 }
@@ -409,7 +396,7 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
         int prodNumStates = prod_mdp.getProductModel().getNumStates();
         int [] res = new int [prodNumStates];
 
-        double [] cvar_info = computeStartingB(alpha, choices);
+        double [] cvar_info = computeStartingB(alpha);
         int idx_b = (int) cvar_info[0];
 
         mainLog.println("b :"+b[idx_b] + " cvar = " + cvar_info[1]+" start="+cvar_info[2]);
@@ -426,7 +413,7 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
         mainLog.println("\nV[0] at state: " + (int)cvar_info[2]
                 + " original model:" + prod_mdp.getModelState((int)cvar_info[2])
                 + " b:"+ b[idx_b] + " alpha:" + alpha);
-        this.display((int)cvar_info[2], choices);
+        this.display((int)cvar_info[2]);
 
         double r ;
         for (int i = 0; i < prodNumStates; i++) {
@@ -484,12 +471,12 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
     public double [] getB() {return b;}
 
     @Override
-    public void writeToFile(int state, int action, String filename){
+    public void writeToFile(int state, String filename){
         if (filename == null) {filename="distr_cvar_qr.csv";}
         try (PrintWriter pw = new PrintWriter(new File("prism/"+filename))) {
             pw.println("r,p,z");
             for (int r = 0; r < atoms; r++) {
-                double val = z[state][action][r];
+                double val = z[state][r];
                 pw.println(val + "," +p[r]+","+ tau_hat[r]);
             }
         } catch (FileNotFoundException e) {
