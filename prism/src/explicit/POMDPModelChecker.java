@@ -1818,7 +1818,7 @@ public class POMDPModelChecker extends ProbModelChecker
 				{PartiallyObservableMonteCarloPlanning.ON_THE_FLY_SHIELD, PartiallyObservableMonteCarloPlanning.FACTORED_SHIELD}, // on-the-fly; factoer shield
 				};
 
-		String[] testCases = getSettings().getString(PrismSettings.PRISM_SHIELD_DIR).split(";");
+		String[] testCases = getSettings().getString(PrismSettings.PRISM_SHIELD_DIR).replace("[", "").replace("]", "").split(",");
 		
 		for (int t = 0; t < testCases.length; t++ ) {
 			int i = Integer.valueOf(testCases[t]);
