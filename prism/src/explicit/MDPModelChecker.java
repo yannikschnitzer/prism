@@ -2679,17 +2679,19 @@ public class MDPModelChecker extends ProbModelChecker
 			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
 			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
-			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+" - error thresh:"+error_thresh);
+			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
+					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
 		} else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
 			String [] params = readParams(null);
-			mainLog.print(params);
 			atoms = Integer.parseInt(params[0]);
 			error_thresh = Double.parseDouble(params[3]); // 0.7 for uav
 			dtmc_epsilon = Double.parseDouble(params[4]);
 
 			operator = new DistributionalBellmanQR(atoms, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
-			mainLog.println("----- Parameters:\natoms:"+atoms+" - alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+" - error thresh:"+error_thresh);
+			mainLog.println("----- Parameters:\natoms:"+atoms+
+					" - alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
+					" - error thresh:"+error_thresh + " - epsilon:"+dtmc_epsilon);
 		}
 		else{
 			atoms=101;
@@ -2988,7 +2990,8 @@ public class MDPModelChecker extends ProbModelChecker
 			operator = new DistributionalBellmanCategoricalAugmented(atoms, b_atoms, v_min, v_max, b_min, b_max, n, n_actions, mainLog);
 			operator.initialize(mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
 			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min+" - b_atoms:"+b_atoms+" - bmin:"+b_min+" - bmax:"+b_max);
-			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+" - error thresh:"+error_thresh);
+			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
+					" - error thresh:"+error_thresh + " - epsilon:"+ dtmc_epsilon);
 		}
 		else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
 			//error_thresh = 1.0/atoms*3.1; // 0.7 for uav
@@ -3005,7 +3008,8 @@ public class MDPModelChecker extends ProbModelChecker
 			operator = new DistributionalBellmanQRAugmented(atoms, b_atoms, b_min, b_max, n, n_actions, mainLog);
 			operator.initialize(mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
 			mainLog.println("----- Parameters:\natoms:"+atoms+" - b_atoms:"+b_atoms+" - bmin:"+b_min+" - bmax:"+b_max);
-			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+" - error thresh:"+error_thresh);
+			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
+					" - error thresh:"+error_thresh+ " - epsilon:"+ dtmc_epsilon);
 		}
 		else {
 			atoms = 101;
