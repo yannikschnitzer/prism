@@ -1774,8 +1774,6 @@ public class POMDPModelChecker extends ProbModelChecker
 		String maxDepthS = getSettings().getString(PrismSettings.PRISM_POMCP_MAX_DEPTH);
 		String verboseS = getSettings().getString(PrismSettings.PRISM_POMCP_VERBOSE);
 		
-
-
 		if (numSimulationS.length() > 0) {
 			numSimulation = Double.parseDouble(numSimulationS);
 		}
@@ -1888,6 +1886,8 @@ public class POMDPModelChecker extends ProbModelChecker
 								+ "; Average numBad=" + (totalNumBad/numEpisode)
 								+ "; Average numSteps=" + (totalNumSteps/numEpisode))
 								;
+				
+
 				out.open(resultDirName + "result" +  timeStamp  + ".txt", true);
 
 				out.println(timeStamp + ";"+ nStates + ";" + shieldLevel+ ";" + useLocalShield + ";" + numEpisode + ";" + numEpisodes 
@@ -1917,17 +1917,23 @@ public class POMDPModelChecker extends ProbModelChecker
 		double totalDiscountedReward = 0;
 		double discount = 0.95;
 		int step = 0;
-		int stepLimit = 500;
+		int stepLimit = 200;
 		double gamma = 1;
 		
-		String path = "." + System.getProperties().getProperty("file.separator") + "log" + System.getProperties().getProperty("file.separator");
+		String fileName = "Trajectory-"  + timeStamp + "-shield-" +  shield + "-Episode-" + episode  ;
+		String separator = System.getProperties().getProperty("file.separator");
 		
+		String path = "." + separator + "Trajectory" +separator;// +  timeStamp + separator;
 		File resultDir = new File(path);
 		if (!resultDir.exists()) {
 			resultDir.mkdir();
 		}
+		path += timeStamp + separator;
+		resultDir = new File(path);
+		if (!resultDir.exists()) {
+			resultDir.mkdir();
+		}
 		
-		String fileName = "Trajectory-"  + timeStamp + "-shield-" +  shield + "-Episode-" + episode  ;
 		PrismFileLog out = new PrismFileLog(path + fileName + ".txt");
 		out.println("prism_state;prism_belief_support;selected_action;available_actions;allowed_actions;state_meaning;is_bad_state;reward;shielded_actions");
 		

@@ -43,6 +43,7 @@ import prism.PrismNotSupportedException;
 import prism.PrismUtils;
 import prism.PrismSettings;
 
+import java.awt.desktop.SystemSleepEvent;
 import java.io.*;
 import java.math.BigInteger;
 
@@ -799,6 +800,11 @@ import java.math.BigInteger;
 	}
 	public void removeChild(int index) {
 		if (children != null) {
+			POMCPNode qchild = children.get(index);
+			if (qchild != null) {
+				v -= qchild.getV();
+				n -= qchild.getN();
+			}
 			children.remove(index);
 			if (children.size() == 0 && this.getParent() != null) {
 				POMCPNode qParent = this.getParent();
@@ -976,8 +982,10 @@ public class PartiallyObservableMonteCarloPlanning {
 	private HashMap<Integer, ArrayList<Double>> stateSuccessorCumProb;
 
 	private String shieldLevel;
-	private ArrayList<POMDPShield> localShields;
+	
 	private POMDPShield mainShield;
+	private ArrayList<POMDPShield> localShields;
+	private HashMap<Integer, Integer> stateToLocalShieldIndex;
 	private boolean useLocalShields;
 	private boolean isMainShieldAvailable;
 	private boolean isLocalShieldAvailable;
@@ -1397,9 +1405,8 @@ public class PartiallyObservableMonteCarloPlanning {
 			numStep++;
 			state = nextState;
 		}
-		// add reward for reaching  last state
-		totalReward += mdpRewards.getStateReward(state);
 		
+		totalReward += mdpRewards.getStateReward(state) * discount;
 		if (verbose >= 3) {
 			System.out.println("Ending rollout after " + numStep + "steps, with total reward" + totalReward );
 		}
@@ -1629,7 +1636,7 @@ public class PartiallyObservableMonteCarloPlanning {
 		double reward;
 		if (rewardFunction.containsKey(key)) {
 			reward = rewardFunction.get(key);
-		}else {
+		} else {
 			Object action = allActions.get(actionIndex);
 			int choice = pomdp.getChoiceByAction(state, action);		
 			if (!stateSuccessorArrayList.containsKey(key)) {
@@ -1875,14 +1882,20 @@ public class PartiallyObservableMonteCarloPlanning {
 		}
 	}
 	
+	public int getStateIndex(int x, int y) 
+	{
+		return x + y * gridSize;
+		
+	}
 	public int getShieldIndex(int state)
 	{
 		
 		int x = getAX(state);
 		int y = getAY(state);
-		int shieldIndex = (x / shieldSize)* (gridSize / shieldSize) + (y / shieldSize) ;
+//		int shieldIndex = (x / shieldSize)* (gridSize / shieldSize) + (y / shieldSize) ;
+		return stateToLocalShieldIndex.get(getStateIndex(x, y));
 //		System.out.println(state + " get " + getStateMeaning(state) + "x " + x + ", y= " + y + "sheild index" + shieldIndex);
-		return shieldIndex; 
+//		return shieldIndex; 
 	}
 	public boolean isActionShieldedForStatesByLocalShileds(HashSet<Integer> beliefSupport, Object action) 
 	{
@@ -1963,6 +1976,7 @@ public class PartiallyObservableMonteCarloPlanning {
 				shieldIndexToBeliefSupport.put(shieldIndex, belief);
 			}
 			shieldIndexToBeliefSupport.get(shieldIndex).add(state);
+//			System.out.println("x" + getAX(state)+ "y " + getAY(state) + getStateIndex(getAX(state),getAY(state)) + " " + " " + shieldIndex );
 		}
 		for (int shieldIndex: shieldIndexToBeliefSupport.keySet()) {
 			POMDPShield localShield = localShields.get(shieldIndex);
@@ -1990,10 +2004,10 @@ public class PartiallyObservableMonteCarloPlanning {
 			System.out.println(fileName);
 			this.isMainShieldAvailable = true;
 			String[] parameters = fileName.split("-");
-			
+			int n = parameters.length;
 //			gridSize = Integer.parseInt(parameters[1]);
 //			shieldSize = gridSize;
-			int[] pStates = {0, 0, Integer.parseInt(parameters[1]), Integer.parseInt(parameters[1])}; 
+			int[] pStates = {0, 0, Integer.parseInt(parameters[n-3]), Integer.parseInt(parameters[n-2])}; 
 			
 			String winning = file.toString();
 			mainShield = new POMDPShield(pomdp, winning,  varNames, endStates, pStates);
@@ -2027,6 +2041,8 @@ public class PartiallyObservableMonteCarloPlanning {
 	public void loadLocalShield(String shieldDir) 
 	{
 		localShields = new ArrayList<POMDPShield> ();
+		stateToLocalShieldIndex = new HashMap<Integer, Integer> ();
+		gridSize = 0;
 		File files = new File(shieldDir);
 		File[] array = files.listFiles();
 		ArrayList<String> fileNames = new ArrayList<String> ();
@@ -2041,18 +2057,36 @@ public class PartiallyObservableMonteCarloPlanning {
 			fileNames.add(fileName);
 		}
 		Collections.sort(fileNames);
+		
+		for (int i = 0; i < fileNames.size(); i++) {
+			String fileName = fileNames.get(i);
+			String[] parameters = fileName.split("-");
+//			shieldSize = Integer.parseInt(parameters[1]);
+			int n= parameters.length;
+			gridSize = Math.max(gridSize, Integer.parseInt(parameters[n - 2]) - Integer.parseInt(parameters[n - 5]) + 1);
+		}
+		
 		for (int i = 0; i < fileNames.size(); i++) {
 			String fileName = fileNames.get(i);
 			System.out.println("++++Initialize shield index = " + localShields.size() + ", shieldName = "+ fileName);
-			String winning = shieldDir + System.getProperties().getProperty("file.separator") + fileName;
 			this.isLocalShieldAvailable = true;
+			String winning = shieldDir + System.getProperties().getProperty("file.separator") + fileName;
 			String[] parameters = fileName.split("-");
-			int[] pStates = {Integer.parseInt(parameters[2]), Integer.parseInt(parameters[3]), Integer.parseInt(parameters[4]), Integer.parseInt(parameters[5])}; 
+			int n= parameters.length;
+			int[] pStates = {Integer.parseInt(parameters[n-5]), Integer.parseInt(parameters[n-4]), Integer.parseInt(parameters[n-3]), Integer.parseInt(parameters[n-2])}; 
 			
-			shieldSize = Integer.parseInt(parameters[1]);
-			gridSize = Integer.parseInt(parameters[5]) + 1;
+//			System.out.println(Arrays.toString(pStates));
 			
 			POMDPShield localShield = new POMDPShield(pomdp, winning, varNames, endStates, pStates);
+			for (int x = pStates[0]; x < pStates[2] + 1; x ++ ) {
+				for (int y = pStates[1]; y < pStates[3] + 1; y ++) {
+					int xy = getStateIndex(x, y);
+					int shieldIndex = localShields.size();
+					stateToLocalShieldIndex.put(xy, shieldIndex);
+//					System.out.println(x + " " + y+ " " + localShields.size() + xy + " "  + Integer.parseInt(parameters[2])+ " " + Integer.parseInt(parameters[3])+ " " 
+//							+ Integer.parseInt(parameters[4])+ " " + Integer.parseInt(parameters[5] ));
+				}
+			}
 			localShields.add(localShield);
 		}
 	}
