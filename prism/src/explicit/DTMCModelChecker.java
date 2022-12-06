@@ -2705,13 +2705,13 @@ public class DTMCModelChecker extends ProbModelChecker
 				}
 				// Non-target: For each DTMC transition in the current state...
 				else {
+					// TODO: check rewards are integers
+					int rNext = r + (int) mcRewards.getStateReward(s);
 					Iterator<Entry<Integer, Double>> iter = dtmc.getTransitionsIterator(s);
 					while (iter.hasNext()) {
 						Entry<Integer, Double> entry = iter.next();
 						double prob = val * entry.getValue();
 						int sNext = entry.getKey();
-						// TODO: check rewards are integers
-						int rNext = r + (int) mcRewards.getStateReward(s);
 						Double valLookup = rewProbsNew.get(new StateRew(sNext, rNext));
 						double valNext = valLookup == null ? prob : prob + valLookup;
 						rewProbsNew.put(new StateRew(sNext, rNext), valNext);
