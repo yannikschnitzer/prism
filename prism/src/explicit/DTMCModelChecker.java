@@ -2699,7 +2699,9 @@ public class DTMCModelChecker extends ProbModelChecker
 				int r = sr.r;
 				// Target states are absorbing (and zero-reward)
 				if (target.get(s)) {
-					rewProbsNew.put(new StateRew(s, r), val);
+					Double valLookup = rewProbsNew.get(new StateRew(s, r));
+					double valNext = valLookup == null ? val : val + valLookup;
+					rewProbsNew.put(new StateRew(s, r), valNext);
 				}
 				// Non-target: For each DTMC transition in the current state...
 				else {
