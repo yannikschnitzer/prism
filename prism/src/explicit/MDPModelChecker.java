@@ -3202,7 +3202,7 @@ public class MDPModelChecker extends ProbModelChecker
 			if (verbosity >= 1){
 				mainLog.println("# Initial states: ", dtmc.getNumInitialStates());
 			}
-			starting = dtmc.getInitialStates().iterator().next();
+			starting = cvar_mdp.getAutomatonState(cvar_mdp.getProductModel().getFirstInitialState());
 		} else {
 			if (verbosity >= 1){
 				mainLog.println("Error no initial states: ", dtmc.getNumInitialStates());
@@ -3211,7 +3211,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 		boolean print= false;
 		if (print) {
-			printToFile(policy, action_val, alpha, b_atoms, operator.getB(), starting, "gridmap/cvar_out_"+n+"_"+ settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) +"_"+alpha+".out", n, mdp.getMaxNumChoices());
+			printToFile(policy, choices, action_val, alpha, b_atoms, operator.getB(), starting, "out_files/cvar_out_"+n+"_"+ settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) +"_"+atoms+".out", n, mdp.getMaxNumChoices());
 		}
 
 		operator.writeToFile(initialState, null);
@@ -3288,14 +3288,15 @@ public class MDPModelChecker extends ProbModelChecker
 		out.close();
 	}
 
-	public void printToFile(Object [] policy, double [][] action_cvar, double alpha, int b_atoms, double[] b, int startB, String filename, int n, int maxchoices)
+	public void printToFile(Object [] policy, int [] choices, double [][] action_cvar, double alpha, int b_atoms, double[] b, int startB, String filename, int n, int maxchoices)
 	{
 		mainLog.println("\nExporting solution to file \"" + filename + "\"...");
 		PrismFileLog out = new PrismFileLog("prism/tests/"+filename);
+		out.println("This is new code !");
 		out.println("States");
 		out.println(n);
-		out.println("Policy");
-		out.println(Arrays.toString(policy));
+//		out.println("Policy");
+//		out.println(Arrays.toString(policy));
 
 		out.println("Alpha value");
 		out.println(alpha);
@@ -3303,14 +3304,17 @@ public class MDPModelChecker extends ProbModelChecker
 		out.println("Max number of actions");
 		out.println(maxchoices);
 
-		for (double[] doubles : action_cvar) // copy  temp value soln2 back to soln -> corresponds to Value table
+		for (int i=0; i<n; i++) // copy  temp value soln2 back to soln -> corresponds to Value table
 		{
+			double [] state_vals = action_cvar[i];
 			DecimalFormat df = new DecimalFormat("0.000");
-			Arrays.stream(doubles).forEach(e -> {
+			DecimalFormat df_state = new DecimalFormat("0");
+			int finalI = i;
+			Arrays.stream(state_vals).forEach(e -> {
 				if (e == Float.POSITIVE_INFINITY) {
-					out.print("0.000,");
+					out.println(df_state.format(finalI)+ ", "+df.format(choices[finalI]) +", 0.000,");
 				} else {
-					out.print(df.format(e) + ",");
+					out.println(df_state.format(finalI)+ ", "+df.format(choices[finalI]) + ", "+df.format(e) + ",");
 				}
 			});
 		}
