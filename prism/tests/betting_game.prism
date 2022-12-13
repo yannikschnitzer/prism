@@ -11,12 +11,12 @@ module game
     s:[1..STAGES+1] init 1; // current stage
 
     // Betting transitions
-    [zero] true ->  (s'=min(s+1, STAGES)) & (m'=m);
-    [one] m > 0 -> p_win:(s'=min(s+1, STAGES)) & (m'=min(m+1, MAX_MONEY)) + p_jackpot: (s'=min(s+1, STAGES)) & (m'=min(m*10, MAX_MONEY)) + (1-(p_win+p_jackpot)): (s'=min(s+1, STAGES)) & (m'=max(m-1,0));
-    [two] m > 1 -> p_win:(s'=min(s+1, STAGES)) & (m'=min(m+2, MAX_MONEY)) + p_jackpot: (s'=min(s+1, STAGES)) & (m'=min(m*10, MAX_MONEY)) + (1-(p_win+p_jackpot)): (s'=min(s+1, STAGES)) & (m'=max(m-2,0));
-    [three] m > 3 -> p_win:(s'=min(s+1, STAGES)) & (m'=min(m+3, MAX_MONEY)) + p_jackpot: (s'=min(s+1, STAGES)) & (m'=min(m*10, MAX_MONEY))) + (1-(p_win+p_jackpot)): (s'=min(s+1, STAGES)) & (m'=max(m-3,0));
-    [four] m > 4 -> p_win:(s'=min(s+1, STAGES)) & (m'=min(m+4, MAX_MONEY)) + p_jackpot: (s'=min(s+1, STAGES)) & (m'=min(m*10, MAX_MONEY)) + (1-(p_win+p_jackpot)): (s'=min(s+1, STAGES)) & (m'=max(m-4,0));
-    [five] m > 5 -> p_win:(s'=min(s+1, STAGES)) & (m'=min(m+5, MAX_MONEY)) + p_jackpot: (s'=min(s+1, STAGES)) & (m'=min(m*10, MAX_MONEY)) + (1-(p_win+p_jackpot)): (s'=min(s+1, STAGES)) & (m'=max(m-5,0));
+    [zero] (s < STAGES) ->  (s'=min(s+1, STAGES)) & (m'=m);
+    [one] m > 0 & (s < STAGES)-> p_win:(s'=min(s+1, STAGES)) & (m'=min(m+1, MAX_MONEY)) + p_jackpot: (s'=min(s+1, STAGES)) & (m'=min(m*10, MAX_MONEY)) + (1-(p_win+p_jackpot)): (s'=min(s+1, STAGES)) & (m'=max(m-1,0));
+    [two] m > 1 & (s < STAGES)-> p_win:(s'=min(s+1, STAGES)) & (m'=min(m+2, MAX_MONEY)) + p_jackpot: (s'=min(s+1, STAGES)) & (m'=min(m*10, MAX_MONEY)) + (1-(p_win+p_jackpot)): (s'=min(s+1, STAGES)) & (m'=max(m-2,0));
+    [three] m > 2 & (s < STAGES)-> p_win:(s'=min(s+1, STAGES)) & (m'=min(m+3, MAX_MONEY)) + p_jackpot: (s'=min(s+1, STAGES)) & (m'=min(m*10, MAX_MONEY)) + (1-(p_win+p_jackpot)): (s'=min(s+1, STAGES)) & (m'=max(m-3,0));
+    [four] m > 3 & (s < STAGES)-> p_win:(s'=min(s+1, STAGES)) & (m'=min(m+4, MAX_MONEY)) + p_jackpot: (s'=min(s+1, STAGES)) & (m'=min(m*10, MAX_MONEY)) + (1-(p_win+p_jackpot)): (s'=min(s+1, STAGES)) & (m'=max(m-4,0));
+    [five] m > 4 & (s < STAGES)-> p_win:(s'=min(s+1, STAGES)) & (m'=min(m+5, MAX_MONEY)) + p_jackpot: (s'=min(s+1, STAGES)) & (m'=min(m*10, MAX_MONEY)) + (1-(p_win+p_jackpot)): (s'=min(s+1, STAGES)) & (m'=max(m-5,0));
     [end] s=(STAGES) -> (s'=s+1);
 endmodule
 

@@ -21,31 +21,38 @@ module robot
 
 	// transitions
 	[end] treasure -> (t'=MAX_STEPS+1);
-	[end] (t=MAX_STEPS) -> (t'=t+1);
-	[east]  (c<M | c=M) & (t<MAX_STEPS)-> p/2:(r'=min(r+1, N))&(c'=min(c+1, M))&(t'=min(t+1, MAX_STEPS))+ p/2: (r'=max(r-1, 1))&(c'=min(c+1, M))&(t'=min(t+1, MAX_STEPS)) + (1-p): (c'=min(c+1, M))&(t'=min(t+1, MAX_STEPS));
-	[south] (r<N | r=N) & !south_west_wall & (t<MAX_STEPS) -> (1-p):(r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS)) + p/2: (c'=min(c+1, M))&(r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS))+ p/2: (c'=max(c-1, 1))&(r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS));
-	[west]  (c>1 | c=1) & !west_wall & !south_west_wall & (t<MAX_STEPS)-> p/2:(r'=max(r-1, 1))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS))+ p/2:(r'=min(r+1, N))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + (1-p): (c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS));
-	[north] (r=1 | r>1) & (t<MAX_STEPS)-> (1-p):(r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS)) + p/2: (c'=max(c-1, 1))&(r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS)) + p/2: (c'=min(c+1, M))&(r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS)) ;
+	[end] (t=MAX_STEPS)  & !treasure -> (t'=t+1);
+	[east]  (c<M | c=M) & !treasure & (t<MAX_STEPS)& !treasure-> p/2:(r'=min(r+1, N))&(c'=min(c+1, M))&(t'=min(t+1, MAX_STEPS))+ p/2: (r'=max(r-1, 1))&(c'=min(c+1, M))&(t'=min(t+1, MAX_STEPS)) + (1-p): (c'=min(c+1, M))&(t'=min(t+1, MAX_STEPS));
+	[south] (r<N | r=N) & !south_west_wall & (t<MAX_STEPS) & !treasure-> (1-p):(r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS)) + p/2: (c'=min(c+1, M))&(r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS))+ p/2: (c'=max(c-1, 1))&(r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS));
+	[west]  (c>1 | c=1) & !west_wall & !south_west_wall & (t<MAX_STEPS)& !treasure-> p/2:(r'=max(r-1, 1))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS))+ p/2:(r'=min(r+1, N))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + (1-p): (c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS));
+	[north] (r=1 | r>1) & (t<MAX_STEPS)& !treasure-> (1-p):(r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS)) + p/2: (c'=max(c-1, 1))&(r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS)) + p/2: (c'=min(c+1, M))&(r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS)) ;
 
-	[south] (r<N | r=N) &  south_west_wall & (t<MAX_STEPS)-> (1-p):(r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS)) + p: (c'=max(c-1, 1))&(r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS));
-    [west]  (c>1 | c=1) & !west_wall & south_west_wall & (t<MAX_STEPS)-> p:(r'=max(r-1, 1))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + (1-p): (c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS));
+	[south] (r<N | r=N) &  south_west_wall & (t<MAX_STEPS)& !treasure-> (1-p):(r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS)) + p: (c'=min(c+1, M))&(r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS));
+    [west]  (c>1 | c=1) & !west_wall & south_west_wall & (t<MAX_STEPS)& !treasure-> p:(r'=max(r-1, 1))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + (1-p): (c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS));
 
     // diagonal transitions
-    [north_east] (c<M | c=M) & (r=1 | r>1)  & (t<MAX_STEPS) -> p/2:(c'=min(c+1, M))&(t'=min(t+1, MAX_STEPS))+ p/2: (r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS)) + (1-p): (c'=min(c+1, M))&(r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS));
-    [north_west] (c>1 | c=1) & (r=1 | r>1) & !west_wall & (t<MAX_STEPS) -> (1-p):(r'=max(r-1, 1))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + p/2: (r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS))+ p/2: (c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS));
-    [south_east] (c<M | c=M) & (r<N | r=N) & (t<MAX_STEPS) -> p/2:(c'=min(c+1, M))&(t'=min(t+1, MAX_STEPS))+ p/2:(r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS)) + (1-p): (r'=min(r+1, N))&(c'=min(c+1, M))&(t'=min(t+1, MAX_STEPS));
-    [south_west] (c>1 | c=1) & (r<N | r=N) & !south_west_wall & !west_wall & (t<MAX_STEPS) -> (1-p):(r'=min(r+1, N))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + p/2: (c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + p/2: (r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS)) ;
+    [north_east] (c<M | c=M) & (r=1 | r>1)  & (t<MAX_STEPS) & !treasure-> p/2:(c'=min(c+1, M))&(t'=min(t+1, MAX_STEPS))+ p/2: (r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS)) + (1-p): (c'=min(c+1, M))&(r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS));
+    [north_west] (c>1 | c=1) & (r=1 | r>1) & !west_wall & (t<MAX_STEPS) & !treasure-> (1-p):(r'=max(r-1, 1))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + p/2: (r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS))+ p/2: (c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS));
+    [south_east] (c<M | c=M) & (r<N | r=N) & (t<MAX_STEPS) & !treasure-> p/2:(c'=min(c+1, M))&(t'=min(t+1, MAX_STEPS))+ p/2:(r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS)) + (1-p): (r'=min(r+1, N))&(c'=min(c+1, M))&(t'=min(t+1, MAX_STEPS));
+    [south_west] (c>1 | c=1) & (r<N | r=N) & !south_west_wall & !west_wall & (t<MAX_STEPS) & !treasure-> (1-p):(r'=min(r+1, N))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + p/2: (c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + p/2: (r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS)) ;
 
-    [north_west] (c>1 | c=1) & (r=1 | r>1) & west_wall & (t<MAX_STEPS) -> (1-p):(r'=max(r-1, 1))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + p: (r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS));
-    [south_west] (c>1 | c=1) & (r<N | r=N) & !south_west_wall & west_wall & (t<MAX_STEPS) -> (1-p):(r'=min(r+1, N))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + p: (r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS)) ;
+    [north_west] (c>1 | c=1) & (r=1 | r>1) & west_wall & (t<MAX_STEPS) & !treasure-> (1-p):(r'=max(r-1, 1))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + p: (r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS));
+    [south_west] (c>1 | c=1) & (r<N | r=N) & !south_west_wall & west_wall & (t<MAX_STEPS) & !treasure-> (1-p):(r'=min(r+1, N))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + p: (r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS)) ;
 
 endmodule
 
 label "goal" = (t=MAX_STEPS+1);
-label "obs" = wall;
+label "obs" = (wall);
 
 rewards
-    [] true: 5;
+    [east] (t<MAX_STEPS): 5;
+    [south] (t<MAX_STEPS): 5;
+    [west] (t<MAX_STEPS): 5;
+    [north] (t<MAX_STEPS): 5;
+    [north_east] (t<MAX_STEPS): 5;
+    [north_west] (t<MAX_STEPS): 5;
+    [south_east] (t<MAX_STEPS): 5;
+    [south_west] (t<MAX_STEPS): 5;
     [end] (t=MAX_STEPS) : 500;
     [end] (c=1 & r=4): 490;
     [end] (c=2 & r=6): 485;

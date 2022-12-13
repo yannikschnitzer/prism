@@ -2650,7 +2650,7 @@ public class MDPModelChecker extends ProbModelChecker
 		boolean check_reach_dtmc_vi = true;
 		boolean check_reach_dtmc_distr_vi = true;
 		boolean gen_trace = true;
-		boolean compute_dtmc_vi = true;
+		boolean compute_dtmc_vi = true; // Toggle computing non distr Exp VI
 		String bad_states_label = "obs";
 
 		String c51 = "C51";
