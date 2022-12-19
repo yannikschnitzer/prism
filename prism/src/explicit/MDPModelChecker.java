@@ -2650,7 +2650,7 @@ public class MDPModelChecker extends ProbModelChecker
 		boolean check_reach_dtmc_vi = true;
 		boolean check_reach_dtmc_distr_vi = true;
 		boolean gen_trace = true;
-		boolean compute_dtmc_vi = true; // Toggle computing non distr Exp VI
+		boolean compute_dtmc_vi = false; // Toggle computing non distr Exp VI
 		String bad_states_label = "obs";
 
 		String c51 = "C51";
@@ -2675,6 +2675,7 @@ public class MDPModelChecker extends ProbModelChecker
 			double v_min = Double.parseDouble(params[1]);
 			double v_max = Double.parseDouble(params[2]);
 			dtmc_epsilon = Double.parseDouble(params[4]);
+			alpha = Double.parseDouble(params[5]);
 
 			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
@@ -2686,6 +2687,7 @@ public class MDPModelChecker extends ProbModelChecker
 			atoms = Integer.parseInt(params[0]);
 			error_thresh = Double.parseDouble(params[3]); // 0.7 for uav
 			dtmc_epsilon = Double.parseDouble(params[4]);
+			alpha = Double.parseDouble(params[5]);
 
 			operator = new DistributionalBellmanQR(atoms, n, mainLog);
 			operator.initialize(n); // initialization based on parameters.
@@ -2981,6 +2983,7 @@ public class MDPModelChecker extends ProbModelChecker
 			double v_min = Double.parseDouble(params[1]);
 			double v_max = Double.parseDouble(params[2]);
 			dtmc_epsilon = Double.parseDouble(params[4]);
+			alpha = Double.parseDouble(params[5]);
 
 			params = readParams("prism/tests/params_b.csv");
 			b_atoms = Integer.parseInt(params[0]);
@@ -3004,6 +3007,7 @@ public class MDPModelChecker extends ProbModelChecker
 			b_atoms = Integer.parseInt(params[0]);
 			double b_min = Double.parseDouble(params[1]);
 			double b_max = Double.parseDouble(params[2]);
+			alpha = Double.parseDouble(params[5]);
 
 			operator = new DistributionalBellmanQRAugmented(atoms, b_atoms, b_min, b_max, n, n_actions, mainLog);
 			operator.initialize(mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
