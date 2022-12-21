@@ -1,12 +1,29 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import os
+import os, sys
 import csv
 import subprocess
+import argparse, random
+import numpy as np
 
 
 # #### Functions for saving output files
+def check_save_location(exp_folder, exp_name, prefix, debug):
+
+    if not os.path.isdir(exp_folder):
+        command = 'mkdir '+ exp_folder
+        print("Making experiment folder")
+        if debug:
+            print(command)
+        os.system(command)
+
+    if not os.path.isdir(exp_folder+exp_name):
+        command = 'mkdir '+ exp_folder+exp_name
+        print("Making experiment folder")
+        if debug:
+            print(command)
+        os.system(command)
 
 # Copy Log file
 def copy_log_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix, debug):
@@ -74,9 +91,8 @@ def create_params(atoms, v_bounds, error, epsilon, b_atoms, b_bounds, alpha):
 
 # #### Base experiment
 
-def base_exp():
+def base_exp(all_experiments, alg_types, rep_types, debug=False):
 
-    debug =False
     for exp in all_experiments:
         for alg in alg_types:
             if '-' in alg:
@@ -121,8 +137,7 @@ def base_exp():
 
 # #### Vary atoms experiment
 
-def vary_atoms_exp():
-    debug =False
+def vary_atoms_exp(all_experiments, alg_types, rep_types, debug=False):
 
     alg = 'exp'
     for exp in all_experiments:
@@ -166,8 +181,7 @@ def vary_atoms_exp():
                     
 # #### Vary b atoms experiment
 
-def run_vary_b_exp():
-    debug =False
+def vary_b_exp(all_experiments, alg_types, rep_types, debug=False):
 
     alg = 'cvar'
     for exp in all_experiments:
@@ -207,8 +221,7 @@ def run_vary_b_exp():
                     
 # #### Vary epsilon experiment
 
-def vary_eps_exp():
-    debug =False
+def vary_eps_exp(all_experiments, alg_types, rep_types, debug=False):
 
     alg = 'exp'
     eps_vals = [0.01, 0.001, 0.0001, 0.00001]
@@ -277,7 +290,8 @@ config = {
     'drones' :{'model':prefix+'tests/drones.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
     'gridmap10' : {'model':prefix+'tests/gridmap/gridmap_10_10_v2.prism', 'props':prefix+'tests/gridmap/gridmap_10_10.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
     'mud_nails' : {'model':prefix+'tests/mud_nails.prism', 'props':prefix+'tests/mud_nails.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
-    'uav_phi3': {'model':prefix+'tests/uav.prism', 'props':prefix+'tests/uav.props', 'pn':[8,9],  'vmax': 1000, 'epsilon':def_eps, 'b':26, 'alpha':def_alpha},
+    'uav_phi3': {'model':prefix+'tests/uav.prism', 'props':prefix+'tests/uav.props', 'pn':[8,9],  'vmax': 300, 'epsilon':def_eps, 'b':26, 'alpha':def_alpha},
+    'uav_phi4': {'model':prefix+'tests/uav.prism', 'props':prefix+'tests/uav.props', 'pn':[11,12],  'vmax': 300, 'epsilon':def_eps, 'b':51, 'alpha':def_alpha},
     'drones_50': {'model':prefix+'tests/drones_40.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2], 'vmax': 1000, 'epsilon':def_eps, 'alpha':def_alpha},
     'drones_25': {'model':prefix+'tests/drones_25.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 1000, 'epsilon':def_eps, 'b':26, 'alpha':def_alpha},
     'grid_350': {'model':prefix+'tests/gridmap/gridmap_350_2500.prism', 'props':prefix+'tests/gridmap/gridmap_350_2500.props', 'pn':[3,2], 'vmax': 1000, 'epsilon':def_eps, 'b':26, 'alpha':def_alpha}
@@ -290,13 +304,98 @@ set_experiments = ['cliffs', 'mud_nails','gridmap10', 'drones', 'uav_phi3']
 big_experiments = ['drones_25', 'grid_350'] # 'uav_phi3'
 perf_experiments = ['cliffs', 'mud_nails', 'uav_phi3', 'grid_350', 'drones_25' ]
 new_experiments = ['ds_treasure', 'betting_g']
-all_experiments = ['drones_25'] #['test', 'test10']
-apdx = ''
-rep_types = ['c51'] # 'c51', 'qr'
+all_experiments = set_experiments+big_experiments+new_experiments #['test', 'test10']
+rep_types = ['c51', 'qr'] # 'c51', 'qr'
 alg_types= ['exp', 'cvar'] # 'exp', 'cvar'
 cmd_base_copy = "cp "
 
+def init_argparse() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        usage="%(prog)s exp_type [rep] [alg] [set or case study]",
+        description=f"Run distr value iteration experiments.\
+        \n Available experiments: base (-b), vary_atoms(-a), vary_b_atoms(-c), vary_epsilon (-e)\
+        \n Available case studies: {list(config.keys())}\
+        \n Available Distr representations: {rep_types}\
+        \n Available Distr VI optimizations : {alg_types} "
+    )
+    parser.add_argument(
+        "-v", "--version", action="version",
+        version = f"{parser.prog} version 1.0.0"
+    )
+    
+    # Additional experiments
+    parser.add_argument('-b', "--base", metavar='base', type=bool, action='store_false', default=False, help='Base experiment')
+    parser.add_argument('-a', "--varyatoms", metavar='varyatoms', type=bool, action='store_false', default=False, help='Vary the number of atoms in the distr representation')
+    parser.add_argument('-c', "--varybatoms", metavar='varybatoms', type=bool, action='store_false', default=False, help='Vary the number of atoms in the CVaR budget')
+    parser.add_argument('-e', "--epsilon", metavar='epsilon', type=bool, action='store_false', default=False, help='Vary epsilon values')
+    
+    # Other
+    parser.add_argument('-r', "--rep", metavar='rep', type=string, action='store', default='c51', help='representation of distribution')
+    parser.add_argument('-i', "--alg", metavar='alg', type=string, action='store', default='all', help='type of optimization')
+    parser.add_argument('-s', "--set", metavar='set', type=string, action='store', default='all', help='set of case studies or one case study')
+    parser.add_argument('-d', "--debug", metavar='debug', type=bool, action='store', default=False, help='set of case studies or one case study')
+    
+    return parser
 
+if __name__ == "__main__":
+    parser = init_argparse()
+    args = parser.parse_args()
+
+    experiments = []
+    algs = []
+    reps = []
+
+    print(vars(args))
+
+    if args.set =='all':
+        experiments = all_experiments
+    elif args.set =='perf':
+        experiments = perf_experiments
+    elif args.set == 'new':
+        experiments = new_experiments
+    elif args.set == 'big':
+        experiments = big_experiments
+    elif args.set =='set':
+        experiments = set_experiments:
+    elif args.set in all_experiments:
+        experiments = [args.set]
+    else:
+        print('Unrecognized case study set or name')
+        sys.exit()
+
+    # create necessary locations
+    for exp in experiments:
+        check_save_location(exp_folder, exp, prefix, args.debug)
+
+    if args.alg == 'all':
+        algs = alg_types
+    elif args.alg in alg_types:
+        algs = [args.alg]
+    else :
+        print(f"Unsupported optimization {args.alg}")
+        sys.exit()
+
+    if args.rep =='all':
+        reps = rep_types
+    elif args.rep in rep_types:
+        reps = [args.rep]
+    else:
+        print(f"Unsupported representation type {args.rep}")
+        sys.exit()
+
+    if args.base :
+        base_exp(experiments, algs, reps, debug=False)
+
+    if args.varyatoms: 
+        vary_atoms_exp(experiments, algs, reps, debug=False)
+
+    if args.varybatoms:
+        vary_b_exp(experiments, algs, reps, debug=False)
+
+    if args.epsilon:
+        vary_eps_exp(experiments, algs, reps, debug=False)
+    
+    
 
 
 
