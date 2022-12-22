@@ -266,6 +266,34 @@ def vary_eps_exp(all_experiments, alg_types, rep_types, debug=False):
 # example command:
 # prism/bin/prism -javastack 80m -javamaxmem 14g prism/tests/corridor.prism prism/tests/corridor.props -distrmethod c51 -prop 3 -v -ex -exportstrat stdout -mainlog prism/log_exp.log
 
+def init_argparse() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        usage="%(prog)s exp_type [rep] [alg] [set or case study]",
+        description=f"Run distr value iteration experiments.\n\
+        \n Available experiments: base (-b), vary_atoms(-a), vary_b_atoms(-c), vary_epsilon (-e)\
+        \n Available case studies: {list(config.keys())}\
+        \n Available Distr representations: {rep_types}\
+        \n Available Distr VI optimizations : {alg_types} "
+    )
+    parser.add_argument(
+        "-v", "--version", action="version",
+        version = f"{parser.prog} version 1.0.0"
+    )
+    
+    # Additional experiments
+    parser.add_argument('-b', "--base", action='store_true', help='Base experiment')
+    parser.add_argument('-a', "--varyatoms", action='store_true', help='Vary the number of atoms in the distr representation')
+    parser.add_argument('-c', "--varybatoms", action='store_true', help='Vary the number of atoms in the CVaR budget')
+    parser.add_argument('-e', "--epsilon", action='store_true', help='Vary epsilon values')
+    
+    # Other
+    parser.add_argument('-r', "--rep", metavar='rep', action='store', default='c51', help='representation of distribution')
+    parser.add_argument('-i', "--alg", metavar='alg', action='store', default='all', help='type of optimization')
+    parser.add_argument('-s', "--set", metavar='set', action='store', default='all', help='set of case studies or one case study')
+    parser.add_argument('-d', "--debug", action='store_true', help='set of case studies or one case study')
+    
+    return parser
+
 # ##### Constants
 
 prefix='prism/'
@@ -300,7 +328,7 @@ config = {
 
 # ##### Case studies to run 
 experiment_names=['test', 'cliffs', 'mud_nails', 'gridmap10', 'drones']
-set_experiments = ['cliffs', 'mud_nails','gridmap10', 'drones', 'uav_phi3']
+set_experiments = ['cliffs', 'mud_nails','gridmap10', 'drones', 'uav_phi3', 'uav_phi4']
 big_experiments = ['drones_25', 'grid_350'] # 'uav_phi3'
 perf_experiments = ['cliffs', 'mud_nails', 'uav_phi3', 'grid_350', 'drones_25' ]
 new_experiments = ['ds_treasure', 'betting_g']
@@ -308,34 +336,6 @@ all_experiments = set_experiments+big_experiments+new_experiments #['test', 'tes
 rep_types = ['c51', 'qr'] # 'c51', 'qr'
 alg_types= ['exp', 'cvar'] # 'exp', 'cvar'
 cmd_base_copy = "cp "
-
-def init_argparse() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        usage="%(prog)s exp_type [rep] [alg] [set or case study]",
-        description=f"Run distr value iteration experiments.\
-        \n Available experiments: base (-b), vary_atoms(-a), vary_b_atoms(-c), vary_epsilon (-e)\
-        \n Available case studies: {list(config.keys())}\
-        \n Available Distr representations: {rep_types}\
-        \n Available Distr VI optimizations : {alg_types} "
-    )
-    parser.add_argument(
-        "-v", "--version", action="version",
-        version = f"{parser.prog} version 1.0.0"
-    )
-    
-    # Additional experiments
-    parser.add_argument('-b', "--base", metavar='base', type=bool, action='store_false', default=False, help='Base experiment')
-    parser.add_argument('-a', "--varyatoms", metavar='varyatoms', type=bool, action='store_false', default=False, help='Vary the number of atoms in the distr representation')
-    parser.add_argument('-c', "--varybatoms", metavar='varybatoms', type=bool, action='store_false', default=False, help='Vary the number of atoms in the CVaR budget')
-    parser.add_argument('-e', "--epsilon", metavar='epsilon', type=bool, action='store_false', default=False, help='Vary epsilon values')
-    
-    # Other
-    parser.add_argument('-r', "--rep", metavar='rep', type=string, action='store', default='c51', help='representation of distribution')
-    parser.add_argument('-i', "--alg", metavar='alg', type=string, action='store', default='all', help='type of optimization')
-    parser.add_argument('-s', "--set", metavar='set', type=string, action='store', default='all', help='set of case studies or one case study')
-    parser.add_argument('-d', "--debug", metavar='debug', type=bool, action='store', default=False, help='set of case studies or one case study')
-    
-    return parser
 
 if __name__ == "__main__":
     parser = init_argparse()
@@ -356,8 +356,10 @@ if __name__ == "__main__":
     elif args.set == 'big':
         experiments = big_experiments
     elif args.set =='set':
-        experiments = set_experiments:
+        experiments = set_experiments
     elif args.set in all_experiments:
+        experiments = [args.set]
+    elif args.set == 'test':
         experiments = [args.set]
     else:
         print('Unrecognized case study set or name')
@@ -365,7 +367,7 @@ if __name__ == "__main__":
 
     # create necessary locations
     for exp in experiments:
-        check_save_location(exp_folder, exp, prefix, args.debug)
+        check_save_location(experiment_folder, exp, prefix, args.debug)
 
     if args.alg == 'all':
         algs = alg_types
