@@ -2,15 +2,17 @@ mdp
 
 // operator parameters
 const double p=0.5; // probability of increasing workload due to other uncertain tasks
+const double p2=0.5; // probability of having increasing workload when fatigued
 const double accu_load1=0.95; // accuracy at the low workload level (real numbers between 0 and 1)
-const double accu_load2=0.55; // accuracy at the high workload level (real numbers between 0 and 1)
-const double fd=0.8; // accuracy discount due to fatigue (real numbers between 0 and 1)
+const double accu_load2=0.75; // accuracy at the high workload level (real numbers between 0 and 1)
+const double fd=0.85; // accuracy discount due to fatigue (real numbers between 0 and 1)
 const int COUNTER=5; // fatigue threshold (integers, e.g, 10)
 const int MAX_TASKS = 30; // maximum counter value
 const double risky2=0.2; // at w2: probability of choosing a risky route
 const double risky6=0.2; // at w6: probability of choosing a risky route
 const int FLY_COST = 10; // cost of flying actions
 const int WAIT_COST = 2; // cost of waiting actions
+const int ROZ_COST = 1; // cost of taking being in restricted zone
 
 global stop : bool init false; // done visiting all waypoints
 formula roz = (r=8) | (w=3&a=1) | (w=3&a=2) | (w=5&a=2); // restricted operating zones
@@ -25,7 +27,9 @@ module operator
 	c:[0..3] init 0; // choices at the check point
 
 	// image processing, the workload may increase due to other unknown tasks
-	[image] !stop & t=0 & s=0 -> (1-p):(t'=1) & (s'=0) + p:(t'=2) & (s'=0);
+	[image] !stop & t=0 & s=0 & k<=COUNTER -> (1-p):(t'=1) & (s'=0) + p:(t'=2) & (s'=0);
+	// image processing, the workload may increase due to other unknown tasks
+	[image] !stop & t=0 & s=0 & k>COUNTER -> (1-p2):(t'=1) & (s'=0) + p2:(t'=2) & (s'=0);
 	// not fatigue, workload level 1
 	[process] !stop & t=1 & s=0 & k<=COUNTER -> accu_load1:(s'=1)&(k'=k+1) + (1-accu_load1):(s'=2)&(k'=k+1);
 	// fatigue, workload level 1
@@ -279,12 +283,13 @@ module UAV
 endmodule
 
 label "roz" = roz;
-label "obs" = fatigue;
+label "obs" = (fatigue | roz);
 
 
 rewards "time" // flight time
         [wait] true: WAIT_COST;
-        [fly] true: FLY_COST;
+		[fly] roz: FLY_COST+ROZ_COST;
+        [fly] !roz: FLY_COST;
 endrewards
 
 rewards "ROZ" // ROZ occupancy
