@@ -25,6 +25,14 @@ def check_save_location(exp_folder, exp_name, prefix, debug):
             print(command)
         os.system(command)
 
+# Create Log target
+def log_target(exp_folder, exp_name, alg, rep, apdx, debug):
+    if 'vi' in alg:
+        return
+    target = exp_folder+exp_name+'/'+exp_name+'_log_'+alg+'_'+rep+apdx+'.log'
+    if debug: 
+        print(target)
+    return target
 # Copy Log file
 def copy_log_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix, debug):
     if 'vi' in alg:
@@ -91,8 +99,8 @@ def create_params(atoms, v_bounds, error, epsilon, b_atoms, b_bounds, alpha):
 
 # #### Base experiment
 
-def base_exp(all_experiments, alg_types, rep_types, debug=False):
-
+def base_exp(all_experiments, alg_types, rep_types, apdx='', debug=False):
+    apd = '_'+ apdx if apdx != '' else apdx
     for exp in all_experiments:
         for alg in alg_types:
             if '-' in alg:
@@ -112,7 +120,7 @@ def base_exp(all_experiments, alg_types, rep_types, debug=False):
 
                     # create cmd + run
                     base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
-                    options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+alg+'.log'
+                    options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep, apd, debug)
                     if debug:
                         print(prism_exec+' '+base_command+options)
                     r=os.system(prism_exec+' '+base_command+options)
@@ -122,24 +130,25 @@ def base_exp(all_experiments, alg_types, rep_types, debug=False):
                         # save output for prism vi
                         if 'exp' in alg:
                             print("... Saving PRISM VI output files...")
-                            copy_trace_files(cmd_base_copy, experiment_folder, exp, 'vi', rep, '', prefix, debug)
-                            copy_dtmc_files(cmd_base_copy, experiment_folder, exp, 'vi', rep, '', prefix, debug)
+                            copy_trace_files(cmd_base_copy, experiment_folder, exp, 'vi', rep, apd, prefix, debug)
+                            copy_dtmc_files(cmd_base_copy, experiment_folder, exp, 'vi', rep, apd, prefix, debug)
 
                         # save output for current algorithm
                         print(f"... Saving {alg} VI output files...")
-                        copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, '', prefix, debug)
-                        copy_vi_files(cmd_base_copy, experiment_folder, exp, alg, rep, '', prefix, debug)
-                        copy_trace_files(cmd_base_copy, experiment_folder, exp, alg, rep, '', prefix, debug)
-                        copy_dtmc_files(cmd_base_copy, experiment_folder, exp, alg, rep, '', prefix, debug)
+                        # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, apdx, prefix, debug)
+                        copy_vi_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug)
+                        copy_trace_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug)
+                        copy_dtmc_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug)
                     else:
                         print(f'Error running experiment')
-                        copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, '', prefix, debug)
+                        # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, apdx, prefix, debug)
 
 # #### Vary atoms experiment
 
-def vary_atoms_exp(all_experiments, alg_types, rep_types, debug=False):
+def vary_atoms_exp(all_experiments, alg_types, rep_types, apdx='', debug=False):
 
     alg = 'exp'
+    apd = '_'+ apdx if apdx != '' else apdx
     for exp in all_experiments:
         for rep in rep_types:
             print(f'\nRunning vary atoms experiment:{exp}, alg:{alg}, rep:{rep}')
@@ -162,7 +171,7 @@ def vary_atoms_exp(all_experiments, alg_types, rep_types, debug=False):
 
                 # create cmd + run
                 base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
-                options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+alg+'.log'
+                options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep,'_'+str(atom_num)+apd, debug)
                 if debug:
                     print(prism_exec+' '+base_command+options)
                 r=os.system(prism_exec+' '+base_command+options)
@@ -171,18 +180,19 @@ def vary_atoms_exp(all_experiments, alg_types, rep_types, debug=False):
                 if r==0:
                     # save output for current algorithm if run was successfull
                     print(f"... Saving {alg} VI output files...")
-                    copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num), prefix, debug)
-                    copy_vi_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num), prefix, debug)
-                    copy_trace_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num), prefix, debug)
-                    copy_dtmc_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num), prefix, debug)
+                    # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num)+apd, prefix, debug)
+                    copy_vi_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num)+apd, prefix, debug)
+                    copy_trace_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num)+apd, prefix, debug)
+                    copy_dtmc_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num)+apd, prefix, debug)
                 else:
                     print(f'Error running experiment')
-                    copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num), prefix, debug)
+                    # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num)+apd, prefix, debug)
                     
 # #### Vary b atoms experiment
 
-def vary_b_exp(all_experiments, alg_types, rep_types, debug=False):
+def vary_b_exp(all_experiments, alg_types, rep_types, apdx ='', debug=False):
 
+    apd = '_'+apdx if apdx != '' else apdx
     alg = 'cvar'
     for exp in all_experiments:
         for rep in rep_types:
@@ -202,7 +212,7 @@ def vary_b_exp(all_experiments, alg_types, rep_types, debug=False):
 
                 # create cmd + run
                 base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
-                options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+alg+'.log'
+                options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep,'_'+str(atom_num)+apd, debug)
                 if debug:
                     print(prism_exec+' '+base_command+options)
                 r=os.system(prism_exec+' '+base_command+options)
@@ -211,19 +221,20 @@ def vary_b_exp(all_experiments, alg_types, rep_types, debug=False):
                 if r==0:
                     # save output for current algorithm if run was successful
                     print(f"... Saving {alg} VI output files...")
-                    copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num), prefix, debug)
-                    copy_vi_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num), prefix, debug)
-                    copy_trace_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num), prefix, debug)
-                    copy_dtmc_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num), prefix, debug)
+                    # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num)+apd, prefix, debug)
+                    copy_vi_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num)+apd, prefix, debug)
+                    copy_trace_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num)+apd, prefix, debug)
+                    copy_dtmc_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num)+apd, prefix, debug)
                 else:
                     print(f'Error running experiment')
-                    copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num), prefix, debug)
+                    # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num)+apd, prefix, debug)
                     
 # #### Vary epsilon experiment
 
-def vary_eps_exp(all_experiments, alg_types, rep_types, debug=False):
+def vary_eps_exp(all_experiments, alg_types, rep_types, apdx='', debug=False):
 
     alg = 'exp'
+    apd= '_'+apdx if apdx !='' else apdx
     eps_vals = [0.01, 0.001, 0.0001, 0.00001]
     for exp in all_experiments:
         for rep in rep_types:
@@ -244,7 +255,7 @@ def vary_eps_exp(all_experiments, alg_types, rep_types, debug=False):
 
                 # create cmd + run
                 base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
-                options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+alg+'.log'
+                options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep,'_eps_'+str(val)+apd, debug)
                 if debug:
                     print(prism_exec+' '+base_command+options)
                 r=os.system(prism_exec+' '+base_command+options)
@@ -253,13 +264,13 @@ def vary_eps_exp(all_experiments, alg_types, rep_types, debug=False):
                 if r==0:
                     # save output for current algorithm if run was successfull
                     print(f"... Saving {alg} VI output files...")
-                    copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_eps_'+str(val), prefix, debug)
-                    copy_vi_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_eps_'+str(val), prefix, debug)
-                    copy_trace_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_eps_'+str(val), prefix, debug)
-                    copy_dtmc_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_eps_'+str(val), prefix, debug)
+                    # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_eps_'+str(val)+apd, prefix, debug)
+                    copy_vi_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_eps_'+str(val)+apd, prefix, debug)
+                    copy_trace_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_eps_'+str(val)+apd, prefix, debug)
+                    copy_dtmc_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_eps_'+str(val)+apd, prefix, debug)
                 else:
                     print(f'Error running experiment')
-                    copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_eps_'+str(val), prefix, debug)
+                    # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_eps_'+str(val)+apd, prefix, debug)
                     
 
 # #### Run experiments 
@@ -291,7 +302,8 @@ def init_argparse() -> argparse.ArgumentParser:
     parser.add_argument('-i', "--alg", metavar='alg', action='store', default='all', help='type of optimization')
     parser.add_argument('-s', "--set", metavar='set', action='store', default='all', help='set of case studies or one case study')
     parser.add_argument('-d', "--debug", action='store_true', help='set of case studies or one case study')
-    
+    parser.add_argument('-x', "--apdx", metavar='apdx', action='store', default='', help='set an apdx for file names')
+
     return parser
 
 # ##### Constants
@@ -302,7 +314,7 @@ mem_alloc='-javastack 80m -javamaxmem 14g '
 experiment_folder = prefix+'tests/experiments/'
 rep_base = ' -distrmethod '
 tail = ' -v -ex -exportstrat stdout'
-log_cmd = ' -mainlog '+prefix+'log_'
+log_cmd = ' -mainlog '
 atoms_c51 = 101; atoms_qr=1000; def_vmax = 100; big_atoms_c51=101;  big_atoms_qr=200; def_eps=0.00001; def_alpha = 0.7
 atom_vals={'c51':[1, 10, 25, 50, 75, 100, 1000], 'qr': [1, 10, 25, 50, 75, 100, 500, 1000, 5000]}
 b_atoms_vals =[0, 10, 25, 50, 75, 100]
@@ -320,15 +332,17 @@ config = {
     'mud_nails' : {'model':prefix+'tests/mud_nails.prism', 'props':prefix+'tests/mud_nails.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
     'uav_phi3': {'model':prefix+'tests/uav.prism', 'props':prefix+'tests/uav.props', 'pn':[8,9],  'vmax': 300, 'epsilon':def_eps, 'b':51, 'alpha':def_alpha},
     'uav_phi4': {'model':prefix+'tests/uav.prism', 'props':prefix+'tests/uav.props', 'pn':[11,12],  'vmax': 300, 'epsilon':def_eps, 'b':51, 'alpha':def_alpha},
-    'drones_50': {'model':prefix+'tests/drones_40.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2], 'vmax': 1000, 'epsilon':def_eps, 'alpha':def_alpha},
-    'drones_25': {'model':prefix+'tests/drones_25.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 1000, 'epsilon':def_eps, 'b':26, 'alpha':def_alpha},
-    'grid_350': {'model':prefix+'tests/gridmap/gridmap_350_2500.prism', 'props':prefix+'tests/gridmap/gridmap_350_2500.props', 'pn':[3,2], 'vmax': 1000, 'epsilon':def_eps, 'b':26, 'alpha':def_alpha}
+    'drones_50': {'model':prefix+'tests/drones_40.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2], 'vmax': 1000, 'epsilon':0.001, 'alpha':def_alpha},
+    'drones_25': {'model':prefix+'tests/drones_25.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 1000, 'epsilon':0.001, 'b':26, 'alpha':def_alpha},
+    'drones_20': {'model':prefix+'tests/drones_20.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 600, 'epsilon':0.001, 'b':51, 'alpha':0.8},
+    'grid_350': {'model':prefix+'tests/gridmap/gridmap_350_2500.prism', 'props':prefix+'tests/gridmap/gridmap_350_2500.props', 'pn':[3,2], 'vmax': 1000, 'epsilon':0.001, 'b':26, 'alpha':def_alpha},
+    'grid_330': {'model':prefix+'tests/gridmap/gridmap_330_2000.prism', 'props':prefix+'tests/gridmap/gridmap_330_2000.props', 'pn':[3,2], 'vmax': 1000, 'epsilon':0.001, 'b':26, 'alpha':def_alpha}
 }
 
 
 # ##### Case studies to run 
 experiment_names=['test', 'cliffs', 'mud_nails', 'gridmap10', 'drones']
-set_experiments = ['cliffs', 'mud_nails','gridmap10', 'drones', 'uav_phi3', 'uav_phi4']
+set_experiments = ['cliffs', 'mud_nails','gridmap10', 'drones', 'uav_phi3', 'uav_phi4', 'grid_330']
 big_experiments = ['drones_25', 'grid_350'] # 'uav_phi3'
 perf_experiments = ['cliffs', 'mud_nails', 'uav_phi3', 'grid_350', 'drones_25' ]
 new_experiments = ['ds_treasure', 'betting_g']
@@ -386,16 +400,16 @@ if __name__ == "__main__":
         sys.exit()
 
     if args.base :
-        base_exp(experiments, algs, reps, debug=False)
+        base_exp(experiments, algs, reps, apdx=args.apdx, debug=args.debug)
 
     if args.varyatoms: 
-        vary_atoms_exp(experiments, algs, reps, debug=False)
+        vary_atoms_exp(experiments, algs, reps, apdx=args.apdx, debug=args.debug)
 
     if args.varybatoms:
-        vary_b_exp(experiments, algs, reps, debug=False)
+        vary_b_exp(experiments, algs, reps, apdx=args.apdx, debug=args.debug)
 
     if args.epsilon:
-        vary_eps_exp(experiments, algs, reps, debug=False)
+        vary_eps_exp(experiments, algs, reps, apdx=args.apdx, debug=args.debug)
     
     
 

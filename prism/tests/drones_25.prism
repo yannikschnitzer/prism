@@ -2,12 +2,12 @@ mdp
 const int M = 25;
 const int N = 25;
 const int B = 28;
-const double p=0.2; // with probability p, staying in place occurs due to seeing and control noise
+const double p=0.25; // with probability p, staying in place occurs due to seeing and control noise
 
 formula area1 = (r=1 & c=12);
 formula area2 = (r=12 & c=1);
 formula area3 = (r=25 & c=12);
-formula regen = (r=12 & c= 12); //(r > 11 & r < 16) & (c > 11 & c < 16);
+formula regen = (r > 10 & r < 14) & (c > 10 & c < 14); //(r=12 & c= 12); //(r > 11 & r < 16) & (c > 11 & c < 16);
 formula drained = (battery=0);
 
 module robot
