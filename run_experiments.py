@@ -333,7 +333,7 @@ config = {
     'uav_phi3': {'model':prefix+'tests/uav.prism', 'props':prefix+'tests/uav.props', 'pn':[8,9],  'vmax': 300, 'epsilon':def_eps, 'b':51, 'alpha':def_alpha},
     'uav_phi4': {'model':prefix+'tests/uav.prism', 'props':prefix+'tests/uav.props', 'pn':[11,12],  'vmax': 300, 'epsilon':def_eps, 'b':51, 'alpha':def_alpha},
     'drones_50': {'model':prefix+'tests/drones_40.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2], 'vmax': 1000, 'epsilon':0.001, 'alpha':def_alpha},
-    'drones_25': {'model':prefix+'tests/drones_25.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 1000, 'epsilon':0.001, 'b':26, 'alpha':def_alpha},
+    'drones_25': {'model':prefix+'tests/drones_25.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 800, 'epsilon':0.001, 'b':41, 'alpha':def_alpha},
     'drones_20': {'model':prefix+'tests/drones_20.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 600, 'epsilon':0.001, 'b':51, 'alpha':0.8},
     'grid_350': {'model':prefix+'tests/gridmap/gridmap_350_2500.prism', 'props':prefix+'tests/gridmap/gridmap_350_2500.props', 'pn':[3,2], 'vmax': 1000, 'epsilon':0.001, 'b':26, 'alpha':def_alpha},
     'grid_330': {'model':prefix+'tests/gridmap/gridmap_330_2000.prism', 'props':prefix+'tests/gridmap/gridmap_330_2000.props', 'pn':[3,2], 'vmax': 1000, 'epsilon':0.001, 'b':26, 'alpha':def_alpha}
