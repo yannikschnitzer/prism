@@ -1,0 +1,4 @@
+// Coverage
+R{"time"}min=? [ (F w2) & (F w5) & (F w6) ]
+R(dist){"time"}min=? [ (F w2) & (F w5) & (F w6) ]
+R(cvar){"time"}min=? [ (F w2) & (F w5) & (F w6) ]
