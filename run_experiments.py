@@ -25,6 +25,13 @@ def check_save_location(exp_folder, exp_name, prefix, debug):
             print(command)
         os.system(command)
 
+    if not os.path.isdir(trace_folder):
+        command = 'mkdir '+trace_folder
+        print('Making traces folder')
+        if debug:
+            print(command)
+        os.system(command)
+
 # Create Log target
 def log_target(exp_folder, exp_name, alg, rep, apdx, debug):
     if 'vi' in alg:
@@ -312,6 +319,7 @@ prefix='prism/'
 prism_exec = prefix+'bin/prism'
 mem_alloc='-javastack 80m -javamaxmem 14g '
 experiment_folder = prefix+'tests/experiments/'
+trace_folder = prefix+'tests/traces/'
 rep_base = ' -distrmethod '
 tail = ' -v -ex -exportstrat stdout'
 log_cmd = ' -mainlog '
@@ -332,20 +340,26 @@ config = {
     'mud_nails' : {'model':prefix+'tests/mud_nails.prism', 'props':prefix+'tests/mud_nails.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
     'uav_phi3': {'model':prefix+'tests/uav.prism', 'props':prefix+'tests/uav.props', 'pn':[8,9],  'vmax': 300, 'epsilon':def_eps, 'b':51, 'alpha':def_alpha},
     'uav_phi4': {'model':prefix+'tests/uav.prism', 'props':prefix+'tests/uav.props', 'pn':[11,12],  'vmax': 300, 'epsilon':def_eps, 'b':51, 'alpha':def_alpha},
+    'uav_var': {'model':prefix+'tests/uav_var.prism', 'props':prefix+'tests/uav_var.props', 'pn':[2,3],  'vmax': 500, 'epsilon':def_eps, 'b':41, 'alpha':def_alpha},
     'drones_50': {'model':prefix+'tests/drones_40.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2], 'vmax': 1000, 'epsilon':0.001, 'alpha':def_alpha},
-    'drones_25': {'model':prefix+'tests/drones_25.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 1000, 'epsilon':0.001, 'b':26, 'alpha':def_alpha},
+    'drones_25': {'model':prefix+'tests/drones_25.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 800, 'epsilon':0.001, 'b':41, 'alpha':def_alpha},
     'drones_20': {'model':prefix+'tests/drones_20.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 600, 'epsilon':0.001, 'b':51, 'alpha':0.8},
+    'drones_15': {'model':prefix+'tests/drones_15.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 600, 'epsilon':0.001, 'b':31, 'alpha':def_alpha},
     'grid_350': {'model':prefix+'tests/gridmap/gridmap_350_2500.prism', 'props':prefix+'tests/gridmap/gridmap_350_2500.props', 'pn':[3,2], 'vmax': 1000, 'epsilon':0.001, 'b':26, 'alpha':def_alpha},
-    'grid_330': {'model':prefix+'tests/gridmap/gridmap_330_2000.prism', 'props':prefix+'tests/gridmap/gridmap_330_2000.props', 'pn':[3,2], 'vmax': 1000, 'epsilon':0.001, 'b':26, 'alpha':def_alpha}
+    'grid_330': {'model':prefix+'tests/gridmap/gridmap_330_2000.prism', 'props':prefix+'tests/gridmap/gridmap_330_2000.props', 'pn':[3,2], 'vmax': 1000, 'epsilon':0.001, 'b':26, 'alpha':def_alpha},
+    'grid_320': {'model':prefix+'tests/gridmap/gridmap_320_300.prism', 'props':prefix+'tests/gridmap/gridmap_320_300.props', 'pn':[3,2], 'vmax': 900, 'epsilon':0.001, 'b':31, 'alpha':def_alpha},
+    'grid_250_1000': {'model':prefix+'tests/gridmap/gridmap_250_1000.prism', 'props':prefix+'tests/gridmap/gridmap_250_1000.props', 'pn':[3,2], 'vmax': 900, 'epsilon':0.001, 'b':31, 'alpha':def_alpha},
+    'grid_250_1200': {'model':prefix+'tests/gridmap/gridmap_250_1200.prism', 'props':prefix+'tests/gridmap/gridmap_250_1200.props', 'pn':[3,2], 'vmax': 900, 'epsilon':0.001, 'b':31, 'alpha':def_alpha},
+    'grid_250_1500': {'model':prefix+'tests/gridmap/gridmap_250_1500.prism', 'props':prefix+'tests/gridmap/gridmap_250_1500.props', 'pn':[3,2], 'vmax': 900, 'epsilon':0.001, 'b':31, 'alpha':def_alpha}
 }
 
 
 # ##### Case studies to run 
 experiment_names=['test', 'cliffs', 'mud_nails', 'gridmap10', 'drones']
-set_experiments = ['cliffs', 'mud_nails','gridmap10', 'drones', 'uav_phi3', 'uav_phi4', 'grid_330']
+set_experiments = ['cliffs', 'mud_nails','gridmap10', 'drones', 'uav_phi3', 'uav_phi4']
 big_experiments = ['drones_25', 'grid_350'] # 'uav_phi3'
 perf_experiments = ['cliffs', 'mud_nails', 'uav_phi3', 'grid_350', 'drones_25' ]
-new_experiments = ['ds_treasure', 'betting_g']
+new_experiments = ['ds_treasure', 'betting_g', 'grid_330', 'grid_320', 'grid_250_1000', 'grid_250_1200', 'grid_250_1500', 'uav_var', 'drones_15']
 all_experiments = set_experiments+big_experiments+new_experiments #['test', 'test10']
 rep_types = ['c51', 'qr'] # 'c51', 'qr'
 alg_types= ['exp', 'cvar'] # 'exp', 'cvar'

@@ -64,6 +64,7 @@ import prism.PrismSettings;
 import prism.PrismUtils;
 import strat.MDStrategy;
 import strat.MDStrategyArray;
+import strat.Strategy;
 
 import static java.lang.Math.*;
 
@@ -2650,7 +2651,7 @@ public class MDPModelChecker extends ProbModelChecker
 		boolean check_reach_dtmc_vi = true;
 		boolean check_reach_dtmc_distr_vi = true;
 		boolean gen_trace = true;
-		boolean compute_dtmc_vi = false; // Toggle computing non distr Exp VI
+		boolean compute_dtmc_vi = true; // Toggle computing non distr Exp VI
 		String bad_states_label = "obs";
 
 		String c51 = "C51";
@@ -2855,7 +2856,17 @@ public class MDPModelChecker extends ProbModelChecker
 					((MDStrategyArray) vi_res.strat).choices[s] = 0;
 				}
 				else {
-					vi_mcRewards.setStateReward(s, mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, ((MDStrategy) vi_res.strat).getChoiceIndex(s)));
+					double transition_reward = 0;
+					if (((MDStrategy) vi_res.strat).isChoiceDefined(s)) {
+						transition_reward = mdpRewards.getTransitionReward(s, ((MDStrategy) vi_res.strat).getChoiceIndex(s));
+					}
+					else if(((MDStrategy) vi_res.strat).getChoice(s) == Strategy.Choice.ARBITRARY) {
+						transition_reward = mdpRewards.getTransitionReward(s, 0);
+					}
+					else {
+						mainLog.println(" Error in strategy: choice is :"+ ((MDStrategy) vi_res.strat).getChoice(s));
+					}
+					vi_mcRewards.setStateReward(s, mdpRewards.getStateReward(s) + transition_reward);
 				}
 			}
 			DTMC vi_dtmc = new DTMCFromMDPAndMDStrategy(mdp, (MDStrategy) vi_res.strat);
@@ -3002,12 +3013,12 @@ public class MDPModelChecker extends ProbModelChecker
 			atoms = Integer.parseInt(params[0]);
 			error_thresh = Double.parseDouble(params[3]);
 			dtmc_epsilon = Double.parseDouble(params[4]);
+			alpha = Double.parseDouble(params[5]);
 
 			params = readParams("prism/tests/params_b.csv");
 			b_atoms = Integer.parseInt(params[0]);
 			double b_min = Double.parseDouble(params[1]);
 			double b_max = Double.parseDouble(params[2]);
-			alpha = Double.parseDouble(params[5]);
 
 			operator = new DistributionalBellmanQRAugmented(atoms, b_atoms, b_min, b_max, n, n_actions, mainLog);
 			operator.initialize(mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
