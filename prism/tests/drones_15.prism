@@ -1,13 +1,13 @@
 mdp
 const int M = 15;
 const int N = 15;
-const int B = 25;
-const double p=0.3; // with probability p, staying in place occurs due to seeing and control noise
+const int B = 20;
+const double p=0.28; // with probability p, staying in place occurs due to seeing and control noise
 
 formula area1 = (r=1 & c=7);
 formula area2 = (r=7 & c=1);
 formula area3 = (r=15 & c=7);
-formula regen = (r=7 & c= 7); 
+formula regen = (r = 7 & c = 7); 
 formula drained = (battery=0);
 
 module robot
@@ -31,7 +31,7 @@ module robot
     [wait]  regen  -> 1: (r'=r) &(c'=c) & (battery'=min(battery+2, B));
 
 	// terminal state self-loop to avoid deadlock
-	[rescue] drained -> 1: (r'=10) &(c'=10);
+	[rescue] drained -> 1: (r'=7) &(c'=7);
 
 endmodule
 
@@ -46,6 +46,6 @@ rewards
 	[wait] !drained: 1;
 
 	// drained
-    [rescue] drained: 140;
+    [rescue] drained: 130;
 
 endrewards
