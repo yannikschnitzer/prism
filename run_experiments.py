@@ -323,7 +323,7 @@ trace_folder = prefix+'tests/traces/'
 rep_base = ' -distrmethod '
 tail = ' -v -ex -exportstrat stdout'
 log_cmd = ' -mainlog '
-atoms_c51 = 101; atoms_qr=1000; def_vmax = 100; big_atoms_c51=101;  big_atoms_qr=200; def_eps=0.00001; def_alpha = 0.7
+atoms_c51 = 101; atoms_qr=1000; def_vmax = 100; big_atoms_c51=201;  big_atoms_qr=200; def_eps=0.00001; def_alpha = 0.7
 atom_vals={'c51':[1, 10, 25, 50, 75, 100, 1000], 'qr': [1, 10, 25, 50, 75, 100, 500, 1000, 5000]}
 b_atoms_vals =[0, 10, 25, 50, 75, 100]
 header_vi =['atoms', 'vmin', 'vmax', 'error', 'epsilon','alpha']
@@ -350,7 +350,9 @@ config = {
     'grid_320': {'model':prefix+'tests/gridmap/gridmap_320_300.prism', 'props':prefix+'tests/gridmap/gridmap_320_300.props', 'pn':[3,2], 'vmax': 900, 'epsilon':0.001, 'b':31, 'alpha':def_alpha},
     'grid_250_1000': {'model':prefix+'tests/gridmap/gridmap_250_1000.prism', 'props':prefix+'tests/gridmap/gridmap_250_1000.props', 'pn':[3,2], 'vmax': 900, 'epsilon':0.001, 'b':31, 'alpha':def_alpha},
     'grid_250_1200': {'model':prefix+'tests/gridmap/gridmap_250_1200.prism', 'props':prefix+'tests/gridmap/gridmap_250_1200.props', 'pn':[3,2], 'vmax': 900, 'epsilon':0.001, 'b':31, 'alpha':def_alpha},
-    'grid_250_1500': {'model':prefix+'tests/gridmap/gridmap_250_1500.prism', 'props':prefix+'tests/gridmap/gridmap_250_1500.props', 'pn':[3,2], 'vmax': 900, 'epsilon':0.001, 'b':31, 'alpha':def_alpha}
+    'grid_250_1500': {'model':prefix+'tests/gridmap/gridmap_250_1500.prism', 'props':prefix+'tests/gridmap/gridmap_250_1500.props', 'pn':[3,2], 'vmax': 900, 'epsilon':0.001, 'b':31, 'alpha':def_alpha},
+    'grid_200_7140': {'model':prefix+'tests/gridmap/gridmap_200_7140.prism', 'props':prefix+'tests/gridmap/gridmap_200_7140.props', 'pn':[3,2], 'vmax': 800, 'epsilon':0.001, 'b':41, 'alpha':0.8},
+    'grid_200_6776': {'model':prefix+'tests/gridmap/gridmap_200_6776.prism', 'props':prefix+'tests/gridmap/gridmap_200_6776.props', 'pn':[3,2], 'vmax': 800, 'epsilon':0.001, 'b':41, 'alpha':0.8}
 }
 
 
@@ -359,7 +361,7 @@ experiment_names=['test', 'cliffs', 'mud_nails', 'gridmap10', 'drones']
 set_experiments = ['cliffs', 'mud_nails','gridmap10', 'drones', 'uav_phi3', 'uav_phi4']
 big_experiments = ['drones_25', 'grid_350'] # 'uav_phi3'
 perf_experiments = ['cliffs', 'mud_nails', 'uav_phi3', 'grid_350', 'drones_25' ]
-new_experiments = ['ds_treasure', 'betting_g', 'grid_330', 'grid_320', 'grid_250_1000', 'grid_250_1200', 'grid_250_1500', 'uav_var', 'drones_15']
+new_experiments = ['ds_treasure', 'betting_g', 'grid_330', 'grid_320', 'grid_250_1000', 'grid_250_1200', 'grid_250_1500', 'uav_var', 'drones_15', 'grid_200_7140', 'grid_200_6776']
 all_experiments = set_experiments+big_experiments+new_experiments #['test', 'test10']
 rep_types = ['c51', 'qr'] # 'c51', 'qr'
 alg_types= ['exp', 'cvar'] # 'exp', 'cvar'
