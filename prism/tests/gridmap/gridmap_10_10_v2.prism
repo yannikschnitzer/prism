@@ -2,7 +2,7 @@ mdp
 const int N=10; // N*N grid map
 const double p=0.1; // with probability p, a move to a neighboring state state occurs due to seeing and control noise
 
-formula wall = (r=6 & c=2) | (r=8 & c=1) | (r=4 & c=1) | (r=5 & c=2) | (r=7 & c=1) | (r=8 & c=3) | (r=9 & c=2) | (r=9 & c=1) | (r=4 & c=4) | (r=7 & c=6) | (r=9 & c=5) | (r=3 & c=5) | (r=6 & c=4) | (r=7 & c=2) | (r=5 & c=9) | (r=8 & c=9);
+formula wall= (r=6 & c=2) | (r=8 & c=1) | (r=4 & c=1) | (r=5 & c=2) | (r=7 & c=1) | (r=8 & c=3) | (r=9 & c=2) | (r=9 & c=1) | (r=4 & c=4) | (r=7 & c=6) | (r=9 & c=5) | (r=3 & c=5) | (r=6 & c=4) | (r=7 & c=2) | (r=5 & c=9) | (r=8 & c=9);
 
 module robot
 	//define robot position
