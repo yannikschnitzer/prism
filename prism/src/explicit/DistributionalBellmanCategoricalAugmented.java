@@ -197,17 +197,16 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
             index = new_b/delta_b;
         }
         int l= (int) floor(index); int u= (int) ceil(index);
-
-        double diff_l = abs(b[(int) index] - b[l]);
-        double diff_u = abs(b[u] - b[(int) index]);
-
-        // check which index is closest:
-        if (diff_u >= diff_l){
-            return l;
-        }
-        else {
-            return u;
-        }
+        return l;
+//        double diff_l = abs(new_b - b[l]);
+//        double diff_u = abs(b[u] - new_b);
+//        // check which index is closest:
+//        if (diff_u >= diff_l){
+//            return l;
+//        }
+//        else {
+//            return u;
+//        }
     }
 
     @Override
