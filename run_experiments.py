@@ -355,6 +355,7 @@ config = {
     'grid_200_6776': {'model':prefix+'tests/gridmap/gridmap_200_6776.prism', 'props':prefix+'tests/gridmap/gridmap_200_6776.props', 'pn':[3,2], 'vmax': 800, 'epsilon':0.001, 'b':41, 'alpha':0.8},
     'grid_170_4986': {'model':prefix+'tests/gridmap/gridmap_170_4986.prism', 'props':prefix+'tests/gridmap/gridmap_170_4986.props', 'pn':[3,2], 'vmax': 800, 'epsilon':0.001, 'b':101, 'alpha':0.8},
     'grid_150_3918': {'model':prefix+'tests/gridmap/gridmap_150_3918.prism', 'props':prefix+'tests/gridmap/gridmap_150_3918.props', 'pn':[3,2], 'vmax': 800, 'epsilon':0.001, 'b':101, 'alpha':0.8},
+    'grid_150_3738': {'model':prefix+'tests/gridmap/gridmap_150_3738.prism', 'props':prefix+'tests/gridmap/gridmap_150_3738.props', 'pn':[3,2], 'vmax': 700, 'epsilon':0.001, 'b':101, 'alpha':0.8},
 }
 
 
@@ -363,7 +364,7 @@ experiment_names=['test', 'cliffs', 'mud_nails', 'gridmap10', 'drones']
 set_experiments = ['cliffs', 'mud_nails','gridmap10', 'drones', 'uav_phi3', 'uav_phi4']
 big_experiments = ['drones_25', 'grid_350'] # 'uav_phi3'
 perf_experiments = ['cliffs', 'mud_nails', 'uav_phi3', 'grid_350', 'drones_25' ]
-new_experiments = ['ds_treasure', 'betting_g', 'grid_330', 'grid_320', 'grid_250_1000', 'grid_250_1200', 'grid_250_1500', 'uav_var', 'drones_15', 'grid_200_7140', 'grid_200_6776', 'grid_170_4986','grid_150_3918']
+new_experiments = ['ds_treasure', 'betting_g', 'grid_330', 'grid_320', 'grid_250_1000', 'grid_250_1200', 'grid_250_1500', 'uav_var', 'drones_15', 'grid_200_7140', 'grid_200_6776', 'grid_170_4986','grid_150_3918','grid_150_3738']
 all_experiments = set_experiments+big_experiments+new_experiments #['test', 'test10']
 rep_types = ['c51', 'qr'] # 'c51', 'qr'
 alg_types= ['exp', 'cvar'] # 'exp', 'cvar'
