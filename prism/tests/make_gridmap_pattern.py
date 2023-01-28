@@ -4,7 +4,7 @@ import argparse, random, re
 import numpy as np
 from copy import deepcopy
 
-model_name = "gridmap_10_10_v2"
+model_name = "gridmap_10_10_mod"
 prism_file = "gridmap/"+model_name+".prism"
 
 def init_argparse() -> argparse.ArgumentParser:
