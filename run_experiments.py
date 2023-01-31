@@ -194,6 +194,51 @@ def vary_atoms_exp(all_experiments, alg_types, rep_types, apdx='', debug=False):
                 else:
                     print(f'Error running experiment')
                     # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num)+apd, prefix, debug)
+
+# #### Vary atoms experiment
+
+def vary_atoms_cvar(all_experiments, alg_types, rep_types, apdx='', debug=False):
+
+    alg = 'cvar'
+    apd = '_'+ apdx if apdx != '' else apdx
+    for exp in all_experiments:
+        for rep in rep_types:
+            print(f'\nRunning vary atoms experiment:{exp}, alg:{alg}, rep:{rep}')
+            
+            for atom_num in (atom_vals[rep]):
+                
+                if (atom_num > 100) and ('c51' in rep) and (exp in experiment_names):
+                    continue
+                
+                print(f'---- atoms = {atom_num}')
+                
+                # create parameters
+                b_atoms = (b_atoms_vals[5]+1) if exp in experiment_names else config[exp]['b']
+                if 'c51' in rep:
+                    atoms= atoms_c51 if exp in experiment_names else big_atoms_c51
+                    create_params(atom_num+1, [0, config[exp]['vmax']], 0.01, config[exp]['epsilon'], b_atoms, [0, config[exp]['vmax']], config[exp]['alpha'])
+                else:
+                    atoms= atoms_qr if exp in experiment_names else big_atoms_qr
+                    create_params(atom_num, [0, config[exp]['vmax']], ((1.0/atoms)*10), config[exp]['epsilon'], b_atoms, [0, config[exp]['vmax']], config[exp]['alpha'])
+
+                # create cmd + run
+                base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
+                options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep,'_'+str(atom_num)+apd, debug)
+                if debug:
+                    print(prism_exec+' '+base_command+options)
+                r=os.system(prism_exec+' '+base_command+options)
+                print(f'Return code: {r}')
+
+                if r==0:
+                    # save output for current algorithm if run was successfull
+                    print(f"... Saving {alg} VI output files...")
+                    # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num)+apd, prefix, debug)
+                    copy_vi_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num)+'_va'+apd, prefix, debug)
+                    copy_trace_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num)+'_va'+apd, prefix, debug)
+                    copy_dtmc_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num)+'_va'+apd, prefix, debug)
+                else:
+                    print(f'Error running experiment')
+                    # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num)+apd, prefix, debug)
                     
 # #### Vary b atoms experiment
 
@@ -301,6 +346,7 @@ def init_argparse() -> argparse.ArgumentParser:
     # Additional experiments
     parser.add_argument('-b', "--base", action='store_true', help='Base experiment')
     parser.add_argument('-a', "--varyatoms", action='store_true', help='Vary the number of atoms in the distr representation')
+    parser.add_argument('-v', "--varyatomscvar", action='store_true', help='Vary the number of atoms in the distr representation for cvar')
     parser.add_argument('-c', "--varybatoms", action='store_true', help='Vary the number of atoms in the CVaR budget')
     parser.add_argument('-e', "--epsilon", action='store_true', help='Vary epsilon values')
     
@@ -353,8 +399,10 @@ config = {
     'grid_250_1500': {'model':prefix+'tests/gridmap/gridmap_250_1500.prism', 'props':prefix+'tests/gridmap/gridmap_250_1500.props', 'pn':[3,2], 'vmax': 900, 'epsilon':0.001, 'b':31, 'alpha':def_alpha},
     'grid_200_7140': {'model':prefix+'tests/gridmap/gridmap_200_7140.prism', 'props':prefix+'tests/gridmap/gridmap_200_7140.props', 'pn':[3,2], 'vmax': 800, 'epsilon':0.001, 'b':41, 'alpha':0.8},
     'grid_200_6776': {'model':prefix+'tests/gridmap/gridmap_200_6776.prism', 'props':prefix+'tests/gridmap/gridmap_200_6776.props', 'pn':[3,2], 'vmax': 800, 'epsilon':0.001, 'b':41, 'alpha':0.8},
-    'grid_170_4986': {'model':prefix+'tests/gridmap/gridmap_170_4986.prism', 'props':prefix+'tests/gridmap/gridmap_170_4986.props', 'pn':[3,2], 'vmax': 800, 'epsilon':0.001, 'b':101, 'alpha':0.8},
-    'grid_150_3918': {'model':prefix+'tests/gridmap/gridmap_150_3918.prism', 'props':prefix+'tests/gridmap/gridmap_150_3918.props', 'pn':[3,2], 'vmax': 800, 'epsilon':0.001, 'b':101, 'alpha':0.8},
+    'grid_170_4986': {'model':prefix+'tests/gridmap/gridmap_170_4986.prism', 'props':prefix+'tests/gridmap/gridmap_170_4986.props', 'pn':[3,2], 'vmax': 600, 'epsilon':0.01, 'b':91, 'alpha':0.8},
+    'grid_150_3918': {'model':prefix+'tests/gridmap/gridmap_150_3918.prism', 'props':prefix+'tests/gridmap/gridmap_150_3918.props', 'pn':[3,2], 'vmax': 600, 'epsilon':def_eps, 'b':101, 'alpha':0.8},
+    'grid_150_3738': {'model':prefix+'tests/gridmap/gridmap_150_3738.prism', 'props':prefix+'tests/gridmap/gridmap_150_3738.props', 'pn':[3,2], 'vmax': 600, 'epsilon':0.001, 'b':101, 'alpha':0.8},
+    'grid_150_3535': {'model':prefix+'tests/gridmap/gridmap_150_3535.prism', 'props':prefix+'tests/gridmap/gridmap_150_3535.props', 'pn':[3,2], 'vmax': 600, 'epsilon':0.01, 'b':101, 'alpha':0.8},
 }
 
 
@@ -363,7 +411,7 @@ experiment_names=['test', 'cliffs', 'mud_nails', 'gridmap10', 'drones']
 set_experiments = ['cliffs', 'mud_nails','gridmap10', 'drones', 'uav_phi3', 'uav_phi4']
 big_experiments = ['drones_25', 'grid_350'] # 'uav_phi3'
 perf_experiments = ['cliffs', 'mud_nails', 'uav_phi3', 'grid_350', 'drones_25' ]
-new_experiments = ['ds_treasure', 'betting_g', 'grid_330', 'grid_320', 'grid_250_1000', 'grid_250_1200', 'grid_250_1500', 'uav_var', 'drones_15', 'grid_200_7140', 'grid_200_6776', 'grid_170_4986','grid_150_3918']
+new_experiments = ['ds_treasure', 'betting_g', 'grid_330', 'grid_320', 'grid_250_1000', 'grid_250_1200', 'grid_250_1500', 'uav_var', 'drones_15', 'grid_200_7140', 'grid_200_6776', 'grid_170_4986','grid_150_3918','grid_150_3738', 'grid_150_3535']
 all_experiments = set_experiments+big_experiments+new_experiments #['test', 'test10']
 rep_types = ['c51', 'qr'] # 'c51', 'qr'
 alg_types= ['exp', 'cvar'] # 'exp', 'cvar'
@@ -422,6 +470,9 @@ if __name__ == "__main__":
 
     if args.varyatoms: 
         vary_atoms_exp(experiments, algs, reps, apdx=args.apdx, debug=args.debug)
+
+    if args.varyatomscvar: 
+        vary_atoms_cvar(experiments, algs, reps, apdx=args.apdx, debug=args.debug)
 
     if args.varybatoms:
         vary_b_exp(experiments, algs, reps, apdx=args.apdx, debug=args.debug)
