@@ -223,7 +223,7 @@ def vary_atoms_cvar(all_experiments, alg_types, rep_types, apdx='', debug=False)
 
                 # create cmd + run
                 base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
-                options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep,'_'+str(atom_num)+apd, debug)
+                options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep,'_'+str(atom_num)+'_va'+apd, debug)
                 if debug:
                     print(prism_exec+' '+base_command+options)
                 r=os.system(prism_exec+' '+base_command+options)
@@ -346,7 +346,7 @@ def init_argparse() -> argparse.ArgumentParser:
     # Additional experiments
     parser.add_argument('-b', "--base", action='store_true', help='Base experiment')
     parser.add_argument('-a', "--varyatoms", action='store_true', help='Vary the number of atoms in the distr representation')
-    parser.add_argument('-v', "--varyatomscvar", action='store_true', help='Vary the number of atoms in the distr representation for cvar')
+    parser.add_argument('-t', "--varyatomscvar", action='store_true', help='Vary the number of atoms in the distr representation for cvar')
     parser.add_argument('-c', "--varybatoms", action='store_true', help='Vary the number of atoms in the CVaR budget')
     parser.add_argument('-e', "--epsilon", action='store_true', help='Vary epsilon values')
     
@@ -386,7 +386,7 @@ config = {
     'mud_nails' : {'model':prefix+'tests/mud_nails.prism', 'props':prefix+'tests/mud_nails.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
     'uav_phi3': {'model':prefix+'tests/uav.prism', 'props':prefix+'tests/uav.props', 'pn':[8,9],  'vmax': 300, 'epsilon':def_eps, 'b':51, 'alpha':def_alpha},
     'uav_phi4': {'model':prefix+'tests/uav.prism', 'props':prefix+'tests/uav.props', 'pn':[11,12],  'vmax': 300, 'epsilon':def_eps, 'b':51, 'alpha':def_alpha},
-    'uav_var': {'model':prefix+'tests/uav_var.prism', 'props':prefix+'tests/uav_var.props', 'pn':[2,3],  'vmax': 500, 'epsilon':def_eps, 'b':41, 'alpha':def_alpha},
+    'uav_var': {'model':prefix+'tests/uav_var.prism', 'props':prefix+'tests/uav_var.props', 'pn':[2,3],  'vmax': 500, 'epsilon':def_eps, 'b':101, 'alpha':def_alpha},
     'drones_50': {'model':prefix+'tests/drones_40.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2], 'vmax': 1000, 'epsilon':0.001, 'alpha':def_alpha},
     'drones_25': {'model':prefix+'tests/drones_25.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 800, 'epsilon':0.001, 'b':41, 'alpha':def_alpha},
     'drones_20': {'model':prefix+'tests/drones_20.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 600, 'epsilon':0.001, 'b':51, 'alpha':0.8},
@@ -408,7 +408,7 @@ config = {
 
 # ##### Case studies to run 
 experiment_names=['test', 'cliffs', 'mud_nails', 'gridmap10', 'drones']
-set_experiments = ['cliffs', 'mud_nails','gridmap10', 'drones', 'uav_phi3', 'uav_phi4']
+set_experiments = ['gridmap10', 'drones', 'uav_var','ds_treasure', 'betting_g']
 big_experiments = ['drones_25', 'grid_350'] # 'uav_phi3'
 perf_experiments = ['cliffs', 'mud_nails', 'uav_phi3', 'grid_350', 'drones_25' ]
 new_experiments = ['ds_treasure', 'betting_g', 'grid_330', 'grid_320', 'grid_250_1000', 'grid_250_1200', 'grid_250_1500', 'uav_var', 'drones_15', 'grid_200_7140', 'grid_200_6776', 'grid_170_4986','grid_150_3918','grid_150_3738', 'grid_150_3535']
