@@ -401,7 +401,7 @@ config = {
     'grid_200_6776': {'model':prefix+'tests/gridmap/gridmap_200_6776.prism', 'props':prefix+'tests/gridmap/gridmap_200_6776.props', 'pn':[3,2], 'vmax': 800, 'epsilon':0.001, 'b':41, 'alpha':0.8},
     'grid_170_4986': {'model':prefix+'tests/gridmap/gridmap_170_4986.prism', 'props':prefix+'tests/gridmap/gridmap_170_4986.props', 'pn':[3,2], 'vmax': 600, 'epsilon':0.01, 'b':91, 'alpha':0.8},
     'grid_150_3918': {'model':prefix+'tests/gridmap/gridmap_150_3918.prism', 'props':prefix+'tests/gridmap/gridmap_150_3918.props', 'pn':[3,2], 'vmax': 600, 'epsilon':def_eps, 'b':101, 'alpha':0.8},
-    'grid_150_3738': {'model':prefix+'tests/gridmap/gridmap_150_3738.prism', 'props':prefix+'tests/gridmap/gridmap_150_3738.props', 'pn':[3,2], 'vmax': 700, 'epsilon':0.001, 'b':101, 'alpha':0.8},
+    'grid_150_3738': {'model':prefix+'tests/gridmap/gridmap_150_3738.prism', 'props':prefix+'tests/gridmap/gridmap_150_3738.props', 'pn':[3,2], 'vmax': 600, 'epsilon':0.001, 'b':101, 'alpha':0.8},
     'grid_150_3535': {'model':prefix+'tests/gridmap/gridmap_150_3535.prism', 'props':prefix+'tests/gridmap/gridmap_150_3535.props', 'pn':[3,2], 'vmax': 600, 'epsilon':0.01, 'b':101, 'alpha':0.8},
 }
 
