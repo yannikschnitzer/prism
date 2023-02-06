@@ -78,7 +78,8 @@ import java.math.BigInteger;
 		this.mainVarNames = varNames;
 		StompyStateToStompyObsIndex = new HashMap<Integer, Integer>();
 		StompyStateToObs = new ArrayList<Integer> ();
-		
+		PrismStateToStompyState = new int[pomdp.getNumStates()];
+
 		loadWinningRegion(winningFile);
 		//loadWinningRegionFromFile(winningFile);
 //		loadTranslationFromFile(translateFile);
@@ -221,7 +222,6 @@ import java.math.BigInteger;
 		int nStompyStates = StompyStateToObs.size();
 		//		int StompyState = PrismStateToStompyState[sPrime];
 		//		int StompyObs = StompyStateToStompyObs[StompyState];
-		PrismStateToStompyState = new int[pomdp.getNumStates()];
 		HashMap<Integer, ArrayList<Integer>> StompyStateToPrismState = new HashMap<Integer, ArrayList<Integer>>();
 		
 		for (int s = 0; s < nStompyStates; s++) {
@@ -297,7 +297,7 @@ import java.math.BigInteger;
 	public void loadWinningRegion(String winngingFile) 
 	{
 		try {
-			StompyStateToObs = new ArrayList<Integer> ();
+//			StompyStateToObs = new ArrayList<Integer> ();
 			HashMap<String, Integer> StompyMeaning2State = new HashMap<String, Integer>();
 
 			BufferedReader in = new BufferedReader(new FileReader(winngingFile));
@@ -571,11 +571,10 @@ import java.math.BigInteger;
 //		System.out.println("Prism states in all area" + PrismStates);
 //		PrismStates = filterPrimaryStates(PrismStates);
 //		System.out.println("Prism states in primary area" + PrismStates);
-
 		// convert to Stompy obs 
 		HashMap<Integer, HashSet<Integer>> StompyObs2StompyStates = new HashMap<Integer, HashSet<Integer>> ();
 		for (int state : PrismStates) {
-
+		
 			int StompyState = PrismStateToStompyState[state];
 			if(StompyState < 0) {
 				// this state is not modeled in this shield
@@ -1406,6 +1405,13 @@ public class PartiallyObservableMonteCarloPlanning {
 			state = nextState;
 		}
 		
+//		// add reward for reaching  last state
+//		if (done) {
+//			System.out.println("--done" + mdpRewards.getStateReward(state) + " " +  discount);
+//			displayState(state);
+//		}
+		
+//		totalReward += mdpRewards.getStateReward(state); // used before 11/19/2022 may should re-run all experiments before that //todo
 		totalReward += mdpRewards.getStateReward(state) * discount;
 		if (verbose >= 3) {
 			System.out.println("Ending rollout after " + numStep + "steps, with total reward" + totalReward );
@@ -1467,7 +1473,9 @@ public class PartiallyObservableMonteCarloPlanning {
 		
 		Random rnd = new Random();
 		if(besta.size() ==0) {
-//			System.out.println("not action available");
+			System.out.println("not action available");
+			vnode.getBelief().displayUniqueStates();
+			displayState(457);
 		}
 		if (besta.size() > 0) {
 			int actionIndex = besta.get(rnd.nextInt(besta.size()));
@@ -2000,6 +2008,9 @@ public class PartiallyObservableMonteCarloPlanning {
 			if (!fileName.contains("centralized")) {
 				continue;
 			}
+			if (fileName.contains("._")) {
+				continue;
+			}
 			System.out.println("++++Initialize main shield " );
 			System.out.println(fileName);
 			this.isMainShieldAvailable = true;
@@ -2010,6 +2021,8 @@ public class PartiallyObservableMonteCarloPlanning {
 			int[] pStates = {0, 0, Integer.parseInt(parameters[n-3]), Integer.parseInt(parameters[n-2])}; 
 			
 			String winning = file.toString();
+			
+			
 			mainShield = new POMDPShield(pomdp, winning,  varNames, endStates, pStates);
 			break;
 		}
@@ -2054,6 +2067,9 @@ public class PartiallyObservableMonteCarloPlanning {
 			if (!fileName.contains("factor")) {
 				continue;
 			}
+			if (fileName.contains("._")) {
+				continue;
+			}
 			fileNames.add(fileName);
 		}
 		Collections.sort(fileNames);
@@ -2071,6 +2087,9 @@ public class PartiallyObservableMonteCarloPlanning {
 			System.out.println("++++Initialize shield index = " + localShields.size() + ", shieldName = "+ fileName);
 			this.isLocalShieldAvailable = true;
 			String winning = shieldDir + System.getProperties().getProperty("file.separator") + fileName;
+			
+			
+			
 			String[] parameters = fileName.split("-");
 			int n= parameters.length;
 			int[] pStates = {Integer.parseInt(parameters[n-5]), Integer.parseInt(parameters[n-4]), Integer.parseInt(parameters[n-3]), Integer.parseInt(parameters[n-2])}; 

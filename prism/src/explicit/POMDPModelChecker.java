@@ -1695,8 +1695,8 @@ public class POMDPModelChecker extends ProbModelChecker
 		return Aprime;
 	}
 	
-	
-	public ModelCheckerResult computeReachRewardsPOMCP(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean minMax, BitSet statesOfInterest) throws PrismException
+	//computeReachRewardsWithPOMCP
+	public ModelCheckerResult computeReachRewardsWithPOMCP(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean minMax, BitSet statesOfInterest) throws PrismException
 	{
 		int nStates = pomdp.getNumStates();
 		ArrayList<Object> allActions = getAllActions(pomdp);
@@ -1855,7 +1855,7 @@ public class POMDPModelChecker extends ProbModelChecker
 			for (int numEpisode = 1; numEpisode <= numEpisodes; numEpisode++) {
 				pomcp.resetRoot();
 				long episodeTime = System.currentTimeMillis();
-				double[] reward = computeReachRewardsPOMCPEpisode(pomcp, pomdp,  mdpRewards,  target,  minMax,  statesOfInterest, endStates, numEpisode,
+				double[] reward = computeReachRewardsWithPOMCPEpisode(pomcp, pomdp,  mdpRewards,  target,  minMax,  statesOfInterest, endStates, numEpisode,
 																 timeStamp, shieldLevel, useLocalShield, verbose);
 				if (reward == null) {
 					break;
@@ -1902,7 +1902,7 @@ public class POMDPModelChecker extends ProbModelChecker
 		return res; 
 	}
 	
-   public double[] computeReachRewardsPOMCPEpisode(PartiallyObservableMonteCarloPlanning pomcp, POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest, 
+   public double[] computeReachRewardsWithPOMCPEpisode(PartiallyObservableMonteCarloPlanning pomcp, POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest, 
 			   											HashSet<Integer> endStates, int episode, 
 			   											String timeStamp, String shield, boolean useLocalShield, int verbose) throws PrismException
 	{
@@ -1950,7 +1950,7 @@ public class POMDPModelChecker extends ProbModelChecker
 				pomcp.displayState(state);
 				pomcp.displayRootBelief();
 			}
-			if (step > stepLimit ) {
+			if (step >= stepLimit ) {
 				//mainLog.println("reaching step limit" + stepLimit);
 				break;
 			}
@@ -2070,44 +2070,52 @@ public class POMDPModelChecker extends ProbModelChecker
 		return state; 
 	}
 	
-	
+//	public ModelCheckerResult computeReachRewardsWithPOMCP(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest) throws PrismException
+//	{
+//		
+//		return null;
+//	}
+    enum POMDPMethod { PERSEUS, POMCP, FIXEDGRID};
+
 	public ModelCheckerResult computeReachRewards(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest) throws PrismException
 	{
-		
-		mainLog.println("Calling Perseus pomdp solver");
-		//computeReachRewardsPerseus( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
-		//TODO: use POMCP method 
-		computeReachRewardsPOMCP( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
-		mainLog.println("End calling Perseus pomdp solver");
-		
-		ModelCheckerResult res = null;
-		return res;
-//		
-//		long timer;
-//		
-//		
-//		// Check we are only computing for a single state (and use initial state if unspecified)
-//		if (statesOfInterest == null) {
-//			statesOfInterest = new BitSet();
-//			statesOfInterest.set(pomdp.getFirstInitialState());
-//		} else if (statesOfInterest.cardinality() > 1) {
-//			throw new PrismNotSupportedException("POMDPs can only be solved from a single start state");
-//		}
-//		
-//		// Start expected reachability
-//		timer = System.currentTimeMillis();
-//		mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
-//
-//		// Compute rewards
-//		res = computeReachRewardsFixedGrid(pomdp, mdpRewards, target, min, statesOfInterest.nextSetBit(0));
-//
-//		// Finished expected reachability
-//		timer = System.currentTimeMillis() - timer;
-//		mainLog.println("Expected reachability took " + timer / 1000.0 + " seconds.");
-//
-//		// Update time taken
-//		res.timeTaken = timer / 1000.0;
-//		return res;
+		POMDPMethod pomdpMethod = POMDPMethod.POMCP;
+		switch(pomdpMethod) {
+		case PERSEUS:
+			mainLog.println("Calling Perseus pomdp solver");
+			computeReachRewardsPerseus( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
+			mainLog.println("End calling Perseus pomdp solver");
+		case POMCP:
+			computeReachRewardsWithPOMCP( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
+			throw new PrismException("No offline stragey to be generatd since POMCP is an online algorithm");
+		case FIXEDGRID:
+			ModelCheckerResult res = null;
+			long timer;
+			// Check we are only computing for a single state (and use initial state if unspecified)
+			if (statesOfInterest == null) {
+				statesOfInterest = new BitSet();
+				statesOfInterest.set(pomdp.getFirstInitialState());
+			} else if (statesOfInterest.cardinality() > 1) {
+				throw new PrismNotSupportedException("POMDPs can only be solved from a single start state");
+			}
+			
+			// Start expected reachability
+			timer = System.currentTimeMillis();
+			mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
+
+			// Compute rewards
+			res = computeReachRewardsFixedGrid(pomdp, mdpRewards, target, min, statesOfInterest.nextSetBit(0));
+
+			// Finished expected reachability
+			timer = System.currentTimeMillis() - timer;
+			mainLog.println("Expected reachability took " + timer / 1000.0 + " seconds.");
+
+			// Update time taken
+			res.timeTaken = timer / 1000.0;
+			return res;
+		default:
+			throw new PrismException("Unknown POMDP method " + pomdpMethod);
+		}
 	}
 
 	/**
@@ -2308,17 +2316,53 @@ public class POMDPModelChecker extends ProbModelChecker
 		timer = System.currentTimeMillis();
 		mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
 
-		//TODO  use POMCP rather than tranditional method
-//		// Compute rewards 
-//		res = computeMultiReachRewardsFixedGrid(pomdp, weights, mdpRewardsList, target, min, statesOfInterest.nextSetBit(0));
-//
-//		// Finished expected reachability
-//		timer = System.currentTimeMillis() - timer;
-//		mainLog.println("Expected reachability took " + timer / 1000.0 + " seconds.");
-//
-//		// Update time taken
-//		res.timeTaken = timer / 1000.0;
-//
+		POMDPMethod pomdpMethod = POMDPMethod.POMCP; 
+		if (pomdpMethod == POMDPMethod.POMCP) { // test POMCP algorithm
+			int numRewards = weights.size();
+			WeightedSumMDPRewards mdpRewardsWeighted = new WeightedSumMDPRewards();
+			for (int i = 0; i < numRewards; i++) {
+				mdpRewardsWeighted.addRewards(weights.get(i), mdpRewardsList.get(i));
+			}
+			computeReachRewardsWithPOMCP(pomdp, mdpRewardsWeighted, target, min, statesOfInterest);
+			throw new PrismException("No offline stragey to be generatd since POMCP is an online algorithm");
+		}
+
+		// Compute rewards 
+		res = computeMultiReachRewardsFixedGrid(pomdp, weights, mdpRewardsList, target, min, statesOfInterest.nextSetBit(0));
+
+		// Finished expected reachability
+		timer = System.currentTimeMillis() - timer;
+		mainLog.println("Expected reachability took " + timer / 1000.0 + " seconds.");
+
+		// Update time taken
+		res.timeTaken = timer / 1000.0;
+		return res;
+	}
+	/**
+	 * Compute weighted multi-objective expected reachability rewards,
+	 * i.e. compute the min/max weighted multi-objective reward accumulated to reach a state in {@code target}.
+	 * @param pomdp The POMDP
+	 * @param mdpRewards The rewards
+	 * @param target Target states
+	 * @param min Min or max rewards (true=min, false=max)
+	 */
+	public ModelCheckerResult computeMultiReachRewardsWithPOMCP(POMDP pomdp, List<Double> weights, List<MDPRewards> mdpRewardsList, BitSet target, boolean min, BitSet statesOfInterest) throws PrismException
+	{
+		ModelCheckerResult res = null;
+		long timer;
+
+		// Check we are only computing for a single state (and use initial state if unspecified)
+		if (statesOfInterest == null) {
+			statesOfInterest = new BitSet();
+			statesOfInterest.set(pomdp.getFirstInitialState());
+		} else if (statesOfInterest.cardinality() > 1) {
+			throw new PrismNotSupportedException("POMDPs can only be solved from a single start state");
+		}
+		
+		// Start expected reachability
+		timer = System.currentTimeMillis();
+		mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
+
 		//TODO
 		///202203 temp code; for verification of POMCP algorithms
 		// Build a combined reward structure
@@ -2328,13 +2372,11 @@ public class POMDPModelChecker extends ProbModelChecker
 			mdpRewardsWeighted.addRewards(weights.get(i), mdpRewardsList.get(i));
 		}
 		// min == false
-		computeReachRewardsPOMCP(pomdp, mdpRewardsWeighted, target, min, statesOfInterest);
+		computeReachRewardsWithPOMCP(pomdp, mdpRewardsWeighted, target, min, statesOfInterest);
 		////////////
-		
 		
 		return res;
 	}
-
 	/**
 	 * Compute weighted multi-objective expected reachability rewards using Lovejoy's fixed-resolution grid approach.
 	 * This only computes the weighted multi-objective expected reward from a single start state
@@ -2351,8 +2393,6 @@ public class POMDPModelChecker extends ProbModelChecker
 		long timer = System.currentTimeMillis();
 		mainLog.println("calling computeMultiReachRewardsFixedGrid!!!");
 		mainLog.println("Starting fixed-resolution grid approximation (" + (min ? "min" : "max") + ")...");
-
-
 
 		// Find out the observations for the target states
 		BitSet targetObs = getObservationsMatchingStates(pomdp, target);
