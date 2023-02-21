@@ -376,7 +376,9 @@ header_vi =['atoms', 'vmin', 'vmax', 'error', 'epsilon','alpha']
 header_b = ['atoms', 'bmin', 'bmax']
 alg_map= {'exp': 0, 'cvar': 1}
 config = {
-    'test': {'model':prefix+'tests/corridor.prism', 'props':prefix+'tests/corridor.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
+    'test': {'model':prefix+'tests/corridor.prism', 'props':prefix+'tests/corridor.props', 'pn':[3,2], 'vmax': 25, 'epsilon':def_eps, 'b':30, 'alpha':def_alpha},
+    'test_small': {'model':prefix+'tests/cliffs.prism', 'props':prefix+'tests/cliffs.prism.props', 'pn':[1,2], 'vmax': 30, 'epsilon':def_eps, 'b':30, 'alpha':def_alpha},
+    'mud_nails_small' : {'model':prefix+'tests/mud_nails_small.prism', 'props':prefix+'tests/mud_nails_small.props', 'pn':[3,2], 'vmax': 30, 'epsilon':def_eps, 'b':30, 'alpha':def_alpha},
     'test10' : {'model':prefix+'tests/gridmap/gridmap_10_10_v2.prism', 'props':prefix+'tests/gridmap/gridmap_10_10.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'b':26, 'alpha':def_alpha},
     'cliffs' : {'model':prefix+'tests/cliffs_v2.prism', 'props':prefix+'tests/cliffs_v2.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
     'betting_g' :{'model':prefix+'tests/betting_game.prism', 'props':prefix+'tests/betting_game.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.8},
@@ -400,19 +402,19 @@ config = {
     'grid_200_7140': {'model':prefix+'tests/gridmap/gridmap_200_7140.prism', 'props':prefix+'tests/gridmap/gridmap_200_7140.props', 'pn':[3,2], 'vmax': 800, 'epsilon':0.001, 'b':41, 'alpha':0.8},
     'grid_200_6776': {'model':prefix+'tests/gridmap/gridmap_200_6776.prism', 'props':prefix+'tests/gridmap/gridmap_200_6776.props', 'pn':[3,2], 'vmax': 800, 'epsilon':0.001, 'b':41, 'alpha':0.8},
     'grid_170_4986': {'model':prefix+'tests/gridmap/gridmap_170_4986.prism', 'props':prefix+'tests/gridmap/gridmap_170_4986.props', 'pn':[3,2], 'vmax': 600, 'epsilon':0.01, 'b':91, 'alpha':0.8},
-    'grid_150_3918': {'model':prefix+'tests/gridmap/gridmap_150_3918.prism', 'props':prefix+'tests/gridmap/gridmap_150_3918.props', 'pn':[3,2], 'vmax': 600, 'epsilon':def_eps, 'b':101, 'alpha':0.8},
+    'grid_150_3918': {'model':prefix+'tests/gridmap/gridmap_150_3918.prism', 'props':prefix+'tests/gridmap/gridmap_150_3918.props', 'pn':[3,2], 'vmax': 600, 'epsilon':0.001, 'b':101, 'alpha':0.8},
     'grid_150_3738': {'model':prefix+'tests/gridmap/gridmap_150_3738.prism', 'props':prefix+'tests/gridmap/gridmap_150_3738.props', 'pn':[3,2], 'vmax': 600, 'epsilon':0.001, 'b':101, 'alpha':0.8},
     'grid_150_3535': {'model':prefix+'tests/gridmap/gridmap_150_3535.prism', 'props':prefix+'tests/gridmap/gridmap_150_3535.props', 'pn':[3,2], 'vmax': 600, 'epsilon':0.01, 'b':101, 'alpha':0.8},
 }
 
 
 # ##### Case studies to run 
-experiment_names=['test', 'cliffs', 'mud_nails', 'gridmap10', 'drones']
-set_experiments = ['gridmap10', 'drones', 'uav_var','ds_treasure', 'betting_g']
+experiment_names=[ 'cliffs', 'mud_nails', 'gridmap10', 'drones']
+set_experiments = ['test','gridmap10', 'drones', 'uav_var','ds_treasure', 'betting_g']
 big_experiments = ['drones_25', 'grid_350'] # 'uav_phi3'
 perf_experiments = ['cliffs', 'mud_nails', 'uav_phi3', 'grid_350', 'drones_25' ]
-new_experiments = ['ds_treasure', 'betting_g', 'grid_330', 'grid_320', 'grid_250_1000', 'grid_250_1200', 'grid_250_1500', 'uav_var', 'drones_15', 'grid_200_7140', 'grid_200_6776', 'grid_170_4986','grid_150_3918','grid_150_3738', 'grid_150_3535']
-all_experiments = set_experiments+big_experiments+new_experiments #['test', 'test10']
+new_experiments = ['test_small', 'mud_nails_small', 'ds_treasure', 'betting_g', 'grid_330', 'grid_320', 'grid_250_1000', 'grid_250_1200', 'grid_250_1500', 'uav_var', 'drones_15', 'grid_200_7140', 'grid_200_6776', 'grid_170_4986','grid_150_3918','grid_150_3738', 'grid_150_3535']
+all_experiments = set_experiments+big_experiments+new_experiments+perf_experiments #['test', 'test10']
 rep_types = ['c51', 'qr'] # 'c51', 'qr'
 alg_types= ['exp', 'cvar'] # 'exp', 'cvar'
 cmd_base_copy = "cp "

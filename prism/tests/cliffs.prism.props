@@ -1,5 +1,5 @@
 // RESULT: ?
-Rmin=? [ F s=5 ];
+R(dist)min=? [ F s=5 ];
 
 // RESULT: ?
 R(cvar)min=? [ F s=5 ];
