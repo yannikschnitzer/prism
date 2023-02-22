@@ -15,10 +15,11 @@ module M
 endmodule
 
 label "goal" = s=4;
+label "obs" = s=2;
 
 rewards
 	s=0 : 0;
-	s=1 : 0;
-	s=2 : 0.5;
-	s=3 : 2.0;
+	s=1 : 2;
+	s=2 : 2.5;
+	s=3 : 4.0;
 endrewards
