@@ -49,6 +49,7 @@ public class PathOnTheFly extends Path
 	protected boolean init;
 	protected State previousState;
 	protected State currentState;
+	protected State previousObs;
 	protected State currentObs;
 	protected Object previousAction;
 	protected String previousActionString;
@@ -59,6 +60,8 @@ public class PathOnTheFly extends Path
 	protected double previousStateRewards[];
 	protected double previousTransitionRewards[];
 	protected double currentStateRewards[];
+	protected int currentStrategyMemory;
+	protected Object currentStrategyDecision;
 	
 	// Loop detector for path
 	protected LoopDetector loopDet;
@@ -75,8 +78,10 @@ public class PathOnTheFly extends Path
 		// Create State objects for current/previous state
 		previousState = new State(modelInfo.getNumVars());
 		currentState = new State(modelInfo.getNumVars());
+		previousObs = null;
 		currentObs = null;
 		if (modelInfo.getModelType().partiallyObservable()) {
+			previousObs = new State(modelInfo.getNumObservables());
 			currentObs = new State(modelInfo.getNumObservables());
 		}
 		// Create arrays to store totals
@@ -141,6 +146,7 @@ public class PathOnTheFly extends Path
 		previousState.copy(currentState);
 		currentState.copy(newState);
 		if (newObs != null) {
+			previousObs.copy(currentObs);
 			currentObs.copy(newObs);
 		}
 		previousAction = action;
@@ -162,6 +168,13 @@ public class PathOnTheFly extends Path
 		loopDet.addStep(this, modelGen);
 	}
 
+	@Override
+	public void setStrategyInfoForCurrentState(int memory, Object decision)
+	{
+		currentStrategyMemory = memory;
+		currentStrategyDecision = decision;
+	}
+	
 	// ACCESSORS (for Path)
 
 	@Override
@@ -192,6 +205,12 @@ public class PathOnTheFly extends Path
 	public State getCurrentState()
 	{
 		return currentState;
+	}
+
+	@Override
+	public State getPreviousObservation()
+	{
+		return previousObs;
 	}
 
 	@Override
@@ -270,6 +289,18 @@ public class PathOnTheFly extends Path
 	public double[] getCurrentStateRewards()
 	{
 		return currentStateRewards;
+	}
+	
+	@Override
+	public int getCurrentStrategyMemory()
+	{
+		return currentStrategyMemory;
+	}
+	
+	@Override
+	public Object getCurrentStrategyDecision()
+	{
+		return currentStrategyDecision;
 	}
 	
 	@Override

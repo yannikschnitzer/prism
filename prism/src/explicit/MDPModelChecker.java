@@ -65,8 +65,14 @@ import prism.PrismUtils;
 import strat.MDStrategy;
 import strat.MDStrategyArray;
 import strat.Strategy;
+import strat.StrategyInfo.UndefinedReason;
 
 import static java.lang.Math.*;
+import strat.FMDStrategyProduct;
+import strat.FMDStrategyStep;
+import strat.MDStrategy;
+import strat.MDStrategyArray;
+import strat.Strategy;
 
 /**
  * Explicit-state model checker for Markov decision processes (MDPs).
@@ -131,6 +137,12 @@ public class MDPModelChecker extends ProbModelChecker
 				out.close();
 		}
 		
+		// If a strategy was generated, lift it to the product and store
+		if (res.strat != null) {
+			Strategy stratProduct = new FMDStrategyProduct(product, (MDStrategy) res.strat);
+			result.setStrategy(stratProduct);
+		}
+		
 		// Mapping probabilities in the original model
 		StateValues probs = product.projectToOriginalModel(probsProduct);
 		probsProduct.clear();
@@ -175,6 +187,12 @@ public class MDPModelChecker extends ProbModelChecker
 				out.close();
 		}
 
+		// If a strategy was generated, lift it to the product and store
+		if (res.strat != null) {
+			Strategy stratProduct = new FMDStrategyProduct(product, (MDStrategy) res.strat);
+			result.setStrategy(stratProduct);
+		}
+		
 		// Mapping rewards in the original model
 		StateValues rewards = product.projectToOriginalModel(rewardsProduct);
 		rewardsProduct.clear();
@@ -489,7 +507,8 @@ public class MDPModelChecker extends ProbModelChecker
 			}
 			// Export
 			PrismLog out = new PrismFileLog(exportAdvFilename);
-			new DTMCFromMDPMemorylessAdversary(mdp, strat).exportToPrismExplicitTra(out);
+			int precision = settings.getInteger(PrismSettings.PRISM_EXPORT_MODEL_PRECISION);
+			new DTMCFromMDPMemorylessAdversary(mdp, strat).exportToPrismExplicitTra(out, precision);
 			out.close();
 		}
 
@@ -1240,9 +1259,11 @@ public class MDPModelChecker extends ProbModelChecker
 	{
 		ModelCheckerResult res = null;
 		BitSet unknown;
-		int i, n, iters;
+		int n, iters;
 		double soln[], soln2[], tmpsoln[];
 		long timer;
+		int strat[] = null;
+		FMDStrategyStep fmdStrat = null;
 
 		// Start bounded probabilistic reachability
 		timer = System.currentTimeMillis();
@@ -1255,12 +1276,23 @@ public class MDPModelChecker extends ProbModelChecker
 		soln = new double[n];
 		soln2 = (init == null) ? new double[n] : init;
 
+		// If required, create/initialise strategy storage
+		// Set choices to -1, denoting unknown
+		// (except for target states, which are -2, denoting arbitrary)
+		if (genStrat) {
+			strat = new int[n];
+			for (int i = 0; i < n; i++) {
+				strat[i] = target.get(i) ? -2 : -1;
+			}
+			fmdStrat = new FMDStrategyStep(mdp, k);
+		}
+		
 		// Initialise solution vectors. Use passed in initial vector, if present
 		if (init != null) {
-			for (i = 0; i < n; i++)
+			for (int i = 0; i < n; i++)
 				soln[i] = soln2[i] = target.get(i) ? 1.0 : init[i];
 		} else {
-			for (i = 0; i < n; i++)
+			for (int i = 0; i < n; i++)
 				soln[i] = soln2[i] = target.get(i) ? 1.0 : 0.0;
 		}
 		// Store intermediate results if required
@@ -1282,7 +1314,10 @@ public class MDPModelChecker extends ProbModelChecker
 		while (iters < k) {
 			iters++;
 			// Matrix-vector multiply and min/max ops
-			mdp.mvMultMinMax(soln, min, soln2, unknown, false, null);
+			mdp.mvMultMinMax(soln, min, soln2, unknown, false, strat);
+			if (genStrat) {
+				fmdStrat.setStepChoices(k - iters, strat);
+			}
 			// Store intermediate results if required
 			// (compute min/max value over initial states for this step)
 			if (results != null) {
@@ -1294,7 +1329,6 @@ public class MDPModelChecker extends ProbModelChecker
 			soln = soln2;
 			soln2 = tmpsoln;
 		}
-
 		// Finished bounded probabilistic reachability
 		timer = System.currentTimeMillis() - timer;
 		mainLog.print("Bounded probabilistic reachability (" + (min ? "min" : "max") + ")");
@@ -1308,6 +1342,9 @@ public class MDPModelChecker extends ProbModelChecker
 		res.numIters = iters;
 		res.timeTaken = timer / 1000.0;
 		res.timePre = 0.0;
+		if (genStrat) {
+			res.strat = fmdStrat;
+		}
 		return res;
 	}
 
@@ -1508,7 +1545,7 @@ public class MDPModelChecker extends ProbModelChecker
 		for (int scc = 0, numSCCs = sccs.getNumSCCs(); scc < numSCCs; scc++) {
 			IntSet statesForSCC = sccs.getStatesForSCC(scc);
 
-			int cardinality = statesForSCC.cardinality();
+			int cardinality = Math.toIntExact(statesForSCC.cardinality());
 
 			PrimitiveIterator.OfInt itSCC = statesForSCC.iterator();
 			while (itSCC.hasNext()) {
@@ -1620,7 +1657,7 @@ public class MDPModelChecker extends ProbModelChecker
 			double q = 0;
 			double p = 1;
 
-			int cardinality = statesForSCC.cardinality();
+			int cardinality = Math.toIntExact(statesForSCC.cardinality());
 
 			PrimitiveIterator.OfInt itSCC = statesForSCC.iterator();
 			while (itSCC.hasNext()) {
@@ -2187,7 +2224,8 @@ public class MDPModelChecker extends ProbModelChecker
 			}
 			// Export
 			PrismLog out = new PrismFileLog(exportAdvFilename);
-			new DTMCFromMDPMemorylessAdversary(mdp, strat).exportToPrismExplicitTra(out);
+			int precision = settings.getInteger(PrismSettings.PRISM_EXPORT_MODEL_PRECISION);
+			new DTMCFromMDPMemorylessAdversary(mdp, strat).exportToPrismExplicitTra(out, precision);
 			out.close();
 		}
 
@@ -2860,11 +2898,11 @@ public class MDPModelChecker extends ProbModelChecker
 					if (((MDStrategy) vi_res.strat).isChoiceDefined(s)) {
 						transition_reward = mdpRewards.getTransitionReward(s, ((MDStrategy) vi_res.strat).getChoiceIndex(s));
 					}
-					else if(((MDStrategy) vi_res.strat).getChoice(s) == Strategy.Choice.ARBITRARY) {
+					else if(((MDStrategy) vi_res.strat).whyUndefined(s, -1) == UndefinedReason.ARBITRARY) {
 						transition_reward = mdpRewards.getTransitionReward(s, 0);
 					}
 					else {
-						mainLog.println(" Error in strategy: choice is :"+ ((MDStrategy) vi_res.strat).getChoice(s));
+						mainLog.println(" Error in strategy: choice is :"+ ((MDStrategy) vi_res.strat).getChoiceActionString(s, -1));
 					}
 					vi_mcRewards.setStateReward(s, mdpRewards.getStateReward(s) + transition_reward);
 				}
@@ -3247,7 +3285,7 @@ public class MDPModelChecker extends ProbModelChecker
 		String [] params = null;
 		try {
 			BasicReader r = new BasicReader.Wrapper(new FileReader(filename));
-			CsvReader reader = new CsvReader(r, true, true, true, CsvReader.COMMA, CsvReader.LF);
+			CsvReader reader = new CsvReader(r, true, true, true, CsvReader.COMMA, BasicReader.LF);
 			params = reader.nextRecord();
 
 			r.close();

@@ -32,7 +32,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+import common.iterable.Range;
 import dv.DoubleVector;
 import explicit.CTMC;
 import explicit.CTMCModelChecker;
@@ -74,6 +76,7 @@ import simulator.SimulatorEngine;
 import simulator.method.SimulationMethod;
 import sparse.PrismSparse;
 import strat.Strategy;
+import strat.StrategyGenerator;
 
 /**
  * Main class for all PRISM's core functionality.
@@ -277,6 +280,9 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	// Are we doing digital clocks translation for PTAs?
 	boolean digital = false;
 
+	// The last strategy that was generated
+	private Strategy strategy = null;
+	
 	// Info for explicit files load
 	private File explicitFilesStatesFile = null;
 	private File explicitFilesTransFile = null;
@@ -795,7 +801,7 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	{
 		return settings.getInteger(PrismSettings.PRISM_GRID_RESOLUTION);
 	}
-	
+
 	public boolean getVerbose()
 	{
 		return settings.getBoolean(PrismSettings.PRISM_VERBOSE);
@@ -1180,184 +1186,6 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	//------------------------------------------------------------------------------
 	// Utility methods
 	//------------------------------------------------------------------------------
-
-	/**
-	 * Compare two version numbers of PRISM (strings).
-	 * Example ordering: { "1", "2.0", "2.1.alpha", "2.1.alpha.r5555", "2.1.alpha.r5557", "2.1.beta", "2.1.beta4", "2.1", "2.1.dev", "2.1.dev.r6666", "2.1.dev1", "2.1.dev2", "2.1.2", "2.9", "3", "3.4"};
-	 * Returns: 1 if v1&gt;v2, -1 if v1&lt;v2, 0 if v1=v2
-	 */
-	public static int compareVersions(String v1, String v2)
-	{
-		String ss1[], ss2[], tmp[];
-		int i, n, x;
-		double s1 = 0, s2 = 0;
-		boolean s1num, s2num;
-
-		// Exactly equal
-		if (v1.equals(v2))
-			return 0;
-		// Otherwise split into sections
-		ss1 = v1.split("\\.");
-		ss2 = v2.split("\\.");
-		// Pad if one is shorter
-		n = Math.max(ss1.length, ss2.length);
-		if (ss1.length < n) {
-			tmp = new String[n];
-			for (i = 0; i < ss1.length; i++)
-				tmp[i] = ss1[i];
-			for (i = ss1.length; i < n; i++)
-				tmp[i] = "";
-			ss1 = tmp;
-		}
-		if (ss2.length < n) {
-			tmp = new String[n];
-			for (i = 0; i < ss2.length; i++)
-				tmp[i] = ss2[i];
-			for (i = ss2.length; i < n; i++)
-				tmp[i] = "";
-			ss2 = tmp;
-		}
-		// Loop through sections of string
-		for (i = 0; i < n; i++) {
-			// 2.1.alpha < 2.1, etc.
-			// 2.1.alpha < 2.1.alpha2 < 2.1.alpha3, etc.
-			// so replace alphax with -10000+x
-			if (ss1[i].matches("alpha.*")) {
-				try {
-					if (ss1[i].length() == 5)
-						x = 0;
-					else
-						x = Integer.parseInt(ss1[i].substring(5));
-				} catch (NumberFormatException e) {
-					x = 0;
-				}
-				ss1[i] = "" + (-10000 + x);
-			}
-			if (ss2[i].matches("alpha.*")) {
-				try {
-					if (ss2[i].length() == 5)
-						x = 0;
-					else
-						x = Integer.parseInt(ss2[i].substring(5));
-				} catch (NumberFormatException e) {
-					x = 0;
-				}
-				ss2[i] = "" + (-10000 + x);
-			}
-			// 2.1.beta < 2.1, etc.
-			// 2.1.beta < 2.1.beta2 < 2.1.beta3, etc.
-			// so replace betax with -100+x
-			if (ss1[i].matches("beta.*")) {
-				try {
-					if (ss1[i].length() == 4)
-						x = 0;
-					else
-						x = Integer.parseInt(ss1[i].substring(4));
-				} catch (NumberFormatException e) {
-					x = 0;
-				}
-				ss1[i] = "" + (-100 + x);
-			}
-			if (ss2[i].matches("beta.*")) {
-				try {
-					if (ss2[i].length() == 4)
-						x = 0;
-					else
-						x = Integer.parseInt(ss2[i].substring(4));
-				} catch (NumberFormatException e) {
-					x = 0;
-				}
-				ss2[i] = "" + (-100 + x);
-			}
-			// 2 < 2.1, etc.
-			// so treat 2 as 2.0
-			if (ss1[i].equals(""))
-				ss1[i] = "0";
-			if (ss2[i].equals(""))
-				ss2[i] = "0";
-			// 2.1 < 2.1.dev, etc.
-			// 2.1.dev < 2.1.dev2 < 2.1.dev3, etc.
-			// so replace devx with 0.5+x/1000
-			if (ss1[i].matches("dev.*")) {
-				try {
-					if (ss1[i].length() == 3)
-						x = 0;
-					else
-						x = Integer.parseInt(ss1[i].substring(3));
-				} catch (NumberFormatException e) {
-					x = 0;
-				}
-				ss1[i] = "" + (0.5 + x / 1000.0);
-			}
-			if (ss2[i].matches("dev.*")) {
-				try {
-					if (ss2[i].length() == 3)
-						x = 0;
-					else
-						x = Integer.parseInt(ss2[i].substring(3));
-				} catch (NumberFormatException e) {
-					x = 0;
-				}
-				ss2[i] = "" + (0.5 + x / 1000.0);
-			}
-			// replace rx (e.g. as in 4.0.alpha.r5555) with x
-			if (ss1[i].matches("r.*")) {
-				try {
-					x = Integer.parseInt(ss1[i].substring(1));
-				} catch (NumberFormatException e) {
-					x = 0;
-				}
-				ss1[i] = "" + x;
-			}
-			if (ss2[i].matches("r.*")) {
-				try {
-					x = Integer.parseInt(ss2[i].substring(1));
-				} catch (NumberFormatException e) {
-					x = 0;
-				}
-				ss2[i] = "" + x;
-			}
-			// See if strings are integers
-			try {
-				s1num = true;
-				s1 = Double.parseDouble(ss1[i]);
-			} catch (NumberFormatException e) {
-				s1num = false;
-			}
-			try {
-				s2num = true;
-				s2 = Double.parseDouble(ss2[i]);
-			} catch (NumberFormatException e) {
-				s2num = false;
-			}
-			if (s1num && s2num) {
-				if (s1 < s2)
-					return -1;
-				if (s1 > s2)
-					return 1;
-				if (s1 == s2)
-					continue;
-			}
-		}
-
-		return 0;
-	}
-
-	/*// Simple test harness for compareVersions
-	public static void main(String[] args)
-	{
-		 String v[] =  { "1", "2.0", "2.1.alpha", "2.1.alpha.r5555", "2.1.alpha.r5557", "2.1.beta", "2.1.beta4", "2.1", "2.1.dev", "2.1.dev.r6666", "2.1.dev1", "2.1.dev2", "2.1.2", "2.9", "3", "3.4"};
-		 for (int i = 0; i < v.length; i++) {
-			 for (int j = 0; j < v.length; j++) {
-				 int d = compareVersions(v[i], v[j]);
-				 System.out.print(d == 1 ? ">" : d==0 ? "=" : d==-1 ? "<" : "?");
-				 if (d != compareVersions(""+i, ""+j))
-					 System.out.print("ERR(" + v[i] + "," + v[j] + ")");
-					 
-			 }
-			 System.out.println();
-		 }
-	}*/
 
 	/**
 	 * Get access to the list of all PRISM language keywords.
@@ -1893,12 +1721,15 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	 */
 	public void setPRISMModelConstants(Values definedMFConstants, boolean exact) throws PrismException
 	{
-		if (currentDefinedMFConstants == null && definedMFConstants == null && currentDefinedMFConstantsAreExact == exact)
+		// If there is no change in constants, there is nothing to do
+		boolean currentMFNone = currentDefinedMFConstants == null || currentDefinedMFConstants.getNumValues() == 0;
+		boolean newMFNone = definedMFConstants == null || definedMFConstants.getNumValues() == 0;
+		if (currentMFNone && newMFNone && currentDefinedMFConstantsAreExact == exact) {
 			return;
+		}
 		if (currentDefinedMFConstants != null &&
 		    currentDefinedMFConstants.equals(definedMFConstants) &&
 		    currentDefinedMFConstantsAreExact == exact) {
-			// no change in constants and evaluation mode, nothing to do
 			return;
 		}
 
@@ -2051,6 +1882,14 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	}
 
 	/**
+	 * Get the values that have been provided for undefined constants in the current model.
+	 */
+	public Values getUndefinedModelValues()
+	{
+		return currentDefinedMFConstants;
+	}
+	
+	/**
 	 * Get the currently stored built (symbolic) model.
 	 * @return
 	 */
@@ -2084,6 +1923,14 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	public boolean modelIsBuilt()
 	{
 		return (getExplicit() ? (currentModelExpl != null) : (currentModel != null));
+	}
+
+	/**
+	 * Get the currently stored strategy (null if none)
+	 */
+	public Strategy getStrategy()
+	{
+		return strategy;
 	}
 
 	/**
@@ -2466,21 +2313,22 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 		mainLog.println(getDestinationStringForFile(file));
 
 		// do export
+		int precision = settings.getInteger(PrismSettings.PRISM_EXPORT_MODEL_PRECISION);
 		if (!getExplicit()) {
-			currentModel.exportToFile(exportType, ordered, file);
+			currentModel.exportToFile(exportType, ordered, file, precision);
 		} else {
 			PrismLog tmpLog = getPrismLogForFile(file);
 			switch (exportType) {
 			case Prism.EXPORT_PLAIN:
-				currentModelExpl.exportToPrismExplicitTra(tmpLog);
+				currentModelExpl.exportToPrismExplicitTra(tmpLog, precision);
 				break;
 			case Prism.EXPORT_MATLAB:
 				throw new PrismNotSupportedException("Export not yet supported");
 			case Prism.EXPORT_DOT:
-				currentModelExpl.exportToDotFile(tmpLog);
+				currentModelExpl.exportToDotFile(tmpLog, precision);
 				break;
 			case Prism.EXPORT_DOT_STATES:
-				currentModelExpl.exportToDotFile(tmpLog, null, true);
+				currentModelExpl.exportToDotFile(tmpLog, null, true, precision);
 				break;
 			case Prism.EXPORT_MRMC:
 			case Prism.EXPORT_ROWS:
@@ -2534,6 +2382,7 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 		mainLog.println(getDestinationStringForFile(file));
 
 		// Do export, writing to multiple files if necessary
+		int precision = settings.getInteger(PrismSettings.PRISM_EXPORT_MODEL_PRECISION);
 		List <String> files = new ArrayList<>();
 		for (int r = 0; r < numRewardStructs; r++) {
 			String filename = (file != null) ? file.getPath() : null;
@@ -2543,12 +2392,19 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 			}
 			File fileToUse = (filename == null) ? null : new File(filename);
 			if (!getExplicit()) {
-				currentModel.exportStateRewardsToFile(r, exportType, fileToUse);
+				currentModel.exportStateRewardsToFile(r, exportType, fileToUse, precision);
 			} else {
-				PrismLog out = getPrismLogForFile(fileToUse);
 				explicit.StateModelChecker mcExpl = createModelCheckerExplicit(null);
-				((explicit.ProbModelChecker) mcExpl).exportStateRewardsToFile(currentModelExpl, r, exportType, out);
-				out.close();
+				try (PrismLog out = getPrismLogForFile(fileToUse)){
+					((explicit.ProbModelChecker) mcExpl).exportStateRewardsToFile(currentModelExpl, r, exportType, out, precision);
+				} catch (PrismNotSupportedException e1) {
+					mainLog.println("\nReward export failed: " + e1.getMessage());
+					try {
+						fileToUse.delete();
+					} catch (SecurityException e2) {
+						// Cannot delete File; continue
+					}
+				}
 			}
 		}
 		
@@ -2606,6 +2462,7 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 		mainLog.println(getDestinationStringForFile(file));
 
 		// Do export, writing to multiple files if necessary
+		int precision = settings.getInteger(PrismSettings.PRISM_EXPORT_MODEL_PRECISION);
 		List <String> files = new ArrayList<>();
 		for (int r = 0; r < numRewardStructs; r++) {
 			String filename = (file != null) ? file.getPath() : null;
@@ -2615,7 +2472,7 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 			}
 			File fileToUse = (filename == null) ? null : new File(filename);
 			if (!getExplicit()) {
-				currentModel.exportTransRewardsToFile(r, exportType, ordered, fileToUse);
+				currentModel.exportTransRewardsToFile(r, exportType, ordered, fileToUse, precision);
 			} else {
 				// Not implemented yet
 			}
@@ -2905,9 +2762,31 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	}
 
 	/**
-	 * Export the states satisfying labels from the currently loaded model and a properties file to a file.
-	 * The PropertiesFile should correspond to the currently loaded model. 
+	 * Export the states satisfying labels from the properties file to a file.
+	 * The PropertiesFile should correspond to the currently loaded model.
 	 * @param propertiesFile The properties file (for further labels)
+	 * @param exportType Type of export; one of: <ul>
+	 * <li> {@link #EXPORT_PLAIN}
+	 * <li> {@link #EXPORT_MATLAB}
+	 * </ul>
+	 * @param file File to export to (if null, print to the log instead)
+	 */
+	public void exportPropLabelsToFile(PropertiesFile propertiesFile, int exportType, File file) throws FileNotFoundException, PrismException
+	{
+		Objects.requireNonNull(propertiesFile);
+
+		// Collect names of labels to export from properties file
+		List<String> labelNames = new ArrayList<String>();
+		LabelList ll = propertiesFile.getLabelList();
+		new Range(ll.size()).map((int i) -> ll.getLabelName(i)).collect(labelNames);
+
+		doExportLabelsToFile(propertiesFile, exportType, file, labelNames);
+	}
+
+	/**
+	 * Export the states satisfying labels from the currently loaded model and (optionally) a properties file to a file.
+	 * The PropertiesFile should correspond to the currently loaded model. 
+	 * @param propertiesFile The properties file, for further labels (ignored if null)
 	 * @param exportType Type of export; one of: <ul>
 	 * <li> {@link #EXPORT_PLAIN} 
 	 * <li> {@link #EXPORT_MATLAB}
@@ -2915,6 +2794,33 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	 * @param file File to export to (if null, print to the log instead)
 	 */
 	public void exportLabelsToFile(PropertiesFile propertiesFile, int exportType, File file) throws FileNotFoundException, PrismException
+	{
+		// Collect names of labels to export from model
+		List<String> labelNames = new ArrayList<String>();
+		labelNames.add("init");
+		labelNames.add("deadlock");
+		labelNames.addAll(currentModelInfo.getLabelNames());
+		// Collect names of labels to export from properties file
+		if (propertiesFile != null) {
+			LabelList ll = propertiesFile.getLabelList();
+			new Range(ll.size()).map((int i) -> ll.getLabelName(i)).collect(labelNames);
+		}
+
+		doExportLabelsToFile(propertiesFile, exportType, file, labelNames);
+	}
+
+	/**
+	 * Export the states satisfying labels from the currently loaded model and/or a properties file to a file.
+	 * The PropertiesFile should correspond to the currently loaded model.
+	 * @param propertiesFile The properties file, for further labels (ignored if null)
+	 * @param exportType Type of export; one of: <ul>
+	 * <li> {@link #EXPORT_PLAIN}
+	 * <li> {@link #EXPORT_MATLAB}
+	 * </ul>
+	 * @param file File to export to (if null, print to the log instead)
+	 * @param labelNames The list of label names to export
+	 */
+	private void doExportLabelsToFile(PropertiesFile propertiesFile, int exportType, File file, List<String> labelNames) throws PrismException, FileNotFoundException
 	{
 		// Build model, if necessary
 		buildModelIfRequired();
@@ -2924,20 +2830,6 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 		mainLog.print(getStringForExportType(exportType) + " ");
 		mainLog.println(getDestinationStringForFile(file));
 
-		// Collect names of labels to export
-		List<String> labelNames = new ArrayList<String>();
-		labelNames.add("init");
-		labelNames.add("deadlock");
-		if (propertiesFile == null) {
-			labelNames.addAll(currentModelInfo.getLabelNames());
-		} else {
-			LabelList ll = propertiesFile.getCombinedLabelList();
-			int numLabels = ll.size();
-			for (int i = 0; i < numLabels; i++) {
-				labelNames.add(ll.getLabelName(i));
-			}
-		}
-
 		// Export
 		if (getExplicit()) {
 			PrismLog out = getPrismLogForFile(file);
@@ -2945,7 +2837,7 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 			mcExpl.exportLabels(currentModelExpl, labelNames, exportType, out);
 			out.close();
 		} else {
-			prism.StateModelChecker mc = createModelChecker(propertiesFile);
+			StateModelChecker mc = createModelChecker(propertiesFile);
 			mc.exportLabels(labelNames, exportType, file);
 		}
 	}
@@ -3043,6 +2935,9 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 		// Check that property is valid for the current model type
 		prop.getExpression().checkValid(currentModelType);
 
+		// Remove old strategy if present
+		clearStrategy();
+		
 		// PTA (and similar) model checking is handled separately
 		if (currentModelType.realTime()) {
 			return modelCheckPTA(propertiesFile, prop.getExpression(), definedPFConstants);
@@ -3133,6 +3028,11 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 				explicit.StateModelChecker mc = createModelCheckerExplicit(propertiesFile);
 				res = mc.check(currentModelExpl, prop.getExpression());
 			}
+			
+			// If model checking generated a strategy, store it
+			if (res.getStrategy() != null) {
+				strategy = res.getStrategy();
+			}
 		} finally {
 			// Undo auto-switch (if any)
 			if (engineSwitch) {
@@ -3156,6 +3056,9 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 		// and create new model checker object
 		expr.checkValid(currentModelType);
 
+		// Remove old strategy if present
+		clearStrategy();
+		
 		// Digital clocks translation
 		if (settings.getString(PrismSettings.PRISM_PTA_METHOD).equals("Digital clocks") || currentModelType == ModelType.POPTA) {
 			digital = true;
@@ -3204,6 +3107,10 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 		// If creation failed before, this tries again, throwing an explanatory exception.
 		try {
 			getModelGenerator();
+			// No support for real-time models yet
+			if (currentModelType.realTime()) {
+				throw new PrismException(currentModelType + "s are not currently supported");
+			}
 		} catch (PrismException e) {
 			throw new PrismException("Simulation not possible: "+ e.getMessage());
 		}
@@ -3224,6 +3131,17 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 		}
 		// Load into simulator
 		getSimulator().loadModel(modelGenForSim, currentRewardGenerator);
+	}
+
+	/**
+	 * Load the current strategy (if any) into the simulator.
+	 * Does nothing if there is no strategy to load, or is not able to be simulated.
+	 */
+	public void loadStrategyIntoSimulator() throws PrismException
+	{
+		if (getStrategy() != null && getStrategy() instanceof StrategyGenerator) {
+			getSimulator().loadStrategy((StrategyGenerator) getStrategy());
+		}
 	}
 
 	/**
@@ -3276,6 +3194,9 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 		// Check that property is valid for this model type
 		expr.checkValid(currentModelType.removeNondeterminism());
 
+		// Remove old strategy if present
+		clearStrategy();
+		
 		// Do simulation
 		loadModelIntoSimulator();
 		Result res = getSimulator().modelCheckSingleProperty(propertiesFile, expr, initialState, maxPathLength, simMethod);
@@ -3324,6 +3245,9 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 		for (Expression expr : exprs)
 			expr.checkValid(currentModelType.removeNondeterminism());
 
+		// Remove old strategy if present
+		clearStrategy();
+		
 		// Do simulation
 		loadModelIntoSimulator();
 		Result[] resArray = getSimulator().modelCheckMultipleProperties(propertiesFile, exprs, initialState, maxPathLength, simMethod);
@@ -3360,6 +3284,9 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 			mainLog.println("Model constants: " + currentDefinedMFConstants);
 		mainLog.println("Property constants: " + undefinedConstants.getPFDefinedConstantsString());
 
+		// Remove old strategy if present
+		clearStrategy();
+		
 		// Do simulation
 		loadModelIntoSimulator();
 		getSimulator().modelCheckExperiment(propertiesFile, undefinedConstants, results, expr, initialState, maxPathLength, simMethod);
@@ -3380,6 +3307,9 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 		if (currentModelType == ModelType.MDP && getFairness())
 			throw new PrismNotSupportedException("Exact model checking does not support checking MDPs under fairness");
 
+		// Remove old strategy if present
+		clearStrategy();
+		
 		// Set up a dummy parameter (not used)
 		String[] paramNames = new String[] { "dummy" };
 		String[] paramLowerBounds = new String[] { "0" };
@@ -3457,6 +3387,9 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 		if (definedPFConstants != null && definedPFConstants.getNumValues() > 0)
 			mainLog.println("Property constants: " + definedPFConstants);
 
+		// Remove old strategy if present
+		clearStrategy();
+		
 		param.ModelBuilder builder = new ModelBuilder(this, param.ParamMode.PARAMETRIC);
 		ParamModel modelExpl = builder.constructModel(new ModulesFileModelGeneratorSymbolic(currentModulesFile, this), paramNames, paramLowerBounds, paramUpperBounds);
 		ParamModelChecker mc = new ParamModelChecker(this, param.ParamMode.PARAMETRIC);
@@ -3476,6 +3409,23 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	}
 
 	/**
+	 * Export the current strategy. The associated model should be attached to the strategy.
+	 * Strictly, speaking that does not need to be the currently loaded model,
+	 * but it would probably have been discarded if that was not the case.
+	 * @param strat The strategy
+	 * @param exportType The type of output
+	 * @param file File to output the path to (stdout if null)
+	 */
+	public void exportStrategy(StrategyExportType exportType, File file) throws FileNotFoundException, PrismException
+	{
+		if (getStrategy() != null) {
+			exportStrategy(getStrategy(), exportType, file);
+		} else {
+			throw new PrismException("There is no current strategy to export");
+		}
+	}
+
+	/**
 	 * Export a strategy. The associated model should be attached to the strategy.
 	 * Strictly, speaking that does not need to be the currently loaded model,
 	 * but it would probably have been discarded if that was not the case.
@@ -3492,6 +3442,7 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 		mainLog.println(getDestinationStringForFile(file));
 
 		// Export to file (or use main log)
+		int precision = settings.getInteger(PrismSettings.PRISM_EXPORT_MODEL_PRECISION);
 		tmpLog = getPrismLogForFile(file);
 		switch (exportType) {
 		case ACTIONS:
@@ -3501,10 +3452,10 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 			strat.exportIndices(tmpLog);
 			break;
 		case INDUCED_MODEL:
-			strat.exportInducedModel(tmpLog);
+			strat.exportInducedModel(tmpLog, precision);
 			break;
 		case DOT_FILE:
-			strat.exportDotFile(tmpLog);
+			strat.exportDotFile(tmpLog, precision);
 			break;
 		}
 		if (file != null)
@@ -3954,9 +3905,9 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	}
 
 	/**
-	 * Clear the built model if needed (free/deallocate memory etc)
-	 * <br>
-	 * Resets {@code currentModel} and {@code currentModelExpl} to {@code null}.
+	 * Clear the built model if needed (free/deallocate memory etc).
+	 * This resets {@code currentModel} and {@code currentModelExpl} to {@code null}.
+	 * Also clear objects that connect to a build model, notably strategies.
 	 */
 	private void clearBuiltModel()
 	{
@@ -3965,8 +3916,21 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 			currentModel = null;
 		}
 		currentModelExpl = null;
+		clearStrategy();
 	}
 
+	/**
+	 * Clear the currently stored strategy if present (free/deallocate memory etc).
+	 * This resets {@code strategy} to {@code null}.
+	 */
+	private void clearStrategy()
+	{
+		if (strategy != null) {
+			strategy.clear();
+			strategy = null;
+		}
+	}
+	
 	/**
 	 * Clear up and close down.
 	 */
