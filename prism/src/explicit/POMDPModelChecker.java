@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+
 import java.sql.Timestamp;
 import acceptance.AcceptanceReach;
 import automata.DA;
@@ -88,6 +89,14 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
+import gurobi.GRB;
+import gurobi.GRBEnv;
+import gurobi.GRBException;
+import gurobi.GRBLinExpr;
+import gurobi.GRBModel;
+import gurobi.GRBVar;
+import lpsolve.LpSolve;
+import lpsolve.LpSolveException;
 /**
  * Explicit-state model checker for partially observable Markov decision processes (POMDPs).
  */
@@ -698,8 +707,6 @@ public class POMDPModelChecker extends ProbModelChecker
 						//entries[s] = -5;
 						//entries[s]= 10* Rmin;
 					}
-					
-					
 				}
 				else {
 					if (unknownObs.get(pomdp.getObservation(s)) & min) {
@@ -862,7 +869,7 @@ public class POMDPModelChecker extends ProbModelChecker
 		if(min) {
 			discount = 0.99;
 		}
-		
+		discount = 0.95;
 		/*updated here, use target as the endState, this should be generally good
 		 * added another parameter "endState"
 		 * int endState = 1;
@@ -1226,7 +1233,7 @@ public class POMDPModelChecker extends ProbModelChecker
 	}
 	public ArrayList<Object> getAllActions(POMDP pomdp){
 		ArrayList <Object> allActions = new ArrayList<Object> ();
-		for (int s =0; s<pomdp.getNumStates();s++) {
+		for (int s = 0; s < pomdp.getNumStates(); s++) {
 			List <Object> availableActionsForState = pomdp.getAvailableActions(s);
 
 			for (Object a: availableActionsForState) {
@@ -1748,9 +1755,13 @@ public class POMDPModelChecker extends ProbModelChecker
 		System.out.println("Num states" + nStates);
 		for (int s = 1; s < nStates; s++) {
 			if (!unknownObs.get(pomdp.getObservation(s))) {
-				if (pomdp.getLabelStates("goal").get(s)) {
+				if ((pomdp.getLabelStates("goal")!= null) && (pomdp.getLabelStates("goal").get(s))) {
 					endStates.add(s);
 				}
+				if ((pomdp.getLabelStates("target")!= null) && (pomdp.getLabelStates("target").get(s))) {
+					endStates.add(s);
+				}
+
 			}
 		}
 		
@@ -1856,7 +1867,7 @@ public class POMDPModelChecker extends ProbModelChecker
 				pomcp.resetRoot();
 				long episodeTime = System.currentTimeMillis();
 				double[] reward = computeReachRewardsWithPOMCPEpisode(pomcp, pomdp,  mdpRewards,  target,  minMax,  statesOfInterest, endStates, numEpisode,
-																 timeStamp, shieldLevel, useLocalShield, verbose);
+																 timeStamp, shieldType + "-" + shieldLevel, useLocalShield, verbose);
 				if (reward == null) {
 					break;
 				}
@@ -2070,25 +2081,563 @@ public class POMDPModelChecker extends ProbModelChecker
 		return state; 
 	}
 	
-//	public ModelCheckerResult computeReachRewardsWithPOMCP(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest) throws PrismException
-//	{
+	public ModelCheckerResult computeReachRewardsWithMILP(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest) throws PrismException
+	{
+		
+		ModelCheckerResult res = null;
+		int nStates = pomdp.getNumStates();
+		ArrayList<Object> allActions = getAllActions(pomdp);
+		int nActions = allActions.size();
+		HashMap<Object, Integer> action_to_index = new HashMap<Object, Integer> ();
+		for (int a = 0; a < nActions; a ++) {
+			action_to_index.put(allActions.get(a), a);
+		}
+		
+		double probTransition[][][] = new double [nActions][nStates][nStates];
+		for (int s = 0 ; s < nStates; s++) {
+			for (int a = 0; a < nActions; a++) {
+				Object action = allActions.get(a);
+				if (!pomdp.getAvailableActions(s).contains(action)) {
+					continue;
+				}
+				int choice = pomdp.getChoiceByAction(s, action);
+				Iterator<Entry<Integer, Double>> iter = pomdp.getTransitionsIterator(s,choice);
+				while (iter.hasNext()) {
+					Map.Entry<Integer, Double> trans = iter.next();
+					int sPrime = trans.getKey();
+					probTransition[a][s][sPrime] = trans.getValue();
+				}
+			}
+		}
+		for (int a = 0; a < nActions; a++) {
+			mainLog.println("action = "  + allActions.get(a));
+			for (int s = 0; s < nStates; s++) {
+				mainLog.println(Arrays.toString(probTransition[a][s]));
+			}
+		}
+		
+//		mainLog.println("DDDDDDDDDDDDDDD"+System.getProperty("java.library.path"));
 //		
-//		return null;
-//	}
-    enum POMDPMethod { PERSEUS, POMCP, FIXEDGRID};
+//			ArrayList <Object> allActions = new ArrayList<Object> ();
+//			for (int s = 0; s < pomdp.getNumStates(); s++) {
+//				List <Object> availableActionsForState = pomdp.getAvailableActions(s);
+//				for (Object a: availableActionsForState) {
+////					System.out.println("?"+a);
+//					if (!allActions.contains(a) & a!= null) {
+//						allActions.add(a);
+//					}
+//				}
+//			}
+		int max_value = 1000;
+		double discount = 0.95;
+		int nObservations = pomdp.getNumObservations();
+//		try {
+//			GRBEnv env = new GRBEnv("gurobi.log");
+//			env.set(GRB.IntParam.OutputFlag, 0);
+//			GRBModel model = new GRBModel(env);
+//			env.start();
+//			
+//			// Set up MILP variables (real)
+//			// add binary variable for strategy over observation and action
+//			GRBVar var_strategy_observation[][] = new GRBVar[nObservations][nActions];
+//			for (int s = 0; s < nStates; s ++) {
+//				int obs = pomdp.getObservation(s);
+//				List <Object> availableActionsForState = pomdp.getAvailableActions(s);
+//				for (Object action : availableActionsForState) {
+//					int action_index = action_to_index.get(action);
+//					if (var_strategy_observation[obs][action_index] == null) {
+//						var_strategy_observation[obs][action_index] = model.addVar(0, 1, 0, GRB.BINARY, String.format("strategy_observation%d_action%s", obs, action));
+//					}
+//				}
+//			} 
+//
+//			// add continuous variables for values
+//			GRBVar var_value[] = new GRBVar[nStates];
+//			for (int s = 0; s < nStates; s++) {
+//				if (var_value[s] == null) {
+//					var_value[s] = model.addVar(-max_value, max_value, 0, GRB.CONTINUOUS, String.format("value_state_%d", s));
+//				}
+//			}
+//
+//			// set objectives
+//			GRBLinExpr expr = new GRBLinExpr();
+//			expr.addTerm(1.0, var_value[0]);
+//			model.setObjective(expr, GRB.MAXIMIZE);
+//			
+//			int constarint_count = 0;
+//			// Add constraints: each observation take one action
+//			for (int obs = 0; obs < nObservations; obs++) {
+//				expr = new GRBLinExpr();
+//				for (int a = 0; a < nActions; a++) {
+//					if (var_strategy_observation[obs][a] != null) {
+//						expr.addTerm(1, var_strategy_observation[obs][a]);
+//					}
+//				}
+//				model.addConstr(expr, GRB.EQUAL, 1, String.format("c%d", constarint_count++ ));
+//			}
+//			
+//			for (int s = 0; s < nStates; s++) {
+//				for (int a = 0; a < nActions; a++) {
+//					Object action = allActions.get(a);
+//					if (!pomdp.getAvailableActions(s).contains(action)) {
+//						continue;
+//					}
+//					expr = new GRBLinExpr();
+//					int choice = pomdp.getChoiceByAction(s, action);
+//					int observation = pomdp.getObservation(s);
+//					double reward = (mdpRewards.getTransitionReward(s, choice) + mdpRewards.getStateReward(s) );
+//					expr.addTerm(1, var_value[s]);
+//					expr.addTerm(max_value, var_strategy_observation[observation][a]);
+//					Iterator<Entry<Integer, Double>> iter = pomdp.getTransitionsIterator(s,choice);
+//					while (iter.hasNext()) {
+//						Map.Entry<Integer, Double> trans = iter.next();
+//						int next_state = trans.getKey();
+//						double transition_prob = trans.getValue();
+//						expr.addTerm(-1 * discount * transition_prob, var_value[next_state]);
+//					}
+//					model.addConstr(expr, GRB.LESS_EQUAL, max_value - reward, String.format("c%d", constarint_count++ ));
+//				}
+//			}
+//			model.write("aaa_gurobi.lp");
+//			model.optimize();
+//			
+//			System.out.println("aaa Obj: " + model.get(GRB.DoubleAttr.ObjVal));
+//			model.write("aaa_gurobi.sol");
+//			
+//	      // Dispose of model and environment
+//	      model.dispose();
+//	      env.dispose();
+//		} catch (GRBException e) {
+//			throw new PrismException("Error solving LP: " +e.getMessage());
+//		}
+//		
+		try {
+			ArrayList<String> varNames = new ArrayList<String>();
+			for (int i = 0; i < pomdp.getVarList().getNumVars(); i++) {
+				varNames.add(pomdp.getVarList().getName(i));
+			}
+			for (int s = 0; s < nStates; s++) {
+				mainLog.println("state="+s+", obs="+pomdp.getObservation(s)+", meaning="+ pomdp.getStatesList().get(s).toString(varNames));
+			}
+			
+			GRBEnv env = new GRBEnv("gurobi.log");
+			env.set(GRB.IntParam.OutputFlag, 0);
+			GRBModel model = new GRBModel(env);
+			env.start();
+
+			int nNodes = nObservations;
+			nNodes = 6;
+			double initial_belief_n_s[][] = new double[nNodes][nStates];
+			
+			//set the initial belief of (s,n): b(s,n)
+//			for (int n = 0; n < nNodes; n++) {
+//				initial_belief_n_s[n][0] =   1.0 ;
+//			}
+			initial_belief_n_s[0][0] = 1;
+			// Create variables
+			
+			// 1 x(n,s,a)
+			GRBVar X_n_s_a[][][] = new GRBVar[nNodes][nStates][nActions];
+			
+			for (int n = 0; n < nNodes; n++) {
+				for (int s = 0; s < nStates; s++) {
+					for (int a = 0; a < nActions; a++) {
+						if (X_n_s_a[n][s][a] == null) {
+							X_n_s_a[n][s][a] = model.addVar(0, 1000, 0, GRB.CONTINUOUS, String.format("X_n_s_a_%d_%d_%s", n, s, allActions.get(a)));
+						}
+					}
+				}
+			}
+			
+			// 2 x(n,s,a, n'y)
+			GRBVar X_n_s_a_y_nPrime [][][][][] = new GRBVar[nNodes][nStates][nActions][nObservations][nNodes];
+			for (int n = 0; n < nNodes; n++) {
+				for (int s = 0; s < nStates; s++) {
+					for (int a = 0; a < nActions; a++) {
+						for (int y = 0; y < nObservations; y++) {
+							for (int nPrime = 0; nPrime < nNodes; nPrime++) {
+								if (X_n_s_a_y_nPrime[n][s][a][y][nPrime] == null) {
+									X_n_s_a_y_nPrime[n][s][a][y][nPrime] =  model.addVar(0, 1000, 0, GRB.CONTINUOUS, 
+																			String.format("X_n_s_a_y_nPrime_%d_%d_%s_%d_%d", n, s, allActions.get(a), y, nPrime));
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			
+			// 3x(n,a)
+			GRBVar X_n_a[][] = new GRBVar[nNodes][nActions];
+			
+			for (int n = 0; n < nNodes; n++) {
+				for (int a = 0; a < nActions; a++) {
+					if (X_n_a[n][a] == null) {
+						X_n_a[n][a] = model.addVar(0, 1000, 0, GRB.CONTINUOUS, String.format("X_n_a_%d_%s", n, allActions.get(a)));
+					}
+				}
+			}
+			
+			// 4 x(n)
+			GRBVar X_n[] = new GRBVar[nNodes];
+			
+			for (int n = 0; n < nNodes; n++) {
+				if (X_n[n] == null) {
+					X_n[n] = model.addVar(0, 1000, 0, GRB.CONTINUOUS, String.format("X_n_%d", n));
+				}
+			}
+			
+			// 5 x(n, n'y)
+			GRBVar X_n_y_nPrime[][][] = new GRBVar[nNodes][nObservations][nNodes];
+			for (int n = 0; n < nNodes; n++) {
+				for (int y = 0; y < nObservations; y++) {
+					for (int nPrime = 0; nPrime < nNodes; nPrime++) {
+						if (X_n_y_nPrime[n][y][nPrime] == null) {
+							X_n_y_nPrime[n][y][nPrime] = model.addVar(0, 1000, 0, GRB.CONTINUOUS, String.format("X_n_y_nPrime_%d_%d_%d", n, y, nPrime));
+						}
+					}
+				}
+			}
+			
+			// 6 x(a|n)
+			GRBVar X_a__n[][] = new GRBVar[nActions][nNodes];
+
+			for (int a = 0; a < nActions; a++) {
+				for (int n = 0; n < nNodes; n++) {
+					if (X_a__n[a][n] == null) {
+						X_a__n[a][n] = model.addVar(0, 1000, 0, GRB.BINARY, String.format("X_a__n_%s_%d", allActions.get(a), n));
+					}
+				}
+			}
+			
+			
+			// 7 x(n'|n,y)
+			GRBVar X_nPrime__n__y[][][] = new GRBVar [nNodes][nNodes][nObservations];
+			for (int n = 0; n < nNodes; n++) {
+				for (int nPrime = 0; nPrime < nNodes; nPrime++) {
+					for (int y = 0; y < nObservations; y++) {
+						X_nPrime__n__y [nPrime][n][y] =  model.addVar(0, 1000, 0, GRB.BINARY, String.format("X_nPrime__n__y_%d_%d_%d",  nPrime, n, y));
+					}
+				}
+			}
+			//  Set Objective: Maximize sum_s,a{sum_a{R(sa) * x(nsa)}}
+			GRBLinExpr expr = new GRBLinExpr();
+			for (int a = 0; a < nActions; a++) {
+				for (int s = 0; s < nStates; s++) {
+					Object action = allActions.get(a);
+					if(!pomdp.getAvailableActions(s).contains(action)) {
+						continue;
+					}
+					int choice = pomdp.getChoiceByAction(s, action);	
+					double r_s_a = mdpRewards.getTransitionReward(s, choice) + mdpRewards.getStateReward(s); // 
+					if (r_s_a == 0) {
+						continue;
+					}
+					if (min) {
+						r_s_a *= -1;
+					}
+					for (int n = 0 ; n < nNodes; n++) {
+						expr.addTerm(r_s_a, X_n_s_a[n][s][a]);
+					}
+				}
+			}
+			model.setObjective(expr, GRB.MAXIMIZE);
+
+//			//Set Objective: Max sum_n{sum_a{x(|n)}}
+//			GRBLinExpr expr = new GRBLinExpr();
+//			for (int n = 0; n < nNodes; n++) {
+//				for (int a = 0; a < nActions; a++) {
+//						expr.addTerm(1, X_a__n[a][n]);
+//				}
+//			}
+//			model.setObjective(expr, GRB.MAXIMIZE);
+			///////////// add constraint
+			// 15
+			int constraint_count = 0;
+			
+			for (int nPrime = 0; nPrime < nNodes; nPrime++) {
+				for (int sPrime = 0; sPrime < nStates; sPrime++) {
+					expr = new GRBLinExpr();
+					
+					for (int a = 0; a < nActions; a++) {
+						Object action = allActions.get(a);
+						
+						if (!pomdp.getAvailableActions(sPrime).contains(action)) {
+							GRBLinExpr expr_unavailable = new GRBLinExpr();
+							expr_unavailable.addTerm(1, X_n_s_a[nPrime][sPrime][a]);
+							model.addConstr(0, GRB.EQUAL, expr_unavailable, String.format("c25_%d",constraint_count++));
+						}
+//						else {
+							expr.addTerm(1, X_n_s_a[nPrime][sPrime][a]);
+//						}
+					}
+					
+					
+					for (int n = 0; n < nNodes; n++) {
+						for (int s = 0; s < nStates; s++) {
+							for (int a = 0; a < nActions; a++) {
+								if (probTransition[a][s][sPrime] == 0) {
+									continue;
+								}
+								for (int y = 0; y < nObservations; y++) {
+//									int y = pomdp.getObservation(sPrime);
+									double obs_p = 0.0;
+									if (y == pomdp.getObservation(sPrime)) {
+										obs_p = 1.0;
+									}
+									expr.addTerm(-discount * probTransition[a][s][sPrime] * obs_p, X_n_s_a_y_nPrime[n][s][a][y][nPrime]);
+								}
+							}
+						}
+					}
+////					if (initial_belief_n_s[nPrime][sPrime]>0) {
+//						mainLog.println(nPrime + " " + sPrime + " " + initial_belief_n_s[nPrime][sPrime]);
+////					}
+					model.addConstr(initial_belief_n_s[nPrime][sPrime], GRB.EQUAL, expr, String.format("c15_%d",constraint_count++));
+				}
+			}
+			
+			
+			//16 x(n,s,a) = sum_nPrime {x(n,s,a,n'y)}
+			for (int n = 0; n < nNodes; n++) {
+				for (int s = 0; s < nStates; s++) {
+					for (int a = 0; a < nActions; a++) {
+						Object action = allActions.get(a);
+						for (int y = 0; y < nObservations; y++) {
+							expr = new GRBLinExpr();
+							expr.addTerm(1, X_n_s_a[n][s][a]);
+							
+							
+							for (int nPrime = 0; nPrime < nNodes; nPrime++) {
+								expr.addTerm(-1, X_n_s_a_y_nPrime[n][s][a][y][nPrime]);
+							}
+							model.addConstr(0, GRB.EQUAL, expr, String.format("c16_%d",constraint_count++));
+						}
+					}
+				}
+			}
+			
+			//17
+			for (int n = 0; n < nNodes; n++) {
+				for (int a = 0; a < nActions; a++) {
+					expr = new GRBLinExpr();
+					expr.addTerm(1, X_n_a[n][a]);
+					for (int s = 0; s < nStates; s++) {
+						expr.addTerm(-1, X_n_s_a[n][s][a]);
+					}
+					model.addConstr(0, GRB.EQUAL, expr, String.format("c17_%d",constraint_count++));
+				}
+			}
+			
+			//18
+			for (int n = 0; n < nNodes; n++) {
+				expr = new GRBLinExpr();
+				expr.addTerm(1, X_n[n]);
+				for (int a = 0; a < nActions; a++) {
+					expr.addTerm(-1, X_n_a[n][a]);
+				}
+				model.addConstr(0, GRB.EQUAL, expr, String.format("c18_%d",constraint_count++));
+			}
+			
+			// 19
+			for (int n = 0; n < nNodes; n++) {
+				for (int y = 0; y < nObservations; y++) {
+					for (int nPrime = 0; nPrime < nNodes; nPrime++) {
+						expr = new GRBLinExpr();
+						expr.addTerm(1, X_n_y_nPrime[n][y][nPrime]);
+						for (int s = 0; s < nStates; s++) {
+							for (int a = 0; a < nActions; a++) {
+								expr.addTerm(-1, X_n_s_a_y_nPrime[n][s][a][y][nPrime]);
+							}
+						}
+						model.addConstr(0, GRB.EQUAL, expr, String.format("c19_%d",constraint_count++));
+					}
+				}
+			}
+			
+			// 20
+			for (int n = 0; n < nNodes; n++) {
+				for (int a = 0; a < nActions; a++) {
+					expr = new GRBLinExpr();
+					expr.addTerm(-1 * (1-discount), X_n[n]);
+					expr.addTerm(1 * (1-discount), X_n_a[n][a]);
+					expr.addTerm(-1, X_a__n[a][n]);
+					model.addConstr(expr, GRB.GREATER_EQUAL, -1, String.format("c20_%d",constraint_count++));
+				}
+			}
+			
+			//21
+			for (int n = 0; n < nNodes; n++) {
+				for (int y = 0; y < nObservations; y++) {
+					for (int nPrime = 0; nPrime < nNodes; nPrime++) {
+						expr =  new GRBLinExpr();
+						expr.addTerm(-1 * (1-discount), X_n[n]);
+						expr.addTerm(1 * (1-discount), X_n_y_nPrime[n][y][nPrime]);
+						expr.addTerm(-1, X_nPrime__n__y[nPrime][n][y]);
+						model.addConstr(expr, GRB.GREATER_EQUAL, -1, String.format("c21_%d",constraint_count++));
+					}
+				}
+			}
+			
+
+			
+			// 22
+			for (int n = 0; n < nNodes; n++) {
+				expr = new GRBLinExpr();
+				for (int a= 0; a < nActions; a++) {
+					expr.addTerm(1, X_a__n[a][n]);
+				}
+				model.addConstr(1, GRB.EQUAL, expr, String.format("c21_%d",constraint_count++));
+			}
+			
+			// 23
+			for (int n = 0; n < nNodes; n++) {
+				for (int y = 0; y < nObservations; y++) {
+					expr = new GRBLinExpr();
+					for (int nPrime = 0; nPrime < nNodes; nPrime++) {
+						expr.addTerm(1, X_nPrime__n__y[nPrime][n][y]);
+					}
+					model.addConstr(1, GRB.EQUAL, expr, String.format("c23_%d",constraint_count++));
+				}
+			}
+			
+			
+			model.write("aaab_gurobi.lp");
+			model.optimize();
+			if (model.get(GRB.IntAttr.Status)== GRB.Status.INFEASIBLE) {
+				mainLog.println("model infeasible");
+				model.computeIIS();
+				model.write("Infeasible.ilp");		
+				model.feasRelax(0, false, true, true);
+				model.optimize();
+				model.write("aaab_gurobi_relaed.sol");
+
+			}
+//			
+
+			model.write("aaab_gurobi.sol");
+//			
+			System.out.println("Obj: " + model.get(GRB.DoubleAttr.ObjVal));
+			mainLog.println(model.getJSONSolution());
+			
+	      // Dispose of model and environment
+	      model.dispose();
+	      env.dispose();
+		} catch (GRBException e) {
+			
+			throw new PrismException("Error solving LP: " +e.getMessage());
+		}
+//		PrismFileLog out = new PrismFileLog( "E:\\Program Files\\Gurobi\\win64\\bin\\pomdp_test.lp", false);
+//		
+//		out.println("Maximize");
+//		out.println(" value_state_0");
+//		out.println("Subject To");
+//		int count = 0;
+//		HashSet<String> variables_binary = new HashSet<String> ();
+//		HashSet<String> variables_continuous = new HashSet<String> ();
+//		HashSet<String> constraints = new HashSet<String> ();
+//		for (int s = 0; s < nStates; s++) {
+//			List <String> constraint_lefthand_builder = new LinkedList<>();
+////			constraint_lefthand_builder.add(String.format(" R%d: ", count++));
+//			for (int a = 0; a < nActions; a++) {
+//				Object action = allActions.get(a);
+//				if (!pomdp.getAvailableActions(s).contains(action)) {
+//					continue;
+//				}
+//				int observation = pomdp.getObservation(s);
+//				String strategy = String.format("strategy_observation%d_action%s", observation, action);
+//				constraint_lefthand_builder.add(strategy);
+//				variables_binary.add(strategy);
+//			}
+//			String constraint_right_hand = " = 1";
+//			String constraint = String.join(" + ", constraint_lefthand_builder) + constraint_right_hand;
+//			if (!constraints.contains(constraint)){
+//				System.out.println(constraint);
+//				out.println(String.format(" R%d: ", count++) + constraint);
+//				constraints.add(constraint);
+//			}
+//		}
+//
+//		for (int s = 0; s < nStates; s++) {
+//			for (int a = 0; a < nActions; a++) {
+//				Object action = allActions.get(a);
+//				if (!pomdp.getAvailableActions(s).contains(action)) {
+//					continue;
+//				}
+//				int choice = pomdp.getChoiceByAction(s, action);
+//				List <String> constraint_builder_immediate = new LinkedList<>();
+//				int observation = pomdp.getObservation(s);
+//				double reward = (mdpRewards.getTransitionReward(s, choice) + mdpRewards.getStateReward(s) );
+//				constraint_builder_immediate.add(String.format(" R%d: ", count++ ));
+//				constraint_builder_immediate.add(String.format("- value_state_%d ", s));
+////				constraint_builder_immediate.add(String.format("+ %d ", max_value));
+//				constraint_builder_immediate.add(String.format("- %d strategy_observation%d_action%s ", max_value, observation, action ));
+//				constraint_builder_immediate.add(" + ");
+////				constraint_builder_immediate.add(String.format("+ %.8f + ", reward));
+//
+//				List <String> constraint_builder_future = new LinkedList<>();
+//				Iterator<Entry<Integer, Double>> iter = pomdp.getTransitionsIterator(s,choice);
+//				while (iter.hasNext()) {
+//					Map.Entry<Integer, Double> trans = iter.next();
+//					int next_state = trans.getKey();
+//					double transition_prob = trans.getValue();
+//					constraint_builder_future.add(String.format("%.8f value_state_%d", discount * transition_prob, next_state));
+//				}
+//				
+//				String constraint_right_hander = String.format(" >= - %.8f", max_value - reward);
+//				
+//				
+//				out.println(String.join("", constraint_builder_immediate) + String.join(" + ", constraint_builder_future) + constraint_right_hander);
+//			}
+//		}
+//		
+//		
+//		out.println("Bounds");
+//		for (int s = 0; s < nStates; s++) {
+//			out.println(String.format(" -1000 <= value_state_%d <= 1000", s));
+//		}
+////		out.println("Integers");
+//		out.println("Binaries");
+//		for (String strategy : variables_binary) {
+//			out.println(String.format(" %s", strategy));
+//		}
+//		out.println("End");
+//		out.close();
+		
+		return res;
+	}
+    enum POMDPMethod {PERSEUS, POMCP, FIXEDGRID, MILP};
 
 	public ModelCheckerResult computeReachRewards(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest) throws PrismException
 	{
-		POMDPMethod pomdpMethod = POMDPMethod.POMCP;
+		mainLog.println("DDDDDDDDDDDDDDD"+System.getProperty("java.library.path"));
+		//		POMDPMethod pomdpMethod = POMDPMethod.PERSEUS;
+		//		POMDPMethod pomdpMethod = POMDPMethod.POMCP;
+		POMDPMethod pomdpMethod = POMDPMethod.FIXEDGRID;
+		//POMDPMethod pomdpMethod = POMDPMethod.MILP;
 		switch(pomdpMethod) {
 		case PERSEUS:
 			mainLog.println("Calling Perseus pomdp solver");
 			computeReachRewardsPerseus( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
 			mainLog.println("End calling Perseus pomdp solver");
+			throw new PrismException("No offline stragey to be generatd for PERSEUS yet");
+
 		case POMCP:
 			computeReachRewardsWithPOMCP( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
 			throw new PrismException("No offline stragey to be generatd since POMCP is an online algorithm");
+		case MILP:
+			
+
+			computeReachRewardsWithMILP( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
+			throw new PrismException("No offline stragey to be generatd for MILP yet");
 		case FIXEDGRID:
+			mainLog.println("Calling Perseus pomdp solver");
+			computeReachRewardsPerseus( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
+			mainLog.println("End calling Perseus pomdp solver");
+			
+			mainLog.println("Calling MILP pomdp solver");
+			computeReachRewardsWithMILP( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
+			mainLog.println("Calling MILP pomdp solver");
 			ModelCheckerResult res = null;
 			long timer;
 			// Check we are only computing for a single state (and use initial state if unspecified)

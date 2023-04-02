@@ -514,7 +514,6 @@ public class ProbModelChecker extends NonProbModelChecker
 	public StateValues checkExpression(Model model, Expression expr, BitSet statesOfInterest) throws PrismException
 	{
 		StateValues res;
-
 		// <<>> or [[]] operator
 		if (expr instanceof ExpressionStrategy) {
 			res = checkExpressionStrategy(model, (ExpressionStrategy) expr, statesOfInterest);
@@ -1367,6 +1366,7 @@ public class ProbModelChecker extends NonProbModelChecker
 		
 		// Model check the operand for all states
 		BitSet target = checkExpression(model, expr.getOperand2(), null).getBitSet();
+		
 
 		// Compute/return the rewards
 		ModelCheckerResult res = null;
