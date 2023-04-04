@@ -3277,6 +3277,166 @@ public class MDPModelChecker extends ProbModelChecker
 		return res;
 	}
 
+	enum ObjType {
+		EXP,
+		CVAR,
+		OTHER
+	}
+	/**
+	 * Compute expected reachability rewards.
+	 * @param mdp The MDP
+	 * @param mdpRewards The rewards
+	 * @param targets Target states for each objective
+	 * @param min Min or max rewards (true=min, false=max)
+	 */
+	// TODO : move this to a multiObj file
+	// TODO : Make min a list of maximization or minimizations
+	// Should mdpRewards be a list??
+	public ModelCheckerResult computeReachRewardsDistrMO(MDP mdp, MDPRewards mdpRewards, BitSet [] targets, ObjType [] objectives, boolean min) throws PrismException{
+
+		num_obj = 2;
+
+		// TODO: Find the unique list of reward_structures
+		int num_rew = unique(mdpRewards);
+
+		// Get the different objective types somehow, as an Enum?
+		Entry [] objectives = new Entry<BitSet, MDPRewards>[num_obj]; // FIX: should this be pair or point?
+		BitSet [] unknown_original = new BitSet[num_rew];
+
+		// Store num states
+		int n = mdp.getNumStates();
+		int n_actions = mdp.getMaxNumChoices();
+
+		// Start expected reachability
+		long timer = System.currentTimeMillis();
+
+		// TODO Figure out how many CVaR Objectives
+		boolean [] cvar_obj = new boolean [num_obj]; // by default all set to false
+		int num_cvars = 0;
+
+		// Check targets and deadlocks for all objectives
+		for (int i = 0; i< num_obj; i++){
+
+			// Start expected reachability
+			timer = System.currentTimeMillis();
+			mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
+
+			// Check for deadlocks in non-target state (because breaks e.g. prob1)
+			mdp.checkForDeadlocks(targets[i]);
+
+			// Precomputation (not optional)
+			long timerProb1 = System.currentTimeMillis();
+			BitSet inf = prob1(mdp, null, targets[i], !min, null);
+			inf.flip(0, n);
+			timerProb1 = System.currentTimeMillis() - timerProb1;
+
+			// Print results of precomputation
+			int numTarget = targets[i].cardinality();
+			int numInf = inf.cardinality();
+			mainLog.println("Objective: "+i+", target=" + numTarget + ", inf=" + numInf + ", rest=" + (n - (numTarget + numInf)));
+
+			if (numInf == n){
+				throw new PrismException("All states are infinite");
+			}
+			unknown_original[i].set(0, n);
+			unknown_original[i].andNot(target[i]);
+			unknown_original[i].andNot(inf);
+
+			if (obj_types[i] == ObjType.CVAR){
+				cvar_obj [i] = true;
+				num_cvars +=1;
+			}
+		}
+		timer = System.currentTimeMillis() - timer;
+		if (verbosity >= 1) {
+			mainLog.println("\nPrecomputation for all targets took : "+ timer / 1000.0 + " seconds.");
+		}
+
+		// Set timers
+		timer = System.currentTimeMillis();
+		long total_timer = System.currentTimeMillis();
+		long max_iteration_timer = -1; long iteration_timer;
+
+		ModelCheckerResult [] results = new ModelCheckerResult[num_obj];
+
+		// TODO: choose weights using OLS here
+		Double [][] weights =  { { 0.2, 0.8 }, { 0.5, 0.5 }, { 0.8, 0.2 } };
+
+		if (num_cvars > 0) {
+			// Make a dummy Cvar product
+
+		}
+		else {
+			// TODO CVaR multi-product.
+		}
+
+		// TODO : send cvar product to function to compute for one weight vector.
+		for (int j = 0; j < weights.length; j++) {
+			results[j] = computeReachRewardsDistrMOWeighted(mdp, mdpRewards, targets, );
+		}
+
+		// TODO figure out how to save/print the results
+
+		return new ModelCheckerResult ();
+	}
+
+	// If there are no CVaR objectives
+	public ModelCheckerResult computeReachRewardsDistrMOWeighted (MDP mdp, MDPRewards mdpRewards, BitSet [] targets, Enum [] objectives, boolean min, Double [] weights, BitSet [] unknown ){
+
+		int num_obj = objectives.length();
+
+		// Set up VI variables
+		int atoms;
+		int iterations = 1500;
+		double error_thresh = 0.01;
+		Double dtmc_epsilon = null;
+		int min_iter = 10;
+		double gamma = 1;
+		double alpha = 0.7;
+		String bad_states_label = "obs";
+		boolean check_reach_dtmc = true;
+		boolean check_reach_dtmc_distr= true;
+		boolean gen_trace = true;
+
+		String c51 = "C51";
+		String qr = "QR";
+
+		DistributionalBellmanAugmented [] operator = new DistributionalBellmanAugmented[num_obj];
+
+		int b_atoms;
+
+		return new ModelCheckerResult();
+	}
+
+	// If therre exists at least 1 cvar objective
+	public ModelCheckerResult computeReachRewardsDistrMOWeighted (CVaRProduct mdp, MDPRewards mdpRewards, BitSet [] targets, Enum [] objectives, boolean min, Double [] weights, BitSet [] unknown ){
+
+		// Set up CVAR variables
+		int atoms;
+		int iterations = 1500;
+		double error_thresh = 0.01;
+		Double dtmc_epsilon = null;
+		int min_iter = 50;
+		double gamma = 1;
+		double alpha = 0.7;
+		String bad_states_label = "obs";
+		boolean check_reach_dtmc = true;
+		boolean check_reach_dtmc_distr= true;
+		boolean gen_trace = true;
+
+		String c51 = "C51";
+		String qr = "QR";
+
+		DistributionalBellmanAugmented operator;
+		int b_atoms;
+
+		// TODO: iterate over all product states
+
+		// TODO: if exp: compute exp(), if cvar : compute magic()
+
+		return new ModelCheckerResult();
+	}
+
 	public String[] readParams(String filename)
 	{
 		if (filename == null){

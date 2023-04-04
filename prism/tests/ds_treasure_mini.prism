@@ -1,0 +1,63 @@
+mdp
+
+const int M = 4;
+const int N = 4;
+const double p=0.4; // with probability p robot moves to an adjacent location instead of desired
+const int MAX_STEPS=8; // time cut off
+const int TERM_COST = 8;
+const int STEP_COST= 1; // cost for every time step
+
+formula treasure = (c=1 & r=2)|(c=2 & r=3)|(c=3 & r=4)| (c=4 & r=4);
+formula wall = (c=1 & r>2) | (c=2 & r>3) ;
+
+// action guards i.e. if south wall is true -> south action should not be allowed
+formula west_wall = (false);
+formula south_west_wall = (c=2 & r=2) | (c=3 & r=3);
+
+module robot
+	//define robot position
+	r:[1..N] init 2; //grid row
+	c:[1..M] init 1; //grid column
+    t:[1..MAX_STEPS+1] init 1; // time step
+
+	// transitions
+	[end] treasure -> (t'=MAX_STEPS+1);
+	[end] (t=MAX_STEPS)  & !treasure -> (t'=t+1);
+	[east]  (c<M | c=M) & !treasure & (t<MAX_STEPS)& !treasure-> p/2:(r'=min(r+1, N))&(c'=min(c+1, M))&(t'=min(t+1, MAX_STEPS))+ p/2: (r'=max(r-1, 1))&(c'=min(c+1, M))&(t'=min(t+1, MAX_STEPS)) + (1-p): (c'=min(c+1, M))&(t'=min(t+1, MAX_STEPS));
+	[south] (r<N | r=N) & !south_west_wall & (t<MAX_STEPS) & !treasure-> (1-p):(r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS)) + p/2: (c'=min(c+1, M))&(r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS))+ p/2: (c'=max(c-1, 1))&(r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS));
+	[west]  (c>1 | c=1) & !west_wall & !south_west_wall & (t<MAX_STEPS)& !treasure-> p/2:(r'=max(r-1, 1))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS))+ p/2:(r'=min(r+1, N))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + (1-p): (c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS));
+	[north] (r=1 | r>1) & (t<MAX_STEPS)& !treasure-> (1-p):(r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS)) + p/2: (c'=max(c-1, 1))&(r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS)) + p/2: (c'=min(c+1, M))&(r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS)) ;
+
+	[south] (r<N | r=N) &  south_west_wall & (t<MAX_STEPS)& !treasure-> (1-p):(r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS)) + p: (c'=min(c+1, M))&(r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS));
+    [west]  (c>1 | c=1) & !west_wall & south_west_wall & (t<MAX_STEPS)& !treasure-> p:(r'=max(r-1, 1))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + (1-p): (c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS));
+
+    // diagonal transitions
+    [north_east] (c<M | c=M) & (r=1 | r>1)  & (t<MAX_STEPS) & !treasure-> p/2:(c'=min(c+1, M))&(t'=min(t+1, MAX_STEPS))+ p/2: (r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS)) + (1-p): (c'=min(c+1, M))&(r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS));
+    [north_west] (c>1 | c=1) & (r=1 | r>1) & !west_wall & (t<MAX_STEPS) & !treasure-> (1-p):(r'=max(r-1, 1))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + p/2: (r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS))+ p/2: (c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS));
+    [south_east] (c<M | c=M) & (r<N | r=N) & (t<MAX_STEPS) & !treasure-> p/2:(c'=min(c+1, M))&(t'=min(t+1, MAX_STEPS))+ p/2:(r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS)) + (1-p): (r'=min(r+1, N))&(c'=min(c+1, M))&(t'=min(t+1, MAX_STEPS));
+    [south_west] (c>1 | c=1) & (r<N | r=N) & !south_west_wall & !west_wall & (t<MAX_STEPS) & !treasure-> (1-p):(r'=min(r+1, N))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + p/2: (c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + p/2: (r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS)) ;
+
+    [north_west] (c>1 | c=1) & (r=1 | r>1) & west_wall & (t<MAX_STEPS) & !treasure-> (1-p):(r'=max(r-1, 1))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + p: (r'=max(r-1, 1))&(t'=min(t+1, MAX_STEPS));
+    [south_west] (c>1 | c=1) & (r<N | r=N) & !south_west_wall & west_wall & (t<MAX_STEPS) & !treasure-> (1-p):(r'=min(r+1, N))&(c'=max(c-1, 1))&(t'=min(t+1, MAX_STEPS)) + p: (r'=min(r+1, N))&(t'=min(t+1, MAX_STEPS)) ;
+
+endmodule
+
+label "goal" = (t=MAX_STEPS+1);
+label "obs" = (wall);
+
+rewards
+    [east] (t<MAX_STEPS): STEP_COST;
+    [south] (t<MAX_STEPS): STEP_COST;
+    [west] (t<MAX_STEPS): STEP_COST;
+    [north] (t<MAX_STEPS): STEP_COST;
+    [north_east] (t<MAX_STEPS): STEP_COST;
+    [north_west] (t<MAX_STEPS): STEP_COST;
+    [south_east] (t<MAX_STEPS): STEP_COST;
+    [south_west] (t<MAX_STEPS): STEP_COST;
+    [end] (t=MAX_STEPS) : TERM_COST;
+    [end] (c=1 & r=2): TERM_COST-1;
+    [end] (c=2 & r=3): TERM_COST-2;
+    [end] (c=3 & r=4): TERM_COST-3;
+    [end] (c=4 & r=4): TERM_COST-5;
+
+endrewards
