@@ -3290,18 +3290,23 @@ public class MDPModelChecker extends ProbModelChecker
 	 * @param min Min or max rewards (true=min, false=max)
 	 */
 	// TODO : move this to a multiObj file
-	// TODO : Make min a list of maximization or minimizations
-	// Should mdpRewards be a list??
-	public ModelCheckerResult computeReachRewardsDistrMO(MDP mdp, MDPRewards mdpRewards, BitSet [] targets, ObjType [] objectives, boolean min) throws PrismException{
+	public ModelCheckerResult computeReachRewardsDistrMO(MDP mdp, List<MDPRewards> mdpRewardsList, BitSet target, List<MinMax> minMaxList, BitSet statesOfInterest) throws PrismException{
 
-		num_obj = 2;
-
-		// TODO: Find the unique list of reward_structures
-		int num_rew = unique(mdpRewards);
+		int num_obj = mdpRewardsList.size();
 
 		// Get the different objective types somehow, as an Enum?
-		Entry [] objectives = new Entry<BitSet, MDPRewards>[num_obj]; // FIX: should this be pair or point?
-		BitSet [] unknown_original = new BitSet[num_rew];
+		List<ObjType> objectives = new ArrayList<ObjType> ();
+		
+		if (num_obj == 2) // dummy setting
+		{
+			objectives.set(0, ObjType.EXP);
+			objectives.set(1, ObjType.CVAR);
+		}
+
+		// TODO: Find the unique list of reward_structures
+		int num_rew = 0;
+
+		List <BitSet> unknown_original = new ArrayList<BitSet>();
 
 		// Store num states
 		int n = mdp.getNumStates();
@@ -3314,39 +3319,62 @@ public class MDPModelChecker extends ProbModelChecker
 		boolean [] cvar_obj = new boolean [num_obj]; // by default all set to false
 		int num_cvars = 0;
 
-		// Check targets and deadlocks for all objectives
-		for (int i = 0; i< num_obj; i++){
+		// Setting variables to check for unique reward structures
+		List<Entry<Integer, Integer>> rewardsIdxToUIdx = new ArrayList <Entry<Integer,Integer>>();
+		List <MDPRewards> rewardsSet = new ArrayList <MDPRewards>();
+		int unique_idx = 0;
 
+		// Check for deadlocks in non-target state (because breaks e.g. prob1)
+		mdp.checkForDeadlocks(target);
+
+		// Check target for all objectives
+		timer = System.currentTimeMillis();
+		for (int i =0; i<num_obj; i++){
 			// Start expected reachability
-			timer = System.currentTimeMillis();
-			mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
-
-			// Check for deadlocks in non-target state (because breaks e.g. prob1)
-			mdp.checkForDeadlocks(targets[i]);
+			
+			mainLog.println("\nStarting expected reachability (" + (minMaxList.get(i).isMin() ? "min" : "max") + ")...");
 
 			// Precomputation (not optional)
 			long timerProb1 = System.currentTimeMillis();
-			BitSet inf = prob1(mdp, null, targets[i], !min, null);
+			BitSet inf = prob1(mdp, null, target, !minMaxList.get(i).isMin(), null);
 			inf.flip(0, n);
 			timerProb1 = System.currentTimeMillis() - timerProb1;
 
 			// Print results of precomputation
-			int numTarget = targets[i].cardinality();
+			int numTarget = target.cardinality();
 			int numInf = inf.cardinality();
-			mainLog.println("Objective: "+i+", target=" + numTarget + ", inf=" + numInf + ", rest=" + (n - (numTarget + numInf)));
+			mainLog.println("Objective ="+i+", target=" + numTarget + ", inf=" + numInf + ", rest=" + (n - (numTarget + numInf)));
 
 			if (numInf == n){
 				throw new PrismException("All states are infinite");
 			}
-			unknown_original[i].set(0, n);
-			unknown_original[i].andNot(target[i]);
-			unknown_original[i].andNot(inf);
+			
+			BitSet original = new BitSet ();
+			original.set(0, n);
+			original.andNot(target);
+			original.andNot(inf);
+			
+			unknown_original.add(original);
 
-			if (obj_types[i] == ObjType.CVAR){
-				cvar_obj [i] = true;
+			int idxfound = rewardsSet.indexOf(mdpRewardsList.get(i));
+			if(idxfound < 0)
+			{
+				rewardsSet.add(mdpRewardsList.get(i));
+				rewardsIdxToUIdx.add(new AbstractMap.SimpleEntry<Integer,Integer>(i,unique_idx));
+				unique_idx += 1;
+			}
+			else {
+				rewardsIdxToUIdx.add(new AbstractMap.SimpleEntry<Integer, Integer>(i,idxfound));
+			}
+
+			if (objectives.get(i) == ObjType.CVAR)
+			{
 				num_cvars +=1;
 			}
+
 		}
+
+		
 		timer = System.currentTimeMillis() - timer;
 		if (verbosity >= 1) {
 			mainLog.println("\nPrecomputation for all targets took : "+ timer / 1000.0 + " seconds.");
@@ -3368,11 +3396,12 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 		else {
 			// TODO CVaR multi-product.
+
 		}
 
 		// TODO : send cvar product to function to compute for one weight vector.
 		for (int j = 0; j < weights.length; j++) {
-			results[j] = computeReachRewardsDistrMOWeighted(mdp, mdpRewards, targets, );
+			results[j] = computeReachRewardsDistrMOWeighted(mdp, mdpRewardsList, target, objectives, minMaxList, weights[j], unknown_original);
 		}
 
 		// TODO figure out how to save/print the results
@@ -3381,9 +3410,9 @@ public class MDPModelChecker extends ProbModelChecker
 	}
 
 	// If there are no CVaR objectives
-	public ModelCheckerResult computeReachRewardsDistrMOWeighted (MDP mdp, MDPRewards mdpRewards, BitSet [] targets, Enum [] objectives, boolean min, Double [] weights, BitSet [] unknown ){
+	public ModelCheckerResult computeReachRewardsDistrMOWeighted (MDP mdp, List<MDPRewards> mdpRewardsList, BitSet target, List<ObjType> objectives, List<MinMax> min, Double [] weights, List<BitSet> unknown ){
 
-		int num_obj = objectives.length();
+		int num_obj = objectives.size();
 
 		// Set up VI variables
 		int atoms;
@@ -3409,7 +3438,7 @@ public class MDPModelChecker extends ProbModelChecker
 	}
 
 	// If therre exists at least 1 cvar objective
-	public ModelCheckerResult computeReachRewardsDistrMOWeighted (CVaRProduct mdp, MDPRewards mdpRewards, BitSet [] targets, Enum [] objectives, boolean min, Double [] weights, BitSet [] unknown ){
+	public ModelCheckerResult computeReachRewardsDistrMOWeighted (CVaRProduct mdp, List<MDPRewards> mdpRewardsList, BitSet target, List<ObjType> objectives, List<MinMax> min, Double [] weights, List<BitSet> unknown ){
 
 		// Set up CVAR variables
 		int atoms;
