@@ -20,7 +20,7 @@ def check_save_location(exp_folder, exp_name, prefix, debug):
 
     if not os.path.isdir(exp_folder+exp_name):
         command = 'mkdir '+ exp_folder+exp_name
-        print("Making experiment folder")
+        print("Making experiment folder for "+exp_name)
         if debug:
             print(command)
         os.system(command)

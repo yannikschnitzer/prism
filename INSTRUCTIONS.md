@@ -34,11 +34,27 @@ All model files can be found in `prism/tests` and `prism/tests/gridmap/`.
     * Properties: [uav_var.props](https://github.com/davexparker/prism/blob/ingy/prism/tests/uav_var.props)
 
 
+## PRISM Installation
+We recommend a setup with 32 GB of RAM.
+
+For this source code distributions:
+ * type `git clone  git clone https://github.com/davexparker/prism.git`
+ * enter the PRISM git directory `cd prism`
+ * switch to the right branch using: `git checkout ingy`
+ * to compile PRISM type `cd prism` then `make`
+
+For detailed installation instructions and troubleshooting, check the online manual at:
+  http://www.prismmodelchecker.org/manual/InstallingPRISM/Instructions
+
+## Python Installation
+
+We recommend using a virtual environment or conda environment with Python 3.6+
+
+If using a virtual environment, essential python packages can be installed using:
+`pip install -r reqs.txt`
+
 ## Running Instructions
-
-The repository linked above can be run with Java or using a Python file. We recommend a setup with 32 GB of RAM. Make sure to check the right branch is checked out before running by using: 
-`git checkout ingy`.
-
+The repository linked above can be run with Java or using a Python file.
 **Python**: We provide a Python 3 script to make running experiments and organize the output files easier. 
 **usage**: `python run_experiments.py exp_type [rep] [alg] [set or case study]`
 The experiment types `exp_type` available are: base experiment `-b`, vary the number of atoms in the distribution representation with risk neutral DVI `-a`, vary the number of atoms in the distribution representation with risk sensitive DVI `-t`, vary the number of atoms in the slack variable approximation with risk sensitive DVI `-c`, vary the DTMC precision `-e`. 
@@ -93,24 +109,6 @@ We provide a JupyterLab Python Notebook to visualize results and print distribut
 
 All cells before the Setup section contain the distribution loading and metric computation functions.
 Blue distribution graphs show the DTMC distributions, while the green graphs show the approximate DVI distributions.
-
-## PRISM Installation
-
-For detailed installation instructions, check the online manual at:
-
-  http://www.prismmodelchecker.org/manual/InstallingPRISM/Instructions
-
-For source code distributions:
- * enter the PRISM directory and type `cd prism` then `make`
-
-If you have problems check the manual, especially the section "Common Problems And Questions".
-
-## Python Installation
-
-We recommend using a virtual environment or conda environment with Python 3.6+
-
-If using a virtual environment, essential python packages can be installed using:
-`pip install -r reqs.txt`
 
 ## Licensing
 
