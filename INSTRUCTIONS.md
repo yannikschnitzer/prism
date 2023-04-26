@@ -89,7 +89,7 @@ Files:
 
 ## Output visualization
 
-We provide a JupyterLab Python Notebook to visualize results and print distributional metrics: [distr.ipynb](https://github.com/davexparker/prism/blob/ingy-mo/prism/distr.ipynb)
+We provide a JupyterLab Python Notebook to visualize results and print distributional metrics: [distr.ipynb](https://github.com/davexparker/prism/blob/ingy/prism/distr.ipynb)
 
 All cells before the Setup section contain the distribution loading and metric computation functions.
 Blue distribution graphs show the DTMC distributions, while the green graphs show the approximate DVI distributions.
