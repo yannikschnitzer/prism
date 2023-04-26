@@ -1,2 +1,0 @@
-// Minimum expected time to elect a leader
-"time_min": R{"time"}min=? [ F "done" ];

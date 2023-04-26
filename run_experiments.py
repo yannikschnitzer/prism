@@ -152,7 +152,7 @@ def base_exp(all_experiments, alg_types, rep_types, apdx='', debug=False):
 
 # #### Vary atoms experiment
 
-def vary_atoms_exp(all_experiments, alg_types, rep_types, apdx='', debug=False):
+def vary_atoms_exp(all_experiments, rep_types, apdx='', debug=False):
 
     alg = 'exp'
     apd = '_'+ apdx if apdx != '' else apdx
@@ -197,7 +197,7 @@ def vary_atoms_exp(all_experiments, alg_types, rep_types, apdx='', debug=False):
 
 # #### Vary atoms experiment
 
-def vary_atoms_cvar(all_experiments, alg_types, rep_types, apdx='', debug=False):
+def vary_atoms_cvar(all_experiments, rep_types, apdx='', debug=False):
 
     alg = 'cvar'
     apd = '_'+ apdx if apdx != '' else apdx
@@ -242,7 +242,7 @@ def vary_atoms_cvar(all_experiments, alg_types, rep_types, apdx='', debug=False)
                     
 # #### Vary b atoms experiment
 
-def vary_b_exp(all_experiments, alg_types, rep_types, apdx ='', debug=False):
+def vary_b_exp(all_experiments, rep_types, apdx ='', debug=False):
 
     apd = '_'+apdx if apdx != '' else apdx
     alg = 'cvar'
@@ -283,7 +283,7 @@ def vary_b_exp(all_experiments, alg_types, rep_types, apdx ='', debug=False):
                     
 # #### Vary epsilon experiment
 
-def vary_eps_exp(all_experiments, alg_types, rep_types, apdx='', debug=False):
+def vary_eps_exp(all_experiments, rep_types, apdx='', debug=False):
 
     alg = 'exp'
     apd= '_'+apdx if apdx !='' else apdx
@@ -332,11 +332,12 @@ def vary_eps_exp(all_experiments, alg_types, rep_types, apdx='', debug=False):
 def init_argparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         usage="%(prog)s exp_type [rep] [alg] [set or case study]",
-        description=f"Run distr value iteration experiments.\n\
-        \n Available experiments: base (-b), vary_atoms(-a), vary_b_atoms(-c), vary_epsilon (-e)\
-        \n Available case studies: {list(config.keys())}\
-        \n Available Distr representations: {rep_types}\
-        \n Available Distr VI optimizations : {alg_types} "
+        description=f"Run distr value iteration experiments.\n \
+        \n Available experiments: base (-b), vary_atoms(-a), vary_atoms_cvar(-t), vary_b_atoms(-c), vary_epsilon (-e)\
+        \n Available case studies: {list(config.keys())} --- default: all \
+        \n Available Distr representations: {rep_types} --- default: c51 \
+        \n Available Distr VI optimizations : {alg_types}  --- default: all ",
+        formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument(
         "-v", "--version", action="version",
@@ -354,8 +355,8 @@ def init_argparse() -> argparse.ArgumentParser:
     parser.add_argument('-r', "--rep", metavar='rep', action='store', default='c51', help='representation of distribution')
     parser.add_argument('-i', "--alg", metavar='alg', action='store', default='all', help='type of optimization')
     parser.add_argument('-s', "--set", metavar='set', action='store', default='all', help='set of case studies or one case study')
-    parser.add_argument('-d', "--debug", action='store_true', help='set of case studies or one case study')
-    parser.add_argument('-x', "--apdx", metavar='apdx', action='store', default='', help='set an apdx for file names')
+    parser.add_argument('-d', "--debug", action='store_true', help='Debug option for additional prints')
+    parser.add_argument('-x', "--apdx", metavar='apdx', action='store', default='', help='set an appendix to output file names')
 
     return parser
 
@@ -377,44 +378,23 @@ header_b = ['atoms', 'bmin', 'bmax']
 alg_map= {'exp': 0, 'cvar': 1}
 config = {
     'test': {'model':prefix+'tests/corridor.prism', 'props':prefix+'tests/corridor.props', 'pn':[3,2], 'vmax': 25, 'epsilon':def_eps, 'b':30, 'alpha':def_alpha},
-    'test_small': {'model':prefix+'tests/cliffs.prism', 'props':prefix+'tests/cliffs.prism.props', 'pn':[1,2], 'vmax': 30, 'epsilon':def_eps, 'b':30, 'alpha':def_alpha},
-    'mud_nails_small' : {'model':prefix+'tests/mud_nails_small.prism', 'props':prefix+'tests/mud_nails_small.props', 'pn':[3,2], 'vmax': 30, 'epsilon':def_eps, 'b':30, 'alpha':def_alpha},
-    'test10' : {'model':prefix+'tests/gridmap/gridmap_10_10_v2.prism', 'props':prefix+'tests/gridmap/gridmap_10_10.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'b':26, 'alpha':def_alpha},
     'cliffs' : {'model':prefix+'tests/cliffs_v2.prism', 'props':prefix+'tests/cliffs_v2.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
     'betting_g' :{'model':prefix+'tests/betting_game.prism', 'props':prefix+'tests/betting_game.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.8},
     'ds_treasure' :{'model':prefix+'tests/ds_treasure.prism', 'props':prefix+'tests/ds_treasure.props', 'pn':[3,2], 'vmax': 800, 'epsilon':def_eps, 'b':101, 'alpha':0.8},
     'drones' :{'model':prefix+'tests/drones.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
-    'gridmap10' : {'model':prefix+'tests/gridmap/gridmap_10_10_v2.prism', 'props':prefix+'tests/gridmap/gridmap_10_10.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
+    'gridmap_10' : {'model':prefix+'tests/gridmap/gridmap_10_10.prism', 'props':prefix+'tests/gridmap/gridmap_10_10.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
     'mud_nails' : {'model':prefix+'tests/mud_nails.prism', 'props':prefix+'tests/mud_nails.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
-    'uav_phi3': {'model':prefix+'tests/uav.prism', 'props':prefix+'tests/uav.props', 'pn':[8,9],  'vmax': 300, 'epsilon':def_eps, 'b':51, 'alpha':def_alpha},
-    'uav_phi4': {'model':prefix+'tests/uav.prism', 'props':prefix+'tests/uav.props', 'pn':[11,12],  'vmax': 300, 'epsilon':def_eps, 'b':51, 'alpha':def_alpha},
     'uav_var': {'model':prefix+'tests/uav_var.prism', 'props':prefix+'tests/uav_var.props', 'pn':[2,3],  'vmax': 500, 'epsilon':def_eps, 'b':101, 'alpha':def_alpha},
-    'drones_50': {'model':prefix+'tests/drones_40.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2], 'vmax': 1000, 'epsilon':0.001, 'alpha':def_alpha},
-    'drones_25': {'model':prefix+'tests/drones_25.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 800, 'epsilon':0.001, 'b':41, 'alpha':def_alpha},
-    'drones_20': {'model':prefix+'tests/drones_20.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 600, 'epsilon':0.001, 'b':51, 'alpha':0.8},
     'drones_15': {'model':prefix+'tests/drones_15.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 600, 'epsilon':0.001, 'b':31, 'alpha':def_alpha},
-    'grid_350': {'model':prefix+'tests/gridmap/gridmap_350_2500.prism', 'props':prefix+'tests/gridmap/gridmap_350_2500.props', 'pn':[3,2], 'vmax': 1000, 'epsilon':0.001, 'b':26, 'alpha':def_alpha},
-    'grid_330': {'model':prefix+'tests/gridmap/gridmap_330_2000.prism', 'props':prefix+'tests/gridmap/gridmap_330_2000.props', 'pn':[3,2], 'vmax': 1000, 'epsilon':0.001, 'b':26, 'alpha':def_alpha},
-    'grid_320': {'model':prefix+'tests/gridmap/gridmap_320_300.prism', 'props':prefix+'tests/gridmap/gridmap_320_300.props', 'pn':[3,2], 'vmax': 900, 'epsilon':0.001, 'b':31, 'alpha':def_alpha},
-    'grid_250_1000': {'model':prefix+'tests/gridmap/gridmap_250_1000.prism', 'props':prefix+'tests/gridmap/gridmap_250_1000.props', 'pn':[3,2], 'vmax': 900, 'epsilon':0.001, 'b':31, 'alpha':def_alpha},
-    'grid_250_1200': {'model':prefix+'tests/gridmap/gridmap_250_1200.prism', 'props':prefix+'tests/gridmap/gridmap_250_1200.props', 'pn':[3,2], 'vmax': 900, 'epsilon':0.001, 'b':31, 'alpha':def_alpha},
-    'grid_250_1500': {'model':prefix+'tests/gridmap/gridmap_250_1500.prism', 'props':prefix+'tests/gridmap/gridmap_250_1500.props', 'pn':[3,2], 'vmax': 900, 'epsilon':0.001, 'b':31, 'alpha':def_alpha},
-    'grid_200_7140': {'model':prefix+'tests/gridmap/gridmap_200_7140.prism', 'props':prefix+'tests/gridmap/gridmap_200_7140.props', 'pn':[3,2], 'vmax': 800, 'epsilon':0.001, 'b':41, 'alpha':0.8},
-    'grid_200_6776': {'model':prefix+'tests/gridmap/gridmap_200_6776.prism', 'props':prefix+'tests/gridmap/gridmap_200_6776.props', 'pn':[3,2], 'vmax': 800, 'epsilon':0.001, 'b':41, 'alpha':0.8},
-    'grid_170_4986': {'model':prefix+'tests/gridmap/gridmap_170_4986.prism', 'props':prefix+'tests/gridmap/gridmap_170_4986.props', 'pn':[3,2], 'vmax': 600, 'epsilon':0.01, 'b':91, 'alpha':0.8},
-    'grid_150_3918': {'model':prefix+'tests/gridmap/gridmap_150_3918.prism', 'props':prefix+'tests/gridmap/gridmap_150_3918.props', 'pn':[3,2], 'vmax': 600, 'epsilon':0.001, 'b':101, 'alpha':0.8},
-    'grid_150_3738': {'model':prefix+'tests/gridmap/gridmap_150_3738.prism', 'props':prefix+'tests/gridmap/gridmap_150_3738.props', 'pn':[3,2], 'vmax': 600, 'epsilon':0.001, 'b':101, 'alpha':0.8},
-    'grid_150_3535': {'model':prefix+'tests/gridmap/gridmap_150_3535.prism', 'props':prefix+'tests/gridmap/gridmap_150_3535.props', 'pn':[3,2], 'vmax': 600, 'epsilon':0.01, 'b':101, 'alpha':0.8},
+    'gridmap_150_3918': {'model':prefix+'tests/gridmap/gridmap_150_3918.prism', 'props':prefix+'tests/gridmap/gridmap_150_3918.props', 'pn':[3,2], 'vmax': 600, 'epsilon':0.001, 'b':101, 'alpha':0.8}
 }
 
 
-# ##### Case studies to run 
-experiment_names=[ 'cliffs', 'mud_nails', 'gridmap10', 'drones']
-set_experiments = ['test','gridmap10', 'drones', 'uav_var','ds_treasure', 'betting_g']
-big_experiments = ['drones_25', 'grid_350'] # 'uav_phi3'
-perf_experiments = ['cliffs', 'mud_nails', 'uav_phi3', 'grid_350', 'drones_25' ]
-new_experiments = ['test_small', 'mud_nails_small', 'ds_treasure', 'betting_g', 'grid_330', 'grid_320', 'grid_250_1000', 'grid_250_1200', 'grid_250_1500', 'uav_var', 'drones_15', 'grid_200_7140', 'grid_200_6776', 'grid_170_4986','grid_150_3918','grid_150_3738', 'grid_150_3535']
-all_experiments = set_experiments+big_experiments+new_experiments+perf_experiments #['test', 'test10']
+###### Case studies to run 
+experiment_names=[ 'cliffs', 'mud_nails', 'gridmap_10', 'drones']
+set_experiments = ['test','gridmap_10', 'drones', 'uav_var','ds_treasure', 'betting_g']
+big_experiments = ['drones_15','gridmap_150_3918'] 
+all_experiments = set_experiments+big_experiments 
 rep_types = ['c51', 'qr'] # 'c51', 'qr'
 alg_types= ['exp', 'cvar'] # 'exp', 'cvar'
 cmd_base_copy = "cp "
@@ -431,10 +411,6 @@ if __name__ == "__main__":
 
     if args.set =='all':
         experiments = all_experiments
-    elif args.set =='perf':
-        experiments = perf_experiments
-    elif args.set == 'new':
-        experiments = new_experiments
     elif args.set == 'big':
         experiments = big_experiments
     elif args.set =='set':
@@ -471,16 +447,16 @@ if __name__ == "__main__":
         base_exp(experiments, algs, reps, apdx=args.apdx, debug=args.debug)
 
     if args.varyatoms: 
-        vary_atoms_exp(experiments, algs, reps, apdx=args.apdx, debug=args.debug)
+        vary_atoms_exp(experiments, reps, apdx=args.apdx, debug=args.debug)
 
     if args.varyatomscvar: 
-        vary_atoms_cvar(experiments, algs, reps, apdx=args.apdx, debug=args.debug)
+        vary_atoms_cvar(experiments, reps, apdx=args.apdx, debug=args.debug)
 
     if args.varybatoms:
-        vary_b_exp(experiments, algs, reps, apdx=args.apdx, debug=args.debug)
+        vary_b_exp(experiments, reps, apdx=args.apdx, debug=args.debug)
 
     if args.epsilon:
-        vary_eps_exp(experiments, algs, reps, apdx=args.apdx, debug=args.debug)
+        vary_eps_exp(experiments, reps, apdx=args.apdx, debug=args.debug)
     
     
 

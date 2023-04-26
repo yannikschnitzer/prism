@@ -1,4 +1,0 @@
-const double T;
-
-// Probability of leaving a situation where the second queue is entirely populated within T time units
-"second_queue": P=? [ sm=c U<=T sm<c ];

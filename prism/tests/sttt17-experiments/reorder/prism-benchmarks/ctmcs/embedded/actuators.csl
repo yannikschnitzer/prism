@@ -1,2 +1,0 @@
-// Probability of actuator failure
-"actuators": P=? [ !"down" U "fail_actuators" ];

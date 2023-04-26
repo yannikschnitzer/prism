@@ -1,4 +1,0 @@
-const double T;
-
-// Expected time spent in "danger" by time T (hours)
-"danger_T": R{"danger"}=? [ C<=(T*3600) ];

@@ -1,0 +1,11 @@
+graphviz==0.17
+importlib-metadata==4.8.1
+importlib-resources==1.5.0
+ipywidgets==7.6.5
+jupyterlab==3.2.1
+matplotlib==3.3.4
+numpy==1.19.5
+pandas==1.1.5
+scipy==1.5.4
+seaborn==0.11.2
+
