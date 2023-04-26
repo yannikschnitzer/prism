@@ -21,12 +21,12 @@ All model files can be found in `prism/tests` and `prism/tests/gridmap/`.
 * **Obstacle**: Gridworld navigation examples from a source to a target (adapted from [CTMP15](https://proceedings.neurips.cc/paper/2015/file/64223ccf70bbb65a3a4aceac37e21016-Paper.pdf) ):
     * Base Model: [gridmap_10_10.prism](https://github.com/davexparker/prism/blob/ingy/prism/tests/gridmap/gridmap_10_10.prism)
     * Properties: [gridmap_10_10.props](https://github.com/davexparker/prism/blob/ingy/prism/tests/gridmap/gridmap_10_10.props)
-    * Larger Model: [gridmap_150_3918.prism](https://github.com/davexparker/prism/blob/ingy/prism/tests/gridmap/gridmap_150_3918.prism)
+    * Larger Model (Obstacle 150): [gridmap_150_3918.prism](https://github.com/davexparker/prism/blob/ingy/prism/tests/gridmap/gridmap_150_3918.prism)
     * Properties: [gridmap_150_3918.props](https://github.com/davexparker/prism/blob/ingy/prism/tests/gridmap/gridmap_150_3918.props)
 
 * **Energy**: Unmanned drone scenario while managing a battery resource:
     * Base Model: [drones.prism](https://github.com/davexparker/prism/blob/ingy/prism/tests/drones.prism)
-    * Larger Model: [drones_15.prism](https://github.com/davexparker/prism/blob/ingy/prism/tests/drones_15.prism)
+    * Larger Model (Energy 15): [drones_15.prism](https://github.com/davexparker/prism/blob/ingy/prism/tests/drones_15.prism)
     * Properties: [drones.props](https://github.com/davexparker/prism/blob/ingy/prism/tests/drones.props)
 
 * **uav**: Unmanned aerial vehicle (adapted from [FWHT16](https://prismmodelchecker.org/bibitem.php?key=FWHT16))
