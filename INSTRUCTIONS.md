@@ -3,7 +3,7 @@
 **Paper**: "Distributional Probabilistic Model Checking"
 by Ingy ElSayed-Aly, David Parker and Lu Feng
 
-Please find the code repository for this paper [here](https://github.com/davexparker/prism/tree/ingy-mo).
+Please find the code repository for this paper [here](https://github.com/davexparker/prism/tree/ingy).
 
 ## Supporting files
 Included below are the PRISM models and properties files for the benchmarks featured in the paper. 
@@ -11,32 +11,33 @@ Included below are the PRISM models and properties files for the benchmarks feat
 All model files can be found in `prism/tests` and `prism/tests/gridmap/`.
 
 * **Betting Game**: Betting game example (adapted from [RDLH22](https://ojs.aaai.org/index.php/ICAPS/article/view/19814) )
-    * Model: [betting_game.prism](https://github.com/davexparker/prism/blob/ingy-mo/prism/tests/betting_game.prism)
-    * Properties: [betting_game.props](https://github.com/davexparker/prism/blob/ingy-mo/prism/tests/betting_game.props)
+    * Model: [betting_game.prism](https://github.com/davexparker/prism/blob/ingy/prism/tests/betting_game.prism)
+    * Properties: [betting_game.props](https://github.com/davexparker/prism/blob/ingy/prism/tests/betting_game.props)
 
 * **Deep Sea Treasure**: Deep Sea Treasure example (adapted from [RDLH22](https://ojs.aaai.org/index.php/ICAPS/article/view/19814) )
-    * Model: [ds_treasure.prism](https://github.com/davexparker/prism/blob/ingy-mo/prism/tests/ds_treasure.prism)
-    * Properties: [ds_treasure.props](https://github.com/davexparker/prism/blob/ingy-mo/prism/tests/ds_treasure.props)
+    * Model: [ds_treasure.prism](https://github.com/davexparker/prism/blob/ingy/prism/tests/ds_treasure.prism)
+    * Properties: [ds_treasure.props](https://github.com/davexparker/prism/blob/ingy/prism/tests/ds_treasure.props)
 
 * **Obstacle**: Gridworld navigation examples from a source to a target (adapted from [CTMP15](https://proceedings.neurips.cc/paper/2015/file/64223ccf70bbb65a3a4aceac37e21016-Paper.pdf) ):
-    * Base Model: [gridmap_10_10.prism](https://github.com/davexparker/prism/blob/ingy-mo/prism/tests/gridmap/gridmap_10_10.prism)
-    * Properties: [gridmap_10_10.props](https://github.com/davexparker/prism/blob/ingy-mo/prism/tests/gridmap/gridmap_10_10.props)
-    * Larger Model: [gridmap_150_3918.prism](https://github.com/davexparker/prism/blob/ingy-mo/prism/tests/gridmap/gridmap_150_3918.prism)
-    * Properties: [gridmap_150_3918.props](https://github.com/davexparker/prism/blob/ingy-mo/prism/tests/gridmap/gridmap_150_3918.props)
+    * Base Model: [gridmap_10_10.prism](https://github.com/davexparker/prism/blob/ingy/prism/tests/gridmap/gridmap_10_10.prism)
+    * Properties: [gridmap_10_10.props](https://github.com/davexparker/prism/blob/ingy/prism/tests/gridmap/gridmap_10_10.props)
+    * Larger Model: [gridmap_150_3918.prism](https://github.com/davexparker/prism/blob/ingy/prism/tests/gridmap/gridmap_150_3918.prism)
+    * Properties: [gridmap_150_3918.props](https://github.com/davexparker/prism/blob/ingy/prism/tests/gridmap/gridmap_150_3918.props)
 
 * **Energy**: Unmanned drone scenario while managing a battery resource:
-    * Base Model: [drones.prism](https://github.com/davexparker/prism/blob/ingy-mo/prism/tests/drones.prism)
-    * Larger Model: [drones_15.prism](https://github.com/davexparker/prism/blob/ingy-mo/prism/tests/drones_15.prism)
-    * Properties: [drones.props](https://github.com/davexparker/prism/blob/ingy-mo/prism/tests/drones.props)
+    * Base Model: [drones.prism](https://github.com/davexparker/prism/blob/ingy/prism/tests/drones.prism)
+    * Larger Model: [drones_15.prism](https://github.com/davexparker/prism/blob/ingy/prism/tests/drones_15.prism)
+    * Properties: [drones.props](https://github.com/davexparker/prism/blob/ingy/prism/tests/drones.props)
 
 * **uav**: Unmanned aerial vehicle (adapted from [FWHT16](https://prismmodelchecker.org/bibitem.php?key=FWHT16))
-    * Model: [uav_var.prism](https://github.com/davexparker/prism/blob/ingy-mo/prism/tests/uav_var.prism)
-    * Properties: [uav_var.props](https://github.com/davexparker/prism/blob/ingy-mo/prism/tests/uav_var.props)
+    * Model: [uav_var.prism](https://github.com/davexparker/prism/blob/ingy/prism/tests/uav_var.prism)
+    * Properties: [uav_var.props](https://github.com/davexparker/prism/blob/ingy/prism/tests/uav_var.props)
 
 
 ## Running Instructions
 
-The repository linked above can be run with Java or using a Python file. We recommend a setup with 32 GB of RAM.
+The repository linked above can be run with Java or using a Python file. We recommend a setup with 32 GB of RAM. Make sure to check the right branch is checked out before running by using: 
+`git checkout ingy`.
 
 **Python**: We provide a Python 3 script to make running experiments and organize the output files easier. 
 **usage**: `python run_experiments.py exp_type [rep] [alg] [set or case study]`
