@@ -150,7 +150,8 @@ public class PrismSettings implements Observer
 	public static final String PRISM_POMCP_MAX_DEPTH				= "prism.pomcp.maxDepth";
 	public static final String PRISM_POMCP_NUM_RUNS					= "prism.pomcp.numRuns";
 	public static final String PRISM_POMCP_VERBOSE					= "prism.pomcp.verbose";
-	
+	public static final	String PRISM_WEIGHTS_STRING					= "prism.weightsString";
+
 	
 	//Simulator
 	public static final String SIMULATOR_DEFAULT_NUM_SAMPLES		= "simulator.defaultNumSamples";
@@ -404,7 +405,8 @@ public class PrismSettings implements Observer
 																			"Number of simulations for POMCP algorithm." },
 			{ STRING_TYPE,		PRISM_POMCP_VERBOSE,					"Verbose for POMCP algorithm",			"4.7",			"",																	"",
 																			"Verbose for POMCP algorithm." },
-
+			{ STRING_TYPE,		PRISM_WEIGHTS_STRING,					"-weights string",			"4.7",			"",		"0,","" },
+			
 			
 		},
 		{
@@ -1772,7 +1774,13 @@ public class PrismSettings implements Observer
 				throw new PrismException("Nothing specified for -" + sw + " switch");
 			}
 		}
-				
+		else if (sw.equals("weights")) {
+			if (i < args.length - 1) {
+				set(PRISM_WEIGHTS_STRING, args[++i]);
+			} else {
+				throw new PrismException("No file specified for -" + sw + " switch");
+			}
+		}		
 		// HIDDEN OPTIONS
 		
 		// export property automaton to file (hidden option)
