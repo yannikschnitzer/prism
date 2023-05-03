@@ -212,8 +212,12 @@ public class AlphaMatrix {
 		}
 		Random rnd = new Random();
 		int ind = rnd.nextInt(candiateMax.size());
-		 index = candiateMax.get(ind);
+		index = candiateMax.get(ind);
 		
+//		for (int candidate: candiateMax) {
+//			System.out.println("valuemax="+max+"almax="+U.get(candidate));
+//		}
+//		
 		return index;
 	}
 	

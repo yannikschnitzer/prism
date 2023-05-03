@@ -65,6 +65,7 @@ import prism.PrismSettings;
 import prism.PrismUtils;
 import explicit.AlphaVector;
 import explicit.AlphaMatrix;
+import explicit.PartiallyObservableMultiStrategy;
 /**
  * Super class for explicit-state probabilistic model checkers.
  */
@@ -795,8 +796,21 @@ public class ProbModelChecker extends NonProbModelChecker
 		}
 		
 		MultiObjModelChecker mc = new MultiObjModelChecker(this);
-		return mc.checkExpressionParetoMultiObjPOMDP((POMDP) model, mdpRewardsList, target, minMaxList, statesOfInterest);
+
 		
+		
+		StateValues res =  mc.checkExpressionParetoMultiObjPOMDP((POMDP) model, mdpRewardsList, target, minMaxList, statesOfInterest);
+		
+		//TODO: use a seperate method for multi-strategy ss
+		mainLog.println("computing multi-strategy");
+//		return mc.computeMultiStrategyMultiObjPOMDP((POMDP) model, mdpRewardsList, target, minMaxList, statesOfInterest);
+		mc.chekcExpressionMultiStrategy((POMDP) model, mdpRewardsList, target, minMaxList, statesOfInterest, res);
+		mainLog.println("computing multi-strategy");
+		
+		
+		return res;
+//		return mc.checkExpressionParetoMultiObjMDPWithRandomSampling((POMDP) model, mdpRewardsList, target, minMaxList, statesOfInterest);
+
     }
     
 	/**
