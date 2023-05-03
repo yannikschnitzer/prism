@@ -55,6 +55,7 @@ If using a virtual environment, essential python packages can be installed using
 
 ## Running Instructions
 The repository linked above can be run with Java or using a Python file.
+
 **Python**: We provide a Python 3 script to make running experiments and organize the output files easier. 
 **usage**: `python run_experiments.py exp_type [rep] [alg] [set or case study]`
 The experiment types `exp_type` available are: base experiment `-b`, vary the number of atoms in the distribution representation with risk neutral DVI `-a`, vary the number of atoms in the distribution representation with risk sensitive DVI `-t`, vary the number of atoms in the slack variable approximation with risk sensitive DVI `-c`, vary the DTMC precision `-e`. 
@@ -110,61 +111,3 @@ We provide a JupyterLab Python Notebook to visualize results and print distribut
 All cells before the Setup section contain the distribution loading and metric computation functions.
 Blue distribution graphs show the DTMC distributions, while the green graphs show the approximate DVI distributions.
 
-## Licensing
-
-PRISM is distributed under the GNU General Public License (GPL), version 2.
-A copy of this license can be found in the file `COPYING.txt`.
-For more information, see:
-
-  http://www.gnu.org/licenses/
-
-PRISM uses the CUDD (Colorado University Decision Diagram) library of Fabio Somenzi,
-which is freely available. For more information about this library, see:
-
-  http://vlsi.colorado.edu/~fabio/CUDD/
-
-PRISM also uses various other libraries (mainly to be found in the lib directory).
-For details of those, and for links to source where we distribute only binaries, see:
-
-http://www.prismmodelchecker.org/other-downloads.php
-
-## Acknowledgements
-
-PRISM was created and is still actively maintained by:
-
- * Dave Parker (University of Oxford)
- * Gethin Norman (University of Glasgow)
- * Marta Kwiatkowska (University of Oxford) 
-
-Development of the tool is currently led from Oxford by Dave Parker. Other current key developers are:
-
- * Joachim Klein (formerly Technische Universität Dresden)
-
-We gratefully acknowledge contributions to the PRISM code-base from various sources,
-including (in approximately reverse chronological order):
-
- * Xueyi Zou: Partially observable Markov decision processes (POMDPs)
- * Steffen Märcker: Fixes and improvements, especially in explicit engine
- * Chris Novakovic: Build infrastructure and explicit engine improvements
- * Ernst Moritz Hahn: Parametric model checking, fast adaptive uniformisation + various other features
- * Frits Dannenberg: Fast adaptive uniformisation
- * Vojtech Forejt: Various model checking code, including multi-objective + GUI enhancements
- * Hongyang Qu: Multi-objective model checking
- * Mateusz Ujma: Bug fixes and GUI improvements
- * Christian von Essen: Symbolic/explicit-state model checking
- * Vincent Nimal: Approximate (simulation-based) model checking techniques
- * Mark Kattenbelt: Wide range of enhancements/additions, especially in the GUI
- * Carlos Bederian (working with Pedro D'Argenio): LTL model checking for MDPs
- * Gethin Norman: Precomputation algorithms, abstraction
- * Alistair John Strachan: Port to 64-bit architectures
- * Alistair John Strachan, Mike Arthur and Zak Cohen: Integration of JFreeChart into PRISM
- * Charles Harley and Sebastian Vermehren: GUI enhancements
- * Rashid Mehmood: Improvements to low-level data structures and numerical solution algorithms
- * Stephen Gilmore: Support for the stochastic process algebra PEPA
- * Paolo Ballarini & Kenneth Chan: Port to Mac OS X
- * Andrew Hinton: Original versions of the GUI, Windows port and simulator
- * Joachim Meyer-Kayser: Original implementation of the "Fox-Glynn" algorithm 
-
-For more details see:
-
-  http://www.prismmodelchecker.org/people.php
