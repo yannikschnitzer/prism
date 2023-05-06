@@ -588,15 +588,15 @@ public class POMDPModelChecker extends ProbModelChecker
 		// and therefore so does every POMDP strategy)
 		MDPModelChecker mcProb1 = new MDPModelChecker(this);
 		BitSet inf = mcProb1.prob1(pomdp, null, target, false, null);
-		mainLog.println("before flipp");
-		mainLog.println(inf);
+//		mainLog.println("before flipp");
+//		mainLog.println(inf);
 		inf.flip(0, pomdp.getNumStates());
-		mainLog.println("after flipp");
+//		mainLog.println("after flipp");
 		
-		mainLog.println(inf);
+//		mainLog.println(inf);
 		// Find observations for which all states are known to have inf reward
 		BitSet infObs = getObservationsCoveredByStates(pomdp, inf);
-		mainLog.println("infObs"+infObs);
+//		mainLog.println("infObs"+infObs);
 
 		
 		//mainLog.println("target obs=" + targetObs.cardinality() + ", inf obs=" + infObs.cardinality());
@@ -630,12 +630,12 @@ public class POMDPModelChecker extends ProbModelChecker
 			observations_of_target.set(pomdp.getObservation(target.nextSetBit(i)));
 		}
 		
-		mainLog.println("target"+target);
-		mainLog.println("targetObs ="+targetObs);
-		mainLog.println("inf"+inf);
-		mainLog.println("infObs"+infObs);
-		mainLog.println("unknownObs ="+unknownObs);
-		mainLog.println("observations_of_target ="+observations_of_target);
+//		mainLog.println("target"+target);
+//		mainLog.println("targetObs ="+targetObs);
+//		mainLog.println("inf"+inf);
+//		mainLog.println("infObs"+infObs);
+//		mainLog.println("unknownObs ="+unknownObs);
+//		mainLog.println("observations_of_target ="+observations_of_target);
 		//mainLog.println("get number of getNumObservations"+pomdp.getNumObservations());
 		//mainLog.println("get number of getNumUnobservations"+pomdp.getNumUnobservations());
 		
@@ -673,7 +673,7 @@ public class POMDPModelChecker extends ProbModelChecker
 					double transitionReward =  mdpRewards.getTransitionReward(s, choice);
 					double stateReward = mdpRewards.getStateReward(s);
 					double immediateReward = minMax *( stateReward + transitionReward);
-					mainLog.println("or\t"+s+"\t"+choice+"\t"+transitionReward+"\t"+stateReward+"\t"+minMax+"\t"+immediateReward);
+//					mainLog.println("or\t"+s+"\t"+choice+"\t"+transitionReward+"\t"+stateReward+"\t"+minMax+"\t"+immediateReward);
 					int h = ((int) stateReward) % 10;
 					int v = ((int) stateReward -10000) /10 ;
 					int obs = pomdp.getObservation(s);
@@ -683,7 +683,7 @@ public class POMDPModelChecker extends ProbModelChecker
 //					mainLog.println(s+"\t"+obs+"\t"+v+"\t"+h+"\t"+stateReward);
 					if (immediateReward<Rmin) {
 						Rmin = immediateReward;
-						mainLog.println("orRmin"+Rmin);
+//						mainLog.println("orRmin"+Rmin);
 					}
 				}
 			}
@@ -750,8 +750,8 @@ public class POMDPModelChecker extends ProbModelChecker
 			immediateRewards.add(av);
 		}
 		for (int v=0; v<immediateRewards.size();v++) {
-			mainLog.print(v+" immediate ActionIndex = "+ immediateRewards.get(v).getAction()+" ActionName=" + allActions.get(immediateRewards.get(v).getAction()) );
-			mainLog.println( "  value = "+ Arrays.toString(immediateRewards.get(v).getEntries()));
+//			mainLog.print(v+" immediate ActionIndex = "+ immediateRewards.get(v).getAction()+" ActionName=" + allActions.get(immediateRewards.get(v).getAction()) );
+//			mainLog.println( "  value = "+ Arrays.toString(immediateRewards.get(v).getEntries()));
 			for (int s=0; s<nStates; s++) {
 				double r = immediateRewards.get(v).getEntry(s);
 				if(Rmin > r) {
@@ -792,21 +792,21 @@ public class POMDPModelChecker extends ProbModelChecker
 		
 		//mainLog.println("vsize" + allActions.get(0));
 		
-		for (int v = 0; v < V.size(); v++) {
-			mainLog.print(v+" V ActionIndex = "+ V.get(v).getAction()+ " ActionName="+ allActions.get(V.get(v).getAction()));
-			mainLog.println( "   value = "+ Arrays.toString(V.get(v).getEntries()));
-		}
+//		for (int v = 0; v < V.size(); v++) {
+//			mainLog.print(v+" V ActionIndex = "+ V.get(v).getAction()+ " ActionName="+ allActions.get(V.get(v).getAction()));
+//			mainLog.println( "   value = "+ Arrays.toString(V.get(v).getEntries()));
+//		}
 		
 		int stage = 0;
-		System.out.println("Stage "+stage +": "+V.size()+" vectors");
-		for (int v = 0; v < V.size(); v++) {
-			mainLog.print(v+" V Action = "+ V.get(v).getAction());
-			mainLog.println( "   value = "+ Arrays.toString(V.get(v).getEntries()));
-		}
+//		System.out.println("Stage "+stage +": "+V.size()+" vectors");
+//		for (int v = 0; v < V.size(); v++) {
+//			mainLog.print(v+" V Action = "+ V.get(v).getAction());
+//			mainLog.println( "   value = "+ Arrays.toString(V.get(v).getEntries()));
+//		}
 		
 		long startTime = System.currentTimeMillis();
 		double ValueFunctionTolerance = 1E-05;
-		mainLog.println("Error Torleance = " + ValueFunctionTolerance);
+//		mainLog.println("Error Torleance = " + ValueFunctionTolerance);
 		ArrayList<Double> differences =  new ArrayList<Double>();
 		differences.add(Double.POSITIVE_INFINITY);
 		differences.add(Double.POSITIVE_INFINITY);
@@ -831,17 +831,17 @@ public class POMDPModelChecker extends ProbModelChecker
 			}
 			differences.add(valueDifference);
 			if( checkConverge(differences, ValueFunctionTolerance ) ) {
-				mainLog.println("converge with tolerance"+ValueFunctionTolerance);
-				mainLog.println("diff:"+differences.toString());
+//				mainLog.println("converge with tolerance"+ValueFunctionTolerance);
+//				mainLog.println("diff:"+differences.toString());
 				break;
 			}
 			
 			V = Vnext;
-			mainLog.println("Stage= "+stage+": "+Vnext.size()+" vectors, diff "+valueDifference+" value "+Math.abs( AlphaVector.getValue(pomdp.getInitialBeliefInDist(), V))+", time elapsed "+elapsed+" sec");
+//			mainLog.println("Stage= "+stage+": "+Vnext.size()+" vectors, diff "+valueDifference+" value "+Math.abs( AlphaVector.getValue(pomdp.getInitialBeliefInDist(), V))+", time elapsed "+elapsed+" sec");
 			
 
 			for (int v=0; v<V.size();v++) {
-				mainLog.println(v+" V Action = "+ "   value = "+ Arrays.toString(V.get(v).getEntries()) +"a="+V.get(v).getAction(),0);
+//				mainLog.println(v+" V Action = "+ "   value = "+ Arrays.toString(V.get(v).getEntries()) +"a="+V.get(v).getAction(),0);
 			}
 			//mainLog.println("+++",1);
 			
@@ -2311,11 +2311,23 @@ public class POMDPModelChecker extends ProbModelChecker
 				model.addConstr(expr, GRB.LESS_EQUAL, max_value - reward, String.format("c%d", constarint_count++ ));
 			}
 		}
-		model.write("strength_gurobi.lp");
+		model.write("Strength_gurobi.lp");
 		model.optimize();
 		
-		System.out.println("strength_gurobi Obj: " + model.get(GRB.DoubleAttr.ObjVal));
-		model.write("strength_gurobi.sol");
+		if (model.get(GRB.IntAttr.Status)== GRB.Status.INFEASIBLE) {
+			System.out.println("model infeasible");
+			model.computeIIS();
+			model.write(String.format("History_gurobi_Infeasible_%d.ilp",0));		
+			model.feasRelax(0, false, true, true);
+			model.optimize();
+//			model.write(String.format("MultiStrategy__Infeasible_relaxed_%d.ilp",batch));
+//			
+		}else {
+			model.write("Strength_gurobi.sol");
+//			val = model.get(GRB.DoubleAttr.ObjVal);
+			System.out.println("Strength_gurobi Obj: " + model.get(GRB.DoubleAttr.ObjVal));
+		}
+//		
 		
       // Dispose of model and environment
       model.dispose();
@@ -2613,30 +2625,27 @@ public class POMDPModelChecker extends ProbModelChecker
 				}
 			}
 			
-			
-			model.write("aaab_gurobi.lp");
+			model.write("History_gurobi.lp");
 			model.optimize();
+			
 			if (model.get(GRB.IntAttr.Status)== GRB.Status.INFEASIBLE) {
-				mainLog.println("model infeasible");
+				System.out.println("model infeasible");
 				model.computeIIS();
-				model.write("Infeasible.ilp");		
+				model.write(String.format("History_gurobi_Infeasible_%d.ilp",0));		
 				model.feasRelax(0, false, true, true);
 				model.optimize();
-				model.write("aaab_gurobi_relaed.sol");
-
+//				model.write(String.format("MultiStrategy__Infeasible_relaxed_%d.ilp",batch));
+//				
+			}else {
+				model.write("History_gurobi.sol");
+//				val = model.get(GRB.DoubleAttr.ObjVal);
+				System.out.println("History_gurobi Obj: " + model.get(GRB.DoubleAttr.ObjVal));
 			}
 //			
-
-			model.write("aaab_gurobi.sol");
-//			
-			System.out.println("Obj: " + model.get(GRB.DoubleAttr.ObjVal));
-			mainLog.println(model.getJSONSolution());
-			
 	      // Dispose of model and environment
 	      model.dispose();
 	      env.dispose();
 		} catch (GRBException e) {
-			
 			throw new PrismException("Error solving LP: " +e.getMessage());
 		}
 //		PrismFileLog out = new PrismFileLog( "E:\\Program Files\\Gurobi\\win64\\bin\\pomdp_test.lp", false);
@@ -2741,9 +2750,14 @@ public class POMDPModelChecker extends ProbModelChecker
 			computeReachRewardsWithMILP( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
 			throw new PrismException("No offline stragey to be generatd for MILP yet");
 		case FIXEDGRID:
-			PartiallyObservableMultiStrategy poms = new PartiallyObservableMultiStrategy(pomdp, mdpRewards, target, min, statesOfInterest);
-			poms.heuristic();
+			//State spliting
+//			PartiallyObservableMultiStrategy poms = new PartiallyObservableMultiStrategy(pomdp, mdpRewards, target, min, statesOfInterest);
+//			poms.heuristic();
 //			poms.computeMILP(0);
+			mainLog.println("computeReachRewardsWithMILPFiniteStateController");
+			computeReachRewardsWithMILPFiniteStateController(pomdp, mdpRewards, target, min, statesOfInterest);
+			mainLog.println("End computeReachRewardsWithMILPFiniteStateController");
+
 			mainLog.println("Calling Perseus pomdp solver");
 			computeReachRewardsPerseus( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
 			mainLog.println("End calling Perseus pomdp solver");

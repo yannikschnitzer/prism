@@ -1166,10 +1166,10 @@ public class MultiObjModelChecker extends PrismComponent
 		double[] lowerBounds = new double[objNum];
 		double[] upperBounds = new double[objNum];
 		//TODO
-		lowerBounds[0] = 4;
-		lowerBounds[1] = 3;
-		upperBounds[0] = 5;
-		upperBounds[1] = 4;
+		lowerBounds[0] = 0;
+		lowerBounds[1] = 0;
+		upperBounds[0] = 114;
+		upperBounds[1] = 114;
 		
 		
 		bounds[0] = lowerBounds;
@@ -1237,9 +1237,9 @@ public class MultiObjModelChecker extends PrismComponent
 				int choice = pomdp.getChoiceByAction(s, action);	
 				for (int i = 0 ; i < nObj; i++) {
 					double r_s_a = mdpRewardsList.get(i).getTransitionReward(s, choice) + mdpRewardsList.get(i).getStateReward(s); // 
-					if (minMaxList.get(i).isMin()) {
-						r_s_a *= -1;
-					}
+//					if (minMaxList.get(i).isMin()) {
+//						r_s_a *= -1;
+//					}
 					reward[i][s][a] = r_s_a;
 				}
 			}
@@ -1370,6 +1370,18 @@ public class MultiObjModelChecker extends PrismComponent
 					}
 				}
 			}
+			
+			// TODO added varibale
+			GRBVar X_Valuelow[] = new GRBVar [nObj];
+			for (int i = 0; i < nObj; i++) {
+				X_Valuelow[i]=  model.addVar(0, 1000, 0, GRB.CONTINUOUS, String.format("X_valuelow_%d",i));
+			}
+				
+
+			GRBVar X_Valueup[] = new GRBVar [nObj];
+			for (int i = 0; i < nObj; i++) {
+				X_Valueup[i]=  model.addVar(0, 1000, 0, GRB.CONTINUOUS, String.format("X_valueup_%d",i));
+			}
 
 			//Set Objective: Max sum_n{sum_a{x(|n)}} / TODO
 			GRBLinExpr expr = new GRBLinExpr();
@@ -1493,14 +1505,7 @@ public class MultiObjModelChecker extends PrismComponent
 //					model.addConstr(expr, GRB.GREATER_EQUAL, -1, String.format("c20_%d",constraint_count++));
 //				}
 //			}
-//			for (int n = 0; n < nNodes; n++) {
-//				for (int a = 0; a < nActions; a++) {
-//					expr = new GRBLinExpr();
-//					expr.addTerm(1, X_a__n[a][n]);
-//					expr.addTerm(, null);
-//				}
-//			}
-//			
+
 			//21
 			for (int n = 0; n < nNodes; n++) {
 				for (int y = 0; y < nObservations; y++) {
@@ -1527,17 +1532,25 @@ public class MultiObjModelChecker extends PrismComponent
 						}
 					}
 				}
+//				expectedValue
+				
 				model.addConstr(expr1, GRB.GREATER_EQUAL, lowerBounds[i], "c22b_" + constraint_count++);
 				model.addConstr(expr1, GRB.LESS_EQUAL, upperBounds[i], "c22b_" + constraint_count++);
+				
+//				expr1.addTerm(-1, X_Valuelow[i]);
+//				expr1.addTerm(-1, X_Valueup[i]);
+				model.addConstr(expr1, GRB.EQUAL, 0, "c22c_" + constraint_count++);
+				
 			}
-//			// 22 a
-			for (int n = 0; n < nNodes; n++) {
-				expr = new GRBLinExpr();
-				for (int a= 0; a < nActions; a++) {
-					expr.addTerm(1, X_a__n[a][n]);
-				}
-				model.addConstr(expr, GRB.GREATER_EQUAL,1 , String.format("c22_%d",constraint_count++));
-			}
+			
+//////			// 22 original
+//			for (int n = 0; n < nNodes; n++) {
+//				expr = new GRBLinExpr();
+//				for (int a= 0; a < nActions; a++) {
+//					expr.addTerm(1, X_a__n[a][n]);
+//				}
+//				model.addConstr(expr, GRB.EQUAL,1 , String.format("c22c_%d",constraint_count++));
+//			}
 			
 			// 23
 			for (int n = 0; n < nNodes; n++) {

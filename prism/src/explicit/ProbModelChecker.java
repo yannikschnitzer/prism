@@ -803,8 +803,8 @@ public class ProbModelChecker extends NonProbModelChecker
 		
 		//TODO: use a seperate method for multi-strategy ss
 		mainLog.println("computing multi-strategy");
-//		return mc.computeMultiStrategyMultiObjPOMDP((POMDP) model, mdpRewardsList, target, minMaxList, statesOfInterest);
-		mc.chekcExpressionMultiStrategy((POMDP) model, mdpRewardsList, target, minMaxList, statesOfInterest, res);
+		mc.computeMultiStrategyMultiObjPOMDP((POMDP) model, mdpRewardsList, target, minMaxList, statesOfInterest);
+//		mc.chekcExpressionMultiStrategy((POMDP) model, mdpRewardsList, target, minMaxList, statesOfInterest, res);
 		mainLog.println("computing multi-strategy");
 		
 		
