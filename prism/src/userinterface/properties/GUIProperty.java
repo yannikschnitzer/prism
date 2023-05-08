@@ -107,7 +107,7 @@ public class GUIProperty
 	private String method; // Method used (verification, simulation)
 	private String constantsString; // Constant values used
 	private String name;
-	private Vector<String> referencedNames;
+	private List<String> referencedNames;
 	
 	private GUIPropertiesList propList; // to be able to get named properties
 
@@ -195,7 +195,7 @@ public class GUIProperty
 	 * <p/>
 	 * If the property is not valid, returns {@code null}.
 	 */
-	public Vector<String> getReferencedNames()
+	public List<String> getReferencedNames()
 	{
 		return this.referencedNames;
 	}

@@ -52,7 +52,7 @@ import java.math.BigInteger;
 	// ... This integer, in is binary format, represents a set of states
 	// ... The observation is based on Stompy convention 
 	private Map<Integer, ArrayList<ArrayList<BigInteger>>> winningRegion;
-	private POMDP pomdp;
+	private POMDP<Double> pomdp;
 //	private ArrayList<ArrayList<Integer>> PrismObsToPrismStates ;
 	//private ArrayList<ArrayList<Integer>> StompyObsToStompyStates;
 	private Map<Integer, ArrayList<Integer>> StompyObsToStompyStates;
@@ -964,10 +964,10 @@ public class PartiallyObservableMonteCarloPlanning {
 	private int PeakTreeDepth;
 
 	private POMCPNode root;
-	private POMDP pomdp;
+	private POMDP<Double> pomdp;
 	private ArrayList<Object> allActions; 
 	private Map <Object, Integer> actionToIndex;
-	private MDPRewards mdpRewards;
+	private MDPRewards<Double> mdpRewards;
 	private HashMap<Integer, Double> rewardFunction;
 	private BitSet target;
 	private boolean min;

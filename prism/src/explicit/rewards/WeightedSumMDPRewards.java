@@ -6,11 +6,11 @@ import java.util.List;
 import explicit.Model;
 import explicit.Product;
 
-public class WeightedSumMDPRewards implements MDPRewards
+public class WeightedSumMDPRewards implements MDPRewards<Double>
 {
 	int numRewards;
 	List<Double> weightsList;
-	List<MDPRewards> rewardsList;
+	List<MDPRewards<Double>> rewardsList;
 	
 	public WeightedSumMDPRewards()
 	{
@@ -19,7 +19,7 @@ public class WeightedSumMDPRewards implements MDPRewards
 		rewardsList = new ArrayList<>();
 	}
 	
-	public void addRewards(double weight, MDPRewards rewards)
+	public void addRewards(double weight, MDPRewards<Double> rewards)
 	{
 		numRewards++;
 		weightsList.add(weight);
@@ -27,7 +27,7 @@ public class WeightedSumMDPRewards implements MDPRewards
 	}
 	
 	@Override
-	public double getStateReward(int s)
+	public Double getStateReward(int s)
 	{
 		double rew = 0.0;
 		for (int r = 0; r < numRewards; r++) {
@@ -37,7 +37,7 @@ public class WeightedSumMDPRewards implements MDPRewards
 	}
 
 	@Override
-	public double getTransitionReward(int s, int i)
+	public Double getTransitionReward(int s, int i)
 	{
 		double rew = 0.0;
 		for (int r = 0; r < numRewards; r++) {

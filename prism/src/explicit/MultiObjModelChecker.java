@@ -47,7 +47,7 @@ public class MultiObjModelChecker extends PrismComponent
 	 * @param model the model of POMDP
      * */
     
-    protected StateValues checkExpressionParetoMultiObjMDPWithOLS(Model model, List<MDPRewards> mdpRewardsList, BitSet target, List<MinMax> minMaxList, BitSet statesOfInterest) throws PrismException
+    protected StateValues checkExpressionParetoMultiObjMDPWithOLS(Model model, List<MDPRewards<Double>> mdpRewardsList, BitSet target, List<MinMax> minMaxList, BitSet statesOfInterest) throws PrismException
     {
     	int numObjs = minMaxList.size();
     	
@@ -154,7 +154,7 @@ public class MultiObjModelChecker extends PrismComponent
 		return StateValues.createFromObjectArray(TypeDouble.getInstance(), array, model);
     }
     
-    protected StateValues checkExpressionParetoMultiObjMDPWithRandomSampling(Model model, List<MDPRewards> mdpRewardsList, BitSet target, List<MinMax> minMaxList, BitSet statesOfInterest) throws PrismException
+    protected StateValues checkExpressionParetoMultiObjMDPWithRandomSampling(Model model, List<MDPRewards<Double>> mdpRewardsList, BitSet target, List<MinMax> minMaxList, BitSet statesOfInterest) throws PrismException
     {
     	int numObjs = minMaxList.size();
     	
@@ -254,7 +254,7 @@ public class MultiObjModelChecker extends PrismComponent
 		return StateValues.createFromObjectArray(TypeDouble.getInstance(), array, model);
     }
     
-    protected StateValues checkExpressionParetoMultiObjPOMDP(POMDP pomdp, List<MDPRewards> mdpRewardsList, BitSet target, List<MinMax> minMaxList, BitSet statesOfInterest) throws PrismException
+    protected StateValues checkExpressionParetoMultiObjPOMDP(POMDP<Double> pomdp, List<MDPRewards<Double>> mdpRewardsList, BitSet target, List<MinMax> minMaxList, BitSet statesOfInterest) throws PrismException
     {
     	//mainLog.println("Random sampling***********");
    	//checkExpressionParetoMultiObjMDPWithRandomSampling( pomdp,  mdpRewardsList, target, minMaxList, statesOfInterest);
@@ -1158,7 +1158,7 @@ public class MultiObjModelChecker extends PrismComponent
     }
     
 
-    protected double[][] computeObjectiveBounds(POMDP pomdp, List<MDPRewards> mdpRewardsList, BitSet target, List<MinMax> minMaxList, BitSet statesOfInterest) throws PrismException
+    protected double[][] computeObjectiveBounds(POMDP<Double> pomdp, List<MDPRewards<Double>> mdpRewardsList, BitSet target, List<MinMax> minMaxList, BitSet statesOfInterest) throws PrismException
     {
     	int objNum = minMaxList.size();
     	int nObj = minMaxList.size();
@@ -1177,7 +1177,7 @@ public class MultiObjModelChecker extends PrismComponent
 		bounds[1] = upperBounds;
     	return bounds;
     }
-    protected StateValues computeMultiStrategyMultiObjPOMDP(POMDP pomdp, List<MDPRewards> mdpRewardsList, BitSet target, List<MinMax> minMaxList, BitSet statesOfInterest) throws PrismException
+    protected StateValues computeMultiStrategyMultiObjPOMDP(POMDP<Double> pomdp, List<MDPRewards<Double>> mdpRewardsList, BitSet target, List<MinMax> minMaxList, BitSet statesOfInterest) throws PrismException
     {
     	BitSet targetObs = ((POMDPModelChecker) mc).getObservationsMatchingStates(pomdp, target);
 		// Check we are only computing for a single state (and use initial state if unspecified)
@@ -1595,7 +1595,7 @@ public class MultiObjModelChecker extends PrismComponent
     	mainLog.println("Time for computing multi-strategy" + (System.currentTimeMillis() - startTime));
 		return StateValues.createFromSingleValue(TypeDouble.getInstance(), 0.0, pomdp);
     }
-    public void chekcExpressionMultiStrategy(POMDP pomdp, List<MDPRewards> mdpRewardsList, BitSet target, 
+    public void chekcExpressionMultiStrategy(POMDP<Double> pomdp, List<MDPRewards<Double>> mdpRewardsList, BitSet target,
     		List<MinMax> minMaxList, BitSet statesOfInterest, StateValues ParentoPoints) throws PrismException 
     {
     	int numObjs = minMaxList.size();

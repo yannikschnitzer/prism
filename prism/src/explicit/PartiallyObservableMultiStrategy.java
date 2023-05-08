@@ -230,8 +230,8 @@ public class PartiallyObservableMultiStrategy {
 	private HashMap<State, Integer> state_to_observation;
 	private HashMap<Transition, Double> transition_probability;
 //	private ArrayList<HashMap<State, Double>> transition_probability;
-	private MDPRewards mdpRewards;
-	private List<MDPRewards> mdpRewardsList;
+	private MDPRewards<Double> mdpRewards;
+	private List<MDPRewards<Double>> mdpRewardsList;
 	private List<MinMax> minMaxList;
 	private double lowerBounds[];
 	private double upperBounds[];
@@ -245,7 +245,7 @@ public class PartiallyObservableMultiStrategy {
 	private HashSet<Integer> endStatesOriginal;
 	private HashSet<State> endStates;
 	
-	public PartiallyObservableMultiStrategy(POMDP pomdp, List<MDPRewards> mdpRewardsList, BitSet target,
+	public PartiallyObservableMultiStrategy(POMDP<Double> pomdp, List<MDPRewards<Double>> mdpRewardsList, BitSet target,
 											List<MinMax> minMaxList, BitSet statesOfInterest, HashSet<Integer> endStatesOriginal)
 	{
 		this.pomdp = pomdp;
@@ -260,7 +260,7 @@ public class PartiallyObservableMultiStrategy {
 		lowerBounds = new double[nObj];
 		upperBounds = new double[nObj];
 	}
-	public PartiallyObservableMultiStrategy(POMDP pomdp, MDPRewards mdpRewards, BitSet target, boolean min, BitSet statesOfInterest) 
+	public PartiallyObservableMultiStrategy(POMDP<Double> pomdp, MDPRewards<Double> mdpRewards, BitSet target, boolean min, BitSet statesOfInterest)
 	{
 		this.pomdp = pomdp;
 		this.mdpRewards = mdpRewards;
