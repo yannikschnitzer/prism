@@ -38,7 +38,7 @@ All model files can be found in `prism/tests` and `prism/tests/gridmap/`.
 We recommend a setup with 32 GB of RAM.
 
 For this source code distributions:
- * type `git clone  git clone https://github.com/davexparker/prism.git`
+ * type `git clone https://github.com/davexparker/prism.git`
  * enter the PRISM git directory `cd prism`
  * switch to the right branch using: `git checkout ingy`
  * to compile PRISM type `cd prism` then `make`
