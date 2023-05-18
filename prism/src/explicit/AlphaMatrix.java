@@ -94,7 +94,6 @@ public class AlphaMatrix {
 	public int getNumObjectives() {
 		return matrix[0].length;
 	}
-	
 	public AlphaMatrix clone() {
 		AlphaMatrix B = new AlphaMatrix(matrix) ;
 		B.setAction(action);
@@ -168,6 +167,17 @@ public class AlphaMatrix {
 		return value;
 	}
 	
+	public double[] values(double[] belief) {
+		int m = matrix.length;
+		int n = matrix[0].length;
+		double values[] = new double[n];
+		for (int j = 0; j < n ; j++) {
+			for (int i = 0; i < m; i++) {
+				values[j] += belief[i] * matrix[i][j];
+			}
+		}
+		return values;
+	}
 	
 	// is AlphaMatrix b in List A
 	public static boolean contains(ArrayList<AlphaMatrix> A, AlphaMatrix b) {
@@ -251,11 +261,6 @@ public class AlphaMatrix {
 	public void setAction(int a) {
 		action = a;
 	}
-	
-	
-	
-	
-	
 	
 	/**
 	 * Get vector u from U and w from W that were used to compute this vector when computing a cross sum

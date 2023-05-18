@@ -628,7 +628,7 @@ public class POMDPModelChecker extends ProbModelChecker
 		//mainLog.println("get number of getNumUnobservations"+pomdp.getNumUnobservations());
 
 		//generate tony's file
-		boolean generateTony = false;
+		boolean generateTony = true;
 		if (generateTony) {
 			generateTonyPOMDP(pomdp, endStates,   mdpRewards, minMax);
 			//generateRewardFunction();
@@ -825,11 +825,11 @@ public class POMDPModelChecker extends ProbModelChecker
 			}
 
 			V = Vnext;
-//			mainLog.println("Stage= "+stage+": "+Vnext.size()+" vectors, diff "+valueDifference+" value "+Math.abs( AlphaVector.getValue(pomdp.getInitialBeliefInDist(), V))+", time elapsed "+elapsed+" sec");
+			mainLog.println("Stage= "+stage+": "+Vnext.size()+" vectors, diff "+valueDifference+" value "+Math.abs( AlphaVector.getValue(pomdp.getInitialBeliefInDist(), V))+", time elapsed "+elapsed+" sec");
 			
 
 			for (int v=0; v<V.size();v++) {
-//				mainLog.println(v+" V Action = "+ "   value = "+ Arrays.toString(V.get(v).getEntries()) +"a="+V.get(v).getAction(),0);
+				mainLog.println(v+" V Action = "+ "   value = "+ Arrays.toString(V.get(v).getEntries()) +"a="+V.get(v).getAction(),0);
 			}
 			//mainLog.println("+++",1);
 
@@ -1314,7 +1314,6 @@ public class POMDPModelChecker extends ProbModelChecker
 			for(int step=0; step<BeliefSamplingSteps; step++) {
 				double [] b_dis = b.toDistributionOverStates(pomdp);
 				if (!Bset.contains(b)) {
-
 					//mainLog.println("belief previous");
 				//	mainLog.println(b);
 					for (int s=0; s<pomdp.getNumStates(); s++) {
@@ -1322,7 +1321,6 @@ public class POMDPModelChecker extends ProbModelChecker
 							//mainLog.print(s+" ");
 						}
 					}
-
 					for(int o = 0; o < pomdp.getNumObservations(); o++) {
 						//mainLog.println("obs = "+o);
 						HashSet<Integer> availableChoices = new HashSet<Integer> ();
@@ -1381,6 +1379,7 @@ public class POMDPModelChecker extends ProbModelChecker
 //		for (int i=0; i<B.size();i++) {
 //			mainLog.println("index="+i+" "+B.get(i)+" full="+Arrays.toString(B.get(i).toDistributionOverStates(pomdp)));
 //		}
+		System.out.println("belief set size" + B.size());
 		return B;
 	}
 
@@ -1432,9 +1431,9 @@ public class POMDPModelChecker extends ProbModelChecker
 		ArrayList<Object> allActions = getAllActions(pomdp);
 		int nActions = allActions.size();/////////////missed this
 		ArrayList<Object> possibelActionsForBelief = getPossibleActionsForBelief(b,pomdp);
-		for(Object action:possibelActionsForBelief) {
-			System.out.println("belief"+b+"action="+action);
-		}
+//		for(Object action:possibelActionsForBelief) {
+//			System.out.println("belief"+b+"action="+action);
+//		}
 		for (int a=0; a<nActions; a++) {
 			if (!possibelActionsForBelief.contains(allActions.get(a))) {
 				continue;
@@ -1594,7 +1593,7 @@ public class POMDPModelChecker extends ProbModelChecker
 			double elapsed = (System.currentTimeMillis() - startTime) * 0.001;
 			double expectedValue = Math.abs(AlphaMatrix.getMaxValue(pomdp.getInitialBelief(), A, weights, pomdp));
 			mainLog.println("iteration="+count+" dif="+diff+" value="+expectedValue+" time elapsed ="+elapsed );
-			if (diff <= eta && count >=100) {
+			if (diff <= eta ) {
 				mainLog.println("converge with tolerance "+eta);
 				break;
 			}
@@ -1602,16 +1601,16 @@ public class POMDPModelChecker extends ProbModelChecker
 				mainLog.println("reach stage limit 5000");
 				break;
 			}
-			mainLog.println("AprimeAprimeAprimeAprimeAprimeAprimeAprime");
-			for (int i=0; i<Aprime.size();i++) {
-				mainLog.println(Aprime.get(i));
-			}
+//			mainLog.println("AprimeAprimeAprimeAprimeAprimeAprimeAprime");
+//			for (int i=0; i<Aprime.size();i++) {
+//				mainLog.println(Aprime.get(i));
+//			}
 			//Line 4
 			A = copyAlphaMatrixSet(Aprime);
 			Aprime = new ArrayList<AlphaMatrix> ();
 			ArrayList<Belief> Bprime = copyBeliefSet(B);
-			mainLog.println("<<<<<<<<<<<<<<<<<<<<<stage"+count);
-			mainLog.println("AAAAAAAAAAAAAAsize"+A.size());
+//			mainLog.println("<<<<<<<<<<<<<<<<<<<<<stage"+count);
+//			mainLog.println("AAAAAAAAAAAAAAsize"+A.size());
 			//for (int i=0; i<A.size();i++) {
 			//	mainLog.println(A.get(i));
 			//}
@@ -2738,13 +2737,13 @@ public class POMDPModelChecker extends ProbModelChecker
 //			PartiallyObservableMultiStrategy poms = new PartiallyObservableMultiStrategy(pomdp, mdpRewards, target, min, statesOfInterest);
 //			poms.heuristic();
 //			poms.computeMILP(0);
-			mainLog.println("computeReachRewardsWithMILPFiniteStateController");
-			computeReachRewardsWithMILPFiniteStateController(pomdp, mdpRewards, target, min, statesOfInterest);
-			mainLog.println("End computeReachRewardsWithMILPFiniteStateController");
-
-			mainLog.println("Calling Perseus pomdp solver");
+//			mainLog.println("computeReachRewardsWithMILPFiniteStateController");
+//			computeReachRewardsWithMILPFiniteStateController(pomdp, mdpRewards, target, min, statesOfInterest);
+//			mainLog.println("End computeReachRewardsWithMILPFiniteStateController");
+//
+//			mainLog.println("Calling Perseus pomdp solver");
 			computeReachRewardsPerseus( pomdp,  mdpRewards,  target,  min,  statesOfInterest);
-			mainLog.println("End calling Perseus pomdp solver");
+//			mainLog.println("End calling Perseus pomdp solver");
 //
 //			mainLog.println("Calling MILP pomdp solver");
 //			computeReachRewardsWithMILP( pomdp,  mdpRewards,  target,  min,  statesOfInterest);

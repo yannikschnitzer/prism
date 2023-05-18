@@ -65,6 +65,95 @@ import gurobi.GRBVar;
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 
+class BeliefNode {
+	private int id;
+	private HashSet<ObsNode> parents;
+	private HashMap<Integer, ObsNode> children;
+	private Belief belief;
+	private double prob;
+	private int obs;
+	
+	BeliefNode(Belief belief, int obs, double prob, ObsNode parent, int id){
+		this.belief = belief;
+		this.obs = obs;
+		this.prob = prob;
+		if (parent != null) {
+			parents = new HashSet<ObsNode> ();
+			parents.add(parent);	
+		}
+		
+		this.id = id;
+		this.children = new HashMap<Integer, ObsNode>();
+	}
+	public void addParent(ObsNode parent) {
+		if (parents==null) {
+			parents = new HashSet<ObsNode> ();
+		}
+		parents.add(parent);
+	}
+	
+	public int getObservation() {
+		return obs;
+	}
+	public void addChild(int actionIndex, ObsNode oNode) {
+		children.put(actionIndex, oNode);
+	}
+	public Belief getBelief() {
+		return this.belief;
+	}
+	public String toString() {
+		String s = "["+id +  "belief = " + belief + ", prob = " + prob + "]";
+		return s;
+	}
+	public int hashCode()
+	{
+		return 13 * belief.hashCode() + 7;
+	}
+	public HashMap<Integer, ObsNode> getChildren(){
+		return children;
+	}
+	public int getID() {
+		return id;
+	}
+	public HashSet<ObsNode> getParent() {
+		return parents;
+	}
+	public double getProb() {
+		return prob;
+	}
+}
+class ObsNode {
+	private int id;
+	private int actionIndex;
+	private BeliefNode parent;
+	private HashMap<Integer, BeliefNode> children;
+	ObsNode(int actionIndex, BeliefNode parent, int id){
+		this.actionIndex = actionIndex;
+		this.parent = parent;
+		this.id = id;
+		this.children = new HashMap<Integer, BeliefNode>();
+	}
+	public void addChild(int obs, BeliefNode child) {
+		children.put(obs, child);
+	}
+	public String toString() {
+		String s = "["+id +  "action = " + actionIndex +"]";
+		return s;
+	}
+	public BeliefNode getParent() {
+		return parent;
+	}
+	public int getActionIndex() {
+		return actionIndex;
+	}
+	public HashMap<Integer, BeliefNode> getChildren(){
+		return children;
+	}
+	public int hashCode()
+	{
+		return 13 * parent.hashCode() + actionIndex;
+	}
+}
  class State{
 	 private int originalState;
 	 private int preObservation;
@@ -225,7 +314,7 @@ public class PartiallyObservableMultiStrategy {
 	private int nObservations;
 	private int nStates;
 	private int nActions;
-	
+	private BitSet unknownObs;
 	private HashSet<State> states;
 	private HashMap<State, Integer> state_to_observation;
 	private HashMap<Transition, Double> transition_probability;
@@ -244,9 +333,12 @@ public class PartiallyObservableMultiStrategy {
 	private HashMap<Integer, HashSet<PreObs>> observationToPreobservation;
 	private HashSet<Integer> endStatesOriginal;
 	private HashSet<State> endStates;
-	
+	private BeliefNode root;
+	private HashMap<Belief, Integer> beliefToId;
+	private HashMap<Integer, Belief> IdToBelief;
+	private HashMap<Belief, BeliefNode> beliefToBeliefNode; 
 	public PartiallyObservableMultiStrategy(POMDP<Double> pomdp, List<MDPRewards<Double>> mdpRewardsList, BitSet target,
-											List<MinMax> minMaxList, BitSet statesOfInterest, HashSet<Integer> endStatesOriginal)
+											List<MinMax> minMaxList, BitSet statesOfInterest, HashSet<Integer> endStatesOriginal, BitSet unknownObs)
 	{
 		this.pomdp = pomdp;
 		this.mdpRewardsList = mdpRewardsList;
@@ -254,37 +346,7 @@ public class PartiallyObservableMultiStrategy {
 		this.minMaxList = minMaxList;
 		this.statesOfInterest = statesOfInterest;
 		this.endStatesOriginal = endStatesOriginal;
-		initializeTransition();
-		
-		nObj = mdpRewardsList.size();
-		lowerBounds = new double[nObj];
-		upperBounds = new double[nObj];
-	}
-	public PartiallyObservableMultiStrategy(POMDP<Double> pomdp, MDPRewards<Double> mdpRewards, BitSet target, boolean min, BitSet statesOfInterest)
-	{
-		this.pomdp = pomdp;
-		this.mdpRewards = mdpRewards;
-		this.statesOfInterest = statesOfInterest;
-		this.target = target;
-		this.min = min;
-//		this.endStates = endStates;
-		initializeTransition();
-	}
-	public void initializeTransition() {
-		this.states =  new HashSet<State> ();
-		this.transition_probability = new HashMap<Transition, Double>();
-		this.observation_to_states = new HashMap<Integer, ArrayList<State>> ();
-		for (int s = 0; s < pomdp.getNumStates(); s++) {
-			State st = new State(s,-1,-1);
-			int obs = pomdp.getObservation(s);
-			st.setObservation(obs);
-//			if (endStatesOriginal.contains(s)) {
-//				endStates
-//			}
-			states.add(st);
-		}
-		observationIndex = pomdp.getNumObservations();
-		
+		this.unknownObs = unknownObs;
 		allActions = new ArrayList<Object> ();
 		for (int s = 0; s < pomdp.getNumStates(); s++) {
 			List <Object> availableActionsForState = pomdp.getAvailableActions(s);
@@ -300,6 +362,419 @@ public class PartiallyObservableMultiStrategy {
 			actionToIndex.put(allActions.get(a), a);
 		}
 		
+		buildBeliefTree();
+//		initializeTransition();
+		nObj = mdpRewardsList.size();
+		lowerBounds = new double[nObj];
+		upperBounds = new double[nObj];
+	}
+	public PartiallyObservableMultiStrategy(POMDP<Double> pomdp, MDPRewards<Double> mdpRewards, BitSet target, boolean min, BitSet statesOfInterest)
+	{
+		this.pomdp = pomdp;
+		this.mdpRewards = mdpRewards;
+		this.statesOfInterest = statesOfInterest;
+		this.target = target;
+		this.min = min;
+//		this.endStates = endStates;
+//		initializeTransition();
+	}
+	public void buildBeliefTree() {
+		beliefToId = new HashMap<Belief, Integer>();
+		IdToBelief = new HashMap<Integer, Belief>();
+		beliefToBeliefNode = new HashMap<Belief, BeliefNode>();
+//		HashSet<BeliefNode> beliefNodes = new HashSet<BeliefNode> ();
+		
+		Belief init = pomdp.getInitialBelief();
+		int bid = 0;
+		int oid = 0;
+		Belief initialBelief = pomdp.getInitialBelief();
+
+		root = new BeliefNode(initialBelief, init.so, 1, null, bid);
+		beliefToId.put(initialBelief, bid);
+		IdToBelief.put(bid, initialBelief);
+		beliefToBeliefNode.put(initialBelief, root);	
+		bid +=1 ;
+		int layer = 0;
+		Queue<BeliefNode> queue = new LinkedList<BeliefNode>();
+		queue.offer(root);
+		while ((!queue.isEmpty())) {
+			BeliefNode bnode = queue.poll();
+			System.out.println(bnode + " " + layer++);
+			double[] beliefDist = bnode.getBelief().toDistributionOverStates(pomdp);
+//			int obs = node.getObservation();
+			int state = drawFromDistr(beliefDist);
+			System.out.println("actionSize"+  pomdp.getAvailableActions(state).size());
+			for (Object action : pomdp.getAvailableActions(state)) {
+				int choice = pomdp.getChoiceByAction(state, action);
+				int actionIndex = actionToIndex.get(action);
+				ObsNode oNode = new ObsNode(actionIndex, bnode, oid++);
+				bnode.addChild(actionIndex, oNode);
+				HashMap<Integer, Double> obsToProb = pomdp.computeObservationProbsAfterAction(beliefDist, choice);
+				for (int obs: obsToProb.keySet()) {
+					double[] nxtBeliefDis = pomdp.getBeliefInDistAfterChoiceAndObservation(beliefDist, choice, obs);
+					Belief nxtBelief = new Belief(nxtBeliefDis, pomdp);
+					BeliefNode nxt;
+					if (beliefToBeliefNode.containsKey(nxtBelief)) {
+						nxt = beliefToBeliefNode.get(nxtBelief);
+						nxt.addParent(oNode);
+						oNode.addChild(obs, nxt);
+					} else {
+						nxt = new BeliefNode(nxtBelief, obs, obsToProb.get(obs), oNode, bid);
+						oNode.addChild(obs, nxt);
+						beliefToId.put(nxtBelief, bid);
+						IdToBelief.put(bid, nxtBelief);
+						beliefToBeliefNode.put(nxtBelief, nxt);
+						bid +=1;
+						queue.offer(nxt);
+					}
+					System.out.println("child" + nxt);
+				}
+			}
+		}
+//		for (Belief b: beliefToId.keySet()) {
+//			System.out.println("belief:"+b+ beliefToId.get(b));
+//		}
+		for (int id: IdToBelief.keySet()) {
+			Belief b = IdToBelief.get(id);
+			BeliefNode bNode = beliefToBeliefNode.get(b);
+			System.out.println(id + " belief: " + Arrays.toString(b.toDistributionOverStates(pomdp)) + "obs = "+ b.so);
+			HashSet<ObsNode> parents = bNode.getParent();
+			if (parents == null) {
+				System.out.println("no");
+				continue;
+			}
+			for (ObsNode oNode: parents) {
+				System.out.println("parent" + oNode.getParent());
+			}
+		}
+		System.out.println("adddddddddddddddd");
+	}
+	public double computeBeliefBasedMultiStrategy() throws PrismException
+	{
+//		setObjectiveBounds();
+		try {
+			double max_value = 1000;
+			double discount = 0.95;
+			GRBEnv env = new GRBEnv("gurobi.log");
+			env.set(GRB.IntParam.OutputFlag, 0);
+			GRBModel model = new GRBModel(env);
+			env.start();
+			// Set up MILP variables (real)
+			// add binary variable for strategy over observation and action
+			ArrayList<HashMap<Belief, GRBVar>> var_strategy_belief =  new ArrayList<HashMap<Belief, GRBVar>>();
+			for (int a = 0; a < nActions; a++) {
+				var_strategy_belief.add(new HashMap<Belief, GRBVar>());
+			}
+			
+			Queue<BeliefNode> queue = new LinkedList<BeliefNode>();
+			queue.offer(root);
+			HashSet<Belief> visited = new HashSet<Belief>();
+			visited.add(root.getBelief());
+			int cnt =0;
+			while (!queue.isEmpty()) {
+				BeliefNode cur = queue.poll();
+				cnt+=1;
+				Belief cur_belief = cur.getBelief();
+				HashMap<Integer, ObsNode> cur_children = cur.getChildren();
+				for (int actionIndex : cur_children.keySet()) {
+					Object action = allActions.get(actionIndex);
+					if (var_strategy_belief.get(actionIndex).get(cur_belief)==null) {
+						var_strategy_belief.get(actionIndex).put(cur_belief, model.addVar(0, 1, 0, GRB.BINARY, String.format("strategy_belief%d_action%s", cur.getID(), action)));	
+					}
+					ObsNode oNode = cur_children.get(actionIndex);
+					for (int obs : oNode.getChildren().keySet()) {
+						BeliefNode nxt = oNode.getChildren().get(obs);
+						Belief nxtBelief = nxt.getBelief();
+						if (!visited.contains(nxtBelief)) {
+							visited.add(nxtBelief);
+							queue.offer(nxt);
+						}
+					}
+				}
+			}
+			System.out.println("count belief" + cnt);
+			for (int i = 0; i < pomdp.getNumObservations(); i++) {
+				System.out.println("unknown obs="+i+ unknownObs.get(i));
+			}
+			
+			// add continuous variables for values
+			ArrayList<HashMap<Belief, GRBVar>> var_value_lo = new ArrayList<HashMap<Belief, GRBVar>>();
+			ArrayList<HashMap<Belief, GRBVar>> var_value_up = new ArrayList<HashMap<Belief, GRBVar>>();
+			for (int i = 0; i < nObj; i++) {
+				var_value_lo.add(new HashMap<Belief, GRBVar>());
+				var_value_up.add(new HashMap<Belief, GRBVar>());
+				
+				queue = new LinkedList<BeliefNode>();
+				queue.offer(root);
+				visited = new HashSet<Belief>();
+				visited.add(root.getBelief());
+				while (!queue.isEmpty()) {
+					BeliefNode cur = queue.poll();
+					Belief cur_belief = cur.getBelief();
+					HashMap<Integer, ObsNode> cur_children = cur.getChildren();
+					int cur_obs = cur_belief.so;
+					if (var_value_lo.get(i).get(cur_belief) == null) {
+						if (!unknownObs.get(cur_obs)) {
+							var_value_lo.get(i).put(cur_belief, model.addVar(0, 0, 0, GRB.CONTINUOUS, String.format("value_belief_lo_%d_obj_%d", cur.getID(), i)));	
+						} else {
+							var_value_lo.get(i).put(cur_belief, model.addVar(0, max_value, 0, GRB.CONTINUOUS, String.format("value_belief_lo_%d_obj_%d", cur.getID(), i)));
+						}
+					}
+					
+					if (var_value_up.get(i).get(cur_belief) == null) {
+						if (!unknownObs.get(cur_obs)) {
+							var_value_up.get(i).put(cur_belief, model.addVar(0, 0, 0, GRB.CONTINUOUS, String.format("value_belief_up_%d_obj_%d", cur.getID(), i)));
+						} else {
+							var_value_up.get(i).put(cur_belief, model.addVar(0, max_value, 0, GRB.CONTINUOUS, String.format("value_belief_up_%d_obj_%d", cur.getID(), i)));
+						}
+					}
+					
+					for (int actionIndex : cur_children.keySet()) {
+						Object action = allActions.get(actionIndex);
+						ObsNode oNode = cur_children.get(actionIndex);
+						for (int obs : oNode.getChildren().keySet()) {
+							BeliefNode nxt = oNode.getChildren().get(obs);
+							Belief nxtBelief = nxt.getBelief();
+							if (!visited.contains(nxtBelief)) {
+								visited.add(nxtBelief);
+								queue.offer(nxt);
+							}
+						}
+					}
+				}
+			}
+			
+
+			// set objectives
+			GRBLinExpr expr = new GRBLinExpr();
+
+			for (int i = 0; i < nObj; i++) {
+				expr.addTerm(-1.0, var_value_lo.get(i).get(IdToBelief.get(0)));
+				expr.addTerm(1.0, var_value_up.get(i).get(IdToBelief.get(0)));
+			}
+			queue = new LinkedList<BeliefNode>();
+			queue.offer(root);
+			visited = new HashSet<Belief>();
+			visited.add(root.getBelief());
+			cnt = 0;
+			while (!queue.isEmpty()) {
+				BeliefNode cur = queue.poll();
+				Belief cur_belief = cur.getBelief();
+				HashMap<Integer, ObsNode> cur_children = cur.getChildren();
+				int cur_obs = cur_belief.so;
+				System.out.println("belieff" + cur_belief + " " + (cnt++) +" " + cur_children.size());
+				for (int actionIndex : cur_children.keySet()) {
+					expr.addTerm(-max_value, var_strategy_belief.get(actionIndex).get(cur_belief));
+					expr.addConstant(max_value);
+					System.out.println("aaaaaaaaaaabelieff" + cur_belief + " " +cnt);
+					Object action = allActions.get(actionIndex);
+					ObsNode oNode = cur_children.get(actionIndex);
+					for (int obs : oNode.getChildren().keySet()) {
+						BeliefNode nxt = oNode.getChildren().get(obs);
+						Belief nxtBelief = nxt.getBelief();
+						if (!visited.contains(nxtBelief)) {
+							visited.add(nxtBelief);
+							queue.offer(nxt);
+						}
+					}
+				}
+			}
+			model.setObjective(expr, GRB.MINIMIZE);
+			
+			// constraints for incoming transitions
+			GRBLinExpr expr1 = null;
+			GRBLinExpr expr2 = null;
+			int constarint_count = 0;
+			queue = new LinkedList<BeliefNode>();
+			queue.offer(root);
+			visited = new HashSet<Belief>();
+			visited.add(root.getBelief());
+			while (!queue.isEmpty()) {
+				BeliefNode cur = queue.poll();
+				Belief cur_belief = cur.getBelief();
+				HashMap<Integer, ObsNode> cur_children = cur.getChildren();
+				int cur_obs = cur_belief.so;
+				
+				expr1 = new GRBLinExpr();
+				expr2 = new GRBLinExpr();
+				System.out.println(beliefToId.get(cur_belief) + "vbe" + Arrays.toString(cur_belief.toDistributionOverStates(pomdp)));
+				for (int actionIndex : cur_children.keySet()) {
+					expr1.addTerm(1.0, var_strategy_belief.get(actionIndex).get(cur_belief));
+					expr2.addTerm(max_value, var_strategy_belief.get(actionIndex).get(cur_belief));
+					ObsNode oNode = cur_children.get(actionIndex);
+					for (int obs : oNode.getChildren().keySet()) {
+						BeliefNode nxt = oNode.getChildren().get(obs);
+						Belief nxtBelief = nxt.getBelief();
+						if (!visited.contains(nxtBelief)) {
+							visited.add(nxtBelief);
+							queue.offer(nxt);
+						}
+					}
+				}
+				if (cur_belief.so==0) { // initial
+					model.addConstr(expr1, GRB.LESS_EQUAL, max_value, "1b_c" + constarint_count++);
+					model.addConstr(expr2, GRB.GREATER_EQUAL, 1.0, "1b_c" + constarint_count++);
+				}else {
+					HashSet<ObsNode> oParents = cur.getParent();
+					for (ObsNode oParent: oParents) {
+						int actionIndex = oParent.getActionIndex();
+						BeliefNode bParent = oParent.getParent();
+						Belief bParentBelief = bParent.getBelief();
+						expr1.addTerm(-max_value, var_strategy_belief.get(actionIndex).get(bParentBelief));
+						expr2.addTerm(-1.0, var_strategy_belief.get(actionIndex).get(bParentBelief));	
+					}
+					model.addConstr(expr1, GRB.LESS_EQUAL, 0.0, "1b_c" + constarint_count++);
+					model.addConstr(expr2, GRB.GREATER_EQUAL, 0.0, "1c_c" + constarint_count++);
+				}
+			}
+			
+			
+			// constraints for transition relations and rewards
+			queue = new LinkedList<BeliefNode>();
+			queue.offer(root);
+			visited = new HashSet<Belief>();
+			visited.add(root.getBelief());
+			while (!queue.isEmpty()) {
+				BeliefNode cur = queue.poll();
+				Belief cur_belief = cur.getBelief();
+				System.out.println("b" + Arrays.toString(cur_belief.toDistributionOverStates(pomdp)) + "id" + cur.getID());
+				double[] cur_belief_distr = cur_belief.toDistributionOverStates(pomdp);
+				HashMap<Integer, ObsNode> cur_children = cur.getChildren();
+				int cur_obs = cur_belief.so;
+				
+				for (int i = 0; i < nObj; i++) {
+					for (int actionIndex : cur_children.keySet()) {
+
+						expr1 = new GRBLinExpr();
+						expr2 = new GRBLinExpr();
+						expr1.addTerm(1, var_value_lo.get(i).get(cur_belief));
+						expr2.addTerm(1, var_value_up.get(i).get(cur_belief));
+						
+						if (!unknownObs.get(cur_obs)) {
+//							int bd = 1+1;
+							model.addConstr(expr1, GRB.EQUAL, 0,  "1d_endbelief_c" + constarint_count++);
+							model.addConstr(expr2, GRB.EQUAL, 0, "1e_endbelief_c" + constarint_count++);
+							continue;
+						}
+						
+						ObsNode oNode = cur_children.get(actionIndex);
+						for (int obs : oNode.getChildren().keySet()) {
+							BeliefNode nxt = oNode.getChildren().get(obs);
+							Belief nxtBelief = nxt.getBelief();
+							double prob = nxt.getProb();
+							expr1.addTerm(-prob * discount, var_value_lo.get(i).get(nxtBelief));
+							expr2.addTerm(-prob * discount, var_value_up.get(i).get(nxtBelief));
+						}
+						
+						expr1.addTerm(max_value, var_strategy_belief.get(actionIndex).get(cur_belief));
+						expr2.addTerm(-max_value, var_strategy_belief.get(actionIndex).get(cur_belief));
+
+						double r = 0;
+						Object action = allActions.get(actionIndex);
+						for (int k = 0; k < cur_belief_distr.length; k++) {
+							int choice = pomdp.getChoiceByAction(k, action);
+							if (choice == -1) {
+								continue;
+							}
+							double ir = mdpRewardsList.get(i).getTransitionReward(k, choice) ;
+							ir += mdpRewardsList.get(i).getStateReward(k);
+							r += cur_belief_distr[k] * (ir);
+						}
+						
+						model.addConstr(expr1, GRB.LESS_EQUAL, r + max_value,  "1d_c" + constarint_count++);
+						model.addConstr(expr2, GRB.GREATER_EQUAL, r - max_value, "1e_c" + constarint_count++);
+					}
+				}
+				
+				for (int actionIndex : cur_children.keySet()) {
+					ObsNode oNode = cur_children.get(actionIndex);
+					for (int obs : oNode.getChildren().keySet()) {
+						BeliefNode nxt = oNode.getChildren().get(obs);
+						Belief nxtBelief = nxt.getBelief();
+						if (!visited.contains(nxtBelief)) {
+							visited.add(nxtBelief);
+							queue.offer(nxt);
+						}
+					}
+				}
+				
+			}
+
+			// constraints for objective bounds
+			for (int i = 0; i < nObj; i++) {
+				expr1 = new GRBLinExpr();
+				expr1.addTerm(1.0, var_value_lo.get(i).get(pomdp.getInitialBelief()));
+				model.addConstr(expr1, GRB.GREATER_EQUAL, lowerBounds[i], "1f_c" + constarint_count++);
+
+				expr2 = new GRBLinExpr();
+				expr2.addTerm(1.0, var_value_up.get(i).get(pomdp.getInitialBelief()));
+				model.addConstr(expr2, GRB.LESS_EQUAL, upperBounds[i], "1g_c" + constarint_count++);
+			}
+			int batch = 0;
+			model.write(String.format("Belief_Based_MultiStrategy_%d.lp", batch));
+			model.optimize();
+			double val = 0;
+			int status = model.get(GRB.IntAttr.Status);
+			System.out.println("status" + status + " " + GRB.Status.INFEASIBLE);
+			
+			if (model.get(GRB.IntAttr.Status)== GRB.Status.INFEASIBLE) {
+				System.out.println("model infeasible");
+				model.computeIIS();
+				System.out.println("model infeasible");
+				
+				model.write(String.format("Belief_Based_MultiStrategy_Infeasibleds_%d.ilp",batch));
+				System.out.println("model infeasible");
+				model.feasRelax(0, false, true, true);
+				model.optimize();
+//				model.write(String.format("MultiStrategy__Infeasible_relaxed_%d.ilp",batch));
+//				
+			}else {
+				System.out.println("Mdoel feasible with value of : " + val);
+				val = model.get(GRB.DoubleAttr.ObjVal);
+				model.write(String.format("Belief_Based_MultiStrategy_%d.sol", batch));
+			}
+//			
+			System.out.println("Belief_Based_MultiStrategy_ Obj: " + val);
+			
+	      // Dispose of model and environment
+	      model.dispose();
+	      env.dispose();
+	      return val;
+		} catch (GRBException e) {
+			throw new PrismException("Error solving LP: " +e.getMessage());
+		}
+	}
+	public int drawFromDistr(double[] distr) // TODO can be improved?
+	{
+		int state = 0;
+		double randomThreshold = Math.random();
+		double cumulativeProb = 0;
+		for (int i = 0; i < distr.length; i++) {
+			cumulativeProb += distr[i];
+			if (cumulativeProb >= randomThreshold) {
+				state = i;
+				break;
+			}
+		}
+		return state; 
+	}
+	
+	public void initializeTransition() {
+		this.states =  new HashSet<State> ();
+		this.transition_probability = new HashMap<Transition, Double>();
+		this.observation_to_states = new HashMap<Integer, ArrayList<State>> ();
+		for (int s = 0; s < pomdp.getNumStates(); s++) {
+			State st = new State(s,-1,-1);
+			int obs = pomdp.getObservation(s);
+			st.setObservation(obs);
+//			if (endStatesOriginal.contains(s)) {
+//				endStates
+//			}
+			states.add(st);
+		}
+		observationIndex = pomdp.getNumObservations();
+		
+
 		for (int s = 0; s < pomdp.getNumStates(); s++) {
 			for (int a = 0; a < nActions; a++) {
 				Object action = allActions.get(a);
@@ -1257,7 +1732,6 @@ public class PartiallyObservableMultiStrategy {
 	    			}
 	    		}
 	    	}
-	
 	    }
 		
 	    
@@ -1265,7 +1739,6 @@ public class PartiallyObservableMultiStrategy {
 		int sInit = pomdp.getFirstInitialState();
 
 		ArrayList<Point> paretoPoints = (ArrayList<Point>) sv.getValue(sInit);
-		
 	    System.out.println("prefWeights_EPs: " + prefWeights_EPs);
 		// Step 1: find the corresponding Pareto point for each preference weight
 		ArrayList<Integer> chosenPoints = new ArrayList<Integer>();

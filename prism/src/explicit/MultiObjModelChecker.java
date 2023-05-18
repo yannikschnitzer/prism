@@ -8,8 +8,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Map.Entry;
-
+import java.util.Queue;
+import java.util.LinkedList;
 import explicit.rewards.MDPRewards;
 import explicit.PartiallyObservableMultiStrategy;
 import parser.type.TypeDouble;
@@ -27,6 +29,7 @@ import gurobi.GRBVar;
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 
+
 public class MultiObjModelChecker extends PrismComponent
 {
 	protected ProbModelChecker mc;
@@ -39,7 +42,37 @@ public class MultiObjModelChecker extends PrismComponent
 		super(mc);
 		this.mc = mc;
 	}
-
+//	public void buildBeliefTree(POMDP pomdp) {
+//		
+//		Belief init = pomdp.getInitialBelief();
+//		int bid = 0;
+//		int oid = 0;
+//		BeliefNode root = new BeliefNode(pomdp.getInitialBeliefInDist(), init.so, 1, null, bid);
+//		int layer = 0;
+//		Queue<BeliefNode> queue = new LinkedList<BeliefNode>();
+//		queue.offer(root);
+//		while (layer++ < 10) {
+//			BeliefNode bnode = queue.poll();
+//			double[] beliefDist = bnode.getBelief();
+////			int obs = node.getObservation();
+//			int state = 0;
+//			for (Object action : pomdp.getAvailableActions(state)) {
+//				int choice = pomdp.getChoiceByAction(state, action);
+//				int actionIndex = actionToIndex.get(action);
+//				ObsNode oNode = new ObsNode(actionIndex, bnode, oid++);
+//				bnode.addChild(actionIndex, oNode);
+//				
+//				HashMap<Integer, Double> obsToProb = pomdp.computeObservationProbsAfterAction(beliefDist, choice);
+//				for (int obs: obsToProb.keySet()) {
+//					double[] nxtBelief = pomdp.getBeliefInDistAfterChoiceAndObservation(beliefDist, choice, obs);
+//					BeliefNode nxt = new BeliefNode(nxtBelief, obs, obsToProb.get(obs), oNode, bid++);
+//					oNode.addChild(obs, nxt);
+//					queue.offer(nxt);
+//				}
+//			}
+//		}
+//	}
+	
     /* Multi-objective MDP solver
      * This algorithm is based on "Linear Support for Multi-Objective Coordination Graphs" by Roijers et al.
 	 * The part of code for computing new weights in OLS algorithm is modified based the following git hub repo
@@ -296,7 +329,7 @@ public class MultiObjModelChecker extends PrismComponent
 		ArrayList<Integer> endStates = new ArrayList<Integer>();
 		for (int i=0; i<nStates;i++) {
 			if (!unknownObs.get(pomdp.getObservation(i))) {
-				mainLog.println("end state="+i+"Obs="+pomdp.getObservation(i));
+//				mainLog.println("end state="+i+"Obs="+pomdp.getObservation(i));
 				endStates.add(i);
 			}
 		}
@@ -311,7 +344,11 @@ public class MultiObjModelChecker extends PrismComponent
 		
 		ArrayList<Object> allActions = ((POMDPModelChecker) mc).getAllActions(pomdp);
 		int nActions = allActions.size();
-		
+		HashMap<Object, Integer> actionToIndex = new HashMap<Object, Integer>();
+		for (int a = 0; a < nActions; a++) {
+//			mainLog.println("action index = " + a + "action " + allActions.get(a));
+			actionToIndex.put(allActions.get(a), a);
+		}
 		int numRewards = mdpRewardsList.size();
 		
     	HashSet<List<Double>> paretoCurve = new HashSet<>();
@@ -419,21 +456,25 @@ public class MultiObjModelChecker extends PrismComponent
 		}
 		*/
 		//check
-		mainLog.println("immediate reward");
-		for (int i=0; i<immediateRewards.size(); i++){
-			AlphaMatrix am= immediateRewards.get(i);
-			mainLog.println(allActions.get(am.getAction()));
-			mainLog.println(am);
-		}
+//		mainLog.println("immediate reward");
+////		for (int i=0; i<immediateRewards.size(); i++){
+//			AlphaMatrix am= immediateRewards.get(i);
+//			mainLog.println(allActions.get(am.getAction()));
+//			mainLog.println(am);
+//		}
 		
-		mainLog.println("initial vector");
-		for (int i=0; i<A_all.size(); i++){
-			AlphaMatrix am= A_all.get(i);
-			mainLog.println(am);
-		}
+//		mainLog.println("initial vector");
+//		for (int i=0; i<A_all.size(); i++){
+//			AlphaMatrix am= A_all.get(i);
+//			mainLog.println(am);
+//		}
 		
 		ArrayList<Belief> belief_set = ((POMDPModelChecker) mc).randomExploreBeliefs(pomdp, target, statesOfInterest);
 		mainLog.println("Belief set size= "+belief_set.size());
+		
+		//store weights and alpha matrices
+		ArrayList<ArrayList<AlphaMatrix>> alphaMatricesChecked = new ArrayList<ArrayList<AlphaMatrix>> ();
+		
 		
 		while(priority_queue.size()>0){
 
@@ -465,7 +506,13 @@ public class MultiObjModelChecker extends PrismComponent
 			double eta = 1E-5;
 
 			ArrayList<AlphaMatrix> Aw = ((POMDPModelChecker) mc).computeMultiReachRewardPerseus(Ar, belief_set, w_pop_array, eta, pomdp, immediateRewards, endState,startTime);
-
+			
+//			mainLog.println("HERED============");
+//			mainLog.println("weight" + w_pop.toString());
+//			for (AlphaMatrix a: Aw) {
+//				mainLog.println(a);
+//			}
+//			mainLog.println("============");
 			//Line 11
 			Belief b0=pomdp.getInitialBelief();
 			int bestAlphaMatrixIndex = AlphaMatrix.getMaxValueIndex(b0, Aw, w_pop_array, pomdp);
@@ -485,7 +532,7 @@ public class MultiObjModelChecker extends PrismComponent
 			
 			//Line 12 update A_all
 			for (int i=0; i<Aw.size(); i++) {
-				A_all.add(Aw.get(i));
+				A_all.add(Aw.get(i).clone());
 			}
 			int countNewWeights = 0; //number of weights generated by u
 
@@ -495,8 +542,9 @@ public class MultiObjModelChecker extends PrismComponent
 				u.add(Math.abs(Vb0.get(i)));
 			}
 			mainLog.println("u="+u);
-
-			w_v_checked.add( w_pop);//			w_v_checked.add(copyArrayList(w_pop));
+			
+			alphaMatricesChecked.add((ArrayList<AlphaMatrix>)Aw.clone());
+			w_v_checked.add(w_pop);//			w_v_checked.add(copyArrayList(w_pop));
 			weights_checked.add(w_pop);
 			w_v_checked.add(u);
 			vector_checked.add(u);
@@ -545,10 +593,171 @@ public class MultiObjModelChecker extends PrismComponent
 		}
 		Object array[] = new Object[pomdp.getNumStates()];
 		array[pomdp.getFirstInitialState()] = points;
-		return StateValues.createFromObjectArray(TypeDouble.getInstance(), array, pomdp);
 		
+		
+		
+//		
+//		//Simulate Mul
+//		double[] b = pomdp.getInitialBeliefInDist();
+//		int s = drawFromDistr(b);
+//		int nObj = weights_checked.get(0).size();
+//		double[][] bounds = setObjectiveBounds(nObj);
+//		double discount = 1;
+//		while (!endStates.contains(s)) {
+//			mainLog.println("current b"+ Arrays.toString(b));
+//			ArrayList<Integer> possibleActions = new ArrayList<Integer>();
+//			for (Object action :pomdp.getAvailableActions(s)) {
+//				possibleActions.add(actionToIndex.get(action));
+//			}
+//			ArrayList<Integer> allowedActions = getAllowedActions(weights_checked, alphaMatricesChecked, b, bounds, possibleActions);
+//			mainLog.println(allowedActions.toString());
+//			
+//			Random rand = new Random();
+//			int randomIndex = rand.nextInt(allowedActions.size());
+//			int actionIndex = allowedActions.get(randomIndex);
+//			Object action = allActions.get(actionIndex);
+//			int choice = pomdp.getChoiceByAction(s, action);
+//			
+//			double[] expected = immediateRewards.get(actionIndex).values(b);
+//			for (int i = 0; i < 2; i++) {
+//				for (int j = 0; j < nObj; j++) {
+//					bounds[i][j] -= expected[j] * discount;
+//				}
+//			}
+//			discount *= 0.95; 
+//			HashMap<Integer, Double> observationProb = pomdp.computeObservationProbsAfterAction(b, choice);
+//			int obs = drawFromDistr(observationProb);
+//			mainLog.println("actionTaken"+actionIndex+ " obs="+obs);
+//			b = pomdp.getBeliefInDistAfterChoiceAndObservation(b, choice, obs);
+//			s = drawFromDistr(b);	
+//		}
+//		
+		return StateValues.createFromObjectArray(TypeDouble.getInstance(), array, pomdp);
+    }
+	
+    public double[][] setObjectiveBounds(int nObj) throws PrismException
+    {
+    	double bounds[][] = new double[2][nObj];
+    	double[] lowerBounds = new double[nObj];
+    	double[] upperBounds = new double[nObj];
+		//TODO
+		lowerBounds[0] = 46/3*0.95;
+		lowerBounds[1] = 46/3*0.95;
+		upperBounds[0] = 84/3*0.95;
+		upperBounds[1] = 84/3*0.95;
+		
+		double lo = -4;
+		lowerBounds[0] = lo;
+		lowerBounds[1] = lo;
+		double up = -3;
+		upperBounds[0] = up;
+		upperBounds[1] = up;
+		
+		bounds[0] = lowerBounds;
+		bounds[1] = upperBounds;
+    	return bounds;
+    }
+    public ArrayList<Integer> getAllowedActions(ArrayList<ArrayList<Double>> weights, ArrayList<ArrayList<AlphaMatrix>> alphaMatricesChecked, 
+    											double[] b, double[][] bounds, ArrayList<Integer> possibleActions )
+    {
+//    	ArrayList<Integer> allowedActionIndex = new ArrayList<Integer> ();
+//    	for (int i = 0; i < nActions; i++) {
+//    		allowedActionIndex.add(i);
+//    	}
+    	for (ArrayList<AlphaMatrix> matrices: alphaMatricesChecked) {
+    		ArrayList<Integer> allowedActionsForOneWeight = new ArrayList<Integer> ();
+    		for (AlphaMatrix matrix: matrices) {
+    			double [] values = matrix.values(b);
+    			System.out.println(Arrays.toString(values)+ matrix.getAction());
+    			if (inBound(values, bounds)) {
+    				allowedActionsForOneWeight.add(matrix.getAction());
+    			}
+    		}
+    		possibleActions.retainAll(allowedActionsForOneWeight);
+    	}	
+    	return possibleActions;
+    }
+    public boolean inBound(double [] values, double [][]bounds) 
+    {
+    	double [] low = bounds[0];
+    	double [] up = bounds[1];
+    	for (int i = 0; i < values.length; i++) {
+    		if (low[i] > values[i] || values[i] > up[i]) {
+    			return false;
+    		}
+    	}
+    	return true;
     }
     
+	public int step(POMDP pomdp, int state, int actionIndex, List<Object> allActions) //TODO can be deleted
+	{
+		Object action = allActions.get(actionIndex);
+		if(!pomdp.getAvailableActions(state).contains(action)) {
+			System.out.print("error step " + action + state);
+			return -1;
+			}
+		int choice = pomdp.getChoiceByAction(state, action);
+		
+		Iterator<Entry<Integer, Double>> iter = pomdp.getTransitionsIterator(state, choice);
+		ArrayList<Integer> nextStates = new ArrayList<Integer> ();
+		ArrayList<Double> nextStatesProbs = new ArrayList<Double> ();
+		while (iter.hasNext()) {
+			Map.Entry<Integer, Double> trans = iter.next();
+			nextStates.add(trans.getKey());
+			nextStatesProbs.add(trans.getValue());
+		}
+		int nextState = nextStates.get(drawFromDistr(nextStatesProbs));
+		//TODO add reward for final state
+//		if (endStates.contains(nextState)){
+//			reward += mdpRewards.getStateReward(nextState) * gamma;
+//		}
+//		return new stepReturn(nextState, reward );
+		return nextState;
+	}
+	
+	public int drawFromDistr(HashMap<Integer, Double>distr) // TODO can be improved?
+	{
+		int state = 0;
+		double randomThreshold = Math.random();
+		double cumulativeProb = 0;
+		for (int key: distr.keySet()) {
+			cumulativeProb += distr.get(key);
+			if (cumulativeProb >= randomThreshold) {
+				state = key;
+				break;
+			}
+		}
+		return state;
+	}
+	
+	public int drawFromDistr(ArrayList<Double> distr) // TODO can be improved?
+	{
+		int state = 0;
+		double randomThreshold = Math.random();
+		double cumulativeProb = 0;
+		for (int i = 0; i < distr.size(); i++) {
+			cumulativeProb += distr.get(i);
+			if (cumulativeProb >= randomThreshold) {
+				state = i;
+				break;
+			}
+		}
+		return state; 
+	}
+	public int drawFromDistr(double[] distr) // TODO can be improved?
+	{
+		int state = 0;
+		double randomThreshold = Math.random();
+		double cumulativeProb = 0;
+		for (int i = 0; i < distr.length; i++) {
+			cumulativeProb += distr[i];
+			if (cumulativeProb >= randomThreshold) {
+				state = i;
+				break;
+			}
+		}
+		return state; 
+	}
 	public ArrayList<Double> linSolver(ArrayList<ArrayList<Double>> A, ArrayList<Double> b)
 	{
 		if (A.get(0).size()!=A.size()){
@@ -755,7 +964,7 @@ public class MultiObjModelChecker extends PrismComponent
 			}
 			w_pop.set(w_pop.size()-1, 1- tp_sum);
 			*/
-		}
+		}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
 		return w_pop;
     }
     public ArrayList<Double> copyArrayList(ArrayList<Double> a){
@@ -1170,10 +1379,7 @@ public class MultiObjModelChecker extends PrismComponent
 		lowerBounds[1] = 0;
 		upperBounds[0] = 114;
 		upperBounds[1] = 114;
-		
-		
 		bounds[0] = lowerBounds;
-		
 		bounds[1] = upperBounds;
     	return bounds;
     }
@@ -1636,26 +1842,27 @@ public class MultiObjModelChecker extends PrismComponent
 				endStates.add(i);
 			}
 		}
-		if (ParentoPoints == null) {
-			ParentoPoints = checkExpressionParetoMultiObjPOMDP(pomdp, mdpRewardsList, target, minMaxList, statesOfInterest);
-//			StateValues sv = checkExpressionParetoMultiObjMDPWithOLS(pomdp, mdpRewardsList, target, minMaxList, null);
-//			StateValues sv = mc.checkExpressionParetoMultiObjMDPWithRandomSampling(mdp, mdpRewardsList, target, minMaxList, null);
-			
-		}
-		PartiallyObservableMultiStrategy p = new PartiallyObservableMultiStrategy(pomdp, mdpRewardsList, target, minMaxList, statesOfInterest, endStates);
+		
+//		if (ParentoPoints == null) {
+//			ParentoPoints = checkExpressionParetoMultiObjPOMDP(pomdp, mdpRewardsList, target, minMaxList, statesOfInterest);
+////			StateValues sv = checkExpressionParetoMultiObjMDPWithOLS(pomdp, mdpRewardsList, target, minMaxList, null);
+////			StateValues sv = mc.checkExpressionParetoMultiObjMDPWithRandomSampling(mdp, mdpRewardsList, target, minMaxList, null);
+//		}
+		PartiallyObservableMultiStrategy p = new PartiallyObservableMultiStrategy(pomdp, mdpRewardsList, target, minMaxList, statesOfInterest, endStates, unknownObs);
 		String prefString = getSettings().getString(PrismSettings.PRISM_WEIGHTS_STRING);
 		
-//		p.computeBounds(prefString, ParentoPoints);
+		p.computeBounds(prefString, ParentoPoints);
+//		p.setObjectiveBounds(new double[]{0,0}, new double []{333.8,333.8});
+		p.computeBeliefBasedMultiStrategy();
 		
-//		p.setObjectiveBounds(new double[]{3.13,3.13}, new double []{3.8,3.8});
 //		p.setObjectiveBounds(new double[]{2.8,2.8}, new double []{4.1,4.1});
-		p.setObjectiveBounds(new double[]{2.8,2.8}, new double []{33,33});
+//		p.setObjectiveBounds(new double[]{2.8,2.8}, new double []{33,33});
 //		p.splitObservations();
 //		p.spiltStates(null);
 //		p.splitObservations();
-		p.computeMultiStrategyMILP(0);
-		p.displayStates();
-		p.displayTransition();
+//		p.computeMultiStrategyMILP(0);
+//		p.displayStates();
+//		p.displayTransition();
     }    
 
 }
