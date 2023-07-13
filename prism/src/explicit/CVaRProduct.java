@@ -48,6 +48,12 @@ public class CVaRProduct extends Product<MDP>
         return invMap[productState] % memSize;
     }
 
+	@Override
+	public int getAutomatonSize()
+	{
+		return memSize;
+	}
+
 
     /**
      //	 * Construct the product of a model for CVaR purposes using the operators' b array for augmented states.

@@ -190,23 +190,13 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
     // Interpolate to find the closest b index
     // choosing lower index -> intuition :"we have used less budget than we actually have"
-    // opposite of chap 7 -> they take floor since they are doing max and we are doing min -> cost approach
     public int getClosestB(double temp_b){
         double new_b = max(b_min, min(temp_b,b_max)); double index = 0;
         if (delta_b > 0){
-            index = new_b/delta_b;
+            index = (new_b- b_min)/delta_b;
         }
         int l= (int) floor(index); int u= (int) ceil(index);
         return l;
-//        double diff_l = abs(new_b - b[l]);
-//        double diff_u = abs(b[u] - new_b);
-//        // check which index is closest:
-//        if (diff_u >= diff_l){
-//            return l;
-//        }
-//        else {
-//            return u;
-//        }
     }
 
     @Override

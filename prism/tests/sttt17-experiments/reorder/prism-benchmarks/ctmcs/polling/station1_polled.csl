@@ -1,4 +1,0 @@
-const double T;
-
-// Probability that station 1 will be polled within T time units
-"station1_polled": P=? [ F<=T (s=1 & a=0) ];

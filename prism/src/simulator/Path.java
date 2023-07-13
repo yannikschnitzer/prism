@@ -26,8 +26,13 @@
 
 package simulator;
 
+import parser.EvaluateContext.EvalMode;
+import parser.EvaluateContextFull;
 import parser.State;
+import parser.ast.Expression;
+import parser.type.TypeBool;
 import prism.ModelGenerator;
+import prism.PrismLangException;
 
 /**
  * Classes that store and manipulate a path though a model.
@@ -54,6 +59,11 @@ public abstract class Path
 	 */
 	public abstract void addStep(double time, int choice, Object action, String actionString, double probability, double[] transRewards, State newState, State newObs, double[] newStateRewards, ModelGenerator modelGen);
 
+	/**
+	 * Set the strategy info (mode and next decision) for the current state.
+	 */
+	public abstract void setStrategyInfoForCurrentState(int memory, Object decision);
+	
 	// ACCESSORS
 
 	/**
@@ -80,6 +90,11 @@ public abstract class Path
 	 * Get the current state, i.e. the current final state of the path.
 	 */
 	public abstract State getCurrentState();
+
+	/**
+	 * Get the observation for the previous state, i.e. for the penultimate state of the current path.
+	 */
+	public abstract State getPreviousObservation();
 
 	/**
 	 * Get the observation for the current state, i.e. for the current final state of the path.
@@ -157,6 +172,16 @@ public abstract class Path
 	public abstract double[] getCurrentStateRewards();
 	
 	/**
+	 * Get the memory of the strategy (if present) for the current state.
+	 */
+	public abstract int getCurrentStrategyMemory();
+	
+	/**
+	 * Get the decision taken by the strategy (if present) in the current state.
+	 */
+	public abstract Object getCurrentStrategyDecision();
+	
+	/**
 	 * Does the path contain a deterministic loop?
 	 */
 	public abstract boolean isLooping();
@@ -170,4 +195,46 @@ public abstract class Path
 	 * What is the step index of the end of the deterministic loop, if it exists?
 	 */
 	public abstract long loopEnd();
+	
+	// UTILITY METHODS
+
+	/**
+	 * Evaluate an expression in the current state of the path.
+	 * This takes in to account both the state variables and observables.
+	 */
+	public Object evaluateInCurrentState(Expression expr) throws PrismLangException
+	{
+		EvaluateContextFull ec = new EvaluateContextFull(getCurrentState(), getCurrentObservation());
+		return expr.evaluate(ec);
+	}
+	
+	/**
+	 * Evaluate a Boolean-valued expression in the current state of the path.
+	 * This takes in to account both the state variables and observables.
+	 */
+	public boolean evaluateBooleanInCurrentState(Expression expr) throws PrismLangException
+	{
+		EvaluateContextFull ec = new EvaluateContextFull(getCurrentState(), getCurrentObservation());
+		return TypeBool.getInstance().castValueTo(expr.evaluate(ec), EvalMode.FP);
+	}
+
+	/**
+	 * Evaluate an expression in the penultimate state of the path.
+	 * This takes in to account both the state variables and observables.
+	 */
+	public Object evaluateInPreviousState(Expression expr) throws PrismLangException
+	{
+		EvaluateContextFull ec = new EvaluateContextFull(getPreviousState(), getPreviousObservation());
+		return expr.evaluate(ec);
+	}
+	
+	/**
+	 * Evaluate a Boolean-valued expression in the penultimate state of the path.
+	 * This takes in to account both the state variables and observables.
+	 */
+	public boolean evaluateBooleanInPreviousState(Expression expr) throws PrismLangException
+	{
+		EvaluateContextFull ec = new EvaluateContextFull(getPreviousState(), getPreviousObservation());
+		return TypeBool.getInstance().castValueTo(expr.evaluate(ec), EvalMode.FP);
+	}
 }

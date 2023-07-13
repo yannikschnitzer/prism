@@ -1,4 +1,0 @@
-const double T;
-
-// Probability that QoS drops below minimum quality within T time units
-"qos1": P=? [ F<=T !"minimum" ];

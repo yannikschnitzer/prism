@@ -1,2 +1,0 @@
-// A leader is always eventually elected with probability 1
-"elected": P>=1 [ F "done" ];

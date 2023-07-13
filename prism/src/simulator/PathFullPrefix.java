@@ -69,6 +69,12 @@ public class PathFullPrefix extends Path
 		// Do nothing (we are not allowed to modify the underlying PathFull)
 	}
 
+	@Override
+	public void setStrategyInfoForCurrentState(int memory, Object decision)
+	{
+		// Do nothing (we are not allowed to modify the underlying PathFull)
+	}
+	
 	// MUTATORS (additional)
 	
 	public void setPrefixLength(int prefixLength)
@@ -106,6 +112,12 @@ public class PathFullPrefix extends Path
 	public State getCurrentState()
 	{
 		return pathFull.getState(prefixLength);
+	}
+
+	@Override
+	public State getPreviousObservation()
+	{
+		return pathFull.getObservation(prefixLength - 1);
 	}
 
 	@Override
@@ -184,6 +196,18 @@ public class PathFullPrefix extends Path
 	public double[] getCurrentStateRewards()
 	{
 		return pathFull.getStateRewards(prefixLength);
+	}
+	
+	@Override
+	public int getCurrentStrategyMemory()
+	{
+		return pathFull.getStrategyMemory(prefixLength);
+	}
+	
+	@Override
+	public Object getCurrentStrategyDecision()
+	{
+		return pathFull.getStrategyDecision(prefixLength);
 	}
 	
 	@Override

@@ -1,2 +1,0 @@
-// Maximum expected time for both stations to send correctly
-"time_max": R{"time"}max=? [ F s1=12 & s2=12 ];

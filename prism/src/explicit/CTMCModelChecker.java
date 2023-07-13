@@ -74,7 +74,7 @@ public class CTMCModelChecker extends ProbModelChecker
 		return createDTMCModelChecker().checkProbPathFormulaLTL(dtmcEmb, expr, qual, minMax, statesOfInterest);
 	}
 
-	@Override
+	// @Override
 	protected StateValues checkRewardCoSafeLTL(Model model, Rewards modelRewards, Expression expr, MinMax minMax, BitSet statesOfInterest, String modifier) throws PrismException
 	{
 		if (Expression.containsTemporalTimeBounds(expr)) {

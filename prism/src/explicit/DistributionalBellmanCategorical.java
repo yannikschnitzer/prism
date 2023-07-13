@@ -62,6 +62,7 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
         }
     }
 
+    @Override
     public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, int numTransitions, double gamma, double state_reward)
     {
         double [] res = update_probabilities(trans_it);
@@ -69,7 +70,7 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
         return res;
     }
 
-    // updates probabilities for 1 action
+    // updates probabilities for one action
     public double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it) {
         double [] sum_p= new double[atoms];
         while (trans_it.hasNext()) {
@@ -84,6 +85,7 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
         return sum_p;
     }
 
+    // Shift distribution using discount and reward, then perform projection
     public double [] update_support(double gamma, double state_reward, double []sum_p){
 
         double [] m = new double [atoms];
@@ -192,6 +194,7 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
         return res;
     }
 
+    // Get variance for a distribution <probs>
     @Override
     public double getVariance(double[] probs) {
         double mu = getExpValue(probs);
@@ -205,7 +208,7 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
         return res;
     }
 
-    // Wp with p=2
+    // distributional distance l2 with p=2 between two distributions
     public double getW(double[] dist1, double[] dist2)
     {
         double sum = 0;
@@ -219,7 +222,8 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
         return sqrt(sum);
     }
 
-    // Wp with p=2
+    // distributional distance l2 with p=2 between
+    // a distribution <dist1> and the saved distribution for state <state>
     public double getW(double [] dist1, int state)
     {
         double sum = 0;
@@ -233,11 +237,13 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
         return sqrt(sum);
     }
 
+    // Get full saved distributions for all states
     public double [][] getP ()
     {
         return p;
     }
 
+    // Log distribution for a state to a file <filename> as a csv with columns : support index, probability, support value
     @Override
     public void writeToFile(int state, String filename){
         if (filename == null) {filename="distr_exp_c51.csv";}

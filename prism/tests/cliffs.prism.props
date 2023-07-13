@@ -1,5 +1,0 @@
-// RESULT: ?
-Rmin=? [ F s=5 ];
-
-// RESULT: ?
-R(cvar)min=? [ F s=5 ];

@@ -29,7 +29,6 @@ package explicit;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -52,7 +51,9 @@ import explicit.modelviews.MDPFromDTMC;
 import explicit.rewards.MCRewards;
 import explicit.rewards.MDPRewards;
 import explicit.rewards.Rewards;
+import parser.State;
 import parser.ast.Expression;
+import parser.type.TypeInt;
 import prism.AccuracyFactory;
 import prism.ModelType;
 import prism.OptionsIntervalIteration;
@@ -241,6 +242,30 @@ public class DTMCModelChecker extends ProbModelChecker
 		res.soln[stateOfInterest] = avg;
 		
 		return res;
+	}
+	
+	public Distribution computeInstantaneousExpressionDistribution(DTMC dtmc, int k, Expression expr) throws PrismException
+	{
+		if (expr.getType() != TypeInt.getInstance()) {
+			throw new PrismException("Can only build distributions over integer-valued expressions");
+		}
+		
+		// Compute (forward) transient probabilities
+		StateValues initDist = buildInitialDistribution(dtmc);
+		ModelCheckerResult res = computeTransientProbs(dtmc, k, initDist.getDoubleArray());
+		
+		// Compute distribution
+		Distribution dist = new Distribution();
+		List<State> statesList = dtmc.getStatesList();
+		int n = dtmc.getNumStates();
+		for (int i = 0; i < n; i++) {
+			int varVal = expr.evaluateInt(statesList.get(i));
+			if (res.soln[i] > 0) {
+				dist.add(varVal, res.soln[i]);
+			}
+		}
+		
+		return dist;
 	}
 	
 	public ModelCheckerResult computeCumulativeRewards(DTMC dtmc, MCRewards mcRewards, double t) throws PrismException
@@ -1400,7 +1425,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		for (int scc = 0, numSCCs = sccs.getNumSCCs(); scc < numSCCs; scc++) {
 			IntSet statesForSCC = sccs.getStatesForSCC(scc);
 
-			int cardinality = statesForSCC.cardinality();
+			int cardinality = Math.toIntExact(statesForSCC.cardinality());
 
 			PrimitiveIterator.OfInt itSCC = statesForSCC.iterator();
 			while (itSCC.hasNext()) {
@@ -1507,7 +1532,7 @@ public class DTMCModelChecker extends ProbModelChecker
 
 			double q = 0;
 			double p = 1;
-			int cardinality = statesForSCC.cardinality();
+			int cardinality = Math.toIntExact(statesForSCC.cardinality());
 
 			PrimitiveIterator.OfInt itSCC = statesForSCC.iterator();
 			while (itSCC.hasNext()) {

@@ -1,2 +1,0 @@
-// Max probability of finishing protocol with coins not all equal
-"disagree": Pmax=? [ F "finished"&!"agree" ];
