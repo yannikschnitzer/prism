@@ -3032,6 +3032,7 @@ public class MDPModelChecker extends ProbModelChecker
 			atoms = Integer.parseInt(params[0]);
 			double v_min = Double.parseDouble(params[1]);
 			double v_max = Double.parseDouble(params[2]);
+			error_thresh = Double.parseDouble(params[3]);
 			dtmc_epsilon = Double.parseDouble(params[4]);
 			alpha = Double.parseDouble(params[5]);
 
