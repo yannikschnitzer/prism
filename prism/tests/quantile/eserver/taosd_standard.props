@@ -1,0 +1,1 @@
+filter(print, quantile (min e, Pmax>.95 [ F{reward{"energy"}<=e} (time_goal) ]), initFeats)

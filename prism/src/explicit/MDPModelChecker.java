@@ -2684,9 +2684,9 @@ public class MDPModelChecker extends ProbModelChecker
 		double gamma = 1;
 		double alpha=0.5;
 		Double dtmc_epsilon = null;
-		boolean check_reach_dtmc = true;
+		boolean check_prob_reach_dtmc = false;
 		boolean check_reach_dtmc_distr = true;
-		boolean check_reach_dtmc_vi = true;
+		boolean check_prob_reach_dtmc_vi = false;
 		boolean check_reach_dtmc_distr_vi = true;
 		boolean gen_trace = true;
 		boolean compute_dtmc_vi = true; // Toggle computing non distr Exp VI
@@ -2713,6 +2713,7 @@ public class MDPModelChecker extends ProbModelChecker
 			atoms = Integer.parseInt(params[0]);
 			double v_min = Double.parseDouble(params[1]);
 			double v_max = Double.parseDouble(params[2]);
+			error_thresh = Double.parseDouble(params[3]); // 0.7 for uav
 			dtmc_epsilon = Double.parseDouble(params[4]);
 			alpha = Double.parseDouble(params[5]);
 
@@ -2861,7 +2862,7 @@ public class MDPModelChecker extends ProbModelChecker
 			mainLog.println("Wasserstein p="+(settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51) ? "2" : "1")+" dtmc vs code distributions: "+operator.getW(adjusted_dtmc_distr, initialState));
 		}
 
-		if (check_reach_dtmc){
+		if (check_prob_reach_dtmc){
 			BitSet obs_states= mdp.getLabelStates(bad_states_label);
 			ModelCheckerResult result_obs = mcDTMC.computeReachProbs(dtmc, obs_states);
 			mainLog.println("Probs of reaching bad states :" + result_obs.soln[initialState]);
@@ -2918,7 +2919,7 @@ public class MDPModelChecker extends ProbModelChecker
 				}
 			}
 
-			if (check_reach_dtmc_vi){
+			if (check_prob_reach_dtmc_vi){
 				BitSet obs_states= mdp.getLabelStates(bad_states_label);
 				ModelCheckerResult result_obs = mcDTMC.computeReachProbs(vi_dtmc, obs_states);
 				mainLog.println("Probs of reaching bad states :" + result_obs.soln[vi_dtmc.getFirstInitialState()]);
@@ -3007,7 +3008,7 @@ public class MDPModelChecker extends ProbModelChecker
 		double gamma = 1;
 		double alpha = 0.7;
 		String bad_states_label = "obs";
-		boolean check_reach_dtmc = true;
+		boolean check_prob_reach_dtmc = false;
 		boolean check_reach_dtmc_distr= true;
 		boolean gen_trace = true;
 
@@ -3238,7 +3239,7 @@ public class MDPModelChecker extends ProbModelChecker
 			mainLog.println(adjusted_dtmc_distr);
 			mainLog.println("Wasserstein p="+(settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51) ? "2" : "1")+" dtmc vs code distributions: "+operator.getW(adjusted_dtmc_distr, initialState));
 		}
-		if (check_reach_dtmc){
+		if (check_prob_reach_dtmc){
 			BitSet obs_states= cvar_mdp.getProductModel().getLabelStates(bad_states_label);
 			timer = System.currentTimeMillis();
 			ModelCheckerResult result_obs = mcDTMC.computeReachProbs(dtmc, obs_states);

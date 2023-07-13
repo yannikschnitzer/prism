@@ -127,6 +127,8 @@ def base_exp(all_experiments, alg_types, rep_types, apdx='', debug=False):
 
                     # create cmd + run
                     base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
+                    if exp in exp_comparison:
+                        base_command += ' '+config[exp]['const']
                     options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep, apd, debug)
                     if debug:
                         print(prism_exec+' '+base_command+options)
@@ -149,6 +151,45 @@ def base_exp(all_experiments, alg_types, rep_types, apdx='', debug=False):
                     else:
                         print(f'Error running experiment')
                         # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, apdx, prefix, debug)
+
+# #### Compute risk neutral and risk sensitive with varying alphas experiment
+
+def vary_alpha(all_experiments, rep_types, apdx='', debug=False):
+    apd = '_'+ apdx if apdx != '' else apdx
+    alg = 'cvar'
+    for exp in all_experiments:
+        for rep in rep_types:
+            for val in (alpha_vals):
+                print(f'\nRunning vary alpha experiment:{exp}, alg:{alg}, rep:{rep}, alpha:{val}')
+                b_atoms = (b_atoms_vals[5]+1) if exp in experiment_names else config[exp]['b']
+                # create parameters
+                if 'c51' in rep:
+                    atoms= atoms_c51 if exp in experiment_names else big_atoms_c51
+                    create_params(atoms, [0, config[exp]['vmax']], 0.011, config[exp]['epsilon'], b_atoms, [0, config[exp]['vmax']], val)
+                else:
+                    atoms= atoms_qr if exp in experiment_names else big_atoms_qr
+                    create_params(atoms, [0, config[exp]['vmax']], ((1.0/atoms)*10 if 'uav' not in exp else 0.07), config[exp]['epsilon'], b_atoms, [0, config[exp]['vmax']], val)
+
+                # create cmd + run
+                base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
+                if exp in exp_comparison:
+                    base_command += ' '+config[exp]['const']
+                options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep,'_alpha_'+str(val)+apd, debug)
+                if debug:
+                    print(prism_exec+' '+base_command+options)
+                r=os.system(prism_exec+' '+base_command+options)
+                print(f'Return code: {r}')
+
+                if r==0:
+                    # save output for current algorithm if run was successfull
+                    print(f"... Saving {alg} VI output files...")
+                    # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_'+str(atom_num)+apd, prefix, debug)
+                    copy_vi_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_alpha_'+str(val)+apd, prefix, debug)
+                    copy_trace_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_alpha_'+str(val)+apd, prefix, debug)
+                    copy_dtmc_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_alpha_'+str(val)+apd, prefix, debug)
+                else:
+                    print(f'Error running experiment')
+                    # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, apdx, prefix, debug)
 
 # #### Vary atoms experiment
 
@@ -178,6 +219,8 @@ def vary_atoms_exp(all_experiments, rep_types, apdx='', debug=False):
 
                 # create cmd + run
                 base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
+                if exp in exp_comparison:
+                    base_command += ' '+config[exp]['const']
                 options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep,'_'+str(atom_num)+apd, debug)
                 if debug:
                     print(prism_exec+' '+base_command+options)
@@ -223,6 +266,8 @@ def vary_atoms_cvar(all_experiments, rep_types, apdx='', debug=False):
 
                 # create cmd + run
                 base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
+                if exp in exp_comparison:
+                    base_command += ' '+config[exp]['const']
                 options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep,'_'+str(atom_num)+'_va'+apd, debug)
                 if debug:
                     print(prism_exec+' '+base_command+options)
@@ -264,6 +309,8 @@ def vary_b_exp(all_experiments, rep_types, apdx ='', debug=False):
 
                 # create cmd + run
                 base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
+                if exp in exp_comparison:
+                    base_command += ' '+config[exp]['const']
                 options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep,'_'+str(atom_num)+apd, debug)
                 if debug:
                     print(prism_exec+' '+base_command+options)
@@ -287,7 +334,6 @@ def vary_eps_exp(all_experiments, rep_types, apdx='', debug=False):
 
     alg = 'exp'
     apd= '_'+apdx if apdx !='' else apdx
-    eps_vals = [0.01, 0.001, 0.0001, 0.00001]
     for exp in all_experiments:
         for rep in rep_types:
             print(f'\nRunning vary eps experiment:{exp}, alg:{alg}, rep:{rep}')
@@ -307,6 +353,8 @@ def vary_eps_exp(all_experiments, rep_types, apdx='', debug=False):
 
                 # create cmd + run
                 base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
+                if exp in exp_comparison:
+                    base_command += ' '+config[exp]['const']
                 options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep,'_eps_'+str(val)+apd, debug)
                 if debug:
                     print(prism_exec+' '+base_command+options)
@@ -341,15 +389,16 @@ def init_argparse() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "-v", "--version", action="version",
-        version = f"{parser.prog} version 1.0.0"
+        version = f"{parser.prog} version 1.1.0"
     )
     
     # Additional experiments
     parser.add_argument('-b', "--base", action='store_true', help='Base experiment')
-    parser.add_argument('-a', "--varyatoms", action='store_true', help='Vary the number of atoms in the distr representation')
-    parser.add_argument('-t', "--varyatomscvar", action='store_true', help='Vary the number of atoms in the distr representation for cvar')
-    parser.add_argument('-c', "--varybatoms", action='store_true', help='Vary the number of atoms in the CVaR budget')
-    parser.add_argument('-e', "--epsilon", action='store_true', help='Vary epsilon values')
+    parser.add_argument('-a', "--varyatoms", action='store_true', help='Vary the number of atoms in the distr representation from: '+str(atom_vals))
+    parser.add_argument('-t', "--varyatomscvar", action='store_true', help='Vary the number of atoms in the distr representation for cvar from: '+str(atom_vals))
+    parser.add_argument('-c', "--varybatoms", action='store_true', help='Vary the number of atoms in the CVaR budget from:'+ str(b_atoms_vals))
+    parser.add_argument('-e', "--epsilon", action='store_true', help='Vary epsilon values from:'+str(eps_vals))
+    parser.add_argument('-p', "--alpha", action='store_true', help='Vary alpha values from: '+str(alpha_vals))
     
     # Other
     parser.add_argument('-r', "--rep", metavar='rep', action='store', default='c51', help='representation of distribution')
@@ -364,15 +413,18 @@ def init_argparse() -> argparse.ArgumentParser:
 
 prefix='prism/'
 prism_exec = prefix+'bin/prism'
-mem_alloc='-javastack 80m -javamaxmem 14g '
+mem_alloc='-javastack 100m -javamaxmem 15g '
 experiment_folder = prefix+'tests/experiments/'
 trace_folder = prefix+'tests/traces/'
 rep_base = ' -distrmethod '
 tail = ' -v -ex -exportstrat stdout'
 log_cmd = ' -mainlog '
-atoms_c51 = 101; atoms_qr=1000; def_vmax = 100; big_atoms_c51=201;  big_atoms_qr=200; def_eps=0.00001; def_alpha = 0.7
+atoms_c51 = 101; atoms_qr=1000; def_vmax = 100; big_atoms_c51=101;  big_atoms_qr=100; def_eps=0.00001; def_alpha = 0.7
 atom_vals={'c51':[1, 10, 25, 50, 75, 100, 1000], 'qr': [1, 10, 25, 50, 75, 100, 500, 1000, 5000]}
 b_atoms_vals =[0, 10, 25, 50, 75, 100]
+# alpha_vals = [0.1, 0.2, 0.5, 0.7, 0.9, 0.99]
+alpha_vals = [0.1, 0.5, 0.99]
+eps_vals = [0.01, 0.001, 0.0001, 0.00001]
 header_vi =['atoms', 'vmin', 'vmax', 'error', 'epsilon','alpha']
 header_b = ['atoms', 'bmin', 'bmax']
 alg_map= {'exp': 0, 'cvar': 1}
@@ -386,7 +438,16 @@ config = {
     'mud_nails' : {'model':prefix+'tests/mud_nails.prism', 'props':prefix+'tests/mud_nails.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
     'uav_var': {'model':prefix+'tests/uav_var.prism', 'props':prefix+'tests/uav_var.props', 'pn':[2,3],  'vmax': 500, 'epsilon':def_eps, 'b':101, 'alpha':def_alpha},
     'drones_15': {'model':prefix+'tests/drones_15.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 600, 'epsilon':0.001, 'b':31, 'alpha':def_alpha},
-    'gridmap_150_3918': {'model':prefix+'tests/gridmap/gridmap_150_3918.prism', 'props':prefix+'tests/gridmap/gridmap_150_3918.props', 'pn':[3,2], 'vmax': 600, 'epsilon':0.001, 'b':101, 'alpha':0.8}
+    'gridmap_150_3918': {'model':prefix+'tests/gridmap/gridmap_150_3918.prism', 'props':prefix+'tests/gridmap/gridmap_150_3918.props', 'pn':[3,2], 'vmax': 600, 'epsilon':0.001, 'b':101, 'alpha':0.8},
+    'gridworld_4': {'model':prefix+'tests/gridworld/gridworld.nm', 'props':prefix+'tests/gridworld/gridworld.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const xm=04,ym=04,jx_min=01,jx_max=04,jy_min=1,jy_max=5,jr=0.1,fr=0.00'},
+    'gridworld_8': {'model':prefix+'tests/gridworld/gridworld.nm', 'props':prefix+'tests/gridworld/gridworld.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const xm=08,ym=04,jx_min=02,jx_max=06,jy_min=1,jy_max=5,jr=0.1,fr=0.00'},
+    'gridworld_16': {'model':prefix+'tests/gridworld/gridworld.nm', 'props':prefix+'tests/gridworld/gridworld.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const xm=16,ym=04,jx_min=06,jx_max=10,jy_min=1,jy_max=5,jr=0.1,fr=0.00'},
+    'gridworld_32': {'model':prefix+'tests/gridworld/gridworld.nm', 'props':prefix+'tests/gridworld/gridworld.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const xm=32,ym=04,jx_min=14,jx_max=18,jy_min=1,jy_max=5,jr=0.1,fr=0.00'},
+    'firewire': {'model':prefix+'tests/firewire/firewire.nm', 'props':prefix+'tests/firewire/firewire.props', 'pn':[3,2], 'vmax': 180, 'epsilon':def_eps, 'b':21, 'alpha':0.9, 'const':'-const delay=30,fast=0.1'},
+    'wlan1': {'model':prefix+'tests/wlan/wlan1.nm', 'props':prefix+'tests/wlan/wlan.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const TRANS_TIME_MAX=315'},
+    'wlan2': {'model':prefix+'tests/wlan/wlan2.nm', 'props':prefix+'tests/wlan/wlan.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'b':51, 'alpha':0.9, 'const':'-const TRANS_TIME_MAX=315'},
+    'selfStabilising_10': {'model':prefix+'tests/quantile/selfStabilising/10procs.prism', 'props':prefix+'tests/quantile/selfStabilising/minimalSteps.props', 'pn':[3,2], 'vmax': 200, 'epsilon':def_eps, 'b':101, 'alpha':def_alpha},
+    'selfStabilising_15': {'model':prefix+'tests/quantile/selfStabilising/15procs.prism', 'props':prefix+'tests/quantile/selfStabilising/minimalSteps.props', 'pn':[3,2], 'vmax': 300, 'epsilon':0.001, 'b':51, 'alpha':def_alpha}
 }
 
 
@@ -394,7 +455,9 @@ config = {
 experiment_names=[ 'cliffs', 'mud_nails', 'gridmap_10', 'drones']
 set_experiments = ['test','gridmap_10', 'drones', 'uav_var','ds_treasure', 'betting_g']
 big_experiments = ['drones_15','gridmap_150_3918'] 
-all_experiments = set_experiments+big_experiments 
+exp_comparison = ['gridworld_4', 'gridworld_8', 'gridworld_16', 'gridworld_32', 'firewire', 'wlan1', 'wlan2' ]
+exp_quantile = ['selfStabilising_10', 'selfStabilising_15']
+all_experiments = set_experiments+big_experiments + exp_comparison + exp_quantile
 rep_types = ['c51', 'qr'] # 'c51', 'qr'
 alg_types= ['exp', 'cvar'] # 'exp', 'cvar'
 cmd_base_copy = "cp "
@@ -419,6 +482,10 @@ if __name__ == "__main__":
         experiments = [args.set]
     elif args.set == 'test':
         experiments = [args.set]
+    elif args.set == 'comparison':
+        experiments = exp_comparison
+    elif args.set == 'quantile':
+        experiments = exp_quantile
     else:
         print('Unrecognized case study set or name')
         sys.exit()
@@ -457,6 +524,9 @@ if __name__ == "__main__":
 
     if args.epsilon:
         vary_eps_exp(experiments, reps, apdx=args.apdx, debug=args.debug)
+    
+    if args.alpha:
+        vary_alpha(experiments, reps, apdx=args.apdx, debug=args.debug)
     
     
 

@@ -1,0 +1,4 @@
+xm=04,ym=04,jx_min=01,jx_max=04,jy_min=1,jy_max=5,jr=0.1,fr=0.00
+xm=08,ym=04,jx_min=02,jx_max=06,jy_min=1,jy_max=5,jr=0.1,fr=0.00
+xm=16,ym=04,jx_min=06,jx_max=10,jy_min=1,jy_max=5,jr=0.1,fr=0.00
+xm=32,ym=04,jx_min=14,jx_max=18,jy_min=1,jy_max=5,jr=0.1,fr=0.00
