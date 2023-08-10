@@ -1,0 +1,5 @@
+// Time (num. rounds) to elect a leader
+
+R(dist)=? [ F "elected" ];
+
+R(dist)max=? [ F "elected" ];
