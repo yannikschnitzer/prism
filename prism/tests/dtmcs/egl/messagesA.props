@@ -1,0 +1,6 @@
+// Number of messages from B that A needs
+// in order to know a pair once B knows a pair
+
+R(dist){"messages_A_needs"}=? [ F phase=4 ];
+
+R(dist){"messages_A_needs"}max=? [ F phase=4 ];

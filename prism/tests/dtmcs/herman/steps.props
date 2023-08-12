@@ -1,0 +1,5 @@
+// Number of steps until termination
+
+R(dist)=? [ F "stable" ];
+
+R(dist)max=? [ F "stable" ];
