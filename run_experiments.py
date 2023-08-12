@@ -528,9 +528,16 @@ config = {
     'selfStabilising_10': {'model':prefix+'tests/quantile/selfStabilising/10procs.prism', 'props':prefix+'tests/quantile/selfStabilising/minimalSteps.props', 'pn':[3,2], 'vmax': 200, 'epsilon':def_eps, 'b':101, 'alpha':def_alpha},
     'selfStabilising_15': {'model':prefix+'tests/quantile/selfStabilising/15procs.prism', 'props':prefix+'tests/quantile/selfStabilising/minimalSteps.props', 'pn':[3,2], 'vmax': 300, 'epsilon':0.001, 'b':51, 'alpha':def_alpha},
     'egl_5_2': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=5,L=2'},
+    'egl_5_8': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=5,L=8'},
     'egl_10_4': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=10,L=4'},
+    'egl_10_2': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=10,L=2'},
     'egl_20_8': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=20,L=8'},
-
+    'herman_13': {'model':prefix+'tests/dtmcs/herman/herman13.pm', 'props':prefix+'tests/dtmcs/herman/steps.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
+    'herman_15': {'model':prefix+'tests/dtmcs/herman/herman15.pm', 'props':prefix+'tests/dtmcs/herman/steps.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
+    'herman_17': {'model':prefix+'tests/dtmcs/herman/herman17.pm', 'props':prefix+'tests/dtmcs/herman/steps.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
+    'leader_async6_5': {'model':prefix+'tests/dtmcs/leader_sync/leader_async6_5.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
+    'leader_async6_6': {'model':prefix+'tests/dtmcs/leader_sync/leader_async6_6.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
+    'leader_async6_8': {'model':prefix+'tests/dtmcs/leader_sync/leader_async6_8.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
 }
 
 
@@ -540,7 +547,10 @@ set_experiments = ['test','gridmap_10', 'drones', 'uav_var','ds_treasure', 'bett
 big_experiments = ['drones_15','gridmap_150_3918'] 
 exp_comparison = ['gridworld_4', 'gridworld_8', 'gridworld_16', 'gridworld_32', 'firewire', 'wlan2' ]
 exp_quantile = ['selfStabilising_10', 'selfStabilising_15']
-exp_dtmc = ['egl_5_2', 'egl_20_8', 'egl_10_4']
+egl = ['egl_5_2', 'egl_5_8' , 'egl_10_2', 'egl_10_4', 'egl_20_8']
+leader = ['leader_async6_5', 'leader_async6_6' , 'leader_async6_8']
+herman = ['herman_13', 'herman_15', 'herman_17']
+exp_dtmc = egl + herman + leader
 all_experiments = set_experiments+big_experiments + exp_comparison + exp_quantile + exp_dtmc
 rep_types = ['c51', 'qr'] # 'c51', 'qr'
 alg_types= ['exp', 'cvar'] # 'exp', 'cvar'
@@ -572,6 +582,10 @@ if __name__ == "__main__":
         experiments = exp_quantile
     elif args.set == 'dtmc':
         experiments = exp_dtmc
+    elif args.set == 'herman':
+        experiments = herman
+    elif args.set == 'leader':
+        experiments = leader
     else:
         print('Unrecognized case study set or name')
         sys.exit()
