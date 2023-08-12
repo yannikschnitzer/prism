@@ -75,6 +75,8 @@ def copy_trace_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix,debu
 def copy_dtmc_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix, debug):
     # Copy DTMC files
     source = prefix+'distr_dtmc_'+alg+'.csv'
+    if 'dtmc' in alg:
+        source = prefix+'distr.csv' 
     target = exp_folder+exp_name+'/'+exp_name+'_distr_dtmc_'+alg+'_'+rep+apdx+'.csv'
     command = cmd_base+source+' '+target
     if debug:
@@ -395,7 +397,60 @@ def vary_eps_exp(all_experiments, rep_types, apdx='', debug=False):
                 else:
                     print(f'Error running experiment')
                     # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, '_eps_'+str(val)+apd, prefix, debug)
+
+def dtmc_comparison(all_experiments, rep_types, apdx='', debug=False):
+    alg_types = ['exp', 'dtmc']
+    apd = '_'+ apdx if apdx != '' else apdx
+    for exp in all_experiments:
+        for alg in alg_types:
+            if '-' in alg:
+                print(f'\nSkipping experiment:{exp}, alg:{alg}')
+                continue
+            else:
+                for rep in rep_types:
+                    print(f'\nRunning base experiment:{exp}, alg:{alg}, rep:{rep}')
+                    b_atoms = (b_atoms_vals[5]+1) if exp in experiment_names else config[exp]['b']
+                    # create parameters
+                    if 'c51' in rep:
+                        if 'atoms' in config[exp]:
+                            atoms = config[exp]['atoms']
+                        else:
+                            atoms= atoms_c51 if exp in experiment_names else big_atoms_c51
+                        create_params(atoms, [0, config[exp]['vmax']], 0.01, config[exp]['epsilon'], b_atoms, [0, config[exp]['vmax']], config[exp]['alpha'])
+                    else:
+                        if 'atoms' in config[exp]:
+                            atoms = config[exp]['atoms']-1
+                        else:
+                            atoms= atoms_qr if exp in experiment_names else big_atoms_qr
+                        create_params(atoms, [0, config[exp]['vmax']], ((1.0/atoms)*10 if 'uav' not in exp else 0.07), config[exp]['epsilon'], b_atoms, [0, config[exp]['vmax']], config[exp]['alpha'])
+
+                    # create cmd + run
+                    base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']
                     
+                    if 'exp' in alg:
+                        base_command+= rep_base+rep+' -mdp'
+                    # if exp in exp_comparison:
+                    #     base_command += ' '+config[exp]['const']
+                    if 'const' in config[exp]:
+                        base_command += ' '+config[exp]['const']
+                    
+                    options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep, apd, debug)
+                    if debug:
+                        print(prism_exec+' '+base_command+options)
+                    r=os.system(prism_exec+' '+base_command+options)
+                    print(f'Return code: {r}')
+
+                    if r==0:
+                        # save output for current algorithm
+                        print(f"... Saving {alg} VI output files...")
+                        # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, apdx, prefix, debug)
+                        if 'exp' in alg:
+                            copy_vi_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug)
+                            copy_trace_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug)
+                        copy_dtmc_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug)
+                    else:
+                        print(f'Error running experiment')
+                        # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, apdx, prefix, debug)                   
 
 # #### Run experiments 
 # example command:
@@ -405,7 +460,7 @@ def init_argparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         usage="%(prog)s exp_type [rep] [alg] [set or case study]",
         description=f"Run distr value iteration experiments.\n \
-        \n Available experiments: base (-b), vary_atoms(-a), vary_atoms_cvar(-t), vary_b_atoms(-c), vary_epsilon (-e)\
+        \n Available experiments: base (-b), vary_atoms(-a), vary_atoms_cvar(-t), vary_b_atoms(-c), vary_epsilon (-e), dtmc (-m)\
         \n Available case studies: {list(config.keys())} --- default: all \
         \n Available Distr representations: {rep_types} --- default: c51 \
         \n Available Distr VI optimizations : {alg_types}  --- default: all ",
@@ -423,6 +478,7 @@ def init_argparse() -> argparse.ArgumentParser:
     parser.add_argument('-c', "--varybatoms", action='store_true', help='Vary the number of atoms in the CVaR budget from:'+ str(b_atoms_vals))
     parser.add_argument('-e', "--epsilon", action='store_true', help='Vary epsilon values from:'+str(eps_vals))
     parser.add_argument('-p', "--alpha", action='store_true', help='Vary alpha values from: '+str(alpha_vals))
+    parser.add_argument('-m', "--dtmc", action='store_true', help='Run approximate DVI and Forward DTMC methods')
     
     # Other
     parser.add_argument('-r', "--rep", metavar='rep', action='store', default='c51', help='representation of distribution')
@@ -451,7 +507,7 @@ alpha_vals = [0.1, 0.5, 0.99]
 eps_vals = [0.01, 0.001, 0.0001, 0.00001]
 header_vi =['atoms', 'vmin', 'vmax', 'error', 'epsilon','alpha']
 header_b = ['atoms', 'bmin', 'bmax']
-alg_map= {'exp': 0, 'cvar': 1}
+alg_map= {'exp': 0, 'cvar': 1, 'dtmc':2}
 config = {
     'test': {'model':prefix+'tests/corridor.prism', 'props':prefix+'tests/corridor.props', 'pn':[3,2], 'vmax': 25, 'epsilon':def_eps, 'b':30, 'alpha':def_alpha},
     'cliffs' : {'model':prefix+'tests/cliffs_v2.prism', 'props':prefix+'tests/cliffs_v2.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
@@ -468,10 +524,13 @@ config = {
     'gridworld_16': {'model':prefix+'tests/gridworld/gridworld.nm', 'props':prefix+'tests/gridworld/gridworld.props', 'pn':[3,2], 'vmax': 50, 'atoms':51, 'epsilon':def_eps, 'b':51, 'alpha':0.9, 'const':'-const xm=16,ym=04,jx_min=06,jx_max=10,jy_min=1,jy_max=5,jr=0.1,fr=0.00'},
     'gridworld_32': {'model':prefix+'tests/gridworld/gridworld.nm', 'props':prefix+'tests/gridworld/gridworld.props', 'pn':[3,2], 'vmax': 50, 'atoms':51, 'epsilon':def_eps, 'b':51, 'alpha':0.9, 'const':'-const xm=32,ym=04,jx_min=14,jx_max=18,jy_min=1,jy_max=5,jr=0.1,fr=0.00'},
     'firewire': {'model':prefix+'tests/firewire/firewire.nm', 'props':prefix+'tests/firewire/firewire.props', 'pn':[3,2], 'vmax': 180, 'atoms':61, 'epsilon':def_eps, 'b':31, 'alpha':0.9, 'const':'-const delay=30,fast=0.1'},
-    'wlan1': {'model':prefix+'tests/wlan/wlan1.nm', 'props':prefix+'tests/wlan/wlan.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const TRANS_TIME_MAX=315'},
     'wlan2': {'model':prefix+'tests/wlan/wlan2.nm', 'props':prefix+'tests/wlan/wlan.props', 'pn':[3,2], 'vmax': 80, 'atoms':41, 'epsilon':def_eps, 'b':41, 'alpha':0.9, 'const':'-const TRANS_TIME_MAX=315'},
     'selfStabilising_10': {'model':prefix+'tests/quantile/selfStabilising/10procs.prism', 'props':prefix+'tests/quantile/selfStabilising/minimalSteps.props', 'pn':[3,2], 'vmax': 200, 'epsilon':def_eps, 'b':101, 'alpha':def_alpha},
-    'selfStabilising_15': {'model':prefix+'tests/quantile/selfStabilising/15procs.prism', 'props':prefix+'tests/quantile/selfStabilising/minimalSteps.props', 'pn':[3,2], 'vmax': 300, 'epsilon':0.001, 'b':51, 'alpha':def_alpha}
+    'selfStabilising_15': {'model':prefix+'tests/quantile/selfStabilising/15procs.prism', 'props':prefix+'tests/quantile/selfStabilising/minimalSteps.props', 'pn':[3,2], 'vmax': 300, 'epsilon':0.001, 'b':51, 'alpha':def_alpha},
+    'egl_5_2': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=5,L=2'},
+    'egl_10_4': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=10,L=4'},
+    'egl_20_8': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=20,L=8'},
+
 }
 
 
@@ -481,7 +540,8 @@ set_experiments = ['test','gridmap_10', 'drones', 'uav_var','ds_treasure', 'bett
 big_experiments = ['drones_15','gridmap_150_3918'] 
 exp_comparison = ['gridworld_4', 'gridworld_8', 'gridworld_16', 'gridworld_32', 'firewire', 'wlan2' ]
 exp_quantile = ['selfStabilising_10', 'selfStabilising_15']
-all_experiments = set_experiments+big_experiments + exp_comparison + exp_quantile
+exp_dtmc = ['egl_5_2', 'egl_20_8', 'egl_10_4']
+all_experiments = set_experiments+big_experiments + exp_comparison + exp_quantile + exp_dtmc
 rep_types = ['c51', 'qr'] # 'c51', 'qr'
 alg_types= ['exp', 'cvar'] # 'exp', 'cvar'
 cmd_base_copy = "cp "
@@ -510,6 +570,8 @@ if __name__ == "__main__":
         experiments = exp_comparison
     elif args.set == 'quantile':
         experiments = exp_quantile
+    elif args.set == 'dtmc':
+        experiments = exp_dtmc
     else:
         print('Unrecognized case study set or name')
         sys.exit()
@@ -551,6 +613,9 @@ if __name__ == "__main__":
     
     if args.alpha:
         vary_alpha(experiments, reps, apdx=args.apdx, debug=args.debug)
+
+    if args.dtmc:
+        dtmc_comparison(experiments, reps, apdx=args.apdx, debug=args.debug)
     
     
 
