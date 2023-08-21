@@ -3,6 +3,10 @@ egl.pm -const N=5,L=4
 egl.pm -const N=5,L=6
 egl.pm -const N=5,L=8
 
+egl.pm -const N=8,L=6
+egl.pm -const N=8,L=8
+egl.pm -const N=8,L=10
+
 egl.pm -const N=10,L=2
 egl.pm -const N=10,L=4
 egl.pm -const N=10,L=6

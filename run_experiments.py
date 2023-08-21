@@ -493,7 +493,7 @@ def init_argparse() -> argparse.ArgumentParser:
 
 prefix='prism/'
 prism_exec = prefix+'bin/prism'
-mem_alloc='-javastack 100m -javamaxmem 15g '
+mem_alloc='-javastack 100m -javamaxmem 14g '
 experiment_folder = prefix+'tests/experiments/'
 trace_folder = prefix+'tests/traces/'
 rep_base = ' -distrmethod '
@@ -530,9 +530,9 @@ config = {
     'egl_5_2': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=5,L=2'},
     'egl_5_6': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=5,L=6'},
     'egl_5_8': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=5,L=8'},
-    'egl_10_4': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=10,L=4'},
-    'egl_10_2': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=10,L=2'},
-    'egl_20_8': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=20,L=8'},
+    'egl_8_6': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=8,L=6'},
+    'egl_8_8': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=8,L=8'},
+    'egl_8_10': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=8,L=10'},
     'herman_13': {'model':prefix+'tests/dtmcs/herman/herman13.pm', 'props':prefix+'tests/dtmcs/herman/steps.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
     'herman_15': {'model':prefix+'tests/dtmcs/herman/herman15.pm', 'props':prefix+'tests/dtmcs/herman/steps.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
     'herman_17': {'model':prefix+'tests/dtmcs/herman/herman17.pm', 'props':prefix+'tests/dtmcs/herman/steps.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
