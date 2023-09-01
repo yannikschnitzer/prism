@@ -121,6 +121,9 @@ public interface ModelSimple<Value> extends Model<Value>
 			case IMDP:
 				prodModel = new IMDPSimple<>();
 				break;
+			case UMDP:
+				prodModel = new UMDPSimple<>();
+				break;
 			case STPG:
 				prodModel = new STPGSimple<>();
 				break;

@@ -90,6 +90,11 @@ public interface UMDP<Value> extends NondetModel<Value>
 	}
 
 	/**
+	 * Get the uncertain distribution (uncertainty set) for choice {@code i} of state {@code s}.
+	 */
+	public UDistribution<Value> getUncertainDistribution(int s, int i);
+
+	/**
 	 * Do a matrix-vector multiplication followed by min/max, i.e. one step of value iteration,
 	 * i.e. for each s: result[s] = min/max_k min/max_P { sum_j P(s,k,j)*vect[j] }
 	 * Optionally, store optimal (memoryless) strategy info.
