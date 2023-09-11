@@ -2684,8 +2684,8 @@ public class MDPModelChecker extends ProbModelChecker
 		double gamma = 1;
 		double alpha=0.5;
 		Double dtmc_epsilon = null;
-		boolean check_prob_reach_dtmc = false;
-		boolean check_reach_dtmc_distr = true;
+		boolean check_prob_reach_dtmc = false; // Toggle for probabilistic reachability for a label
+		boolean check_reach_dtmc_distr = true; // Toggle to compute DTMC distribution after DVI
 		boolean check_prob_reach_dtmc_vi = false;
 		boolean check_reach_dtmc_distr_vi = true;
 		boolean gen_trace = true;
@@ -2869,8 +2869,10 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 
 		operator.writeToFile(dtmc.getFirstInitialState(), null);
-		MDPSimple mdpToSimulate = new MDPSimple(mdp);
+		
+		MDPSimple mdpToSimulate;
 		if(gen_trace) {
+			mdpToSimulate = new MDPSimple(mdp);
 			exportTrace(mdpToSimulate, target, strat, "exp");
 		}
 
@@ -2926,6 +2928,7 @@ public class MDPModelChecker extends ProbModelChecker
 			}
 
 			if(gen_trace) {
+				mdpToSimulate = new MDPSimple(mdp);
 				exportTrace(mdpToSimulate, target, (MDStrategy) vi_res.strat, "vi");
 			}
 
@@ -3008,8 +3011,8 @@ public class MDPModelChecker extends ProbModelChecker
 		double gamma = 1;
 		double alpha = 0.7;
 		String bad_states_label = "obs";
-		boolean check_prob_reach_dtmc = false;
-		boolean check_reach_dtmc_distr= true;
+		boolean check_prob_reach_dtmc = false; // Toggle for probabilistic reachability
+		boolean check_reach_dtmc_distr= true; // Toggle for running DTMC code after VI
 		boolean gen_trace = true;
 
 		String c51 = "C51";

@@ -135,7 +135,7 @@ def base_exp(all_experiments, alg_types, rep_types, apdx='', debug=False):
 
                     # create cmd + run
                     base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
-                    if exp in exp_comparison:
+                    if 'const' in config[exp]:
                         base_command += ' '+config[exp]['const']
                     options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep, apd, debug)
                     if debug:
@@ -186,7 +186,7 @@ def vary_alpha(all_experiments, rep_types, apdx='', debug=False):
 
                 # create cmd + run
                 base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
-                if exp in exp_comparison:
+                if 'const' in config[exp]:
                     base_command += ' '+config[exp]['const']
                 options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep,'_alpha_'+str(val)+apd, debug)
                 if debug:
@@ -233,7 +233,7 @@ def vary_atoms_exp(all_experiments, rep_types, apdx='', debug=False):
 
                 # create cmd + run
                 base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
-                if exp in exp_comparison:
+                if 'const' in config[exp]:
                     base_command += ' '+config[exp]['const']
                 options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep,'_'+str(atom_num)+apd, debug)
                 if debug:
@@ -280,7 +280,7 @@ def vary_atoms_cvar(all_experiments, rep_types, apdx='', debug=False):
 
                 # create cmd + run
                 base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
-                if exp in exp_comparison:
+                if 'const' in config[exp]:
                     base_command += ' '+config[exp]['const']
                 options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep,'_'+str(atom_num)+'_va'+apd, debug)
                 if debug:
@@ -329,7 +329,7 @@ def vary_b_exp(all_experiments, rep_types, apdx ='', debug=False):
 
                 # create cmd + run
                 base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
-                if exp in exp_comparison:
+                if 'const' in config[exp]:
                     base_command += ' '+config[exp]['const']
                 options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep,'_'+str(atom_num)+apd, debug)
                 if debug:
@@ -379,7 +379,7 @@ def vary_eps_exp(all_experiments, rep_types, apdx='', debug=False):
 
                 # create cmd + run
                 base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
-                if exp in exp_comparison:
+                if 'const' in config[exp]:
                     base_command += ' '+config[exp]['const']
                 options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep,'_eps_'+str(val)+apd, debug)
                 if debug:
@@ -429,8 +429,7 @@ def dtmc_comparison(all_experiments, rep_types, apdx='', debug=False):
                     
                     if 'exp' in alg:
                         base_command+= rep_base+rep+' -mdp'
-                    # if exp in exp_comparison:
-                    #     base_command += ' '+config[exp]['const']
+                    
                     if 'const' in config[exp]:
                         base_command += ' '+config[exp]['const']
                     
@@ -484,7 +483,7 @@ def init_argparse() -> argparse.ArgumentParser:
     parser.add_argument('-r', "--rep", metavar='rep', action='store', default='c51', help='representation of distribution')
     parser.add_argument('-i', "--alg", metavar='alg', action='store', default='all', help='type of optimization')
     parser.add_argument('-s', "--set", metavar='set', action='store', default='all', help='set of case studies or one case study')
-    parser.add_argument('-d', "--debug", action='store_true', help='Debug option for additional prints')
+    parser.add_argument('-d', "--debug", action='store_false', help='Remove debug option for additional prints')
     parser.add_argument('-x', "--apdx", metavar='apdx', action='store', default='', help='set an appendix to output file names')
 
     return parser
@@ -527,44 +526,32 @@ config = {
     'wlan2': {'model':prefix+'tests/wlan/wlan2.nm', 'props':prefix+'tests/wlan/wlan.props', 'pn':[3,2], 'vmax': 80, 'atoms':41, 'epsilon':def_eps, 'b':41, 'alpha':0.9, 'const':'-const TRANS_TIME_MAX=315'},
     'selfStabilising_10': {'model':prefix+'tests/quantile/selfStabilising/10procs.prism', 'props':prefix+'tests/quantile/selfStabilising/minimalSteps.props', 'pn':[3,2], 'vmax': 200, 'epsilon':def_eps, 'b':101, 'alpha':def_alpha},
     'selfStabilising_15': {'model':prefix+'tests/quantile/selfStabilising/15procs.prism', 'props':prefix+'tests/quantile/selfStabilising/minimalSteps.props', 'pn':[3,2], 'vmax': 300, 'epsilon':0.001, 'b':51, 'alpha':def_alpha},
-    'egl_5_2': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 20, 'atoms':21, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=5,L=2'},
-    'egl_5_6': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 20, 'atoms':21, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=5,L=6'},
-    'egl_5_8': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 20, 'atoms':21, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=5,L=8'},
-    'egl_8_6': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 20, 'atoms':21, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=8,L=6'},
-    'egl_8_8': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 20, 'atoms':21, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=8,L=8'},
-    'egl_8_10': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 20, 'atoms':21, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=8,L=10'},
-    'herman_13': {'model':prefix+'tests/dtmcs/herman/herman13.pm', 'props':prefix+'tests/dtmcs/herman/steps.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
+    'egl_8_3': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 40, 'atoms':41, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=8,L=3'},
+    'egl_8_4': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 40, 'atoms':41, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=8,L=4'},
+    'egl_8_5': {'model':prefix+'tests/dtmcs/egl/egl.pm', 'props':prefix+'tests/dtmcs/egl/messagesA.props', 'pn':[2,-1, 1], 'vmax': 50, 'atoms':51, 'epsilon':def_eps, 'b':101, 'alpha':0.9, 'const':'-const N=8,L=5'},
+    'herman_13': {'model':prefix+'tests/dtmcs/herman/herman13.pm', 'props':prefix+'tests/dtmcs/herman/steps.props', 'pn':[2,-1, 1], 'vmax': 120, 'atoms':121, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
     'herman_15': {'model':prefix+'tests/dtmcs/herman/herman15.pm', 'props':prefix+'tests/dtmcs/herman/steps.props', 'pn':[2,-1, 1], 'vmax': 120, 'atoms':121, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
-    'herman_17': {'model':prefix+'tests/dtmcs/herman/herman17.pm', 'props':prefix+'tests/dtmcs/herman/steps.props', 'pn':[2,-1, 1], 'vmax': 120, 'atoms':121, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
-    'herman_18': {'model':prefix+'tests/dtmcs/herman/herman18.pm', 'props':prefix+'tests/dtmcs/herman/steps.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
-    'leader_sync6_5': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync6_5.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 50, 'atoms':51, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
-    'leader_sync6_6': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync6_6.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 50, 'atoms':51, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
-    'leader_sync6_8': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync6_8.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 50, 'atoms':51, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
-    'leader_sync8_5': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync8_5.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 10, 'atoms':11, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
-    'leader_sync8_6': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync8_6.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 11, 'atoms':11, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
+    'herman_17': {'model':prefix+'tests/dtmcs/herman/herman17.pm', 'props':prefix+'tests/dtmcs/herman/steps.props', 'pn':[2,-1, 1], 'vmax': 140, 'atoms':141, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
+    'leader_sync8_5': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync8_5.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 20, 'atoms':21, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
+    'leader_sync8_6': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync8_6.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 20, 'atoms':21, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
     'leader_sync8_7': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync8_7.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 50, 'atoms':51, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
-    'leader_sync10_3': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync10_3.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 40, 'atoms':41, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
-    'leader_sync10_4': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync10_4.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 20, 'atoms':21, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
+    'leader_sync10_3': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync10_3.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 30, 'atoms':31, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
+    'leader_sync10_4': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync10_4.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 30, 'atoms':31, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
     'leader_sync10_5': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync10_5.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
-    'leader_sync11_2': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync11_2.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 80, 'atoms':81, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
-    'leader_sync11_3': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync11_3.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 40, 'atoms':41, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
-    'leader_sync11_4': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync11_4.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
-    'leader_sync12_2': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync12_2.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 80, 'atoms':81, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
-    'leader_sync12_3': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync12_3.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 50, 'atoms':51, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
 }
 
 
 ###### Case studies to run 
 experiment_names=[ 'cliffs', 'mud_nails', 'gridmap_10', 'drones']
-set_experiments = ['test','gridmap_10', 'drones', 'uav_var','ds_treasure', 'betting_g']
+set_experiments = ['test', 'betting_g','ds_treasure', 'gridmap_10', 'uav_var', 'drones']
 big_experiments = ['drones_15','gridmap_150_3918'] 
-exp_comparison = ['gridworld_4', 'gridworld_8', 'gridworld_16', 'gridworld_32', 'firewire', 'wlan2' ]
+ssp_comparison = ['gridworld_4', 'gridworld_8', 'gridworld_16', 'gridworld_32', 'firewire', 'wlan2' ]
 exp_quantile = ['selfStabilising_10', 'selfStabilising_15']
-egl = ['egl_5_2', 'egl_5_6', 'egl_5_8' , 'egl_8_6', 'egl_8_8', 'egl_8_10']
-leader = ['leader_sync6_6' , 'leader_sync6_8', 'leader_sync8_5', 'leader_sync8_6', 'leader_sync8_7', 'leader_sync10_3', 'leader_sync10_4', 'leader_sync10_5', 'leader_sync11_2', 'leader_sync11_3', 'leader_sync12_2', 'leader_sync12_3']
+egl = [ 'egl_8_3', 'egl_8_4', 'egl_8_5'] #, 'egl_8_6'
+leader = ['leader_sync8_5', 'leader_sync10_4', 'leader_sync8_6'] # , 'leader_sync12_3']
 herman = ['herman_13', 'herman_15', 'herman_17']
 exp_dtmc = egl + herman + leader
-all_experiments = set_experiments+big_experiments + exp_comparison + exp_quantile + exp_dtmc
+all_experiments = set_experiments+big_experiments + ssp_comparison + exp_quantile + exp_dtmc
 rep_types = ['c51', 'qr'] # 'c51', 'qr'
 alg_types= ['exp', 'cvar'] # 'exp', 'cvar'
 cmd_base_copy = "cp "
@@ -590,7 +577,7 @@ if __name__ == "__main__":
     elif args.set == 'test':
         experiments = [args.set]
     elif args.set == 'comparison':
-        experiments = exp_comparison
+        experiments = ssp_comparison
     elif args.set == 'quantile':
         experiments = exp_quantile
     elif args.set == 'dtmc':
@@ -599,6 +586,8 @@ if __name__ == "__main__":
         experiments = herman
     elif args.set == 'leader':
         experiments = leader
+    elif args.set == 'egl':
+        experiments = egl
     else:
         print('Unrecognized case study set or name')
         sys.exit()
