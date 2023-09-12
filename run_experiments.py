@@ -508,7 +508,7 @@ header_vi =['atoms', 'vmin', 'vmax', 'error', 'epsilon','alpha']
 header_b = ['atoms', 'bmin', 'bmax']
 alg_map= {'exp': 0, 'cvar': 1, 'dtmc':2}
 config = {
-    'test': {'model':prefix+'tests/corridor.prism', 'props':prefix+'tests/corridor.props', 'pn':[3,2], 'vmax': 25, 'epsilon':def_eps, 'b':30, 'alpha':def_alpha},
+    'test': {'model':prefix+'tests/corridor.prism', 'props':prefix+'tests/corridor.props', 'pn':[3,2], 'vmax': 25, 'atoms':11, 'epsilon':def_eps, 'b':30, 'alpha':def_alpha},
     'cliffs' : {'model':prefix+'tests/cliffs_v2.prism', 'props':prefix+'tests/cliffs_v2.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
     'betting_g' :{'model':prefix+'tests/betting_game.prism', 'props':prefix+'tests/betting_game.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.8},
     'ds_treasure' :{'model':prefix+'tests/ds_treasure.prism', 'props':prefix+'tests/ds_treasure.props', 'pn':[3,2], 'vmax': 800, 'epsilon':def_eps, 'b':101, 'alpha':0.8},
@@ -546,12 +546,12 @@ experiment_names=[ 'cliffs', 'mud_nails', 'gridmap_10', 'drones']
 set_experiments = ['test', 'betting_g','ds_treasure', 'gridmap_10', 'uav_var', 'drones']
 big_experiments = ['drones_15','gridmap_150_3918'] 
 ssp_comparison = ['gridworld_4', 'gridworld_8', 'gridworld_16', 'gridworld_32', 'firewire', 'wlan2' ]
-exp_quantile = ['selfStabilising_10', 'selfStabilising_15']
+# exp_quantile = ['selfStabilising_10', 'selfStabilising_15']
 egl = [ 'egl_8_3', 'egl_8_4', 'egl_8_5'] #, 'egl_8_6'
 leader = ['leader_sync8_5', 'leader_sync10_4', 'leader_sync8_6'] # , 'leader_sync12_3']
 herman = ['herman_13', 'herman_15', 'herman_17']
 exp_dtmc = egl + herman + leader
-all_experiments = set_experiments+big_experiments + ssp_comparison + exp_quantile + exp_dtmc
+all_experiments = set_experiments+big_experiments + ssp_comparison + exp_dtmc
 rep_types = ['c51', 'qr'] # 'c51', 'qr'
 alg_types= ['exp', 'cvar'] # 'exp', 'cvar'
 cmd_base_copy = "cp "
