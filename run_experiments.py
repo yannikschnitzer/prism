@@ -511,13 +511,13 @@ config = {
     'test': {'model':prefix+'tests/corridor.prism', 'props':prefix+'tests/corridor.props', 'pn':[3,2], 'vmax': 25, 'atoms':11, 'epsilon':def_eps, 'b':30, 'alpha':def_alpha},
     'cliffs' : {'model':prefix+'tests/cliffs_v2.prism', 'props':prefix+'tests/cliffs_v2.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
     'betting_g' :{'model':prefix+'tests/betting_game.prism', 'props':prefix+'tests/betting_game.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.8},
-    'ds_treasure' :{'model':prefix+'tests/ds_treasure.prism', 'props':prefix+'tests/ds_treasure.props', 'pn':[3,2], 'vmax': 800, 'epsilon':def_eps, 'b':101, 'alpha':0.8},
+    'ds_treasure' :{'model':prefix+'tests/ds_treasure.prism', 'props':prefix+'tests/ds_treasure.props', 'pn':[3,2], 'vmax': 800, 'atoms':201, 'epsilon':def_eps, 'b':101, 'alpha':0.8},
     'drones' :{'model':prefix+'tests/drones.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
     'gridmap_10' : {'model':prefix+'tests/gridmap/gridmap_10_10.prism', 'props':prefix+'tests/gridmap/gridmap_10_10.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
     'mud_nails' : {'model':prefix+'tests/mud_nails.prism', 'props':prefix+'tests/mud_nails.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
-    'uav_var': {'model':prefix+'tests/uav_var.prism', 'props':prefix+'tests/uav_var.props', 'pn':[2,3],  'vmax': 500, 'epsilon':def_eps, 'b':101, 'alpha':def_alpha},
-    'drones_15': {'model':prefix+'tests/drones_15.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 600, 'epsilon':0.001, 'b':31, 'alpha':def_alpha},
-    'gridmap_150_3918': {'model':prefix+'tests/gridmap/gridmap_150_3918.prism', 'props':prefix+'tests/gridmap/gridmap_150_3918.props', 'pn':[3,2], 'vmax': 600, 'epsilon':0.001, 'b':101, 'alpha':0.8},
+    'uav_var': {'model':prefix+'tests/uav_var.prism', 'props':prefix+'tests/uav_var.props', 'pn':[2,3],  'vmax': 500, 'atoms':201, 'epsilon':def_eps, 'b':101, 'alpha':def_alpha},
+    'drones_15': {'model':prefix+'tests/drones_15.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 600, 'atoms':201, 'epsilon':0.001, 'b':31, 'alpha':def_alpha},
+    'gridmap_150_3918': {'model':prefix+'tests/gridmap/gridmap_150_3918.prism', 'props':prefix+'tests/gridmap/gridmap_150_3918.props', 'pn':[3,2], 'vmax': 600, 'atoms':201, 'epsilon':0.001, 'b':101, 'alpha':0.8},
     'gridworld_4': {'model':prefix+'tests/gridworld/gridworld.nm', 'props':prefix+'tests/gridworld/gridworld.props', 'pn':[3,2], 'vmax': 50, 'atoms':51, 'epsilon':def_eps, 'b':51, 'alpha':0.9, 'const':'-const xm=04,ym=04,jx_min=01,jx_max=04,jy_min=1,jy_max=5,jr=0.1,fr=0.00'},
     'gridworld_8': {'model':prefix+'tests/gridworld/gridworld.nm', 'props':prefix+'tests/gridworld/gridworld.props', 'pn':[3,2], 'vmax': 50, 'atoms':51, 'epsilon':def_eps, 'b':51, 'alpha':0.9, 'const':'-const xm=08,ym=04,jx_min=02,jx_max=06,jy_min=1,jy_max=5,jr=0.1,fr=0.00'},
     'gridworld_16': {'model':prefix+'tests/gridworld/gridworld.nm', 'props':prefix+'tests/gridworld/gridworld.props', 'pn':[3,2], 'vmax': 50, 'atoms':51, 'epsilon':def_eps, 'b':51, 'alpha':0.9, 'const':'-const xm=16,ym=04,jx_min=06,jx_max=10,jy_min=1,jy_max=5,jr=0.1,fr=0.00'},
@@ -544,7 +544,7 @@ config = {
 ###### Case studies to run 
 experiment_names=[ 'cliffs', 'mud_nails', 'gridmap_10', 'drones']
 set_experiments = ['test', 'betting_g','ds_treasure', 'gridmap_10', 'uav_var', 'drones']
-big_experiments = ['drones_15','gridmap_150_3918'] 
+big_experiments = ['drones_15','gridmap_150_3918']
 ssp_comparison = ['gridworld_4', 'gridworld_8', 'gridworld_16', 'gridworld_32', 'firewire', 'wlan2' ]
 # exp_quantile = ['selfStabilising_10', 'selfStabilising_15']
 egl = [ 'egl_8_3', 'egl_8_4', 'egl_8_5'] #, 'egl_8_6'
@@ -570,11 +570,11 @@ if __name__ == "__main__":
         experiments = all_experiments
     elif args.set == 'big':
         experiments = big_experiments
+    elif args.set == 'main':
+        experiments = ['betting_g','ds_treasure', 'gridmap_150_3918', 'uav_var', 'drones_15']
     elif args.set =='set':
         experiments = set_experiments
     elif args.set in all_experiments:
-        experiments = [args.set]
-    elif args.set == 'test':
         experiments = [args.set]
     elif args.set == 'comparison':
         experiments = ssp_comparison
