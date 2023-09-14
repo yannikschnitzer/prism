@@ -2824,6 +2824,9 @@ public class MDPModelChecker extends ProbModelChecker
 		Arrays.stream(operator.getDist(mdp.getFirstInitialState())).forEach(e -> mainLog.print(df.format(e) + ", "));
 		mainLog.print("]\n");
 
+		mainLog.println("\nV[start] at " + (iters + 1) + " : "+operator.getExpValue(operator.getDist(mdp.getFirstInitialState())));
+	
+
 		// Policy
 //		mainLog.println("\nPolicy");
 //		//Arrays.toString(policy);
