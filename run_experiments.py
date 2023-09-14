@@ -516,7 +516,7 @@ config = {
     'gridmap_10' : {'model':prefix+'tests/gridmap/gridmap_10_10.prism', 'props':prefix+'tests/gridmap/gridmap_10_10.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
     'mud_nails' : {'model':prefix+'tests/mud_nails.prism', 'props':prefix+'tests/mud_nails.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
     'uav_var': {'model':prefix+'tests/uav_var.prism', 'props':prefix+'tests/uav_var.props', 'pn':[2,3],  'vmax': 500, 'atoms':201, 'epsilon':def_eps, 'b':101, 'alpha':def_alpha},
-    'drones_15': {'model':prefix+'tests/drones_15.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 600, 'atoms':201, 'epsilon':0.001, 'b':31, 'alpha':def_alpha},
+    'drones_15': {'model':prefix+'tests/drones_15.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2],  'vmax': 500, 'atoms':201, 'epsilon':0.001, 'b':51, 'alpha':0.9},
     'gridmap_150_3918': {'model':prefix+'tests/gridmap/gridmap_150_3918.prism', 'props':prefix+'tests/gridmap/gridmap_150_3918.props', 'pn':[3,2], 'vmax': 600, 'atoms':201, 'epsilon':0.001, 'b':101, 'alpha':0.8},
     'gridworld_4': {'model':prefix+'tests/gridworld/gridworld.nm', 'props':prefix+'tests/gridworld/gridworld.props', 'pn':[3,2], 'vmax': 50, 'atoms':51, 'epsilon':def_eps, 'b':51, 'alpha':0.9, 'const':'-const xm=04,ym=04,jx_min=01,jx_max=04,jy_min=1,jy_max=5,jr=0.1,fr=0.00'},
     'gridworld_8': {'model':prefix+'tests/gridworld/gridworld.nm', 'props':prefix+'tests/gridworld/gridworld.props', 'pn':[3,2], 'vmax': 50, 'atoms':51, 'epsilon':def_eps, 'b':51, 'alpha':0.9, 'const':'-const xm=08,ym=04,jx_min=02,jx_max=06,jy_min=1,jy_max=5,jr=0.1,fr=0.00'},
