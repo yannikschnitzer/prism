@@ -2671,8 +2671,8 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Set up distribution variables
 		int atoms;
-		int iterations = 1500;
-		int min_iter = 20;
+		int iterations = 10;
+		int min_iter = 2;
 		double error_thresh = 0.01;
 		double gamma = 1;
 		double alpha=0.5;
@@ -2736,8 +2736,8 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 
 		// Create/initialise solution vector(s)
-		double[][] temp_p;
-		double [] p = new double [n][nactions];
+		double[][] temp_p =new double[n][nactions];
+		double [][] p = new double [n][nactions];
 		// double [][] action_val = new double[n][nactions];
 		double [] action_cvar = new double[n];
 		Object [] policy = new Object[n];
@@ -2746,17 +2746,20 @@ public class MDPModelChecker extends ProbModelChecker
 		double max_dist ;
 		double max_cvar_dist ;
 		int iters;
+		boolean flag;
+		double sum_val;
 
 		// transition distribution: 
 		double [] transition_distribution ={0.5,0.6,0.7,0.8};
 		double [] transition_prob = {0.1, 0.4, 0.3, 0.2};
 
+		mainLog.println("actions"+nactions);
+
 		// Start iterations - number of episodes
 		for (iters = 0; (iters < iterations) ; iters++)
 		{
 			iteration_timer = System.currentTimeMillis();
-			temp_p = new double[n][nactions];
-			
+			 
 
 			PrimitiveIterator.OfInt states = unknownStates.iterator();
 			while (states.hasNext()) {
@@ -2764,7 +2767,8 @@ public class MDPModelChecker extends ProbModelChecker
 				int numChoices = mdp.getNumChoices(s);
 				int numTransitions = 0;
 				double[] save_p = new double[numChoices];
-				Arrays.fill(action_val[s], Float.POSITIVE_INFINITY);
+				Arrays.fill(temp_p[s], Float.POSITIVE_INFINITY);
+				// Arrays.fill(action_val[s], Float.POSITIVE_INFINITY);
 				min_v = Float.POSITIVE_INFINITY;
 
 				for (int choice = 0; choice < numChoices; choice++){ // aka action
@@ -2773,30 +2777,40 @@ public class MDPModelChecker extends ProbModelChecker
 					numTransitions = mdp.getNumTransitions(s, choice);
 					Iterator<Entry<Integer, Double>>it = mdp.getTransitionsIterator(s,choice);
 
-					flag = (s == 0 & mdp.getAction(s, choice)== 'N') | (s == 1 & mdp.getAction(s, choice)== 'N')
-					flag |= (s == 2 & mdp.getAction(s, choice)== 'E')
+					flag = (s == 0 && mdp.getAction(s, choice).equals("n")) || (s == 1 && mdp.getAction(s, choice).equals("n"));
+					flag = flag || (s == 2 && mdp.getAction(s, choice).equals("e"));
 					
-					double sum_val = 0;
+					sum_val = 0;
 
 					// transition has a distribution
 					if (flag) {
-						while (trans_it.hasNext()) {
-							Map.Entry<Integer, Double> e = trans_it.next();
+						while (it.hasNext()) {
+							Map.Entry<Integer, Double> e = it.next();
 							for (int j = 0; j < atoms; j++) {
-								sum_val += transition_prob[j] * transition_distribution[j]* (state_reward + gamma * p[e.getKey()]);
+								if (e.getValue() == 0.8) // if successful transition
+								{
+									sum_val += transition_prob[j] * transition_distribution[j]* (reward + gamma * p[e.getKey()][choices[e.getKey()]]);
+								}
+								else {
+									sum_val += transition_prob[j] * (1 -transition_distribution[j])* (reward + gamma * p[e.getKey()][choices[e.getKey()]]);
+								}
+								
 							}
 						}
+						mainLog.println(mdp.getAction(s, choice)+" "+ sum_val);
 					}
 					else{
-						while (trans_it.hasNext()) {
-							Map.Entry<Integer, Double> e = trans_it.next();
-							sum_val += e.getValue() * (state_reward + gamma * p[e.getKey()]);
+						while (it.hasNext()) {
+							Map.Entry<Integer, Double> e = it.next();
+							sum_val += e.getValue() * (reward + gamma * p[e.getKey()][choices[e.getKey()]]);
 						}
+						mainLog.println(mdp.getAction(s, choice)+" "+ sum_val);
 					}
 
-					p[s][choice] = sum_val;
+					temp_p[s][choice] = sum_val;
 					if (sum_val < min_v)
 					{ 	
+						min_v = sum_val;
 					 	action_cvar[s]=min_v; 
 						policy[s] = mdp.getAction(s, choice);
 						choices[s] = choice;
@@ -2810,11 +2824,11 @@ public class MDPModelChecker extends ProbModelChecker
 			//ArrayList<Integer> bad = new ArrayList<>();
 			while (states.hasNext()) {
 				final int s = states.nextInt();
-				double tempo = abs(temp_p[s] - p[s]);
+				double tempo = abs(temp_p[s][choices[s]] - p[s][choices[s]]);
 				//if(tempo > max_dist){bad.add(s);}
 				max_dist = max(max_dist, tempo);
 
-				temp_p = Arrays.copyOf(p);
+				p[s] = Arrays.copyOf(temp_p[s], temp_p[s].length);
 			}
 			mainLog.println("Max Wp dist :"+(max_dist) + " error Wp:" + (error_thresh) +" at iter:"+iters);
 			if ((max_dist <error_thresh)&(iters>min_iter)) {
@@ -2827,15 +2841,18 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Print to file
 		boolean print= false;
-		if (print) {
-			printToFile(policy, action_val, alpha, "gridmap/cvar_out_"+n+"_"+ settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) +"_"+alpha+".out", n, mdp.getMaxNumChoices());
-		}
+		// if (print) {
+		// 	printToFile(policy, action_val, alpha, "gridmap/cvar_out_"+n+"_"+ settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) +"_"+alpha+".out", n, mdp.getMaxNumChoices());
+		// }
 
 		mainLog.println("\nV[start] at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
 		DecimalFormat df = new DecimalFormat("0.000");
 		mainLog.print("[");
-		Arrays.stream(operator.getDist(mdp.getFirstInitialState())).forEach(e -> mainLog.print(df.format(e) + ", "));
+		mainLog.print(Arrays.toString(policy));
 		mainLog.print("]\n");
+
+		mainLog.println("All print");
+		mainLog.print(Arrays.deepToString(p));
 
 		// Policy
 //		mainLog.println("\nPolicy");

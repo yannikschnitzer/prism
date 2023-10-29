@@ -12,7 +12,7 @@ import java.util.TreeMap;
 import static java.lang.Math.*;
 import static java.lang.Math.sqrt;
 
-public class DistributionalBellmanCategorical extends DistributionalBellman {
+public class DistributionalBellmanCategoricalProb extends DistributionalBellman {
     int atoms = 1;
     double delta_z = 1;
     double [] z ;
@@ -24,7 +24,7 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
     int numTransitions;
     prism.PrismLog mainLog;
 
-    public DistributionalBellmanCategorical(int atoms, double vmin, double vmax, int numTransitions, prism.PrismLog log){
+    public DistributionalBellmanCategoricalProb(int atoms, double vmin, double vmax, int numTransitions, prism.PrismLog log){
         super();
         this.atoms = atoms;
         this.z = new double[atoms];
@@ -63,7 +63,8 @@ public class DistributionalBellmanCategorical extends DistributionalBellman {
     }
 
     @Override
-    public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, int numTransitions, double gamma, double state_reward, double [] distribution)
+    // , double [] distribution
+    public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, int numTransitions, double gamma, double state_reward)
     {
         double [] res = update_probabilities(trans_it);
         res = update_support(gamma, state_reward, res);
