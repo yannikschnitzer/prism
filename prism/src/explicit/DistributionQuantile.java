@@ -1,9 +1,11 @@
 package explicit;
 
 // import java.util.Iterator;
-// import java.util.Map;
+import java.util.*;
+import edu.jas.util.MapEntry;
 import java.util.ArrayList;
 import prism.PrismLog;
+import static java.lang.Math.*;
 
  class DistributionQuantile extends DiscreteDistribution {
     
