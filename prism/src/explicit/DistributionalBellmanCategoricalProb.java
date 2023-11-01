@@ -12,7 +12,7 @@ import java.util.TreeMap;
 import static java.lang.Math.*;
 import static java.lang.Math.sqrt;
 
-public class DistributionalBellmanCategoricalProb extends DistributionalBellman {
+public class DistributionalBellmanCategoricalProb {
     int atoms = 1;
     double delta_z = 1;
     double [] z ;
@@ -28,6 +28,7 @@ public class DistributionalBellmanCategoricalProb extends DistributionalBellman 
         super();
         this.atoms = atoms;
         this.z = new double[atoms];
+        // TODO add parameter distribution here
         if (atoms > 1) {
             this.delta_z = (vmax - vmin) / (atoms - 1);
         }
@@ -42,6 +43,7 @@ public class DistributionalBellmanCategoricalProb extends DistributionalBellman 
         for (int i = 0; i < atoms; i++) {
             this.z[i] = (vmin + i *this.delta_z);
         }
+        // this.p = new double [paramAtoms][numTransitions][atoms]
         this.p = new double [numTransitions][atoms];
     }
 
@@ -51,6 +53,7 @@ public class DistributionalBellmanCategoricalProb extends DistributionalBellman 
         return this.z;
     }
 
+    // Update this.p = new double [paramAtoms][numTransitions][atoms]
     public void initialize( int numTransitions) {
 
         this.p = new double[numTransitions][this.atoms];
@@ -62,24 +65,29 @@ public class DistributionalBellmanCategoricalProb extends DistributionalBellman 
         }
     }
 
-    @Override
+    // @Override
     // , double [] distribution
-    public double [] step(Iterator<Map.Entry<Integer, Double>> trans_it, int numTransitions, double gamma, double state_reward)
+    public double [] step(Iterator<Map.Entry<Integer, Distribution>> trans_it, int numTransitions, double gamma, double state_reward)
     {
-        double [] res = update_probabilities(trans_it);
-        res = update_support(gamma, state_reward, res);
+        double [][] res = update_probabilities(trans_it);
+        for (int i = 0; i<paramAtoms; i++){
+            res[i] = update_support(gamma, state_reward, res[i]);
+        }
         return res;
     }
 
     // updates probabilities for one action
     public double[] update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it) {
-        double [] sum_p= new double[atoms];
+        double [][] sum_p= new double[atoms];
+        int transition_prob = 0;
         while (trans_it.hasNext()) {
 
             Map.Entry<Integer, Double> e = trans_it.next();
-
-            for (int j = 0; j < atoms; j++) {
-                sum_p[j] += e.getValue() * p[e.getKey()][j];
+            for (int i=0; i<paramAtoms; i++){
+                transition_prob =  e.getValue();
+                for (int j = 0; j < atoms; j++) {
+                    sum_p[j] += transition_prob[i] * p[e.getKey()][j];
+                }
             }
 
         }
@@ -113,12 +121,12 @@ public class DistributionalBellmanCategoricalProb extends DistributionalBellman 
         p[state] = Arrays.copyOf(temp, temp.length);
     }
 
-    @Override
+    // @Override
     public double[] getDist(int i) {
         return p[i];
     }
 
-    @Override
+    // @Override
     public double[] adjust_support(TreeMap distr) {
         int entry_key; double entry_val; double temp; double index = 0;
         double [] m = new double[atoms];
@@ -146,7 +154,7 @@ public class DistributionalBellmanCategoricalProb extends DistributionalBellman 
         return m;
     }
 
-    @Override
+    // @Override
     public double getExpValue(double [] temp){
         double sum =0;
         for (int j=0; j<atoms; j++)
@@ -156,7 +164,7 @@ public class DistributionalBellmanCategoricalProb extends DistributionalBellman 
         return sum;
     }
 
-    @Override
+    // @Override
     public double getValueCvar(double [] probs, double lim){
         double res =0.0;
         double sum_p =0.0;
@@ -177,7 +185,7 @@ public class DistributionalBellmanCategoricalProb extends DistributionalBellman 
         return res;
     }
 
-    @Override
+    // @Override
     public double getVar(double [] probs, double lim){
         double sum_p = 0.0;
         double res = 0.0;
@@ -196,7 +204,7 @@ public class DistributionalBellmanCategoricalProb extends DistributionalBellman 
     }
 
     // Get variance for a distribution <probs>
-    @Override
+    // @Override
     public double getVariance(double[] probs) {
         double mu = getExpValue(probs);
         double res = 0.0;
@@ -245,7 +253,7 @@ public class DistributionalBellmanCategoricalProb extends DistributionalBellman 
     }
 
     // Log distribution for a state to a file <filename> as a csv with columns : support index, probability, support value
-    @Override
+    // @Override
     public void writeToFile(int state, String filename){
         if (filename == null) {filename="distr_exp_c51.csv";}
         try (PrintWriter pw = new PrintWriter(new File("prism/"+filename))) {
