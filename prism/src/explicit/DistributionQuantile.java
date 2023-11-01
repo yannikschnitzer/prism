@@ -195,7 +195,7 @@ import prism.PrismLog;
         return res;
     }
 
-    // compute variance
+    // compute variance of this dustribution 
     @Override
     public double getVariance(){
         double mu = getExpValue(z);
