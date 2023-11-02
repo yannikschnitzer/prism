@@ -10,7 +10,7 @@ import java.util.*;
 
 import static java.lang.Math.*;
 
-public class DistributionalBellmanQR extends DistributionalBellman {
+public class DistributionalBellmanQR {
 
     double [][] z ;
     double [] p;
@@ -38,7 +38,7 @@ public class DistributionalBellmanQR extends DistributionalBellman {
         }
     }
 
-    @Override
+//    @Override
     public double getExpValue(double[] temp) {
         double sum =0;
         for (int j=0; j<atoms; j++)
@@ -48,7 +48,7 @@ public class DistributionalBellmanQR extends DistributionalBellman {
         return sum;
     }
 
-    @Override
+//    @Override
     public double getValueCvar(double[] probs, double lim) {
         double res =0.0;
         double sum_p =0.0;
@@ -71,7 +71,7 @@ public class DistributionalBellmanQR extends DistributionalBellman {
         return res;
     }
 
-    @Override
+//    @Override
     public double getVar(double[] probs, double lim) {
         double res =0.0;
         double sum_p =0.0;
@@ -91,7 +91,7 @@ public class DistributionalBellmanQR extends DistributionalBellman {
         return res;
     }
 
-    @Override
+    //@Override
     public double getVariance(double[] probs) {
         double mu = getExpValue(probs);
         double res = 0.0;
@@ -104,7 +104,7 @@ public class DistributionalBellmanQR extends DistributionalBellman {
         return res;
     }
 
-    @Override
+//    @Override
     public double getW(double[] dist1, double[] dist2) {
         double sum = 0;
 
@@ -115,7 +115,7 @@ public class DistributionalBellmanQR extends DistributionalBellman {
         return sum* (1.0/atoms);
     }
 
-    @Override
+//    @Override
     public double getW(double[] dist1, int state) {
         double sum = 0;
         for (int i =0; i<atoms; i++)
@@ -171,12 +171,12 @@ public class DistributionalBellmanQR extends DistributionalBellman {
         z[state] = Arrays.copyOf(temp, temp.length);
     }
 
-    @Override
+    //@Override
     public double[] getDist(int i) {
         return z[i];
     }
 
-    @Override
+    //@Override
     public double[] adjust_support(TreeMap distr) {
         int entry_key; double entry_val;
         double [] m ;
@@ -197,7 +197,7 @@ public class DistributionalBellmanQR extends DistributionalBellman {
         return m;
     }
 
-    @Override
+    //@Override
     public void writeToFile(int state, String filename) {
         if (filename == null) {filename="distr_exp_qr.csv";}
         try (PrintWriter pw = new PrintWriter(new File("prism/"+filename))) {
@@ -213,7 +213,7 @@ public class DistributionalBellmanQR extends DistributionalBellman {
         }
     }
 
-    @Override
+    //@Override
     public void initialize(int n) {
 
     }

@@ -1,15 +1,11 @@
 package explicit;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.TreeMap;
 
 abstract class DistributionalBellman {
 
-    int atoms = 1;
-    int nactions = 4;
-    double v_min ;
-    double v_max ;
     double alpha=1;
 
     public DistributionalBellman(){}
@@ -32,8 +28,8 @@ abstract class DistributionalBellman {
     // Get Variance of a distribution <probs>, assumes same support
     public abstract double getVariance(int state);
 
-    // Get distributional distance between two distributions <dist1> and <dist2>, assumes same support
-    public abstract double getW(ArrayList<Double> dist1, ArrayList<Double> dist2);
+//    // Get distributional distance between two distributions <dist1> and <dist2>, assumes same support
+//    public abstract double getW(ArrayList<Double> dist1, ArrayList<Double> dist2);
 
     // Get distributional distance between a distribution <dist1> and the distribution for a state <state>
     // assumes same support

@@ -2,11 +2,16 @@ package explicit;
 
 // import java.util.Iterator;
 // import java.util.Map;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
- class DistributionCategorical extends DiscreteDistribution {
-    int atoms = 1;
-    double delta_z = 1;
+import static java.lang.Math.*;
+
+class DistributionCategorical extends DiscreteDistribution {
+    int atoms ;
+    double delta_z;
     ArrayList<Double> z ;
     ArrayList<Double> p;
     double v_min ;
@@ -22,7 +27,7 @@ import java.util.ArrayList;
         this.v_min = vmin;
         this.v_max = vmax;
         this.mainLog = log;
-        this.z = new ArrayList<Double>(atoms);
+        this.z = new ArrayList<>(atoms);
         
         if (atoms > 1) {
             this.delta_z = (vmax - vmin) / (atoms - 1);
@@ -31,9 +36,9 @@ import java.util.ArrayList;
                 this.delta_z = 0;
         }
 
-        double [] temp2 = new double[this.atoms];
+        Double [] temp2 = new Double[this.atoms];
         temp2[0] =1.0;
-        this.p = new ArrayList<Double>(Arrays.asList(temp2));
+        this.p = new ArrayList<>(Arrays.asList(temp2));
 
         for (int i = 0; i < atoms; i++) {
             this.z.add(vmin + i *this.delta_z);
@@ -43,21 +48,21 @@ import java.util.ArrayList;
     // initialize the distribution
     @Override
     public void clear(){
-        double [] temp2 = new double[this.atoms];
+        Double [] temp2 = new Double[this.atoms];
         temp2[0] =1.0;
-        this.p = (ArrayList) (Arrays.asList(array)).clone();
+        this.p = (ArrayList<Double>) Arrays.asList(temp2);
     }
 
     // project a given array to finite support (same distribution parameters : vmin, vmiax support)
     // here arr is an array of the probability values for the same support
     @Override
     public void project(ArrayList<Double> arr){
-        double temp = 0; double b=0;
+        double temp ; double b; int l,u;
         p.clear();
-        p.addAll(Collections.nCopies(atoms, 0));
+        Collections.fill(p, 0.0);
 
-        for (int j=0; j<probs.length(); j++){
-            temp = max(v_min, min(v_max, this.z[j]));
+        for (int j=0; j<arr.size(); j++){
+            temp = max(v_min, min(v_max, this.z.get(j)));
             b = ((temp - v_min) / this.delta_z);
             l= (int) floor(b); u= (int) ceil(b);
 
@@ -73,16 +78,16 @@ import java.util.ArrayList;
 
     // project a given array of probs and support to finite support
     public void project(ArrayList<Double> probs, ArrayList<Double> supp){
-        double temp = 0; double b=0;
+        double temp; double b; int l,u;
         // recompute delta_z
-        delta_z = (vmax - vmin) / (atoms - 1); 
+        delta_z = (v_max - v_min) / (atoms - 1);
         // clear probability array
         p.clear();
-        p.addAll(Collections.nCopies(atoms, 0));
+        Collections.fill(p, 0.0);
 
-        for (int j=0; j<probs.length(); j++){
-            temp = max(vmin, min(vmax, supp.get(j)));
-            b = ((temp - vmin) / delta_z);
+        for (int j=0; j<probs.size(); j++){
+            temp = max(v_min, min(v_max, supp.get(j)));
+            b = ((temp - v_min) / delta_z);
             l= (int) floor(b); u= (int) ceil(b);
 
             if ( l- u != 0){
@@ -96,12 +101,12 @@ import java.util.ArrayList;
 
     // project a given array to finite support (different distribution parameters but same number of atoms)
     public  void project(ArrayList<Double> probs, ArrayList<Double> supp, double vmin, double vmax){
-        double temp = 0; double b=0;
+        double temp; double b; int l,u;
         // recompute delta_z
         delta_z = (vmax - vmin) / (atoms - 1); 
         // clear probability array
         p.clear();
-        p.addAll(Collections.nCopies(atoms, 0));
+        Collections.fill(p, 0.0);
 
         // if the bounds have changed, update the discrete support
         if(vmin != this.v_min || vmax != this.v_max){
@@ -110,7 +115,7 @@ import java.util.ArrayList;
             }
         }
 
-        for (int j=0; j<probs.length(); j++){
+        for (int j=0; j<probs.size(); j++){
             temp = max(vmin, min(vmax, supp.get(j)));
             b = ((temp - vmin) / delta_z);
             l= (int) floor(b); u= (int) ceil(b);
@@ -126,7 +131,7 @@ import java.util.ArrayList;
 
     // update saved distribution
     public void update(ArrayList<Double> arr){
-        this.p = (ArrayList) arr.clone();
+        p =  (ArrayList<Double>) arr.clone();
     }
 
     // compute expected value of the distribution
@@ -156,7 +161,7 @@ import java.util.ArrayList;
     {
         double res =0.0;
         double sum_p =0.0;
-        double denom = 0.0;
+        double denom;
         for (int i=atoms-1; i>=0; i--){
             if (sum_p < alpha){
                 if(sum_p+ p.get(i) < alpha){
@@ -179,7 +184,7 @@ import java.util.ArrayList;
     {
         double res =0.0;
         double sum_p =0.0;
-        double denom = 0.0;
+        double denom ;
         for (int i=atoms-1; i>=0; i--){
             if (sum_p < alpha){
                 if(sum_p+ probs.get(i) < alpha){
@@ -256,7 +261,7 @@ import java.util.ArrayList;
 
         for( int j = 0; j<atoms; j++)
         {
-            res += (1.0 / atoms) * pow(((probs[j] * z.get(j)) - mu), 2);
+            res += (1.0 / atoms) * pow(((probs.get(j) * z.get(j)) - mu), 2);
         }
 
         return res;
@@ -304,7 +309,7 @@ import java.util.ArrayList;
         return this.p;
     }
 
-    public Double getValue(int atom_index)
+    public Double getValue(int index)
     {
         return this.p.get(index);
     }
@@ -323,29 +328,33 @@ import java.util.ArrayList;
     @Override
     public String toString()
     {
-        String temp = "";
-        final AtomicInteger indexHolder = new AtomicInteger();
-        p.forEach((p_i) -> {
-            final int index = indexHolder.getAndIncrement();
-            temp += index + "," + p_i +","+ z.get(index)+ "\n";
-        });
-        return temp;
+        StringBuilder temp = new StringBuilder();
+        int index = 0;
+        for(Double p_i: p )
+        {
+            temp.append(index).append(",").append(p_i).append(",")
+                    .append(z.get(index)).append("\n");
+            index ++;
+        }
+        return temp.toString();
     }
 
     @Override
     public String toString(DecimalFormat df)
     {
-        String temp = "";
-        final AtomicInteger indexHolder = new AtomicInteger();
-        p.forEach((p_i) -> {
-            final int index = indexHolder.getAndIncrement();
-            temp += index + "," + df.format(p_i) +","+ df.format(z.get(index))+ "\n";
-        });
-        return temp;
+        StringBuilder temp = new StringBuilder();
+        int index = 0;
+        for(Double p_i: p )
+        {
+            temp.append(index).append(",").append(df.format(p_i)).append(",")
+                    .append(df.format(z.get(index))).append("\n");
+            index ++;
+        }
+        return temp.toString();
     }
 
     @Override
-    public Double size()
+    public int size()
     {
         return atoms;
     }

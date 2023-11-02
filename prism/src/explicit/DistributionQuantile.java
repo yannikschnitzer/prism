@@ -1,17 +1,18 @@
 package explicit;
 
 // import java.util.Iterator;
+import java.text.DecimalFormat;
 import java.util.*;
 import edu.jas.util.MapEntry;
 import java.util.ArrayList;
+
 import prism.PrismLog;
 import static java.lang.Math.*;
 
  class DistributionQuantile extends DiscreteDistribution {
     
-    double p = 0;
-    int atoms = 1;
-    double delta_p = 1;
+    double p;
+    int atoms ;
     PrismLog mainLog;
     ArrayList<Double> tau_hat;
     ArrayList<Double> z ;
@@ -23,29 +24,29 @@ import static java.lang.Math.*;
         this.atoms = atoms;
         mainLog = log;
         p =1.0/atoms;
-        z = new ArrayList<Double>(atoms);
-        tau_hat = new ArrayList<Double>(atoms);
+        z = new ArrayList<>(atoms);
+        tau_hat = new ArrayList<>(atoms);
 
         for (int i = 0; i < atoms; i++) {
             this.tau_hat.add( (2*i + 1)*p/2.0);
         }
 
-        Collections.fill(z, 0); 
+        Collections.fill(z, 0.0);
     }
 
-    // initialize the distribution (already inia)
+    // clear the distribution
     @Override
     public void clear(){
-        Collections.fill(z, 0); 
+        Collections.fill(z, 0.0);
     }
 
-    // project a given array to finite support (same distribution parameters : vmin, vmiax support)
+    // project a given array to finite support (same distribution parameters : vmin, vmax support)
     // here arr is an array of the probability values for the same support
     // If the support is the same (same number of atoms aka same probability)
     // then we just need to make sure it is sorted.
     @Override
     public void project(ArrayList<Double> arr){
-        z =  new ArrayList<Double>(arr); // FIXME
+        z =  new ArrayList<>(arr); // FIXME
         Collections.sort(z);
         // TODO do the same cutoff as the other one
     } // FIXME
@@ -57,7 +58,7 @@ import static java.lang.Math.*;
         ArrayList<MapEntry<Double, Double>> multimap = new ArrayList<>();
         Map.Entry<Double, Double> entry;
         for (int j = 0; j < atoms; j++) {
-            multimap.add(new MapEntry<>(probs.get(i), supp.get(i)));
+            multimap.add(new MapEntry<>(probs.get(j), supp.get(j)));
         }
 
         multimap.sort(Map.Entry.comparingByValue());
@@ -68,7 +69,7 @@ import static java.lang.Math.*;
         {
             entry = it.next();
             cum_p += entry.getKey();
-            if(cum_p >= tau_hat[z.size()]) {
+            if(cum_p >= tau_hat.get(z.size())) {
                 z.add(entry.getValue());
             }
         }
@@ -81,7 +82,7 @@ import static java.lang.Math.*;
         double cum_p = 0.0;
         ArrayList<MapEntry<Double, Double>> multimap = new ArrayList<>();
         Map.Entry<Double, Double> entry;
-        for (int j = 0; j < atoms; j++) {
+        for (int i = 0; i < atoms; i++) {
             multimap.add(new MapEntry<>(probs.get(i), supp.get(i)));
         }
 
@@ -93,7 +94,7 @@ import static java.lang.Math.*;
         {
             entry = it.next();
             cum_p += entry.getKey();
-            if(cum_p >= tau_hat[z.size()]) {
+            if(cum_p >= tau_hat.get(z.size())) {
                 z.add(entry.getValue());
             }
         }
@@ -103,7 +104,7 @@ import static java.lang.Math.*;
     // update saved distribution
     @Override
     public void update(ArrayList<Double> arr){
-        this.p = (ArrayList) arr.clone();;
+        this.z = (ArrayList<Double>) arr.clone();
     }
 
     // compute expected value of the distribution
@@ -129,25 +130,25 @@ import static java.lang.Math.*;
         return sum;
     }
 
-    // compute CVaR with a given alph
+    // compute CVaR with a given alpha
     @Override
     public double getCvarValue(double alpha)
     {
         double res =0.0;
         double sum_p =0.0;
-        double denom = 0.0;
+        double denom ;
 
         // assume already sorted
 
         for (int i=atoms-1; i>=0; i--){
-            if (sum_p < lim){
-                if(sum_p+ p < lim){
+            if (sum_p < alpha){
+                if(sum_p+ p < alpha){
                     sum_p += p;
-                    res += (1/lim) * z.get(i) * p;
+                    res += (1/alpha) * z.get(i) * p;
                 } else{
-                    denom = lim - sum_p;
+                    denom = alpha - sum_p;
                     sum_p += denom;
-                    res += (1/lim) *denom*z.get(i);
+                    res += (1/alpha) *denom*z.get(i);
                 }
             }
         }
@@ -161,18 +162,18 @@ import static java.lang.Math.*;
     {
         double res =0.0;
         double sum_p =0.0;
-        double denom = 0.0;
-        ArrayList<Double> temp =  new ArrayList<Double>(probs);
+        double denom ;
+        ArrayList<Double> temp =  new ArrayList<>(probs);
         Collections.sort(temp);
         for (int i=atoms-1; i>=0; i--){
-            if (sum_p < lim){
-                if(sum_p+ p < lim){
+            if (sum_p < alpha){
+                if(sum_p+ p < alpha){
                     sum_p += p;
-                    res += (1/lim) * temp.get(i) * p;
+                    res += (1/alpha) * temp.get(i) * p;
                 } else{
-                    denom = lim - sum_p;
+                    denom = alpha - sum_p;
                     sum_p += denom;
-                    res += (1/lim) *denom*temp.get(i);
+                    res += (1/alpha) *denom*temp.get(i);
                 }
             }
         }
@@ -189,8 +190,8 @@ import static java.lang.Math.*;
         double sum_p =0.0;
 
         for(int j=atoms-1; j>=0; j--){
-            if (sum_p < lim){
-                if(sum_p+ p < lim){
+            if (sum_p < alpha){
+                if(sum_p+ p < alpha){
                     sum_p += p;
                 } else{
                     res =z.get(j);
@@ -207,12 +208,12 @@ import static java.lang.Math.*;
     {
         double res =0.0;
         double sum_p =0.0;
-        ArrayList<Double> temp =  new ArrayList<Double>(probs);
+        ArrayList<Double> temp =  new ArrayList<>(probs);
         Collections.sort(temp);
 
         for(int j=atoms-1; j>=0; j--){
-            if (sum_p < lim){
-                if(sum_p+ p < lim){
+            if (sum_p < alpha){
+                if(sum_p+ p < alpha){
                     sum_p += p;
                 } else{
                     res =temp.get(j);
@@ -223,7 +224,7 @@ import static java.lang.Math.*;
         return res;
     }
 
-    // compute variance of this dustribution 
+    // compute variance of this distribution
     @Override
     public double getVariance(){
         double mu = getExpValue(z);
@@ -274,25 +275,36 @@ import static java.lang.Math.*;
         return sum* (1.0/atoms);
     }
 
-    // Make sure to only compare qunatile to quantile
+    // Make sure to only compare quantile to quantile
     @Override
     public double getW(DiscreteDistribution distr)
     {
-        return this.getW(distr.getSupport());
+        return this.getW(distr.getSupports());
     }
 
     // iterator over the probability values of the distribution
     @Override
     public ArrayList<Double> getValues()
     {
-        ArrayList<Double> vals = new ArrayList<Double>(atoms);
+        ArrayList<Double> vals = new ArrayList<>(atoms);
         Collections.fill(vals, this.p);
         return vals;
     }
 
-    // iterator over the values of the distribution
+     @Override
+     public Double getValue(int index)
+     {
+         return p;
+     }
+
+     @Override
+     public Double getSupport(int index) {
+         return z.get(index);
+     }
+
+     // iterator over the values of the distribution
     @Override
-    public  ArrayList<Double> getSupport()
+    public  ArrayList<Double> getSupports()
     {
         return this.z;
     }
@@ -300,29 +312,31 @@ import static java.lang.Math.*;
     @Override
     public String toString()
     {
-        String temp = "";
-        final AtomicInteger indexHolder = new AtomicInteger();
-        z.forEach((z_i) -> {
-            final int index = indexHolder.getAndIncrement();
-            temp += z_i + "," + p +","+ tau_hat.get(index)+ "\n";
-        });
-        return temp;
+        StringBuilder temp = new StringBuilder();
+        int index = 0;
+        for (Double z_i: z) {
+            temp.append(z_i).append(",").append(p).append(",");
+            temp.append(tau_hat.get(index)).append("\n");
+            index ++;
+        }
+        return temp.toString();
     }
 
     @Override
     public String toString(DecimalFormat df)
     {
-        String temp = "";
-        final AtomicInteger indexHolder = new AtomicInteger();
-        z.forEach((z_i) -> {
-            final int index = indexHolder.getAndIncrement();
-            temp += df.format(z_i) + "," + p +","+ tau_hat.get(index)+ "\n";
-        });
-        return temp;
+        StringBuilder temp = new StringBuilder();
+        int index = 0;
+        for (Double z_i: z) {
+            temp.append(df.format(z_i)).append(",").append(df.format(p)).append(",");
+            temp.append(df.format(tau_hat.get(index))).append("\n");
+            index ++;
+        }
+        return temp.toString();
     }
 
     @Override
-    public Double size()
+    public int size()
     {
         return atoms;
     }

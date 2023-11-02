@@ -4,10 +4,8 @@ package explicit;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
+import java.text.DecimalFormat;
 
 import static java.lang.Math.*;
 import static java.lang.Math.sqrt;
@@ -62,7 +60,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
 
     // Clear a specific state
     public void clear(int state){
-        distr.get(i).clear();
+        distr.get(state).clear();
     }
 
     // Clear all distr
@@ -72,9 +70,9 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
 
     // get support for a specific state
     // TODO check if this needs to check which distr_type.
-    public double [] getZ(int state)
+    public ArrayList<Double> getZ(int state)
     {
-        return distr.get(state).getSupport();
+        return distr.get(state).getSupports();
     }
 
     //TODO
@@ -154,7 +152,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         ArrayList<Double> m = new ArrayList<Double> (atoms);
         double b = 0;
         for (int j =0; j<atoms; j++){
-                m.add(state_reward+gamma*distr.get(cur_state).getSupport(i));
+                m.add(state_reward+gamma*distr.get(cur_state).getSupport(j));
         }
         
         return m;
@@ -166,7 +164,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
     }
 
     @Override
-    public ArrayList<DiscreteDistribution> getDist(int state) {
+    public DiscreteDistribution getDist(int state) {
         return distr.get(state);
     }
 
@@ -198,10 +196,10 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
     {   
         if (isCategorical)
         {
-            return distr.get(state1).getW(distr.get(state2.getValues()));
+            return distr.get(state1).getW(distr.get(state2).getValues());
         }
         else {
-            return distr.get(state1).getW(distr.get(state2.getSupport()));
+            return distr.get(state1).getW(distr.get(state2).getSupports());
         }
         
     }
@@ -214,10 +212,10 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
     {
         if (isCategorical)
         {
-            return distr.get(state1).getW(dist1);
+            return distr.get(state).getW(dist1);
         }
         else {
-            return distr.get(state1).getW(dist1);
+            return distr.get(state).getW(dist1);
         }   
     }
 
@@ -235,7 +233,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         if (filename == null) {filename="distr_exp_"+distr_type.toLowerCase()+".csv";}
         try (PrintWriter pw = new PrintWriter(new File("prism/"+filename))) {
             pw.println("r,p,z");
-            pw.println(distr.get(i).toString())
+            pw.println(distr.get(state).toString());
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -245,7 +243,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
     @Override
     public String toString()
     {
-        String temp = "";
+        final String temp = "";
         distr.forEach( (distr_i) -> temp += distr_i.toString(df) + "\n-------\n");
         return temp;
     }

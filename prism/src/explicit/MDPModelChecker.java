@@ -2752,6 +2752,8 @@ public class MDPModelChecker extends ProbModelChecker
 		// transition distribution: 
 		double [] transition_distribution ={0.5,0.6,0.7,0.8};
 		double [] transition_prob = {0.1, 0.4, 0.3, 0.2};
+		DiscreteDistribution transition_distribution = new DistributionCategorical(4, 0.5, 0.8, mainLog);
+		mainLog.println("transitions :\n" + transition_distribution.toString());
 
 		mainLog.println("actions"+nactions);
 
