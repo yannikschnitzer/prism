@@ -42,6 +42,15 @@ abstract class DiscreteDistribution {
     // get the probability values of the distribution
     public abstract ArrayList<Double> getValues();
 
+    // get the probability values of one atom
+    public abstract Double getValue(int cur_state);
+
     // get the support values of the distribution
-    public abstract ArrayList<Double> getValues();
+    public abstract ArrayList<Double> getSupports();
+
+    // get the support values of one atom
+    public abstract Double getSupport(int cur_state);
+
+    // return the size of the distribution aka number of atoms
+    public abstract Double size();
 }

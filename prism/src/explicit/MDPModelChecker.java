@@ -2789,10 +2789,10 @@ public class MDPModelChecker extends ProbModelChecker
 							for (int j = 0; j < atoms; j++) {
 								if (e.getValue() == 0.8) // if successful transition
 								{
-									sum_val += transition_prob[j] * transition_distribution[j]* (reward + gamma * p[e.getKey()][choices[e.getKey()]]);
+									sum_val += transition_prob[j] * transition_distribution[j]* (reward + gamma * p[e.getKey()][choice]);
 								}
 								else {
-									sum_val += transition_prob[j] * (1 -transition_distribution[j])* (reward + gamma * p[e.getKey()][choices[e.getKey()]]);
+									sum_val += transition_prob[j] * (1 -transition_distribution[j])* (reward + gamma * p[e.getKey()][choice]);
 								}
 								
 							}

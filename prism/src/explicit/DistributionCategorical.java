@@ -304,10 +304,20 @@ import java.util.ArrayList;
         return this.p;
     }
 
+    public Double getValue(int atom_index)
+    {
+        return this.p.get(index);
+    }
+
     // iterator over the values of the distribution
-    public  ArrayList<Double> getSupport()
+    public  ArrayList<Double> getSupports()
     {
         return this.z;
+    }
+
+    public Double getSupport(int atom_index)
+    {
+        return this.z.get(atom_index);
     }
 
     @Override
@@ -332,5 +342,11 @@ import java.util.ArrayList;
             temp += index + "," + df.format(p_i) +","+ df.format(z.get(index))+ "\n";
         });
         return temp;
+    }
+
+    @Override
+    public Double size()
+    {
+        return atoms;
     }
 }

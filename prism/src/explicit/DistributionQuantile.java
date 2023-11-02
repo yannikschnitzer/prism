@@ -320,4 +320,10 @@ import static java.lang.Math.*;
         });
         return temp;
     }
+
+    @Override
+    public Double size()
+    {
+        return atoms;
+    }
 }
