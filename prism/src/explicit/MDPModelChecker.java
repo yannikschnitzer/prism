@@ -2698,9 +2698,9 @@ public class MDPModelChecker extends ProbModelChecker
 		IntSet unknownStates = IntSet.asIntSet(unknown);
 		//	int numS = unknownStates.cardinality();
 		DistributionalBellman operator;
+		String distr_type = settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD);
 
-
-		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
+		if (distr_type.equals(c51)) {
 			// TODO remove this in final version
 			String [] params = readParams(null);
 			atoms = Integer.parseInt(params[0]);
@@ -2714,7 +2714,7 @@ public class MDPModelChecker extends ProbModelChecker
 			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
 			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
 					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
-		} else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
+		} else if (distr_type.equals(qr)) {
 			String [] params = readParams(null);
 			atoms = Integer.parseInt(params[0]);
 			error_thresh = Double.parseDouble(params[3]); // 0.7 for uav

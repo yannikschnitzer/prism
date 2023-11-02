@@ -17,7 +17,7 @@ import static java.lang.Math.*;
     ArrayList<Double> z ;
 
     // Constructor
-    public DistributionQuantile(int atoms, double vmin, double vmax, int numStates, PrismLog log){
+    public DistributionQuantile(int atoms, PrismLog log){
         super();
         
         this.atoms = atoms;
@@ -45,8 +45,34 @@ import static java.lang.Math.*;
     // then we just need to make sure it is sorted.
     @Override
     public void project(ArrayList<Double> arr){
-        z =  new ArrayList<Double>(probs);
+        z =  new ArrayList<Double>(arr); // FIXME
         Collections.sort(z);
+        // TODO do the same cutoff as the other one
+    } // FIXME
+
+    // project a given array to finite support (different distribution parameters but same number of atoms)
+    @Override
+    public void project(ArrayList<Double> probs, ArrayList<Double> supp){
+        double cum_p = 0.0;
+        ArrayList<MapEntry<Double, Double>> multimap = new ArrayList<>();
+        Map.Entry<Double, Double> entry;
+        for (int j = 0; j < atoms; j++) {
+            multimap.add(new MapEntry<>(probs.get(i), supp.get(i)));
+        }
+
+        multimap.sort(Map.Entry.comparingByValue());
+        z.clear();
+        Iterator<MapEntry<Double, Double>> it = multimap.iterator();
+
+        while(it.hasNext() & z.size() < atoms)
+        {
+            entry = it.next();
+            cum_p += entry.getKey();
+            if(cum_p >= tau_hat[z.size()]) {
+                z.add(entry.getValue());
+            }
+        }
+
     }
 
     // project a given array to finite support (different distribution parameters but same number of atoms)
@@ -77,7 +103,7 @@ import static java.lang.Math.*;
     // update saved distribution
     @Override
     public void update(ArrayList<Double> arr){
-        this.p = new ArrayList<Double>(Arrays.asList(arr));
+        this.p = (ArrayList) arr.clone();;
     }
 
     // compute expected value of the distribution
@@ -269,5 +295,29 @@ import static java.lang.Math.*;
     public  ArrayList<Double> getSupport()
     {
         return this.z;
+    }
+
+    @Override
+    public String toString()
+    {
+        String temp = "";
+        final AtomicInteger indexHolder = new AtomicInteger();
+        z.forEach((z_i) -> {
+            final int index = indexHolder.getAndIncrement();
+            temp += z_i + "," + p +","+ tau_hat.get(index)+ "\n";
+        });
+        return temp;
+    }
+
+    @Override
+    public String toString(DecimalFormat df)
+    {
+        String temp = "";
+        final AtomicInteger indexHolder = new AtomicInteger();
+        z.forEach((z_i) -> {
+            final int index = indexHolder.getAndIncrement();
+            temp += df.format(z_i) + "," + p +","+ tau_hat.get(index)+ "\n";
+        });
+        return temp;
     }
 }

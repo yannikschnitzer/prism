@@ -15,7 +15,7 @@ import java.util.ArrayList;
     prism.PrismLog mainLog;
 
     // Constructor
-    public DistributionCategorical(int atoms, double vmin, double vmax, int numStates, prism.PrismLog log){
+    public DistributionCategorical(int atoms, double vmin, double vmax, prism.PrismLog log){
         super();
 
         this.atoms = atoms;
@@ -45,7 +45,7 @@ import java.util.ArrayList;
     public void clear(){
         double [] temp2 = new double[this.atoms];
         temp2[0] =1.0;
-        this.p = new ArrayList<Double>(Arrays.asList(temp2));
+        this.p = (ArrayList) (Arrays.asList(array)).clone();
     }
 
     // project a given array to finite support (same distribution parameters : vmin, vmiax support)
@@ -53,7 +53,8 @@ import java.util.ArrayList;
     @Override
     public void project(ArrayList<Double> arr){
         double temp = 0; double b=0;
-        p = new ArrayList<Integer>(Collections.nCopies(atoms, 0));
+        p.clear();
+        p.addAll(Collections.nCopies(atoms, 0));
 
         for (int j=0; j<probs.length(); j++){
             temp = max(v_min, min(v_max, this.z[j]));
@@ -70,13 +71,37 @@ import java.util.ArrayList;
 
     }
 
+    // project a given array of probs and support to finite support
+    public void project(ArrayList<Double> probs, ArrayList<Double> supp){
+        double temp = 0; double b=0;
+        // recompute delta_z
+        delta_z = (vmax - vmin) / (atoms - 1); 
+        // clear probability array
+        p.clear();
+        p.addAll(Collections.nCopies(atoms, 0));
+
+        for (int j=0; j<probs.length(); j++){
+            temp = max(vmin, min(vmax, supp.get(j)));
+            b = ((temp - vmin) / delta_z);
+            l= (int) floor(b); u= (int) ceil(b);
+
+            if ( l- u != 0){
+                p.set(l, this.p.get(l) + (probs.get(j) * (u -b)));
+                p.set(u, this.p.get(u) + (probs.get(j) * (b-l)));
+            } else{
+                p.set(l, this.p.get(l) + probs.get(j));
+            }
+        }
+    }
+
     // project a given array to finite support (different distribution parameters but same number of atoms)
     public  void project(ArrayList<Double> probs, ArrayList<Double> supp, double vmin, double vmax){
         double temp = 0; double b=0;
         // recompute delta_z
         delta_z = (vmax - vmin) / (atoms - 1); 
         // clear probability array
-        p = new ArrayList<Integer>(Collections.nCopies(atoms, 0));
+        p.clear();
+        p.addAll(Collections.nCopies(atoms, 0));
 
         // if the bounds have changed, update the discrete support
         if(vmin != this.v_min || vmax != this.v_max){
@@ -101,7 +126,7 @@ import java.util.ArrayList;
 
     // update saved distribution
     public void update(ArrayList<Double> arr){
-        this.p = new ArrayList<Double>(arr);
+        this.p = (ArrayList) arr.clone();
     }
 
     // compute expected value of the distribution
@@ -283,5 +308,29 @@ import java.util.ArrayList;
     public  ArrayList<Double> getSupport()
     {
         return this.z;
+    }
+
+    @Override
+    public String toString()
+    {
+        String temp = "";
+        final AtomicInteger indexHolder = new AtomicInteger();
+        p.forEach((p_i) -> {
+            final int index = indexHolder.getAndIncrement();
+            temp += index + "," + p_i +","+ z.get(index)+ "\n";
+        });
+        return temp;
+    }
+
+    @Override
+    public String toString(DecimalFormat df)
+    {
+        String temp = "";
+        final AtomicInteger indexHolder = new AtomicInteger();
+        p.forEach((p_i) -> {
+            final int index = indexHolder.getAndIncrement();
+            temp += index + "," + df.format(p_i) +","+ df.format(z.get(index))+ "\n";
+        });
+        return temp;
     }
 }
