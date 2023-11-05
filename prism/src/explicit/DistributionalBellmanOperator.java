@@ -1,27 +1,24 @@
 package explicit;
 
 
-import java.io.File;
+//import java.io.File;
+import prism.PrismException;
+
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.*;
 import java.text.DecimalFormat;
 
-import static java.lang.Math.*;
-import static java.lang.Math.sqrt;
-
 public class DistributionalBellmanOperator extends DistributionalBellman {
-    int atoms = 1;
+    int atoms;
     ArrayList<DiscreteDistribution> distr;
-    int nactions = 4;
     double v_min ;
     double v_max ;
-    double alpha=1;
     int numStates;
-    String distr_type = "C51";
+    String distr_type;
     prism.PrismLog mainLog;
     DecimalFormat df = new DecimalFormat("0.000");
-    boolean isCategorical = true;
+    boolean isCategorical ;
 
     public DistributionalBellmanOperator(int atoms, double vmin, double vmax, int numStates, String distr_type, prism.PrismLog log){
         super();
@@ -30,9 +27,10 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         this.v_max = vmax;
         this.numStates = numStates;
         this.mainLog = log;
-        this.distr_type = distr_type;
+        this.distr_type  = distr_type;
+        this.isCategorical = (distr_type.equals("C51"));
 
-        distr = new ArrayList<DiscreteDistribution> (numStates);
+        distr = new ArrayList<> (numStates);
 
         switch(distr_type)
         {
@@ -50,7 +48,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
                 break;
             
             default:
-                this.distr_type = "C51";
+                distr_type = "C51";
                 for (int i=0; i<numStates;i++){
                     distr.add(new DistributionCategorical(atoms, vmin, vmax, log));
                 }
@@ -64,8 +62,15 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
     }
 
     // Clear all distr
+    @Override
     public void clear(){
-        distr.forEach( (distr_i) -> distr_i.clear() );
+        distr.forEach(DiscreteDistribution::clear);
+    }
+
+    // Empty all distr
+    @Override
+    public void emptyAll(){
+        distr.forEach(DiscreteDistribution::empty);
     }
 
     // get support for a specific state
@@ -77,19 +82,11 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
 
     //TODO
     @Override
-    public DiscreteDistribution step(Iterator<Map.Entry<Integer, Double>> trans_it, int numTransitions, double gamma, double state_reward)
-    {
-        double [] res = update_probabilities(trans_it);
-        res = update_support(gamma, state_reward, res);
-        return res;
-    }
-
-    //TODO
-    @Override
-    public DiscreteDistribution step(Iterator<Map.Entry<Integer, DiscreteDistribution>> trans_it, int numTransitions, double gamma, double state_reward)
+    public DiscreteDistribution step(Iterator<Map.Entry<Integer, Double>> trans_it,
+                                     double gamma, double state_reward, int cur_state)
     {
         ArrayList<Double> probs = update_probabilities(trans_it);
-        ArrayList<Double> supp = update_support(gamma, state_reward, res);
+        ArrayList<Double> supp = update_support(gamma, state_reward, cur_state);
         DiscreteDistribution res;
         if (isCategorical)
         {
@@ -104,18 +101,45 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         return res;
     }
 
+    //TODO
+    @Override
+    public DiscreteDistribution step(Iterator<Map.Entry<Integer, DiscreteDistribution>> trans_it,
+                                     double gamma, double state_reward, int cur_state, boolean isTransCategorical)
+    {
+        ArrayList<ArrayList<Double>> probs = update_probabilities(trans_it, isTransCategorical);
+        ArrayList<ArrayList<Double>> supp = update_support(gamma, state_reward, cur_state, isTransCategorical);
+
+        DiscreteDistribution res = combine_distr(probs, supp, isTransCategorical);
+
+        return res;
+    }
+
+    private DiscreteDistribution combine_distr(ArrayList<ArrayList<Double>> probs, ArrayList<ArrayList<Double>> supp, boolean isTransCategorical) {
+        DiscreteDistribution res;
+        if (isCategorical)
+        {
+            res = new DistributionCategorical(atoms, v_min, v_max, mainLog);
+        }
+        else {
+            res = new DistributionQuantile(atoms, mainLog);
+        }
+
+//        res.project(probs, supp);
+        return res;
+    }
+
     //TODO fix this for quantile
     // updates probabilities for one action
     public ArrayList<Double> update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it) {
-        ArrayList<Double>  sum_p= new ArrayList<Double> (atoms);
-        sum_p.addAll(Collections.nCopies(atoms, 0));
+        ArrayList<Double>  sum_p= new ArrayList<> (atoms);
+        sum_p.addAll(Collections.nCopies(atoms, 0.0));
 
         while (trans_it.hasNext()) {
 
             Map.Entry<Integer, Double> e = trans_it.next();
             ArrayList<Double> successor_p = distr.get(e.getKey()).getValues();
             for (int j = 0; j < atoms; j++) {
-                sum_p[j] += e.getValue() * successor_p.get(j);
+                sum_p.set(j, e.getValue() * successor_p.get(j));
             }
 
         }
@@ -124,33 +148,33 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
 
     // updates probabilities for one action
     // TODO fix this for updated iteration with probability transition distributions
-    // public ArrayList<Double> update_probabilities(Iterator<Map.Entry<Integer, DiscreteDistribution>> trans_it) {
-    //     ArrayList<Double>  sum_p= new ArrayList<Double> (atoms);
-    //     sum_p.addAll(Collections.nCopies(atoms, 0));
+    public ArrayList<ArrayList<Double>> update_probabilities(Iterator<Map.Entry<Integer, DiscreteDistribution>> trans_it,
+                                                             boolean isTransCategorical) {
+        ArrayList<ArrayList<Double>> res = new ArrayList<>();
+        ArrayList<Double>  sum_p= new ArrayList<> (atoms);
+        sum_p.addAll(Collections.nCopies(atoms, 0.0));
 
-    //     while (trans_it.hasNext()) {
-    //         Map.Entry<Integer, DiscreteDistribution> e = trans_it.next();
-    //         ArrayList<Double> successor_p = distr.get(e.getKey()).getValues();
-    //         //number of atoms in transition prob
-    //         if (e.getValue().size() > 1){
+        while (trans_it.hasNext()) {
 
-    //         }
-    //         else {
+            Map.Entry<Integer, DiscreteDistribution> e = trans_it.next();
+            ArrayList<Double> successor_p = distr.get(e.getKey()).getValues();
+            // FIXME There should be another loop over values of successor distr
+            // TODO write combination code.
+            for (int j = 0; j < atoms; j++) {
+                sum_p.set(j, e.getValue().getValue(j) * successor_p.get(j));
+            }
 
-    //         }
-    //         for (int j = 0; j < atoms; j++) {
-    //             sum_p[j] += e.getValue() * successor_p.get(j);
-    //         }
+        }
 
-    //     }
-    //     return sum_p;
-    // }
+        // FIXME should be one set of probabilities for each unknown parameter value
+        res.add(sum_p);
+        return res;
+    }
 
     // Shift distribution using discount and reward for a given state
     public ArrayList<Double> update_support(double gamma, double state_reward, int cur_state){
 
-        ArrayList<Double> m = new ArrayList<Double> (atoms);
-        double b = 0;
+        ArrayList<Double> m = new ArrayList<> (atoms);
         for (int j =0; j<atoms; j++){
                 m.add(state_reward+gamma*distr.get(cur_state).getSupport(j));
         }
@@ -158,9 +182,32 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         return m;
     }
 
+    // Shift distribution using discount and reward for a given state
+    public ArrayList<ArrayList<Double>> update_support(double gamma, double state_reward, int cur_state,
+                                                       boolean isTransCategorical){
+        ArrayList<ArrayList<Double>> res = new ArrayList<>();
+        ArrayList<Double> m = new ArrayList<> (atoms);
+
+        for (int j =0; j<atoms; j++){
+            m.add(state_reward+gamma*distr.get(cur_state).getSupport(j));
+        }
+
+        // FIXME should be one set of supports for each unknown parameter value
+        res.add(m);
+        return res;
+    }
+
     // update a specific state
-    public void update(ArrayList<Double> temp, int state){
-        this.distr.get(state).update(temp);
+    @Override
+    public void update(DiscreteDistribution temp, int state){
+
+        if(isCategorical){
+            this.distr.get(state).update(temp.getValues());
+        }
+        else{
+            this.distr.get(state).update(temp.getSupports());
+        }
+
     }
 
     @Override
@@ -210,13 +257,12 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
     // quantile: compare support
     public double getW(ArrayList<Double> dist1, int state)
     {
-        if (isCategorical)
-        {
-            return distr.get(state).getW(dist1);
-        }
-        else {
-            return distr.get(state).getW(dist1);
-        }   
+        return distr.get(state).getW(dist1);
+    }
+
+    @Override
+    public double getW(DiscreteDistribution dist1, int state) {
+        return distr.get(state).getW(dist1);
     }
 
     // Get full saved distributions for all states
@@ -231,7 +277,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
     @Override
     public void writeToFile(int state, String filename){
         if (filename == null) {filename="distr_exp_"+distr_type.toLowerCase()+".csv";}
-        try (PrintWriter pw = new PrintWriter(new File("prism/"+filename))) {
+        try (PrintWriter pw = new PrintWriter("prism/"+filename)) {
             pw.println("r,p,z");
             pw.println(distr.get(state).toString());
         } catch (FileNotFoundException e) {
@@ -243,9 +289,16 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
     @Override
     public String toString()
     {
-        final String temp = "";
-        distr.forEach( (distr_i) -> temp += distr_i.toString(df) + "\n-------\n");
-        return temp;
+        StringBuilder temp = new StringBuilder();
+        int index = 0;
+        for (DiscreteDistribution distr_i: distr)
+        {
+            temp.append("State ").append(index).append(":");
+            temp.append(distr_i.toString(df));
+            temp.append("\n-------\n");
+
+        }
+        return temp.toString();
     }
 
     @Override
@@ -258,6 +311,37 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
     public void setFormat(DecimalFormat d_format)
     {
         this.df = d_format;
+    }
+
+    // Get parameters for this operator
+    @Override
+    public ArrayList<String> getParams()
+    {
+        ArrayList<String> res =new ArrayList<>(5);
+        res.add(String.valueOf(v_min));
+        res.add(String.valueOf(v_max));
+        res.add(String.valueOf(atoms));
+        res.add(String.valueOf(isCategorical));
+        res.add(String.valueOf(numStates));
+        return res;
+    }
+    @Override
+    public void clone(DistributionalBellman source) throws PrismException {
+        ArrayList <String> param_source = source.getParams();
+        ArrayList <String> param_dest = this.getParams();
+
+        if (param_dest.equals(param_source)){
+            this.clear();
+            for (int ind = 0; ind < numStates; ind ++)
+            {
+                this.distr.get(ind).clone(source.getDist(ind));
+            }
+        }
+        else {
+            throw new PrismException("Trying to clone two different array operators (parameters don't match)\n"
+                    + "source : "+ param_source + "destination : "+ param_dest );
+        }
+
     }
 
 }

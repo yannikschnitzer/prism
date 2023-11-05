@@ -40,7 +40,16 @@ import static java.lang.Math.*;
         Collections.fill(z, 0.0);
     }
 
-    // project a given array to finite support (same distribution parameters : vmin, vmax support)
+    // Remove memory
+    @Override
+    public void empty() {z.clear();}
+
+     @Override
+     public void clone(DiscreteDistribution source) {
+         this.z = (ArrayList<Double>) source.getSupports().clone();
+     }
+
+     // project a given array to finite support (same distribution parameters : vmin, vmax support)
     // here arr is an array of the probability values for the same support
     // If the support is the same (same number of atoms aka same probability)
     // then we just need to make sure it is sorted.

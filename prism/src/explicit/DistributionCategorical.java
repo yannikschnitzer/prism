@@ -53,6 +53,15 @@ class DistributionCategorical extends DiscreteDistribution {
         this.p = (ArrayList<Double>) Arrays.asList(temp2);
     }
 
+    // remove memory
+    @Override
+    public void empty() { p.clear();}
+
+    @Override
+    public void clone(DiscreteDistribution source) {
+        this.p = (ArrayList<Double>) source.getValues().clone();
+    }
+
     // project a given array to finite support (same distribution parameters : vmin, vmiax support)
     // here arr is an array of the probability values for the same support
     @Override

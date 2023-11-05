@@ -13,6 +13,12 @@ abstract class DiscreteDistribution {
     // initialize the distribution
     public abstract void clear();
 
+    // Remove memory
+    public abstract void empty();
+
+    // Deep copy from source with same parameters
+    public abstract void clone(DiscreteDistribution source);
+
     // project a given array to finite support
     public abstract void project(ArrayList<Double> arr);
 
@@ -61,7 +67,7 @@ abstract class DiscreteDistribution {
     public abstract ArrayList<Double> getValues();
 
     // get the probability values of one atom
-    public abstract Double getValue(int cur_state);
+    public abstract Double getValue(int index);
 
     // get the support values of the distribution
     public abstract ArrayList<Double> getSupports();

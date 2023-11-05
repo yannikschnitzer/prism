@@ -2700,39 +2700,26 @@ public class MDPModelChecker extends ProbModelChecker
 		DistributionalBellman operator;
 		String distr_type = settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD);
 
-		if (distr_type.equals(c51)) {
+		if (distr_type.equals(c51) || distr_type.equals(qr)) {
 			// TODO remove this in final version
 			String [] params = readParams(null);
 			atoms = Integer.parseInt(params[0]);
 			double v_min = Double.parseDouble(params[1]);
 			double v_max = Double.parseDouble(params[2]);
-			dtmc_epsilon = Double.parseDouble(params[4]);
-			alpha = Double.parseDouble(params[5]);
-
-			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
-			operator.initialize(n); // initialization based on parameters.
-			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
-			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
-					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
-		} else if (distr_type.equals(qr)) {
-			String [] params = readParams(null);
-			atoms = Integer.parseInt(params[0]);
 			error_thresh = Double.parseDouble(params[3]); // 0.7 for uav
 			dtmc_epsilon = Double.parseDouble(params[4]);
 			alpha = Double.parseDouble(params[5]);
 
-			operator = new DistributionalBellmanQR(atoms, n, mainLog);
-			operator.initialize(n); // initialization based on parameters.
-			mainLog.println("----- Parameters:\natoms:"+atoms+
-					" - alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
-					" - error thresh:"+error_thresh + " - epsilon:"+dtmc_epsilon);
-		}
-		else{
+			operator = new DistributionalBellmanOperator(atoms, v_min, v_max, n,  distr_type, mainLog);
+			mainLog.println("Distr type: " + distr_type);
+			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
+			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
+					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
+		}  else{
 			atoms=101;
 			double v_max = 100;
 			double v_min = 0;
-			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
-			operator.initialize(n); // initialization based on parameters.
+			operator = new DistributionalBellmanOperator(atoms, v_min, v_max, n, "C51" , mainLog);
 		}
 
 		// Create/initialise solution vector(s)
@@ -2750,9 +2737,11 @@ public class MDPModelChecker extends ProbModelChecker
 		double sum_val;
 
 		// transition distribution: 
-		double [] transition_distribution ={0.5,0.6,0.7,0.8};
-		double [] transition_prob = {0.1, 0.4, 0.3, 0.2};
-		DiscreteDistribution transition_distribution = new DistributionCategorical(4, 0.5, 0.8, mainLog);
+		ArrayList <Double> transition_distribution = new ArrayList<>(Arrays. asList(0.5,0.6,0.7,0.8));
+		ArrayList <Double>  transition_prob = new ArrayList<>(Arrays. asList(0.1, 0.4, 0.3, 0.2));
+		DiscreteDistribution transition_distr = new DistributionCategorical(4,
+				0.5, 0.8, mainLog);
+		transition_distr.project(transition_distribution, transition_prob);
 		mainLog.println("transitions :\n" + transition_distribution.toString());
 
 		mainLog.println("actions"+nactions);
@@ -2776,7 +2765,7 @@ public class MDPModelChecker extends ProbModelChecker
 				for (int choice = 0; choice < numChoices; choice++){ // aka action
 					double reward = mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choice);
 
-					numTransitions = mdp.getNumTransitions(s, choice);
+//					numTransitions = mdp.getNumTransitions(s, choice);
 					Iterator<Entry<Integer, Double>>it = mdp.getTransitionsIterator(s,choice);
 
 					flag = (s == 0 && mdp.getAction(s, choice).equals("n")) || (s == 1 && mdp.getAction(s, choice).equals("n"));
@@ -2791,10 +2780,10 @@ public class MDPModelChecker extends ProbModelChecker
 							for (int j = 0; j < atoms; j++) {
 								if (e.getValue() == 0.8) // if successful transition
 								{
-									sum_val += transition_prob[j] * transition_distribution[j]* (reward + gamma * p[e.getKey()][choice]);
+									sum_val += transition_distr.getValue(j) * transition_distr.getSupport(j)* (reward + gamma * p[e.getKey()][choice]);
 								}
 								else {
-									sum_val += transition_prob[j] * (1 -transition_distribution[j])* (reward + gamma * p[e.getKey()][choice]);
+									sum_val += transition_distr.getValue(j) * (1 - transition_distr.getSupport(j))* (reward + gamma * p[e.getKey()][choice]);
 								}
 								
 							}
@@ -2992,7 +2981,7 @@ public class MDPModelChecker extends ProbModelChecker
 		long timerProb1 = System.currentTimeMillis();
 		BitSet inf = prob1(mdp, null, target, !min, null);
 		inf.flip(0, n);
-		timerProb1 = System.currentTimeMillis() - timerProb1;
+//		timerProb1 = System.currentTimeMillis() - timerProb1;
 
 		// Print results of precomputation
 		int numTarget = target.cardinality();
@@ -3009,7 +2998,6 @@ public class MDPModelChecker extends ProbModelChecker
 		int iterations = 1500;
 		int min_iter = 20;
 		double error_thresh = 0.01;
-		double error_thresh_cvar = 2;
 		double gamma = 1;
 		double alpha=0.5;
 		Double dtmc_epsilon = null;
@@ -3033,46 +3021,40 @@ public class MDPModelChecker extends ProbModelChecker
 		unknown.andNot(inf);
 		IntSet unknownStates = IntSet.asIntSet(unknown);
 		//	int numS = unknownStates.cardinality();
-		DistributionalBellman operator;
+		DistributionalBellman operator, temp_p;
+		String distr_type = settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD);
 
 
-		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
+		if (distr_type.equals(c51) || distr_type.equals(qr)) {
 			// TODO remove this in final version
 			String [] params = readParams(null);
 			atoms = Integer.parseInt(params[0]);
 			double v_min = Double.parseDouble(params[1]);
 			double v_max = Double.parseDouble(params[2]);
-			dtmc_epsilon = Double.parseDouble(params[4]);
-			alpha = Double.parseDouble(params[5]);
-
-			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
-			operator.initialize(n); // initialization based on parameters.
-			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
-			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
-					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
-		} else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
-			String [] params = readParams(null);
-			atoms = Integer.parseInt(params[0]);
 			error_thresh = Double.parseDouble(params[3]); // 0.7 for uav
 			dtmc_epsilon = Double.parseDouble(params[4]);
 			alpha = Double.parseDouble(params[5]);
 
-			operator = new DistributionalBellmanQR(atoms, n, mainLog);
-			operator.initialize(n); // initialization based on parameters.
-			mainLog.println("----- Parameters:\natoms:"+atoms+
-					" - alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
-					" - error thresh:"+error_thresh + " - epsilon:"+dtmc_epsilon);
-		}
-		else{
+			operator = new DistributionalBellmanOperator(atoms, v_min, v_max, n, distr_type, mainLog);
+			temp_p = new DistributionalBellmanOperator(atoms, v_min, v_max, n, distr_type, mainLog);
+
+			mainLog.println("Distr type: "+ distr_type);
+			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
+			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
+					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
+		} else{
 			atoms=101;
 			double v_max = 100;
 			double v_min = 0;
-			operator = new DistributionalBellmanCategorical(atoms, v_min, v_max, n, mainLog);
-			operator.initialize(n); // initialization based on parameters.
+			mainLog.println("Using default parameters - Distr type: "+ distr_type);
+			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
+			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
+					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
+			operator = new DistributionalBellmanOperator(atoms, v_min, v_max, n, "C51", mainLog);
+			temp_p = new DistributionalBellmanOperator(atoms, v_min, v_max, n, "C51", mainLog);
 		}
 
 		// Create/initialise solution vector(s)
-		double[][] temp_p;
 		double [][] action_val = new double[n][nactions];
 		double [] action_cvar = new double[n];
 		Object [] policy = new Object[n];
@@ -3086,37 +3068,41 @@ public class MDPModelChecker extends ProbModelChecker
 		for (iters = 0; (iters < iterations) ; iters++)
 		{
 			iteration_timer = System.currentTimeMillis();
-			temp_p = new double[n][atoms];
-			// copy to temp value soln2
-			for (int k=0; k<n; k++) {
-				temp_p[k] = Arrays.copyOf(operator.getDist(k), operator.getDist(k).length);
+
+			// copy to temp value from operator
+			if (iters> 0) {
+				temp_p.clone(operator);
 			}
 
 			PrimitiveIterator.OfInt states = unknownStates.iterator();
 			while (states.hasNext()) {
 				final int s = states.nextInt();
 				int numChoices = mdp.getNumChoices(s);
-				int numTransitions = 0;
-				double[][] save_p = new double[numChoices][atoms];
+				int numTransitions;
+				DiscreteDistribution m ;
+				DiscreteDistribution[] save_p = new DiscreteDistribution[numChoices];
 				Arrays.fill(action_val[s], Float.POSITIVE_INFINITY);
 
 				for (int choice = 0; choice < numChoices; choice++){ // aka action
-					double [] m ; numTransitions = mdp.getNumTransitions(s, choice);
+					numTransitions = mdp.getNumTransitions(s, choice);
 					Iterator<Entry<Integer, Double>>it = mdp.getTransitionsIterator(s,choice);
 
 					double reward = mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choice);
-					m = operator.step(it, numTransitions, gamma, reward);
+					m = operator.step(it, gamma, reward, s);
 
-					action_val[s][choice] = operator.getExpValue(m);
-					save_p[choice] = Arrays.copyOf(m, m.length);
+					action_val[s][choice] = m.getExpValue();
+					save_p[choice].clone(m);
 				}
 				 // TODO optimize this to be consistent with cvar distr VI
 				int min_i = 0;
 				min_v = Float.POSITIVE_INFINITY;
 				for (int i =0; i<numChoices; i++) {
-					if (action_val[s][i] < min_v){ min_i = i; min_v = action_val[s][i]; action_cvar[s]=min_v; policy[s] = mdp.getAction(s, i);choices[s] = i;}
+					if (action_val[s][i] < min_v){
+						min_i = i; min_v = action_val[s][i];
+						action_cvar[s]=min_v;
+						policy[s] = mdp.getAction(s, i); choices[s] = i;}
 				}
-				temp_p[s] = Arrays.copyOf(save_p[min_i], save_p[min_i].length);
+				temp_p.update(save_p[min_i], s);
 			}
 
 			states = unknownStates.iterator();
@@ -3125,11 +3111,10 @@ public class MDPModelChecker extends ProbModelChecker
 			//ArrayList<Integer> bad = new ArrayList<>();
 			while (states.hasNext()) {
 				final int s = states.nextInt();
-				double tempo = operator.getW(temp_p[s], s);
+				double tempo = operator.getW(temp_p.getDist(s), s);
 				//if(tempo > max_dist){bad.add(s);}
 				max_dist = max(max_dist, tempo);
-
-				operator.update(temp_p[s], s);
+				operator.update(temp_p.getDist(s), s);
 			}
 			mainLog.println("Max Wp dist :"+(max_dist) + " error Wp:" + (error_thresh) +" at iter:"+iters);
 			if ((max_dist <error_thresh)&(iters>min_iter)) {
@@ -3149,7 +3134,7 @@ public class MDPModelChecker extends ProbModelChecker
 		mainLog.println("\nV[start] at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
 		DecimalFormat df = new DecimalFormat("0.000");
 		mainLog.print("[");
-		Arrays.stream(operator.getDist(mdp.getFirstInitialState())).forEach(e -> mainLog.print(df.format(e) + ", "));
+		mainLog.print(operator.getDist(mdp.getFirstInitialState()));
 		mainLog.print("]\n");
 
 		// Policy
@@ -3163,7 +3148,6 @@ public class MDPModelChecker extends ProbModelChecker
 			mainLog.println(" : " + timer / 1000.0 + " seconds.");
 			mainLog.println("Max time for 1 iteration :"+max_iteration_timer/1000.0+"s");
 		}
-		timer = System.currentTimeMillis();
 
 		// Compute distribution on induced DTMC
 		mainLog.println("Computing distribution on induced DTMC...");
@@ -3175,20 +3159,6 @@ public class MDPModelChecker extends ProbModelChecker
 			mcRewards.setStateReward(s, mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choices[s]));
 		}
 		DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
-		if(check_reach_dtmc_distr) {
-			timer = System.currentTimeMillis();
-			ModelCheckerResult dtmc_result = mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, target, "prism/distr_dtmc_exp.csv", dtmc_epsilon);
-			timer = System.currentTimeMillis() - timer;
-			if (verbosity >= 1) {
-				mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
-				mainLog.println(" : " + timer / 1000.0 + " seconds.");
-				mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
-				mainLog.println(" : " + timer / 1000.0 + " seconds.");
-			}
-			timer = System.currentTimeMillis();
-			double [] adjusted_dtmc_distr=operator.adjust_support(((TreeMap)dtmc_result.solnObj[initialState]));
-			mainLog.println("Wasserstein p="+(settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51) ? "2" : "1")+" dtmc vs code distributions: "+operator.getW(adjusted_dtmc_distr, initialState));
-		}
 
 		if (check_reach_dtmc){
 			BitSet obs_states= mdp.getLabelStates(bad_states_label);
@@ -3213,7 +3183,6 @@ public class MDPModelChecker extends ProbModelChecker
 				mainLog.print("\nPRISM VI");
 				mainLog.println(" : " + timer / 1000.0 + " seconds.");
 			}
-			timer = System.currentTimeMillis();
 
 			mainLog.println("\nVI result in initial state:"+ vi_res.soln[mdp.getFirstInitialState()]);
 			StateRewardsArray vi_mcRewards = new StateRewardsArray(n); // Compute rewards array
@@ -3227,7 +3196,7 @@ public class MDPModelChecker extends ProbModelChecker
 					if (((MDStrategy) vi_res.strat).isChoiceDefined(s)) {
 						transition_reward = mdpRewards.getTransitionReward(s, ((MDStrategy) vi_res.strat).getChoiceIndex(s));
 					}
-					else if(((MDStrategy) vi_res.strat).whyUndefined(s, -1) == UndefinedReason.ARBITRARY) {
+					else if(vi_res.strat.whyUndefined(s, -1) == UndefinedReason.ARBITRARY) {
 						transition_reward = mdpRewards.getTransitionReward(s, 0);
 					}
 					else {
@@ -3604,195 +3573,6 @@ public class MDPModelChecker extends ProbModelChecker
 		res.numIters = iterations;
 		res.timeTaken = (System.currentTimeMillis() - total_timer) / 1000.0;
 		return res;
-	}
-
-	enum ObjType {
-		EXP,
-		CVAR,
-		OTHER
-	}
-	/**
-	 * Compute expected reachability rewards.
-	 * @param mdp The MDP
-	 * @param mdpRewards The rewards
-	 * @param targets Target states for each objective
-	 * @param min Min or max rewards (true=min, false=max)
-	 */
-	// TODO : move this to a multiObj file
-	public ModelCheckerResult computeReachRewardsDistrMO(MDP mdp, List<MDPRewards> mdpRewardsList, BitSet target, List<MinMax> minMaxList, BitSet statesOfInterest) throws PrismException{
-
-		int num_obj = mdpRewardsList.size();
-
-		// Get the different objective types somehow, as an Enum?
-		List<ObjType> objectives = new ArrayList<ObjType> ();
-		
-		if (num_obj == 2) // dummy setting
-		{
-			objectives.set(0, ObjType.EXP);
-			objectives.set(1, ObjType.CVAR);
-		}
-
-		// TODO: Find the unique list of reward_structures
-		int num_rew = 0;
-
-		List <BitSet> unknown_original = new ArrayList<BitSet>();
-
-		// Store num states
-		int n = mdp.getNumStates();
-		int n_actions = mdp.getMaxNumChoices();
-
-		// Start expected reachability
-		long timer = System.currentTimeMillis();
-
-		// TODO Figure out how many CVaR Objectives
-		boolean [] cvar_obj = new boolean [num_obj]; // by default all set to false
-		int num_cvars = 0;
-
-		// Setting variables to check for unique reward structures
-		List<Entry<Integer, Integer>> rewardsIdxToUIdx = new ArrayList <Entry<Integer,Integer>>();
-		List <MDPRewards> rewardsSet = new ArrayList <MDPRewards>();
-		int unique_idx = 0;
-
-		// Check for deadlocks in non-target state (because breaks e.g. prob1)
-		mdp.checkForDeadlocks(target);
-
-		// Check target for all objectives
-		timer = System.currentTimeMillis();
-		for (int i =0; i<num_obj; i++){
-			// Start expected reachability
-			
-			mainLog.println("\nStarting expected reachability (" + (minMaxList.get(i).isMin() ? "min" : "max") + ")...");
-
-			// Precomputation (not optional)
-			long timerProb1 = System.currentTimeMillis();
-			BitSet inf = prob1(mdp, null, target, !minMaxList.get(i).isMin(), null);
-			inf.flip(0, n);
-			timerProb1 = System.currentTimeMillis() - timerProb1;
-
-			// Print results of precomputation
-			int numTarget = target.cardinality();
-			int numInf = inf.cardinality();
-			mainLog.println("Objective ="+i+", target=" + numTarget + ", inf=" + numInf + ", rest=" + (n - (numTarget + numInf)));
-
-			if (numInf == n){
-				throw new PrismException("All states are infinite");
-			}
-			
-			BitSet original = new BitSet ();
-			original.set(0, n);
-			original.andNot(target);
-			original.andNot(inf);
-			
-			unknown_original.add(original);
-
-			int idxfound = rewardsSet.indexOf(mdpRewardsList.get(i));
-			if(idxfound < 0)
-			{
-				rewardsSet.add(mdpRewardsList.get(i));
-				rewardsIdxToUIdx.add(new AbstractMap.SimpleEntry<Integer,Integer>(i,unique_idx));
-				unique_idx += 1;
-			}
-			else {
-				rewardsIdxToUIdx.add(new AbstractMap.SimpleEntry<Integer, Integer>(i,idxfound));
-			}
-
-			if (objectives.get(i) == ObjType.CVAR)
-			{
-				num_cvars +=1;
-			}
-
-		}
-
-		
-		timer = System.currentTimeMillis() - timer;
-		if (verbosity >= 1) {
-			mainLog.println("\nPrecomputation for all targets took : "+ timer / 1000.0 + " seconds.");
-		}
-
-		// Set timers
-		timer = System.currentTimeMillis();
-		long total_timer = System.currentTimeMillis();
-		long max_iteration_timer = -1; long iteration_timer;
-
-		ModelCheckerResult [] results = new ModelCheckerResult[num_obj];
-
-		// TODO: choose weights using OLS here
-		Double [][] weights =  { { 0.2, 0.8 }, { 0.5, 0.5 }, { 0.8, 0.2 } };
-
-		if (num_cvars > 0) {
-			// Make a dummy Cvar product
-
-		}
-		else {
-			// TODO CVaR multi-product.
-
-		}
-
-		// TODO : send cvar product to function to compute for one weight vector.
-		for (int j = 0; j < weights.length; j++) {
-			results[j] = computeReachRewardsDistrMOWeighted(mdp, mdpRewardsList, target, objectives, minMaxList, weights[j], unknown_original);
-		}
-
-		// TODO figure out how to save/print the results
-
-		return new ModelCheckerResult ();
-	}
-
-	// If there are no CVaR objectives
-	public ModelCheckerResult computeReachRewardsDistrMOWeighted (MDP mdp, List<MDPRewards> mdpRewardsList, BitSet target, List<ObjType> objectives, List<MinMax> min, Double [] weights, List<BitSet> unknown ){
-
-		int num_obj = objectives.size();
-
-		// Set up VI variables
-		int atoms;
-		int iterations = 1500;
-		double error_thresh = 0.01;
-		Double dtmc_epsilon = null;
-		int min_iter = 10;
-		double gamma = 1;
-		double alpha = 0.7;
-		String bad_states_label = "obs";
-		boolean check_reach_dtmc = true;
-		boolean check_reach_dtmc_distr= true;
-		boolean gen_trace = true;
-
-		String c51 = "C51";
-		String qr = "QR";
-
-		DistributionalBellmanAugmented [] operator = new DistributionalBellmanAugmented[num_obj];
-
-		int b_atoms;
-
-		return new ModelCheckerResult();
-	}
-
-	// If therre exists at least 1 cvar objective
-	public ModelCheckerResult computeReachRewardsDistrMOWeighted (CVaRProduct mdp, List<MDPRewards> mdpRewardsList, BitSet target, List<ObjType> objectives, List<MinMax> min, Double [] weights, List<BitSet> unknown ){
-
-		// Set up CVAR variables
-		int atoms;
-		int iterations = 1500;
-		double error_thresh = 0.01;
-		Double dtmc_epsilon = null;
-		int min_iter = 50;
-		double gamma = 1;
-		double alpha = 0.7;
-		String bad_states_label = "obs";
-		boolean check_reach_dtmc = true;
-		boolean check_reach_dtmc_distr= true;
-		boolean gen_trace = true;
-
-		String c51 = "C51";
-		String qr = "QR";
-
-		DistributionalBellmanAugmented operator;
-		int b_atoms;
-
-		// TODO: iterate over all product states
-
-		// TODO: if exp: compute exp(), if cvar : compute magic()
-
-		return new ModelCheckerResult();
 	}
 
 	public String[] readParams(String filename)
