@@ -4,7 +4,6 @@ package explicit;
 // import java.util.Map;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 
 import static java.lang.Math.*;
@@ -28,6 +27,7 @@ class DistributionCategorical extends DiscreteDistribution {
         this.v_max = vmax;
         this.mainLog = log;
         this.z = new ArrayList<>(atoms);
+        this.p = new ArrayList<>(atoms);
         
         if (atoms > 1) {
             this.delta_z = (vmax - vmin) / (atoms - 1);
@@ -36,21 +36,17 @@ class DistributionCategorical extends DiscreteDistribution {
                 this.delta_z = 0;
         }
 
-        Double [] temp2 = new Double[this.atoms];
-        temp2[0] =1.0;
-        this.p = new ArrayList<>(Arrays.asList(temp2));
-
         for (int i = 0; i < atoms; i++) {
             this.z.add(vmin + i *this.delta_z);
+            this.p.add((i==0? 1.0:0.0));
         }
     }
 
     // initialize the distribution
     @Override
     public void clear(){
-        Double [] temp2 = new Double[this.atoms];
-        temp2[0] =1.0;
-        this.p = (ArrayList<Double>) Arrays.asList(temp2);
+        Collections.fill(p, 0.0);
+        p.set(0, 1.0);
     }
 
     // remove memory
@@ -67,8 +63,7 @@ class DistributionCategorical extends DiscreteDistribution {
     @Override
     public void project(ArrayList<Double> arr){
         double temp ; double b; int l,u;
-        p.clear();
-        Collections.fill(p, 0.0);
+        this.clear();
 
         for (int j=0; j<arr.size(); j++){
             temp = max(v_min, min(v_max, this.z.get(j)));
@@ -91,8 +86,7 @@ class DistributionCategorical extends DiscreteDistribution {
         // recompute delta_z
         delta_z = (v_max - v_min) / (atoms - 1);
         // clear probability array
-        p.clear();
-        Collections.fill(p, 0.0);
+        this.clear();
 
         for (int j=0; j<probs.size(); j++){
             temp = max(v_min, min(v_max, supp.get(j)));
@@ -114,8 +108,7 @@ class DistributionCategorical extends DiscreteDistribution {
         // recompute delta_z
         delta_z = (vmax - vmin) / (atoms - 1); 
         // clear probability array
-        p.clear();
-        Collections.fill(p, 0.0);
+        this.clear();
 
         // if the bounds have changed, update the discrete support
         if(vmin != this.v_min || vmax != this.v_max){
@@ -341,6 +334,39 @@ class DistributionCategorical extends DiscreteDistribution {
         int index = 0;
         for(Double p_i: p )
         {
+            temp.append(p_i);
+            index ++;
+            if(index < atoms) {
+                temp.append(",");
+            }
+        }
+        return temp.toString();
+    }
+
+    @Override
+    public String toString(DecimalFormat df)
+    {
+        StringBuilder temp = new StringBuilder();
+        int index = 0;
+        for(Double p_i: p )
+        {
+            temp.append(df.format(p_i));
+            index ++;
+            if(index < atoms) {
+                temp.append(",");
+            }
+        }
+        return temp.toString();
+    }
+
+    // Printing for files (csv
+    @Override
+    public String toFile()
+    {
+        StringBuilder temp = new StringBuilder();
+        int index = 0;
+        for(Double p_i: p )
+        {
             temp.append(index).append(",").append(p_i).append(",")
                     .append(z.get(index)).append("\n");
             index ++;
@@ -348,8 +374,9 @@ class DistributionCategorical extends DiscreteDistribution {
         return temp.toString();
     }
 
+    // Printing for files (csv
     @Override
-    public String toString(DecimalFormat df)
+    public String toFile(DecimalFormat df)
     {
         StringBuilder temp = new StringBuilder();
         int index = 0;
@@ -365,6 +392,11 @@ class DistributionCategorical extends DiscreteDistribution {
     @Override
     public int size()
     {
+        return this.p.size();
+    }
+
+    @Override
+    public int getAtoms() {
         return atoms;
     }
 }

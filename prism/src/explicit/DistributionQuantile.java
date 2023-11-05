@@ -29,9 +29,8 @@ import static java.lang.Math.*;
 
         for (int i = 0; i < atoms; i++) {
             this.tau_hat.add( (2*i + 1)*p/2.0);
+            this.z.add(0.0);
         }
-
-        Collections.fill(z, 0.0);
     }
 
     // clear the distribution
@@ -71,7 +70,7 @@ import static java.lang.Math.*;
         }
 
         multimap.sort(Map.Entry.comparingByValue());
-        z.clear();
+        this.clear();
         Iterator<MapEntry<Double, Double>> it = multimap.iterator();
 
         while(it.hasNext() & z.size() < atoms)
@@ -96,7 +95,7 @@ import static java.lang.Math.*;
         }
 
         multimap.sort(Map.Entry.comparingByValue());
-        z.clear();
+        this.clear();
         Iterator<MapEntry<Double, Double>> it = multimap.iterator();
 
         while(it.hasNext() & z.size() < atoms)
@@ -324,9 +323,11 @@ import static java.lang.Math.*;
         StringBuilder temp = new StringBuilder();
         int index = 0;
         for (Double z_i: z) {
-            temp.append(z_i).append(",").append(p).append(",");
-            temp.append(tau_hat.get(index)).append("\n");
+            temp.append(z_i);
             index ++;
+            if(index < atoms) {
+                temp.append(",");
+            }
         }
         return temp.toString();
     }
@@ -337,16 +338,42 @@ import static java.lang.Math.*;
         StringBuilder temp = new StringBuilder();
         int index = 0;
         for (Double z_i: z) {
-            temp.append(df.format(z_i)).append(",").append(df.format(p)).append(",");
-            temp.append(df.format(tau_hat.get(index))).append("\n");
+            temp.append(df.format(z_i));
             index ++;
+            if(index < atoms) {
+                temp.append(",");
+            }
         }
         return temp.toString();
     }
 
-    @Override
-    public int size()
-    {
-        return atoms;
-    }
+     @Override
+     public String toFile() {
+         StringBuilder temp = new StringBuilder();
+         int index = 0;
+         for (Double z_i: z) {
+             temp.append(z_i).append(",").append(p).append(",");
+             temp.append(tau_hat.get(index)).append("\n");
+             index ++;
+         }
+         return temp.toString();
+     }
+
+     @Override
+     public String toFile(DecimalFormat df) {
+         StringBuilder temp = new StringBuilder();
+         int index = 0;
+         for (Double z_i: z) {
+             temp.append(df.format(z_i)).append(",").append(df.format(p)).append(",");
+             temp.append(df.format(tau_hat.get(index))).append("\n");
+             index ++;
+         }
+         return temp.toString();
+     }
+
+     @Override
+    public int size() { return this.z.size();}
+
+     @Override
+     public int getAtoms() { return atoms;}
 }

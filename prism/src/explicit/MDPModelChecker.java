@@ -27,6 +27,7 @@
 package explicit;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
@@ -2642,7 +2643,7 @@ public class MDPModelChecker extends ProbModelChecker
 	}
 
 	// TODO: jkjk
-	public ModelCheckerResult computeReachRewardsDistr(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException {
+	public ModelCheckerResult computeReachRewardsDistrNew(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException {
 		// Start expected reachability
 		long timer = System.currentTimeMillis();
 		mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
@@ -2880,7 +2881,7 @@ public class MDPModelChecker extends ProbModelChecker
 		// 	}
 		// 	timer = System.currentTimeMillis();
 		// 	double [] adjusted_dtmc_distr=operator.adjust_support(((TreeMap)dtmc_result.solnObj[initialState]));
-		// 	mainLog.println("Wasserstein p="+(settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51) ? "2" : "1")+" dtmc vs code distributions: "+operator.getW(adjusted_dtmc_distr, initialState));
+		// 	mainLog.println("Wasserstein p="+(distr_typ.equals(c51) ? "2" : "1")+" dtmc vs code distributions: "+operator.getW(adjusted_dtmc_distr, initialState));
 		// }
 
 		// if (check_reach_dtmc){
@@ -2966,7 +2967,7 @@ public class MDPModelChecker extends ProbModelChecker
 	 * @param target Target states
 	 * @param min Min or max rewards (true=min, false=max)
 	 */
-	public ModelCheckerResult computeReachRewardsDistrOld(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException {
+	public ModelCheckerResult computeReachRewardsDistr(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException {
 		// Start expected reachability
 		long timer = System.currentTimeMillis();
 		mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
@@ -2996,14 +2997,14 @@ public class MDPModelChecker extends ProbModelChecker
 		// Set up distribution variables
 		int atoms;
 		int iterations = 1500;
-		int min_iter = 20;
+		int min_iter = 8; // TODO switch back to 20
 		double error_thresh = 0.01;
 		double gamma = 1;
 		double alpha=0.5;
 		Double dtmc_epsilon = null;
-		boolean check_reach_dtmc = true;
+		boolean check_reach_dtmc = false;
 		boolean check_reach_dtmc_distr = true;
-		boolean check_reach_dtmc_vi = true;
+		boolean check_reach_dtmc_vi = false;
 		boolean check_reach_dtmc_distr_vi = true;
 		boolean gen_trace = true;
 		boolean compute_dtmc_vi = true; // Toggle computing non distr Exp VI
@@ -3078,20 +3079,18 @@ public class MDPModelChecker extends ProbModelChecker
 			while (states.hasNext()) {
 				final int s = states.nextInt();
 				int numChoices = mdp.getNumChoices(s);
-				int numTransitions;
 				DiscreteDistribution m ;
-				DiscreteDistribution[] save_p = new DiscreteDistribution[numChoices];
+				ArrayList<DiscreteDistribution> save_p = new ArrayList<>(numChoices);
 				Arrays.fill(action_val[s], Float.POSITIVE_INFINITY);
 
 				for (int choice = 0; choice < numChoices; choice++){ // aka action
-					numTransitions = mdp.getNumTransitions(s, choice);
 					Iterator<Entry<Integer, Double>>it = mdp.getTransitionsIterator(s,choice);
 
 					double reward = mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choice);
 					m = operator.step(it, gamma, reward, s);
-
+					mainLog.println(m);
 					action_val[s][choice] = m.getExpValue();
-					save_p[choice].clone(m);
+					save_p.add(m);
 				}
 				 // TODO optimize this to be consistent with cvar distr VI
 				int min_i = 0;
@@ -3102,7 +3101,7 @@ public class MDPModelChecker extends ProbModelChecker
 						action_cvar[s]=min_v;
 						policy[s] = mdp.getAction(s, i); choices[s] = i;}
 				}
-				temp_p.update(save_p[min_i], s);
+				temp_p.update(save_p.get(min_i), s);
 			}
 
 			states = unknownStates.iterator();
@@ -3128,13 +3127,13 @@ public class MDPModelChecker extends ProbModelChecker
 		// Print to file
 		boolean print= false;
 		if (print) {
-			printToFile(policy, action_val, alpha, "gridmap/cvar_out_"+n+"_"+ settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) +"_"+alpha+".out", n, mdp.getMaxNumChoices());
+			printToFile(policy, action_val, alpha, "gridmap/cvar_out_"+n+"_"+ distr_type +"_"+alpha+".out", n, mdp.getMaxNumChoices());
 		}
 
-		mainLog.println("\nV[start] at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
+		mainLog.println("\nV[start] at " + (iters + 1) + " with method "+distr_type);
 		DecimalFormat df = new DecimalFormat("0.000");
 		mainLog.print("[");
-		mainLog.print(operator.getDist(mdp.getFirstInitialState()));
+		mainLog.print(operator.toString(mdp.getFirstInitialState()));
 		mainLog.print("]\n");
 
 		// Policy

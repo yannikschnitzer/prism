@@ -77,6 +77,15 @@ abstract class DiscreteDistribution {
 
     public abstract String toString(DecimalFormat df);
 
+    // Printing for files (csv
+    public abstract String toFile();
+
+    // Printing for files (csv
+    public abstract String toFile(DecimalFormat df);
+
     // return the size of the distribution aka number of atoms
     public abstract int size();
+
+    // return the number of atoms
+    public abstract int getAtoms();
 }
