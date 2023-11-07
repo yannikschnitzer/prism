@@ -109,6 +109,25 @@ import static java.lang.Math.*;
 
     }
 
+    @Override 
+    // FIXME: add an adaptive version
+    // TODO: add error metric compute
+    public void project(TreeMap<Double, Double> particles)
+    {
+        double cum_p = 0.0;
+        this.empty();
+
+        for (Map.Entry<String, String> entry : particles.entrySet()){
+            if(z.size() == atoms){
+                break;
+            }
+            cum_p += entry.getValue();
+            if(cum_p >= tau_hat.get(z.size())) {
+                z.add(entry.getKey());
+            }
+        }
+    }
+
     // update saved distribution
     @Override
     public void update(ArrayList<Double> arr){

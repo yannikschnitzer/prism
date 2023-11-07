@@ -28,6 +28,9 @@ abstract class DiscreteDistribution {
     // project a given array to finite support (different distribution parameters but same number of atoms)
     public abstract void project(ArrayList<Double> probs, ArrayList<Double> supp, double vmin, double vmax);
 
+    // project using a tree map
+    public abstract void project(TreeMap<Double, Double> particles);
+
     // update saved distribution
     public abstract void update(ArrayList<Double> arr);
 

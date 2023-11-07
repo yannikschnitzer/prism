@@ -15,14 +15,22 @@ class DistributionCategorical extends DiscreteDistribution {
     ArrayList<Double> p;
     double v_min ;
     double v_max ;
-
+    boolean isAdaptive = False;
+    int max_atoms;
+    double max_delta;
+    double alpha;
     prism.PrismLog mainLog;
+    // errors [0] is the exp error
+    // errors [1] is the cvar error
+    double [] errors = new double [2]; // FIXME: make this parameterized
 
-    // Constructor
-    public DistributionCategorical(int atoms, double vmin, double vmax, prism.PrismLog log){
+    // Constructor for non adaptive
+    public DistributionCategorical(int atoms, double vmin, double vmax, double alpha, prism.PrismLog log){
         super();
 
         this.atoms = atoms;
+        this.max_atoms = atoms;
+        this.alpha = alpha;
         this.v_min = vmin;
         this.v_max = vmax;
         this.mainLog = log;
@@ -35,6 +43,30 @@ class DistributionCategorical extends DiscreteDistribution {
         else {
                 this.delta_z = 0;
         }
+
+        for (int i = 0; i < atoms; i++) {
+            this.z.add(vmin + i *this.delta_z);
+            this.p.add((i==0? 1.0:0.0));
+        }
+    }
+
+    // Constructor for adaptive
+    public DistributionCategorical(int max_atoms, double desired_delta, double alpha, prism.PrismLog log){
+        super();
+
+        // initialize with 2 atoms only
+        this.max_atoms = max_atoms;
+        this.alpha = alpha;
+        this.v_min = 0;
+        this.v_max = 1;
+        this.mainLog = log;
+        this.isAdaptive = true;
+        this.z = new ArrayList<>(max_atoms/2); // FIXME: not sure how to initialize z capacity
+        this.p = new ArrayList<>(max_atoms/2);
+        this.delta_z = 1;
+        this.atoms = 2;
+        this.max_delta = (desired_delta < 1? 1:desired_delta); // represents the max support gap
+        
 
         for (int i = 0; i < atoms; i++) {
             this.z.add(vmin + i *this.delta_z);
@@ -131,6 +163,65 @@ class DistributionCategorical extends DiscreteDistribution {
                 p.set(l, this.p.get(l) + probs.get(j));
             }
         }
+    }
+
+    // FIXME: do we want to try to reduce the delta z gap as well?
+    // TODO: add error check for CVaR
+    @Override 
+    public void project(TreeMap<Double, Double> particles)
+    {
+        // delta_z = (vmax - vmin) / (atoms - 1);
+        int req_atoms = ((particles.getLastKey() - particles.getFirstKey())/ max_delta) + 1 ;
+
+        // if there are too many values for the desired max gap, trim based on probability values
+        while(req_atoms > max_atoms){
+            if(particles.get(particles.getLastKey()) < particles.get(particles.getFirstKey())){
+                particles.remove(particles.getFirstKey());
+            } else{
+                particles.remove(particles.getLastKey());
+            }
+            req_atoms = ((particles.getLastKey() - particles.getFirstKey())/ max_delta) + 1 ;
+        }
+
+        v_max = particles.getLastKey();
+        v_min = particles.getFirstKey();
+
+        delta_z = (v_max - v_min) / (req_atoms - 1);
+        // INFO: this is where we would check the delta_z gap and if it can be reduced
+        atoms = req_atoms;
+        for (int i = 0; i < atoms; i++) {
+                this.z.set(i, vmin + i *delta_z);
+        }
+
+        double exp_value = 0; // TODO add the same for CVaR
+        double exp_value_approx = 0; // TODO add the same for CVaR
+
+        // project
+        for (Map.Entry<String, String> entry : particles.entrySet()){
+            temp = max(v_min, min(v_max, entry.getKey()));
+            b = ((temp - v_min) / delta_z);
+            l= (int) floor(b); u= (int) ceil(b);
+
+            exp_value += entry.getKey() * entry.getValue();
+
+            if ( l- u != 0){
+                p.set(l, this.p.get(l) + (entry.getValue() * (u -b)));
+                p.set(u, this.p.get(u) + (entry.getValue() * (b-l)));
+
+                exp_value_approx += (entry.getValue() * (u -b)) * this.z.get(l);
+                exp_value_approx += (entry.getValue() * (b -l)) * this.z.get(u);
+
+            } else{
+                p.set(l, this.p.get(l) + entry.getValue());
+                exp_value_approx += entry.getValue() * this.z.get(l);
+            }
+        }
+
+        // Update saved error on metric
+        errors[0] += (exp_value - exp_value_approx);
+        // TODO: implement cvar value with treemap.
+        errors[1] += this.getCvarValue(particles, alpha) - this.getCvarValue(alpha);
+
     }
 
     // update saved distribution

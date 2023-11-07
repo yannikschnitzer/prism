@@ -54,3 +54,7 @@ tests/experiments/
 .idea/
 /cvar_test.iml
 /mo-prism.iml
+*.iml
+
+# compiled java objects
+out/*

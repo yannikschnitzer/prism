@@ -74,15 +74,70 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
     }
 
     // get support for a specific state
-    // TODO check if this needs to check which distr_type.
+    // FIXME: check if this needs to check which distr_type.
     public ArrayList<Double> getZ(int state)
     {
         return distr.get(state).getSupports();
     }
 
-    //TODO
+    // TODO: convert to treemap
     @Override
     public DiscreteDistribution step(Iterator<Map.Entry<Integer, Double>> trans_it,
+                                     double gamma, double state_reward, int cur_state)
+    {
+        // treemap for the updated particles distribution with the support as key and probabilities
+        // using a treemap means it will automaticatlly be sorted based on the value
+        TreeMap<Double, Double>  sum_p= new TreeMap<> (atoms);
+        Double temp_supp, Double temp_value;
+
+        while (trans_it.hasNext()) {
+
+            Map.Entry<Integer, Double> e = trans_it.next();
+            
+            if (isCategorical){
+                ArrayList<Double> successor_p = distr.get(e.getKey()).getValues();
+            } else {
+                // all particle probability values  for the same state are the same for quantile
+                successor_p = distr.get(e.getKey()).getValue(0); 
+            }
+            for (int j = 0; j < atoms; j++) {
+                // new support value = cur state reward + discount * next state atom reward
+                temp_supp = state_reward+gamma*distr.get(e.getKey()).getSupport(j);
+                // new probability value = current probability of particle + transition probability * success probability of particle
+                if (isCategorical){
+                    temp_value = e.getValue() * successor_p.get(j);
+                } else {
+                    temp_value = e.getValue() * successor_p;
+                }
+
+                // if it already exists, increase probability; else, create particle
+                if(sum_p.containsKey(temp_supp)){
+                    sum_p.put(temp_supp, sum_p.get(j) + temp_value);
+                } else{
+                    sum_p.put(temp_supp, temp_value);
+                }    
+                
+            }
+
+        }
+
+        DiscreteDistribution res;
+        if (isCategorical)
+        {
+            res = new DistributionCategorical(atoms, v_min, v_max, mainLog);
+        }
+        else {
+            res = new DistributionQuantile(atoms, mainLog);
+        }
+
+        res.project(sum_p);
+
+        return res;
+    }
+
+    // Old version for reference
+    // FIXME: remove this
+    public DiscreteDistribution step_old(Iterator<Map.Entry<Integer, Double>> trans_it,
                                      double gamma, double state_reward, int cur_state)
     {
         ArrayList<Double> probs = update_probabilities(trans_it);
@@ -101,7 +156,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         return res;
     }
 
-    //TODO
+    // TODO: case where transition prob is a distribution
     @Override
     public DiscreteDistribution step(Iterator<Map.Entry<Integer, DiscreteDistribution>> trans_it,
                                      double gamma, double state_reward, int cur_state, boolean isTransCategorical)
@@ -124,11 +179,11 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
             res = new DistributionQuantile(atoms, mainLog);
         }
 
-//        res.project(probs, supp);
+        //res.project(probs, supp);
         return res;
     }
 
-    //TODO fix this for quantile
+    // TODO: fix this for quantile
     // updates probabilities for one action
     public ArrayList<Double> update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it) {
         ArrayList<Double>  sum_p= new ArrayList<> (atoms);
@@ -157,7 +212,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
     }
 
     // updates probabilities for one action
-    // TODO fix this for updated iteration with probability transition distributions
+    // TODO: fix this for updated iteration with probability transition distributions
     public ArrayList<ArrayList<Double>> update_probabilities(Iterator<Map.Entry<Integer, DiscreteDistribution>> trans_it,
                                                              boolean isTransCategorical) {
         ArrayList<ArrayList<Double>> res = new ArrayList<>();
@@ -186,7 +241,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
 
         ArrayList<Double> m = new ArrayList<> (atoms);
         for (int j =0; j<atoms; j++){
-            // TODO should be successor state not cur_state
+            // TODO: should be successor state not cur_state
                 m.add(state_reward+gamma*distr.get(cur_state).getSupport(j));
         }
         
@@ -203,7 +258,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
             m.add(state_reward+gamma*distr.get(cur_state).getSupport(j));
         }
 
-        // FIXME should be one set of supports for each unknown parameter value
+        // FIXME: should be one set of supports for each unknown parameter value
         res.add(m);
         return res;
     }
