@@ -10,7 +10,7 @@ import java.util.*;
 import java.text.DecimalFormat;
 
 public class DistributionalBellmanOperator extends DistributionalBellman {
-    int atoms;
+    int atoms; // FIXME this should be atoms per state or get it from the distribution
     ArrayList<DiscreteDistribution> distr;
     double v_min ;
     double v_max ;
@@ -137,9 +137,19 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         while (trans_it.hasNext()) {
 
             Map.Entry<Integer, Double> e = trans_it.next();
-            ArrayList<Double> successor_p = distr.get(e.getKey()).getValues();
-            for (int j = 0; j < atoms; j++) {
-                sum_p.set(j, e.getValue() * successor_p.get(j));
+            if (isCategorical)
+            {
+                ArrayList<Double> successor_p = distr.get(e.getKey()).getValues();
+                for (int j = 0; j < atoms; j++) {
+                    sum_p.set(j, sum_p.get(j) + e.getValue() * successor_p.get(j));
+                }
+            } else{
+                // for quantile all the values in succesor_p are the same
+                double successor_p = distr.get(e.getKey()).getValue(0);
+
+                for (int j = 0; j < atoms; j++) {
+                    sum_p.set(j, sum_p.get(j) + e.getValue() * successor_p);
+                }
             }
 
         }
@@ -176,6 +186,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
 
         ArrayList<Double> m = new ArrayList<> (atoms);
         for (int j =0; j<atoms; j++){
+            // TODO should be successor state not cur_state
                 m.add(state_reward+gamma*distr.get(cur_state).getSupport(j));
         }
         

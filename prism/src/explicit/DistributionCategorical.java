@@ -63,7 +63,8 @@ class DistributionCategorical extends DiscreteDistribution {
     @Override
     public void project(ArrayList<Double> arr){
         double temp ; double b; int l,u;
-        this.clear();
+        // set probability array to 0
+        Collections.fill(p, 0.0);
 
         for (int j=0; j<arr.size(); j++){
             temp = max(v_min, min(v_max, this.z.get(j)));
@@ -85,8 +86,9 @@ class DistributionCategorical extends DiscreteDistribution {
         double temp; double b; int l,u;
         // recompute delta_z
         delta_z = (v_max - v_min) / (atoms - 1);
-        // clear probability array
-        this.clear();
+        // set probability array to 0
+        Collections.fill(p, 0.0);
+
 
         for (int j=0; j<probs.size(); j++){
             temp = max(v_min, min(v_max, supp.get(j)));
@@ -106,9 +108,9 @@ class DistributionCategorical extends DiscreteDistribution {
     public  void project(ArrayList<Double> probs, ArrayList<Double> supp, double vmin, double vmax){
         double temp; double b; int l,u;
         // recompute delta_z
-        delta_z = (vmax - vmin) / (atoms - 1); 
-        // clear probability array
-        this.clear();
+        delta_z = (vmax - vmin) / (atoms - 1);
+        // set probability array to 0
+        Collections.fill(p, 0.0);
 
         // if the bounds have changed, update the discrete support
         if(vmin != this.v_min || vmax != this.v_max){

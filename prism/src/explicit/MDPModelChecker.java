@@ -3135,6 +3135,7 @@ public class MDPModelChecker extends ProbModelChecker
 		mainLog.print("[");
 		mainLog.print(operator.toString(mdp.getFirstInitialState()));
 		mainLog.print("]\n");
+		mainLog.println("E at initial state:" + operator.getExpValue(mdp.getFirstInitialState()));
 
 		// Policy
 //		mainLog.println("\nPolicy");

@@ -70,10 +70,10 @@ import static java.lang.Math.*;
         }
 
         multimap.sort(Map.Entry.comparingByValue());
-        this.clear();
+        this.empty();
         Iterator<MapEntry<Double, Double>> it = multimap.iterator();
 
-        while(it.hasNext() & z.size() < atoms)
+        while(it.hasNext() && z.size() < atoms)
         {
             entry = it.next();
             cum_p += entry.getKey();
@@ -95,10 +95,10 @@ import static java.lang.Math.*;
         }
 
         multimap.sort(Map.Entry.comparingByValue());
-        this.clear();
+        this.empty();
         Iterator<MapEntry<Double, Double>> it = multimap.iterator();
 
-        while(it.hasNext() & z.size() < atoms)
+        while(it.hasNext() && z.size() < atoms)
         {
             entry = it.next();
             cum_p += entry.getKey();
@@ -295,7 +295,7 @@ import static java.lang.Math.*;
     public ArrayList<Double> getValues()
     {
         ArrayList<Double> vals = new ArrayList<>(atoms);
-        Collections.fill(vals, this.p);
+        vals.addAll(Collections.nCopies(atoms, this.p));
         return vals;
     }
 
