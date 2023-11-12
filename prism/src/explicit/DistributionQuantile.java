@@ -124,10 +124,18 @@ import static java.lang.Math.*;
             }
             cum_p += entry.getValue();
             if(cum_p >= tau_hat.get(z.size())) {
-                z.add(entry.getKey());
+                if(entry.getValue()>p) {
+                    int temp = (int)round(entry.getValue()/p);
+                    z.addAll(Collections.nCopies(temp, entry.getKey()));
+                }else {
+                    z.add(entry.getKey());
+                }
             }
             exp_value += entry.getKey()*entry.getValue();
         }
+        mainLog.println("before project :"+ particles);
+        mainLog.println("after :" +z);
+        mainLog.println("size :" +z.size());
         // Exp value
         // errors[0] += (exp_value - this.getExpValue());
         // CvaR value 

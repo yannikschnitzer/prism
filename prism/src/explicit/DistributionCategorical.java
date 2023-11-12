@@ -20,19 +20,19 @@ class DistributionCategorical extends DiscreteDistribution {
     boolean isAdaptive = false;
     int max_atoms;
     double max_delta;
-    double alpha;
+//    double alpha;
     prism.PrismLog mainLog;
     // errors [0] is the exp error
     // errors [1] is the cvar error
     double [] errors = new double [2]; // FIXME: make this parameterized
 
     // Constructor for non adaptive
-    public DistributionCategorical(int atoms, double vmin, double vmax, double alpha, prism.PrismLog log){
+    public DistributionCategorical(int atoms, double vmin, double vmax, prism.PrismLog log){
         super();
 
         this.atoms = atoms;
         this.max_atoms = atoms;
-        this.alpha = alpha;
+//        this.alpha = alpha;
         this.v_min = vmin;
         this.v_max = vmax;
         this.mainLog = log;
@@ -47,18 +47,22 @@ class DistributionCategorical extends DiscreteDistribution {
         }
 
         for (int i = 0; i < atoms; i++) {
-            this.z.add(vmin + i *this.delta_z);
+            if (i == atoms -1){ // hard set vmax to prevent small rounding error
+                this.z.add(vmax);
+            } else {
+                this.z.add(vmin + i * this.delta_z);
+            }
             this.p.add((i==0? 1.0:0.0));
         }
     }
 
     // Constructor for adaptive
-    public DistributionCategorical(int max_atoms, double desired_delta, double alpha, prism.PrismLog log){
+    public DistributionCategorical(int max_atoms, double desired_delta, prism.PrismLog log){
         super();
 
         // initialize with 2 atoms only
         this.max_atoms = max_atoms;
-        this.alpha = alpha;
+//        this.alpha = alpha;
         this.v_min = 0;
         this.v_max = 1;
         this.mainLog = log;
@@ -71,7 +75,11 @@ class DistributionCategorical extends DiscreteDistribution {
         
 
         for (int i = 0; i < atoms; i++) {
-            this.z.add(v_min + i *this.delta_z);
+            if (i == atoms -1){ // hard set vmax to prevent small rounding error
+                this.z.add(v_max);
+            } else {
+                this.z.add(v_min + i * this.delta_z);
+            }
             this.p.add((i==0? 1.0:0.0));
         }
     }
@@ -149,7 +157,11 @@ class DistributionCategorical extends DiscreteDistribution {
         // if the bounds have changed, update the discrete support
         if(vmin != this.v_min || vmax != this.v_max){
             for (int i = 0; i < atoms; i++) {
-                this.z.set(i, vmin + i *delta_z);
+                if (i == atoms -1){ // hard set vmax to prevent small rounding error
+                    this.z.add(vmax);
+                } else {
+                    this.z.set(i, vmin + i * delta_z);
+                }
             }
         }
 
@@ -171,6 +183,9 @@ class DistributionCategorical extends DiscreteDistribution {
     @Override 
     public void project(TreeMap<Double, Double> particles)
     {
+        // set probability array to 0
+        Collections.fill(p, 0.0);
+
         // If adaptive, update distribution parameters
         if(isAdaptive){
             int req_atoms = (int) ceil(((particles.lastKey() - particles.firstKey())/ max_delta) + 1);
@@ -192,7 +207,11 @@ class DistributionCategorical extends DiscreteDistribution {
             // INFO: this is where we would check the delta_z gap and if it can be reduced
             atoms = req_atoms;
             for (int i = 0; i < atoms; i++) {
-                    this.z.set(i, v_min + i *delta_z);
+                if (i == atoms -1){ // hard set vmax to prevent small rounding error
+                    this.z.add(v_max);
+                } else {
+                    this.z.set(i, v_min + i * delta_z);
+                }
             }
         }
 
@@ -202,29 +221,37 @@ class DistributionCategorical extends DiscreteDistribution {
 
         // project
         for (Map.Entry<Double, Double> entry : particles.entrySet()){
-            temp = max(v_min, min(v_max, entry.getKey()));
-            b = ((temp - v_min) / delta_z);
-            l= (int) floor(b); u= (int) ceil(b);
+            // if the probability associated with the particle is 0, skip.
+            if(entry.getValue() >= 0) { //FIXME set to >0
+                temp = max(v_min, min(v_max, entry.getKey()));
+                b = ((temp - v_min) / delta_z);
+                l = (int) floor(b);
+                u = (int) ceil(b);
 
-            exp_value += entry.getKey() * entry.getValue();
+                exp_value += entry.getKey() * entry.getValue();
 
-            if ( l- u != 0){
-                p.set(l, this.p.get(l) + (entry.getValue() * (u -b)));
-                p.set(u, this.p.get(u) + (entry.getValue() * (b-l)));
+                if (l - u != 0 && (b-l)>0.00001) {
+                    p.set(l, this.p.get(l) + (entry.getValue() * (u - b)));
+                    p.set(u, this.p.get(u) + (entry.getValue() * (b - l)));
 
-                exp_value_approx += (entry.getValue() * (u -b)) * this.z.get(l);
-                exp_value_approx += (entry.getValue() * (b -l)) * this.z.get(u);
+                    exp_value_approx += (entry.getValue() * (u - b)) * this.z.get(l);
+                    exp_value_approx += (entry.getValue() * (b - l)) * this.z.get(u);
 
-            } else{
-                p.set(l, this.p.get(l) + entry.getValue());
-                exp_value_approx += entry.getValue() * this.z.get(l);
+                } else {
+                    p.set(l, this.p.get(l) + entry.getValue());
+                    exp_value_approx += entry.getValue() * this.z.get(l);
+                }
             }
         }
+
+        mainLog.println("before project :"+ particles);
+        mainLog.println("after :" +p);
+        mainLog.println("size :" +p.size());
 
         // Update saved error on metric
         errors[0] += (exp_value - exp_value_approx);
         // FIXME: make  sure this conversion works
-        errors[1] += (this.getCvarValue(particles, alpha) - this.getCvarValue(alpha));
+//        errors[1] += (this.getCvarValue(particles, alpha) - this.getCvarValue(alpha));
 
     }
 
