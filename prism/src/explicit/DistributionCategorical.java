@@ -5,6 +5,8 @@ package explicit;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static java.lang.Math.*;
 
@@ -15,7 +17,7 @@ class DistributionCategorical extends DiscreteDistribution {
     ArrayList<Double> p;
     double v_min ;
     double v_max ;
-    boolean isAdaptive = False;
+    boolean isAdaptive = false;
     int max_atoms;
     double max_delta;
     double alpha;
@@ -69,7 +71,7 @@ class DistributionCategorical extends DiscreteDistribution {
         
 
         for (int i = 0; i < atoms; i++) {
-            this.z.add(vmin + i *this.delta_z);
+            this.z.add(v_min + i *this.delta_z);
             this.p.add((i==0? 1.0:0.0));
         }
     }
@@ -165,39 +167,41 @@ class DistributionCategorical extends DiscreteDistribution {
         }
     }
 
-    // FIXME: do we want to try to reduce the delta z gap as well?
-    // TODO: add error check for CVaR
+    // TODO: do we want to try to reduce the delta z gap as well?
     @Override 
     public void project(TreeMap<Double, Double> particles)
     {
-        // delta_z = (vmax - vmin) / (atoms - 1);
-        int req_atoms = ((particles.getLastKey() - particles.getFirstKey())/ max_delta) + 1 ;
+        // If adaptive, update distribution parameters
+        if(isAdaptive){
+            int req_atoms = (int) ceil(((particles.lastKey() - particles.firstKey())/ max_delta) + 1);
 
-        // if there are too many values for the desired max gap, trim based on probability values
-        while(req_atoms > max_atoms){
-            if(particles.get(particles.getLastKey()) < particles.get(particles.getFirstKey())){
-                particles.remove(particles.getFirstKey());
-            } else{
-                particles.remove(particles.getLastKey());
+            // if there are too many values for the desired max gap, trim based on probability values
+            while(req_atoms > max_atoms){
+                if(particles.get(particles.lastKey()) < particles.get(particles.firstKey())){
+                    particles.remove(particles.firstKey());
+                } else{
+                    particles.remove(particles.lastKey());
+                }
+                req_atoms = (int) ceil(((particles.lastKey() - particles.firstKey())/ max_delta) + 1);
             }
-            req_atoms = ((particles.getLastKey() - particles.getFirstKey())/ max_delta) + 1 ;
+
+            v_max = particles.lastKey();
+            v_min = particles.firstKey();
+
+            delta_z = (v_max - v_min) / (req_atoms - 1);
+            // INFO: this is where we would check the delta_z gap and if it can be reduced
+            atoms = req_atoms;
+            for (int i = 0; i < atoms; i++) {
+                    this.z.set(i, v_min + i *delta_z);
+            }
         }
 
-        v_max = particles.getLastKey();
-        v_min = particles.getFirstKey();
-
-        delta_z = (v_max - v_min) / (req_atoms - 1);
-        // INFO: this is where we would check the delta_z gap and if it can be reduced
-        atoms = req_atoms;
-        for (int i = 0; i < atoms; i++) {
-                this.z.set(i, vmin + i *delta_z);
-        }
-
-        double exp_value = 0; // TODO add the same for CVaR
-        double exp_value_approx = 0; // TODO add the same for CVaR
+        double exp_value = 0;
+        double exp_value_approx = 0;
+        double b, temp; int u,l;
 
         // project
-        for (Map.Entry<String, String> entry : particles.entrySet()){
+        for (Map.Entry<Double, Double> entry : particles.entrySet()){
             temp = max(v_min, min(v_max, entry.getKey()));
             b = ((temp - v_min) / delta_z);
             l= (int) floor(b); u= (int) ceil(b);
@@ -219,8 +223,8 @@ class DistributionCategorical extends DiscreteDistribution {
 
         // Update saved error on metric
         errors[0] += (exp_value - exp_value_approx);
-        // TODO: implement cvar value with treemap.
-        errors[1] += this.getCvarValue(particles, alpha) - this.getCvarValue(alpha);
+        // FIXME: make  sure this conversion works
+        errors[1] += (this.getCvarValue(particles, alpha) - this.getCvarValue(alpha));
 
     }
 
@@ -251,8 +255,20 @@ class DistributionCategorical extends DiscreteDistribution {
         return sum;
     }
 
+    @Override
+    // For treemap
+    public double getExpValue(TreeMap<Double, Double> particles)
+    {
+        double sum =0;
+        for (Map.Entry<Double, Double> entry : particles.entrySet()){
+            // entry.getValue = probability, entry.getKey = support
+            sum+= entry.getValue() * entry.getKey();
+        }
+        return sum;
+    }
+
     // compute CVaR with a given alpha 
-    public double getCvarValue(double alpha)
+    public double getCvarValue (double alpha)
     {
         double res =0.0;
         double sum_p =0.0;
@@ -293,6 +309,31 @@ class DistributionCategorical extends DiscreteDistribution {
             }
         }
 
+        return res;
+    }
+
+    // compute CVaR with a given alpha for treemap
+    @Override
+    public double getCvarValue(TreeMap<Double, Double> particles, double alpha)
+    {
+        double res =0.0;
+        double sum_p =0.0;
+        double denom ;
+        // view map containing reverse view of mapping
+        Map<Double, Double> reverseMap = particles.descendingMap();
+        for (Map.Entry<Double, Double> entry : reverseMap.entrySet()){
+            mainLog.print(entry + " - ");
+            if (sum_p < alpha){
+                if(sum_p + entry.getValue() < alpha){
+                    sum_p += entry.getValue();
+                    res += (1/alpha) * entry.getKey() * entry.getValue();
+                } else{
+                    denom = alpha - sum_p; // compute remainder probability
+                    sum_p += denom;
+                    res += (1/alpha) * denom * entry.getKey() ;
+                }
+            }
+        }
         return res;
     }
 
@@ -363,7 +404,7 @@ class DistributionCategorical extends DiscreteDistribution {
     }
 
     @Override
-    public double getW(ArrayList<Double> arr, ArrayList<Double> arr2 )
+    public double getW(ArrayList<Double> arr, ArrayList<Double> arr2)
     {
         double sum = 0;
         double [] cum_p = new double[2];
@@ -492,4 +533,10 @@ class DistributionCategorical extends DiscreteDistribution {
     public int getAtoms() {
         return atoms;
     }
+
+//    @Override
+//    public double [] getErrors()
+//    {
+//        return errors;
+//    }
 }

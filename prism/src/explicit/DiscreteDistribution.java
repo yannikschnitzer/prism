@@ -4,6 +4,7 @@ package explicit;
 // import java.util.Map;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.TreeMap;
 
 abstract class DiscreteDistribution {
 
@@ -29,6 +30,8 @@ abstract class DiscreteDistribution {
     public abstract void project(ArrayList<Double> probs, ArrayList<Double> supp, double vmin, double vmax);
 
     // project using a tree map
+    // FIXME: add an adaptive version
+    // TODO: add error metric compute
     public abstract void project(TreeMap<Double, Double> particles);
 
     // update saved distribution
@@ -44,6 +47,9 @@ abstract class DiscreteDistribution {
 
     // compute CVaR with a given alpha
     public abstract double getCvarValue(ArrayList<Double> probs, double alpha);
+
+    // compute CVaR with a given alpha for treemap
+    public abstract double getCvarValue(TreeMap<Double, Double> particles, double alpha);
 
     // compute Value at Risk
     public abstract double getVar(double alpha);
@@ -91,4 +97,7 @@ abstract class DiscreteDistribution {
 
     // return the number of atoms
     public abstract int getAtoms();
+
+    // For treemap
+    public abstract double getExpValue(TreeMap<Double, Double> particles);
 }

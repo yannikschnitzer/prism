@@ -1,10 +1,10 @@
 package explicit;
 
 // import java.util.Iterator;
-import java.text.DecimalFormat;
 import java.util.*;
 import edu.jas.util.MapEntry;
 import java.util.ArrayList;
+import java.text.DecimalFormat;
 
 import prism.PrismLog;
 import static java.lang.Math.*;
@@ -115,9 +115,10 @@ import static java.lang.Math.*;
     public void project(TreeMap<Double, Double> particles)
     {
         double cum_p = 0.0;
+        double exp_value = 0;
         this.empty();
-
-        for (Map.Entry<String, String> entry : particles.entrySet()){
+        
+        for (Map.Entry<Double, Double> entry : particles.entrySet()){
             if(z.size() == atoms){
                 break;
             }
@@ -125,7 +126,13 @@ import static java.lang.Math.*;
             if(cum_p >= tau_hat.get(z.size())) {
                 z.add(entry.getKey());
             }
+            exp_value += entry.getKey()*entry.getValue();
         }
+        // Exp value
+        // errors[0] += (exp_value - this.getExpValue());
+        // CvaR value 
+        // errors[1] += (this.getCvarValue(particles) - this.getCvarValue());
+
     }
 
     // update saved distribution
@@ -153,6 +160,18 @@ import static java.lang.Math.*;
         for (int j=0; j<atoms; j++)
         {
             sum+= p * temp.get(j);
+        }
+        return sum;
+    }
+
+    @Override
+    // For treemap
+    public double getExpValue(TreeMap<Double, Double> particles)
+    {
+        double sum =0;
+        for (Map.Entry<Double, Double> entry : particles.entrySet()){
+            // entry.getValue = probability, entry.getKey = support
+            sum+= entry.getValue() * entry.getKey();
         }
         return sum;
     }
@@ -194,13 +213,39 @@ import static java.lang.Math.*;
         Collections.sort(temp);
         for (int i=atoms-1; i>=0; i--){
             if (sum_p < alpha){
-                if(sum_p+ p < alpha){
-                    sum_p += p;
-                    res += (1/alpha) * temp.get(i) * p;
+                if(sum_p+ probs.get(i) < alpha){
+                    sum_p += probs.get(i);
+                    res += (1/alpha) * temp.get(i) * probs.get(i);
                 } else{
                     denom = alpha - sum_p;
                     sum_p += denom;
-                    res += (1/alpha) *denom*temp.get(i);
+                    res += (1/alpha) * denom * temp.get(i);
+                }
+            }
+        }
+
+        return res;
+    }
+
+        // compute CVaR with a given alpha 
+    @Override
+    public double getCvarValue(TreeMap<Double, Double> particles, double alpha)
+    {
+        double res =0.0;
+        double sum_p =0.0;
+        double denom ;
+        // view map containing reverse view of mapping
+        Map<Double, Double> reverseMap = particles.descendingMap();
+        for (Map.Entry<Double, Double> entry : reverseMap.entrySet()){
+            mainLog.print(entry + " - ");
+            if (sum_p < alpha){
+                if(sum_p + entry.getValue() < alpha){
+                    sum_p += entry.getValue();
+                    res += (1/alpha) * entry.getKey() * entry.getValue();
+                } else{
+                    denom = alpha - sum_p;
+                    sum_p += denom;
+                    res += (1/alpha) * denom * entry.getKey() ;
                 }
             }
         }
@@ -253,7 +298,8 @@ import static java.lang.Math.*;
 
     // compute variance of this distribution
     @Override
-    public double getVariance(){
+    public double getVariance()
+    {
         double mu = getExpValue(z);
         double res = 0.0;
 
@@ -395,4 +441,9 @@ import static java.lang.Math.*;
 
      @Override
      public int getAtoms() { return atoms;}
+
+//    @Override
+//    public double [] getErrors(){
+//        return errors;
+//    }
 }
