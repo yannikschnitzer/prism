@@ -20,6 +20,8 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
     DecimalFormat df = new DecimalFormat("0.000");
     boolean isCategorical ;
 
+    boolean isAdaptive = false;
+
     public DistributionalBellmanOperator(int atoms, double vmin, double vmax, int numStates, String distr_type, prism.PrismLog log){
         super();
         this.atoms = atoms;
@@ -36,7 +38,12 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         {
             case "C51":
                 for (int i=0; i<numStates;i++){
-                    distr.add(new DistributionCategorical(atoms, vmin, vmax, log));
+                    if(isAdaptive){ //Adaptive
+                        distr.add(new DistributionCategorical(atoms, 5, log));
+                    } else { //normal
+                        distr.add(new DistributionCategorical(atoms, vmin, vmax, log));
+                    }
+
                 }
                 break;
             
@@ -87,8 +94,18 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         // treemap for the updated particles distribution with the support as key and probabilities
         // using a treemap means it will automaticatlly be sorted based on the value
         TreeMap<Double, Double>  sum_p= new TreeMap<>();
-        Double temp_supp, temp_value;
+        Double temp_supp, temp_value; int temp_atoms;
         DiscreteDistribution res = null;
+
+        if(isCategorical){
+            if(isAdaptive){
+                res = new DistributionCategorical(atoms, 5, mainLog);
+            } else {
+                res = new DistributionCategorical(atoms, v_min, v_max, mainLog);
+            }
+        } else {
+            res = new DistributionQuantile(atoms, mainLog);
+        }
 
         while (trans_it.hasNext()) {
 
@@ -96,20 +113,23 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
             
             if (isCategorical){
                 ArrayList<Double> successor_p = distr.get(e.getKey()).getValues();
-                for (int j = 0; j < atoms; j++) {
+                temp_atoms = distr.get(e.getKey()).getAtoms();
+                for (int j = 0; j < temp_atoms; j++) {
                     // new support value = cur state reward + discount * next state atom reward
                     temp_supp = state_reward+gamma*distr.get(e.getKey()).getSupport(j);
                     // new probability value = current probability of particle + transition probability * success probability of particle
                     temp_value = e.getValue() * successor_p.get(j);
                     
                     // if it already exists, increase probability; else, create particle
-                    if(sum_p.containsKey(temp_supp)){
-                        sum_p.put(temp_supp, sum_p.get(temp_supp) + temp_value);
-                    } else{
-                        sum_p.put(temp_supp, temp_value);
+                    if(temp_value > 0) {
+                        if (sum_p.containsKey(temp_supp)) {
+                            sum_p.put(temp_supp, sum_p.get(temp_supp) + temp_value);
+                        } else {
+                            sum_p.put(temp_supp, temp_value);
+                        }
                     }
                 }
-                res = new DistributionCategorical(atoms, v_min, v_max, mainLog);
+
             } else {
                 // all particle probability values  for the same state are the same for quantile
                 Double successor_p = distr.get(e.getKey()).getValue(0);
@@ -120,13 +140,14 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
                     temp_value = e.getValue() * successor_p;
 
                     // if it already exists, increase probability; else, create particle
-                    if(sum_p.containsKey(temp_supp)){
-                        sum_p.put(temp_supp, sum_p.get(temp_supp) + temp_value);
-                    } else{
-                        sum_p.put(temp_supp, temp_value);
+                    if(temp_value > 0){
+                        if(sum_p.containsKey(temp_supp)){
+                            sum_p.put(temp_supp, sum_p.get(temp_supp) + temp_value);
+                        } else{
+                            sum_p.put(temp_supp, temp_value);
+                        }
                     }
                 }
-                res = new DistributionQuantile(atoms, mainLog);
             }
 
         }
@@ -165,9 +186,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         ArrayList<ArrayList<Double>> probs = update_probabilities(trans_it, isTransCategorical);
         ArrayList<ArrayList<Double>> supp = update_support(gamma, state_reward, cur_state, isTransCategorical);
 
-        DiscreteDistribution res = combine_distr(probs, supp, isTransCategorical);
-
-        return res;
+        return combine_distr(probs, supp, isTransCategorical);
     }
 
     private DiscreteDistribution combine_distr(ArrayList<ArrayList<Double>> probs, ArrayList<ArrayList<Double>> supp, boolean isTransCategorical) {

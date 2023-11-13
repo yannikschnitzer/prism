@@ -183,12 +183,9 @@ class DistributionCategorical extends DiscreteDistribution {
     @Override 
     public void project(TreeMap<Double, Double> particles)
     {
-        // set probability array to 0
-        Collections.fill(p, 0.0);
-
         // If adaptive, update distribution parameters
         if(isAdaptive){
-            int req_atoms = (int) ceil(((particles.lastKey() - particles.firstKey())/ max_delta) + 1);
+            int req_atoms = (int) ceil((particles.lastKey() - particles.firstKey())/ max_delta) + 1;
 
             // if there are too many values for the desired max gap, trim based on probability values
             while(req_atoms > max_atoms){
@@ -200,17 +197,22 @@ class DistributionCategorical extends DiscreteDistribution {
                 req_atoms = (int) ceil(((particles.lastKey() - particles.firstKey())/ max_delta) + 1);
             }
 
-            v_max = particles.lastKey();
+            if(req_atoms <= 1){
+                v_max = ((particles.lastKey() - particles.firstKey()) == 0.0 ? particles.lastKey()+1: particles.lastKey());
+                req_atoms += 1;
+            } else {
+                v_max = particles.lastKey();
+            }
             v_min = particles.firstKey();
-
             delta_z = (v_max - v_min) / (req_atoms - 1);
             // INFO: this is where we would check the delta_z gap and if it can be reduced
             atoms = req_atoms;
+            this.z.clear();
             for (int i = 0; i < atoms; i++) {
                 if (i == atoms -1){ // hard set vmax to prevent small rounding error
                     this.z.add(v_max);
                 } else {
-                    this.z.set(i, v_min + i * delta_z);
+                    this.z.add(i, v_min + i * delta_z);
                 }
             }
         }
@@ -218,6 +220,14 @@ class DistributionCategorical extends DiscreteDistribution {
         double exp_value = 0;
         double exp_value_approx = 0;
         double b, temp; int u,l;
+
+        // set probability array to 0
+        Collections.fill(p, 0.0);
+        if(p.size() < atoms) { // needs to be increased
+            p.addAll(Collections.nCopies(atoms - p.size(), 0.0));
+        } else if(p.size() > atoms) {
+            p.subList(atoms, p.size()+1).clear();
+        }
 
         // project
         for (Map.Entry<Double, Double> entry : particles.entrySet()){
@@ -246,7 +256,7 @@ class DistributionCategorical extends DiscreteDistribution {
 
         mainLog.println("before project :"+ particles);
         mainLog.println("after :" +p);
-        mainLog.println("size :" +p.size());
+        mainLog.println("size :" +atoms);
 
         // Update saved error on metric
         errors[0] += (exp_value - exp_value_approx);
@@ -258,6 +268,9 @@ class DistributionCategorical extends DiscreteDistribution {
     // update saved distribution
     public void update(ArrayList<Double> arr){
         p =  (ArrayList<Double>) arr.clone();
+        if (p.size() > atoms) {
+            atoms = p.size();
+        }
     }
 
     // compute expected value of the distribution

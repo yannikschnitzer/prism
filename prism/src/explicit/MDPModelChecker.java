@@ -3074,6 +3074,7 @@ public class MDPModelChecker extends ProbModelChecker
 			if (iters> 0) {
 				temp_p.clone(operator);
 			}
+			mainLog.println("iteration : " + iters);
 
 			PrimitiveIterator.OfInt states = unknownStates.iterator();
 			while (states.hasNext()) {
@@ -3082,7 +3083,7 @@ public class MDPModelChecker extends ProbModelChecker
 				DiscreteDistribution m ;
 				ArrayList<DiscreteDistribution> save_p = new ArrayList<>(numChoices);
 				Arrays.fill(action_val[s], Float.POSITIVE_INFINITY);
-
+				mainLog.println("state : " + s);
 				for (int choice = 0; choice < numChoices; choice++){ // aka action
 					Iterator<Entry<Integer, Double>>it = mdp.getTransitionsIterator(s,choice);
 
