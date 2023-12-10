@@ -578,8 +578,6 @@ if __name__ == "__main__":
         experiments = [args.set]
     elif args.set == 'comparison':
         experiments = ssp_comparison
-    elif args.set == 'quantile':
-        experiments = exp_quantile
     elif args.set == 'dtmc':
         experiments = exp_dtmc
     elif args.set == 'herman':
