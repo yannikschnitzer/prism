@@ -5,7 +5,6 @@ import java.util.*;
 import edu.jas.util.MapEntry;
 import java.util.ArrayList;
 import java.text.DecimalFormat;
-
 import prism.PrismLog;
 import static java.lang.Math.*;
 
@@ -59,10 +58,15 @@ import static java.lang.Math.*;
         // TODO do the same cutoff as the other one
     } // FIXME
 
-    // project a given array to finite support (different distribution parameters but same number of atoms)
+    // assume probs.size=supp.size()= atoms
+     // project a given array to finite support (different distribution parameters but same number of atoms)
     @Override
     public void project(ArrayList<Double> probs, ArrayList<Double> supp){
         double cum_p = 0.0;
+        if (probs.size() != atoms || supp.size() != atoms){
+            String error_msg = "This function only works when the support size is the same as probs and supp. Provided: probs size:";
+            throw PrismException(error_msg+probs.size()", supp size:"+supp.size());
+        }
         ArrayList<MapEntry<Double, Double>> multimap = new ArrayList<>();
         Map.Entry<Double, Double> entry;
         for (int j = 0; j < atoms; j++) {
@@ -110,32 +114,39 @@ import static java.lang.Math.*;
     }
 
     @Override 
-    // FIXME: add an adaptive version
     // TODO: add error metric compute
     public void project(TreeMap<Double, Double> particles)
     {
         double cum_p = 0.0;
         double exp_value = 0;
+        double temp_value = 0;
         this.empty();
         
         for (Map.Entry<Double, Double> entry : particles.entrySet()){
-            if(z.size() == atoms){
+            if(z.size() >= atoms){
                 break;
-            }
-            cum_p += entry.getValue();
+            };
+            temp_value = entry.getValue();
+            cum_p += temp_value; // check probability of entry
             if(cum_p >= tau_hat.get(z.size())) {
-                if(entry.getValue()>p) {
-                    int temp = (int)round(entry.getValue()/p);
-                    z.addAll(Collections.nCopies(temp, entry.getKey()));
+                if(temp_value>p) {
+                    int temp = (int)floor(temp_value/p);
+                    // make sure z doesn't overflow
+                    z.addAll(Collections.nCopies(min(temp, atoms-z.size()), entry.getKey()));
+                     // if it is still greater than tau(curr atom), add one more
+                    if(z.size()< atoms && cum_p >= tau_hat.get(z.size())){
+                        z.add(entry.getKey());
+                    }
+
                 }else {
                     z.add(entry.getKey());
                 }
             }
             exp_value += entry.getKey()*entry.getValue();
         }
-        mainLog.println("before project :"+ particles);
-        mainLog.println("after :" +z);
-        mainLog.println("size :" +z.size());
+        // mainLog.println("before project :"+ particles);
+        // mainLog.println("after :" +z);
+         mainLog.println("size :" +z.size());
         // Exp value
         // errors[0] += (exp_value - this.getExpValue());
         // CvaR value 

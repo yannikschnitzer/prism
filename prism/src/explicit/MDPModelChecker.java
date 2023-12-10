@@ -3089,7 +3089,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 					double reward = mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choice);
 					m = operator.step(it, gamma, reward, s);
-					mainLog.println(m);
+					// mainLog.println(m);
 					action_val[s][choice] = m.getExpValue();
 					save_p.add(m);
 				}

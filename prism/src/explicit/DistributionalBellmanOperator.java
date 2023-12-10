@@ -3,7 +3,6 @@ package explicit;
 
 //import java.io.File;
 import prism.PrismException;
-
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.*;
@@ -19,7 +18,6 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
     prism.PrismLog mainLog;
     DecimalFormat df = new DecimalFormat("0.000");
     boolean isCategorical ;
-
     boolean isAdaptive = false;
 
     public DistributionalBellmanOperator(int atoms, double vmin, double vmax, int numStates, String distr_type, prism.PrismLog log){
@@ -108,9 +106,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         }
 
         while (trans_it.hasNext()) {
-
             Map.Entry<Integer, Double> e = trans_it.next();
-            
             if (isCategorical){
                 ArrayList<Double> successor_p = distr.get(e.getKey()).getValues();
                 temp_atoms = distr.get(e.getKey()).getAtoms();
@@ -152,28 +148,8 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
 
         }
 
+        // Perform projection on the intermediate target
         res.project(sum_p);
-
-        return res;
-    }
-
-    // Old version for reference
-    // FIXME: remove this
-    public DiscreteDistribution step_old(Iterator<Map.Entry<Integer, Double>> trans_it,
-                                     double gamma, double state_reward, int cur_state)
-    {
-        ArrayList<Double> probs = update_probabilities(trans_it);
-        ArrayList<Double> supp = update_support(gamma, state_reward, cur_state);
-        DiscreteDistribution res;
-        if (isCategorical)
-        {
-            res = new DistributionCategorical(atoms, v_min, v_max, mainLog);
-        }
-        else {
-            res = new DistributionQuantile(atoms, mainLog);
-        }
-
-        res.project(probs, supp);
 
         return res;
     }
@@ -203,7 +179,6 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         return res;
     }
 
-    // TODO: fix this for quantile
     // updates probabilities for one action
     public ArrayList<Double> update_probabilities(Iterator<Map.Entry<Integer, Double>> trans_it) {
         ArrayList<Double>  sum_p= new ArrayList<> (atoms);
@@ -261,7 +236,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
 
         ArrayList<Double> m = new ArrayList<> (atoms);
         for (int j =0; j<atoms; j++){
-            // TODO: should be successor state not cur_state
+                // should be successor state not cur_state
                 m.add(state_reward+gamma*distr.get(cur_state).getSupport(j));
         }
         
@@ -428,7 +403,6 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
             throw new PrismException("Trying to clone two different array operators (parameters don't match)\n"
                     + "source : "+ param_source + "destination : "+ param_dest );
         }
-
     }
 
 }

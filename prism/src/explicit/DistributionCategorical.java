@@ -254,9 +254,9 @@ class DistributionCategorical extends DiscreteDistribution {
             }
         }
 
-        mainLog.println("before project :"+ particles);
-        mainLog.println("after :" +p);
-        mainLog.println("size :" +atoms);
+        // mainLog.println("before project :"+ particles);
+        // mainLog.println("after :" +p);
+        // mainLog.println("size :" +atoms);
 
         // Update saved error on metric
         errors[0] += (exp_value - exp_value_approx);
