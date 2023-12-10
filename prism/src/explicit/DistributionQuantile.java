@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.text.DecimalFormat;
 import prism.PrismLog;
 import static java.lang.Math.*;
+import prism.PrismException;
 
  class DistributionQuantile extends DiscreteDistribution {
     
@@ -61,11 +62,11 @@ import static java.lang.Math.*;
     // assume probs.size=supp.size()= atoms
      // project a given array to finite support (different distribution parameters but same number of atoms)
     @Override
-    public void project(ArrayList<Double> probs, ArrayList<Double> supp){
+    public void project(ArrayList<Double> probs, ArrayList<Double> supp) throws PrismException {
         double cum_p = 0.0;
         if (probs.size() != atoms || supp.size() != atoms){
             String error_msg = "This function only works when the support size is the same as probs and supp. Provided: probs size:";
-            throw PrismException(error_msg+probs.size()", supp size:"+supp.size());
+            throw new PrismException(error_msg+probs.size()+", supp size:"+supp.size());
         }
         ArrayList<MapEntry<Double, Double>> multimap = new ArrayList<>();
         Map.Entry<Double, Double> entry;

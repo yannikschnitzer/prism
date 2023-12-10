@@ -5,6 +5,7 @@ package explicit;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.TreeMap;
+import prism.PrismException;
 
 abstract class DiscreteDistribution {
 
@@ -24,7 +25,7 @@ abstract class DiscreteDistribution {
     public abstract void project(ArrayList<Double> arr);
 
     // project a given array to finite support (different distribution parameters but same number of atoms)
-    public abstract void project(ArrayList<Double> probs, ArrayList<Double> supp);
+    public abstract void project(ArrayList<Double> probs, ArrayList<Double> supp) throws PrismException;
 
     // project a given array to finite support (different distribution parameters but same number of atoms)
     public abstract void project(ArrayList<Double> probs, ArrayList<Double> supp, double vmin, double vmax);
