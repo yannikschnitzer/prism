@@ -14,8 +14,8 @@ import prism.PrismException;
     double p;
     int atoms ;
     PrismLog mainLog;
-    ArrayList<Double> tau_hat;
-    ArrayList<Double> z ;
+    double [] tau_hat; // quantile midpoints
+    Adouble [] z ; // support values
 
     // Constructor
     public DistributionQuantile(int atoms, PrismLog log){
@@ -24,28 +24,29 @@ import prism.PrismException;
         this.atoms = atoms;
         mainLog = log;
         p =1.0/atoms;
-        z = new ArrayList<>(atoms);
-        tau_hat = new ArrayList<>(atoms);
+        z = new double [atoms];
+        tau_hat = new double [atoms];
 
         for (int i = 0; i < atoms; i++) {
-            this.tau_hat.add( (2*i + 1)*p/2.0);
-            this.z.add(0.0);
+            this.tau_hat[i] = (2*i + 1)*p/2.0;
         }
     }
 
     // clear the distribution
     @Override
     public void clear(){
-        Collections.fill(z, 0.0);
+        Arrays.fill(z, 0.0);
     }
 
     // Remove memory
+    // INFO: this might need to be changed later
     @Override
-    public void empty() {z.clear();}
+    public void empty() {this.clear();}
 
      @Override
      public void clone(DiscreteDistribution source) {
-         this.z = (ArrayList<Double>) source.getSupports().clone();
+        double [] source_supp = source.getSupports();
+         this.z =Arrays.copyOf(source_supp, source_supp.length);
      }
 
      // project a given array to finite support (same distribution parameters : vmin, vmax support)
@@ -54,10 +55,10 @@ import prism.PrismException;
     // then we just need to make sure it is sorted.
     @Override
     public void project(ArrayList<Double> arr){
-        z =  new ArrayList<>(arr); // FIXME
-        Collections.sort(z);
-        // TODO do the same cutoff as the other one
-    } // FIXME
+        z =  arr.toArray(); // FIXME
+        Arrays.sort(z);
+        // TODO: do the same cutoff as the other one?
+    } 
 
     // assume probs.size=supp.size()= atoms
      // project a given array to finite support (different distribution parameters but same number of atoms)
@@ -78,13 +79,15 @@ import prism.PrismException;
         this.empty();
         Iterator<MapEntry<Double, Double>> it = multimap.iterator();
 
-        while(it.hasNext() && z.size() < atoms)
+        int index = 0;
+        while(it.hasNext() && index < atoms)
         {
             entry = it.next();
             cum_p += entry.getKey();
-            if(cum_p >= tau_hat.get(z.size())) {
-                z.add(entry.getValue());
+            if(cum_p >= tau_hat[index]) {
+                z[index] = entry.getValue();
             }
+            index ++;
         }
 
     }
@@ -103,13 +106,15 @@ import prism.PrismException;
         this.empty();
         Iterator<MapEntry<Double, Double>> it = multimap.iterator();
 
-        while(it.hasNext() && z.size() < atoms)
+        int index = 0;
+        while(it.hasNext() && index < atoms)
         {
             entry = it.next();
             cum_p += entry.getKey();
-            if(cum_p >= tau_hat.get(z.size())) {
-                z.add(entry.getValue());
+            if(cum_p >= tau_hat[index]) {
+                z[index] = entry.getValue();
             }
+            index ++;
         }
 
     }
@@ -121,33 +126,37 @@ import prism.PrismException;
         double cum_p = 0.0;
         double exp_value = 0;
         double temp_value = 0;
+        int index = 0;
         this.empty();
         
         for (Map.Entry<Double, Double> entry : particles.entrySet()){
-            if(z.size() >= atoms){
+            if(index >= atoms){
                 break;
             };
             temp_value = entry.getValue();
             cum_p += temp_value; // check probability of entry
-            if(cum_p >= tau_hat.get(z.size())) {
+            if(cum_p >= tau_hat[index]) {
                 if(temp_value>p) {
                     int temp = (int)floor(temp_value/p);
                     // make sure z doesn't overflow
-                    z.addAll(Collections.nCopies(min(temp, atoms-z.size()), entry.getKey()));
-                     // if it is still greater than tau(curr atom), add one more
-                    if(z.size()< atoms && cum_p >= tau_hat.get(z.size())){
-                        z.add(entry.getKey());
+                    Arrays.fill(z, index, index + min(temp, atoms-index), entry.getKey());
+                    index += min(temp, atoms-index);
+                    // if it is still greater than tau(curr atom), add one more
+                    if(z.size()< atoms && cum_p >= tau_hat[index]){
+                        z[index] = entry.getKey();
+                        index ++;
                     }
 
                 }else {
-                    z.add(entry.getKey());
+                    z[index] = entry.getKey();
+                    index ++;
                 }
             }
-            exp_value += entry.getKey()*entry.getValue();
+            // exp_value += entry.getKey()*entry.getValue();
         }
         // mainLog.println("before project :"+ particles);
         // mainLog.println("after :" +z);
-         mainLog.println("size :" +z.size());
+        //  mainLog.println("size :" +z.size());
         // Exp value
         // errors[0] += (exp_value - this.getExpValue());
         // CvaR value 
@@ -158,7 +167,7 @@ import prism.PrismException;
     // update saved distribution
     @Override
     public void update(ArrayList<Double> arr){
-        this.z = (ArrayList<Double>) arr.clone();
+        this.z = arr.toArray();
     }
 
     // compute expected value of the distribution
@@ -168,7 +177,7 @@ import prism.PrismException;
         double sum =0;
         for (int j=0; j<atoms; j++)
         {
-            sum+= p * z.get(j);
+            sum+= p * z[j];
         }
         return sum;
     }
@@ -210,11 +219,11 @@ import prism.PrismException;
             if (sum_p < alpha){
                 if(sum_p+ p < alpha){
                     sum_p += p;
-                    res += (1/alpha) * z.get(i) * p;
+                    res += (1/alpha) * z[i] * p;
                 } else{
                     denom = alpha - sum_p;
                     sum_p += denom;
-                    res += (1/alpha) *denom*z.get(i);
+                    res += (1/alpha) *denom*z[i];
                 }
             }
         }
@@ -286,7 +295,7 @@ import prism.PrismException;
                 if(sum_p+ p < alpha){
                     sum_p += p;
                 } else{
-                    res =z.get(j);
+                    res =z[j];
                 }
             }
         }
@@ -325,7 +334,7 @@ import prism.PrismException;
 
         for( int j = 0; j<atoms; j++)
         {
-            res += (1.0 / atoms) * pow(((z.get(j) * p) - mu), 2);
+            res += (1.0 / atoms) * pow(((z[j] * p) - mu), 2);
         }
 
         return res;
@@ -352,7 +361,7 @@ import prism.PrismException;
         double sum = 0;
         for (int i =0; i<atoms; i++)
         {
-            sum+= abs(arr.get(i) - z.get(i));
+            sum+= abs(arr.get(i) - z[i]);
         }
         return sum* (1.0/atoms);
     }
@@ -391,13 +400,13 @@ import prism.PrismException;
      }
 
      @Override
-     public Double getSupport(int index) {
-         return z.get(index);
+     public double [] getSupport(int index) {
+         return z[index];
      }
 
      // iterator over the values of the distribution
     @Override
-    public  ArrayList<Double> getSupports()
+    public  double [] getSupports()
     {
         return this.z;
     }
@@ -405,30 +414,14 @@ import prism.PrismException;
     @Override
     public String toString()
     {
-        StringBuilder temp = new StringBuilder();
-        int index = 0;
-        for (Double z_i: z) {
-            temp.append(z_i);
-            index ++;
-            if(index < atoms) {
-                temp.append(",");
-            }
-        }
-        return temp.toString();
+        return z.toString();
     }
 
     @Override
     public String toString(DecimalFormat df)
     {
         StringBuilder temp = new StringBuilder();
-        int index = 0;
-        for (Double z_i: z) {
-            temp.append(df.format(z_i));
-            index ++;
-            if(index < atoms) {
-                temp.append(",");
-            }
-        }
+        Arrays.stream(z).forEach(e -> temp.append(df.format(e) + ", " ));
         return temp.toString();
     }
 
@@ -436,9 +429,9 @@ import prism.PrismException;
      public String toFile() {
          StringBuilder temp = new StringBuilder();
          int index = 0;
-         for (Double z_i: z) {
+         for (double z_i: z) {
              temp.append(z_i).append(",").append(p).append(",");
-             temp.append(tau_hat.get(index)).append("\n");
+             temp.append(tau_hat[index]).append("\n");
              index ++;
          }
          return temp.toString();
@@ -448,9 +441,9 @@ import prism.PrismException;
      public String toFile(DecimalFormat df) {
          StringBuilder temp = new StringBuilder();
          int index = 0;
-         for (Double z_i: z) {
+         for (double z_i: z) {
              temp.append(df.format(z_i)).append(",").append(df.format(p)).append(",");
-             temp.append(df.format(tau_hat.get(index))).append("\n");
+             temp.append(df.format(tau_hat[index])).append("\n");
              index ++;
          }
          return temp.toString();

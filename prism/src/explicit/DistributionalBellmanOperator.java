@@ -340,7 +340,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         if (filename == null) {filename="distr_exp_"+distr_type.toLowerCase()+".csv";}
         try (PrintWriter pw = new PrintWriter("prism/"+filename)) {
             pw.println("r,p,z");
-            pw.println(distr.get(state).toString());
+            pw.println(distr.get(state).toFile());
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

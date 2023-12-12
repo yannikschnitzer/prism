@@ -371,7 +371,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
     // Find the starting that minimizes CVAR at initial state based on a given alpha
     public double [] computeStartingB( double alpha){
-        double [] res = new double [3]; // contains the min index + min cvar.
+        double [] res = new double [3]; // contains the min index + min cvar + state in paroduct.
         double cvar = 0;
         res [1] = Float.POSITIVE_INFINITY;
         res[2] = -1;
@@ -434,6 +434,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
         this.display((int)cvar_info[2]);
 
         double r ;
+        // FIXME: why???
         for (int i = 0; i < prodNumStates; i++) {
             res[i] = choices[i];
             // Compute reward

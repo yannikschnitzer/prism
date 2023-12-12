@@ -13,8 +13,8 @@ import static java.lang.Math.*;
 class DistributionCategorical extends DiscreteDistribution {
     int atoms ;
     double delta_z;
-    ArrayList<Double> z ;
-    ArrayList<Double> p;
+    double [] z ;
+    double [] p;
     double v_min ;
     double v_max ;
     boolean isAdaptive = false;
@@ -36,8 +36,8 @@ class DistributionCategorical extends DiscreteDistribution {
         this.v_min = vmin;
         this.v_max = vmax;
         this.mainLog = log;
-        this.z = new ArrayList<>(atoms);
-        this.p = new ArrayList<>(atoms);
+        this.z = new double [atoms];
+        this.p = new double [atoms];
         
         if (atoms > 1) {
             this.delta_z = (vmax - vmin) / (atoms - 1);
@@ -48,47 +48,47 @@ class DistributionCategorical extends DiscreteDistribution {
 
         for (int i = 0; i < atoms; i++) {
             if (i == atoms -1){ // hard set vmax to prevent small rounding error
-                this.z.add(vmax);
+                this.z[i] = vmax;
             } else {
-                this.z.add(vmin + i * this.delta_z);
+                this.z[i] = vmin + i * this.delta_z;
             }
-            this.p.add((i==0? 1.0:0.0));
+            this.p[i]= (i==0? 1.0:0.0);
         }
     }
 
     // Constructor for adaptive
-    public DistributionCategorical(int max_atoms, double desired_delta, prism.PrismLog log){
-        super();
+//     public DistributionCategorical(int max_atoms, double desired_delta, prism.PrismLog log){
+//         super();
 
-        // initialize with 2 atoms only
-        this.max_atoms = max_atoms;
-//        this.alpha = alpha;
-        this.v_min = 0;
-        this.v_max = 1;
-        this.mainLog = log;
-        this.isAdaptive = true;
-        this.z = new ArrayList<>(max_atoms/2); // FIXME: not sure how to initialize z capacity
-        this.p = new ArrayList<>(max_atoms/2);
-        this.delta_z = 1;
-        this.atoms = 2;
-        this.max_delta = (desired_delta < 1? 1:desired_delta); // represents the max support gap
+//         // initialize with 2 atoms only
+//         this.max_atoms = max_atoms;
+// //        this.alpha = alpha;
+//         this.v_min = 0;
+//         this.v_max = 1;
+//         this.mainLog = log;
+//         this.isAdaptive = true;
+//         this.z = new ArrayList<>(max_atoms/2); // FIXME: not sure how to initialize z capacity
+//         this.p = new ArrayList<>(max_atoms/2);
+//         this.delta_z = 1;
+//         this.atoms = 2;
+//         this.max_delta = (desired_delta < 1? 1:desired_delta); // represents the max support gap
         
 
-        for (int i = 0; i < atoms; i++) {
-            if (i == atoms -1){ // hard set vmax to prevent small rounding error
-                this.z.add(v_max);
-            } else {
-                this.z.add(v_min + i * this.delta_z);
-            }
-            this.p.add((i==0? 1.0:0.0));
-        }
-    }
+//         for (int i = 0; i < atoms; i++) {
+//             if (i == atoms -1){ // hard set vmax to prevent small rounding error
+//                 this.z.add(v_max);
+//             } else {
+//                 this.z.add(v_min + i * this.delta_z);
+//             }
+//             this.p.add((i==0? 1.0:0.0));
+//         }
+//     }
 
     // initialize the distribution
     @Override
     public void clear(){
         Collections.fill(p, 0.0);
-        p.set(0, 1.0);
+        p[0] = 1.0;
     }
 
     // remove memory
@@ -97,7 +97,8 @@ class DistributionCategorical extends DiscreteDistribution {
 
     @Override
     public void clone(DiscreteDistribution source) {
-        this.p = (ArrayList<Double>) source.getValues().clone();
+        double [] source_vals = source.getValues();
+        this.p = Arrays.copyOf(source_vals, source_vals.length);
     }
 
     // project a given array to finite support (same distribution parameters : vmin, vmiax support)
@@ -109,15 +110,15 @@ class DistributionCategorical extends DiscreteDistribution {
         Collections.fill(p, 0.0);
 
         for (int j=0; j<arr.size(); j++){
-            temp = max(v_min, min(v_max, this.z.get(j)));
+            temp = max(v_min, min(v_max, this.z[j]));
             b = ((temp - v_min) / this.delta_z);
             l= (int) floor(b); u= (int) ceil(b);
 
             if ( l- u != 0){
-                p.set(l, this.p.get(l) + (arr.get(j) * (u - b)));
-                p.set(u, this.p.get(u) + (arr.get(j) * (b - l)));
+                p[l] += (arr.get(j) * (u - b));
+                p[u] += (arr.get(j) * (b - l));
             } else{
-                p.set(l, this.p.get(l) + arr.get(j));
+                p[l] += arr.get(j);
             }
         }
 
@@ -129,8 +130,7 @@ class DistributionCategorical extends DiscreteDistribution {
         // recompute delta_z
         delta_z = (v_max - v_min) / (atoms - 1);
         // set probability array to 0
-        Collections.fill(p, 0.0);
-
+        Arrays.fill(p, 0.0);
 
         for (int j=0; j<probs.size(); j++){
             temp = max(v_min, min(v_max, supp.get(j)));
@@ -138,10 +138,10 @@ class DistributionCategorical extends DiscreteDistribution {
             l= (int) floor(b); u= (int) ceil(b);
 
             if ( l- u != 0){
-                p.set(l, this.p.get(l) + (probs.get(j) * (u -b)));
-                p.set(u, this.p.get(u) + (probs.get(j) * (b-l)));
+                p[l] += (probs.get(j) * (u -b));
+                p[u] += (probs.get(j) * (b-l));
             } else{
-                p.set(l, this.p.get(l) + probs.get(j));
+                p[l] += probs.get(j);
             }
         }
     }
@@ -152,15 +152,15 @@ class DistributionCategorical extends DiscreteDistribution {
         // recompute delta_z
         delta_z = (vmax - vmin) / (atoms - 1);
         // set probability array to 0
-        Collections.fill(p, 0.0);
+        Arrays.fill(p, 0.0);
 
         // if the bounds have changed, update the discrete support
         if(vmin != this.v_min || vmax != this.v_max){
             for (int i = 0; i < atoms; i++) {
                 if (i == atoms -1){ // hard set vmax to prevent small rounding error
-                    this.z.add(vmax);
+                    this.z[i] =vmax;
                 } else {
-                    this.z.set(i, vmin + i * delta_z);
+                    this.z[i]= vmin + i * delta_z;
                 }
             }
         }
@@ -168,13 +168,13 @@ class DistributionCategorical extends DiscreteDistribution {
         for (int j=0; j<probs.size(); j++){
             temp = max(vmin, min(vmax, supp.get(j)));
             b = ((temp - vmin) / delta_z);
-            l= (int) floor(b); u= (int) ceil(b);
+            l= (int) floor(b); u= (int) ceil(b); // lower and upper indices
 
             if ( l- u != 0){
-                p.set(l, this.p.get(l) + (probs.get(j) * (u -b)));
-                p.set(u, this.p.get(u) + (probs.get(j) * (b-l)));
+                p[l] += (probs.get(j) * (u -b));
+                p[u] += (probs.get(j) * (b-l));
             } else{
-                p.set(l, this.p.get(l) + probs.get(j));
+                p[l] += probs.get(j);
             }
         }
     }
@@ -210,10 +210,16 @@ class DistributionCategorical extends DiscreteDistribution {
             this.z.clear();
             for (int i = 0; i < atoms; i++) {
                 if (i == atoms -1){ // hard set vmax to prevent small rounding error
-                    this.z.add(v_max);
+                    this.z[i] = v_max;
                 } else {
-                    this.z.add(i, v_min + i * delta_z);
+                    this.z[i] = v_min + i * delta_z;
                 }
+            }
+
+            if(p.size() < atoms) { // needs to be increased
+                p.addAll(Collections.nCopies(atoms - p.size(), 0.0));
+            } else if(p.size() > atoms) {
+                p.subList(atoms, p.size()+1).clear();
             }
         }
 
@@ -223,16 +229,11 @@ class DistributionCategorical extends DiscreteDistribution {
 
         // set probability array to 0
         Collections.fill(p, 0.0);
-        if(p.size() < atoms) { // needs to be increased
-            p.addAll(Collections.nCopies(atoms - p.size(), 0.0));
-        } else if(p.size() > atoms) {
-            p.subList(atoms, p.size()+1).clear();
-        }
 
         // project
         for (Map.Entry<Double, Double> entry : particles.entrySet()){
             // if the probability associated with the particle is 0, skip.
-            if(entry.getValue() >= 0) { //FIXME set to >0
+            if(entry.getValue() > 0) {
                 temp = max(v_min, min(v_max, entry.getKey()));
                 b = ((temp - v_min) / delta_z);
                 l = (int) floor(b);
@@ -241,15 +242,10 @@ class DistributionCategorical extends DiscreteDistribution {
                 exp_value += entry.getKey() * entry.getValue();
 
                 if (l - u != 0 && (b-l)>0.00001) {
-                    p.set(l, this.p.get(l) + (entry.getValue() * (u - b)));
-                    p.set(u, this.p.get(u) + (entry.getValue() * (b - l)));
-
-                    exp_value_approx += (entry.getValue() * (u - b)) * this.z.get(l);
-                    exp_value_approx += (entry.getValue() * (b - l)) * this.z.get(u);
-
+                    p[l] += (entry.getValue() * (u - b));
+                    p[u] += (entry.getValue() * (b - l));
                 } else {
-                    p.set(l, this.p.get(l) + entry.getValue());
-                    exp_value_approx += entry.getValue() * this.z.get(l);
+                    p[l] += entry.getValue();
                 }
             }
         }
@@ -259,7 +255,7 @@ class DistributionCategorical extends DiscreteDistribution {
         // mainLog.println("size :" +atoms);
 
         // Update saved error on metric
-        errors[0] += (exp_value - exp_value_approx);
+        // errors[0] += (exp_value - exp_value_approx);
         // FIXME: make  sure this conversion works
 //        errors[1] += (this.getCvarValue(particles, alpha) - this.getCvarValue(alpha));
 
@@ -267,10 +263,10 @@ class DistributionCategorical extends DiscreteDistribution {
 
     // update saved distribution
     public void update(ArrayList<Double> arr){
-        p =  (ArrayList<Double>) arr.clone();
-        if (p.size() > atoms) {
-            atoms = p.size();
-        }
+        p =  arr.toArray();
+        // if (p.size() > atoms) {
+        //     atoms = p.size();
+        // }
     }
 
     // compute expected value of the distribution
@@ -280,7 +276,7 @@ class DistributionCategorical extends DiscreteDistribution {
         double sum =0;
         for (int j=0; j<atoms; j++)
         {
-            sum+= z.get(j) * p.get(j);
+            sum+= z[j] * p[j];
         }
         return sum;
     }
@@ -290,7 +286,7 @@ class DistributionCategorical extends DiscreteDistribution {
         double sum =0;
         for (int j=0; j<atoms; j++)
         {
-            sum+= z.get(j) * temp.get(j);
+            sum+= z[j] * temp[j];
         }
         return sum;
     }
@@ -315,13 +311,13 @@ class DistributionCategorical extends DiscreteDistribution {
         double denom;
         for (int i=atoms-1; i>=0; i--){
             if (sum_p < alpha){
-                if(sum_p+ p.get(i) < alpha){
-                    sum_p += p.get(i);
-                    res += (1/alpha) * p.get(i) * z.get(i);
+                if(sum_p+ p[i] < alpha){
+                    sum_p += p[i];
+                    res += (1/alpha) * p[i] * z[i];
                 } else{
                     denom = alpha - sum_p;
                     sum_p += denom;
-                    res += (1/alpha) *denom*z.get(i);
+                    res += (1/alpha) *denom*z[i];
                 }
             }
         }
@@ -340,11 +336,11 @@ class DistributionCategorical extends DiscreteDistribution {
             if (sum_p < alpha){
                 if(sum_p+ probs.get(i) < alpha){
                     sum_p += probs.get(i);
-                    res += (1/alpha) * probs.get(i) * z.get(i);
+                    res += (1/alpha) * probs.get(i) *z[i];
                 } else{
                     denom = alpha - sum_p;
                     sum_p += denom;
-                    res += (1/alpha) *denom*z.get(i);
+                    res += (1/alpha) *denom*z[i];
                 }
             }
         }
@@ -385,11 +381,11 @@ class DistributionCategorical extends DiscreteDistribution {
         double res = 0.0;
         for(int j=atoms-1; j>=0; j--){
             if (sum_p < alpha){
-                if(sum_p + p.get(j) < alpha){
-                    sum_p += p.get(j);
+                if(sum_p + p[j] < alpha){
+                    sum_p += p[j];
                 }
                 else{
-                    res = z.get(j);
+                    res = z[j];
                 }
             }
         }
@@ -408,7 +404,7 @@ class DistributionCategorical extends DiscreteDistribution {
                     sum_p += probs.get(j);
                 }
                 else{
-                    res = z.get(j);
+                    res = z[j];
                 }
             }
         }
@@ -424,7 +420,7 @@ class DistributionCategorical extends DiscreteDistribution {
 
         for( int j = 0; j<atoms; j++)
         {
-            res += (1.0 / atoms) * pow(((p.get(j) * z.get(j)) - mu), 2);
+            res += (1.0 / atoms) * pow(((p[j] * z[j]) - mu), 2);
         }
 
         return res;
@@ -437,7 +433,7 @@ class DistributionCategorical extends DiscreteDistribution {
 
         for( int j = 0; j<atoms; j++)
         {
-            res += (1.0 / atoms) * pow(((probs.get(j) * z.get(j)) - mu), 2);
+            res += (1.0 / atoms) * pow(((probs.get(j) * z[j]) - mu), 2);
         }
 
         return res;
@@ -466,7 +462,7 @@ class DistributionCategorical extends DiscreteDistribution {
         for (int i =0; i<atoms; i++)
         {
             cum_p[0] += arr.get(i);
-            cum_p[1] += p.get(i);
+            cum_p[1] += p[i];
             sum+= pow((cum_p[0] - cum_p[1]), 2) * delta_z;
         }
         return sqrt(sum);
@@ -479,42 +475,32 @@ class DistributionCategorical extends DiscreteDistribution {
         return this.getW(distr.getValues());
     }
 
-    // iterator over the values of the distribution
-    public ArrayList<Double> getValues()
+    // the values of the distribution
+    public double [] getValues()
     {
         return this.p;
     }
 
-    public Double getValue(int index)
+    public double getValue(int index)
     {
-        return this.p.get(index);
+        return this.p[index];
     }
 
     // iterator over the values of the distribution
-    public  ArrayList<Double> getSupports()
+    public double [] getSupports()
     {
         return this.z;
     }
 
-    public Double getSupport(int atom_index)
+    public double getSupport(int atom_index)
     {
-        return this.z.get(atom_index);
+        return this.z[atom_index];
     }
 
     @Override
     public String toString()
     {
-        StringBuilder temp = new StringBuilder();
-        int index = 0;
-        for(Double p_i: p )
-        {
-            temp.append(p_i);
-            index ++;
-            if(index < atoms) {
-                temp.append(",");
-            }
-        }
-        return temp.toString();
+        return p.toString();
     }
 
     @Override
@@ -522,24 +508,17 @@ class DistributionCategorical extends DiscreteDistribution {
     {
         StringBuilder temp = new StringBuilder();
         int index = 0;
-        for(Double p_i: p )
-        {
-            temp.append(df.format(p_i));
-            index ++;
-            if(index < atoms) {
-                temp.append(",");
-            }
-        }
-        return temp.toString();
+        Arrays.stream(p).forEach(e -> temp.append(df.format(e) + ", " ));
+        return p.toString();
     }
 
-    // Printing for files (csv
+    // Printing for files (csv)
     @Override
     public String toFile()
     {
         StringBuilder temp = new StringBuilder();
         int index = 0;
-        for(Double p_i: p )
+        for(double p_i: p )
         {
             temp.append(index).append(",").append(p_i).append(",")
                     .append(z.get(index)).append("\n");
@@ -554,7 +533,7 @@ class DistributionCategorical extends DiscreteDistribution {
     {
         StringBuilder temp = new StringBuilder();
         int index = 0;
-        for(Double p_i: p )
+        for(double p_i: p )
         {
             temp.append(index).append(",").append(df.format(p_i)).append(",")
                     .append(df.format(z.get(index))).append("\n");
@@ -566,7 +545,7 @@ class DistributionCategorical extends DiscreteDistribution {
     @Override
     public int size()
     {
-        return this.p.size();
+        return this.p.length();
     }
 
     @Override

@@ -74,16 +74,16 @@ abstract class DiscreteDistribution {
     public abstract double getW(ArrayList<Double> arr, ArrayList<Double> arr2 );
 
     // get the probability values of the distribution
-    public abstract ArrayList<Double> getValues();
+    public abstract double [] getValues();
 
     // get the probability values of one atom
-    public abstract Double getValue(int index);
+    public abstract double getValue(int index);
 
     // get the support values of the distribution
-    public abstract ArrayList<Double> getSupports();
+    public abstract double [] getSupports();
 
     // get the support values of one atom
-    public abstract Double getSupport(int index);
+    public abstract double getSupport(int index);
 
     public abstract String toString(DecimalFormat df);
 

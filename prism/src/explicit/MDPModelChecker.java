@@ -3074,7 +3074,7 @@ public class MDPModelChecker extends ProbModelChecker
 			if (iters> 0) {
 				temp_p.clone(operator);
 			}
-			mainLog.println("iteration : " + iters);
+			// mainLog.println("iteration : " + iters);
 
 			PrimitiveIterator.OfInt states = unknownStates.iterator();
 			while (states.hasNext()) {
@@ -3083,7 +3083,7 @@ public class MDPModelChecker extends ProbModelChecker
 				DiscreteDistribution m ;
 				ArrayList<DiscreteDistribution> save_p = new ArrayList<>(numChoices);
 				Arrays.fill(action_val[s], Float.POSITIVE_INFINITY);
-				mainLog.println("state : " + s);
+				// mainLog.println("state : " + s);
 				for (int choice = 0; choice < numChoices; choice++){ // aka action
 					Iterator<Entry<Integer, Double>>it = mdp.getTransitionsIterator(s,choice);
 
@@ -3160,6 +3160,17 @@ public class MDPModelChecker extends ProbModelChecker
 			mcRewards.setStateReward(s, mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choices[s]));
 		}
 		DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
+		if(check_reach_dtmc_distr) {
+			timer = System.currentTimeMillis();
+			ModelCheckerResult dtmc_result = mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, target, "prism/distr_dtmc_exp.csv", dtmc_epsilon);
+			timer = System.currentTimeMillis() - timer;
+			if (verbosity >= 1) {
+				mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
+				mainLog.println(" : " + timer / 1000.0 + " seconds.");
+				mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
+				mainLog.println(" : " + timer / 1000.0 + " seconds.");
+			}
+		}
 
 		if (check_reach_dtmc){
 			BitSet obs_states= mdp.getLabelStates(bad_states_label);
@@ -3228,7 +3239,9 @@ public class MDPModelChecker extends ProbModelChecker
 			}
 
 		}
+
 		// Store results
+		operator.writeToFile(initialState, null);
 		ModelCheckerResult res = new ModelCheckerResult();
 		res.soln = Arrays.copyOf(action_cvar, action_cvar.length); // FIXME make it based on y parameter and iterate over columns to get result
 		res.numIters = iterations;
@@ -3466,6 +3479,7 @@ public class MDPModelChecker extends ProbModelChecker
 			max_iteration_timer = max(iteration_timer, max_iteration_timer);
 		}
 
+		// FIXME: displaying the wrong initial state (before we find out which one is the best)
 		mainLog.println("\nV[0] at " + (iters + 1) + " with method " + settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
 		operator.display(cvar_mdp.getProductModel().getFirstInitialState());
 
