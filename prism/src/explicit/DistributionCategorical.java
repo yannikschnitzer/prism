@@ -116,7 +116,25 @@ class DistributionCategorical extends DiscreteDistribution {
                 p[l] += arr.get(j);
             }
         }
+    }
 
+    public void project(double [] arr, double gamma, double state_reward){
+        double temp ; double b; int l,u;
+        // set probability array to 0
+        Arrays.fill(p, 0.0);
+
+        for (int j=0; j<arr.length; j++){
+            temp = max(v_min, min(v_max, state_reward+gamma*this.z[j]));
+            b = ((temp - v_min) / this.delta_z);
+            l= (int) floor(b); u= (int) ceil(b);
+
+            if ( l- u != 0){
+                p[l] += (arr[j] * (u - b));
+                p[u] += (arr[j] * (b - l));
+            } else{
+                p[l] += arr[j];
+            }
+        }
     }
 
     // project a given array of probs and support to finite support
@@ -495,7 +513,9 @@ class DistributionCategorical extends DiscreteDistribution {
     @Override
     public String toString()
     {
-        return p.toString();
+        StringBuilder temp = new StringBuilder();
+        Arrays.stream(p).forEach(e -> temp.append(e + ", " ));
+        return temp.toString();
     }
 
     @Override
@@ -504,7 +524,7 @@ class DistributionCategorical extends DiscreteDistribution {
         StringBuilder temp = new StringBuilder();
         int index = 0;
         Arrays.stream(p).forEach(e -> temp.append(df.format(e) + ", " ));
-        return p.toString();
+        return temp.toString();
     }
 
     // Printing for files (csv)

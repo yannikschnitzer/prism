@@ -414,7 +414,9 @@ import prism.PrismException;
     @Override
     public String toString()
     {
-        return z.toString();
+        StringBuilder temp = new StringBuilder();
+        Arrays.stream(z).forEach(e -> temp.append(e + ", " ));
+        return temp.toString();
     }
 
     @Override

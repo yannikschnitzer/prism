@@ -89,7 +89,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         return distr[state].getSupports();
     }
 
-    // TODO: convert to treemap
+    //  Update supports and values then return projected result
     @Override
     public DiscreteDistribution step(Iterator<Map.Entry<Integer, Double>> trans_it, double gamma, double state_reward, int cur_state)
     {
@@ -98,7 +98,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         TreeMap<Double, Double>  sum_p= new TreeMap<>();
         Double temp_supp, temp_value; int temp_atoms;
         DiscreteDistribution res = null;
-
+        
         if(isCategorical){
             if(isAdaptive){
                 res = new DistributionCategorical(atoms, 5, mainLog);
@@ -109,51 +109,75 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
             res = new DistributionQuantile(atoms, mainLog);
         }
 
-        while (trans_it.hasNext()) {
-            Map.Entry<Integer, Double> e = trans_it.next();
-            if (isCategorical){
-                double [] successor_p = distr[e.getKey()].getValues();
-                temp_atoms = distr[e.getKey()].getAtoms();
-                for (int j = 0; j < temp_atoms; j++) {
-                    // new support value = cur state reward + discount * next state atom reward
-                    temp_supp = state_reward+gamma*distr[e.getKey()].getSupport(j);
-                    // new probability value = current probability of particle + transition probability * success probability of particle
-                    temp_value = e.getValue() * successor_p[j];
-                    
-                    // if it already exists, increase probability; else, create particle
-                    if(temp_value > 0) {
-                        if (sum_p.containsKey(temp_supp)) {
-                            sum_p.put(temp_supp, sum_p.get(temp_supp) + temp_value);
-                        } else {
-                            sum_p.put(temp_supp, temp_value);
+        if (isCategorical && !isAdaptive){
+            return this.optimized_step(trans_it, gamma, state_reward, cur_state, res);
+        }
+        else {
+            // tree map construction
+            while (trans_it.hasNext()) {
+                Map.Entry<Integer, Double> e = trans_it.next();
+                if (isCategorical){
+                    double [] successor_p = distr[e.getKey()].getValues();
+                    temp_atoms = distr[e.getKey()].getAtoms();
+                    for (int j = 0; j < temp_atoms; j++) {
+                        // new support value = cur state reward + discount * next state atom reward
+                        temp_supp = state_reward+gamma*distr[e.getKey()].getSupport(j);
+                        // new probability value = current probability of particle + transition probability * success probability of particle
+                        temp_value = e.getValue() * successor_p[j];
+                        
+                        // if it already exists, increase probability; else, create particle
+                        if(temp_value > 0) {
+                            if (sum_p.containsKey(temp_supp)) {
+                                sum_p.put(temp_supp, sum_p.get(temp_supp) + temp_value);
+                            } else {
+                                sum_p.put(temp_supp, temp_value);
+                            }
                         }
                     }
-                }
 
-            } else {
-                // all particle probability values  for the same state are the same for quantile
-                Double successor_p = distr[e.getKey()].getValue(0);
-                for (int j = 0; j < atoms; j++) {
-                    // new support value = cur state reward + discount * next state atom reward
-                    temp_supp = state_reward+gamma*distr[e.getKey()].getSupport(j);
-                    // new probability value = current probability of particle + transition probability * success probability of particle
-                    temp_value = e.getValue() * successor_p;
+                } else {
+                    // all particle probability values  for the same state are the same for quantile
+                    Double successor_p = distr[e.getKey()].getValue(0);
+                    for (int j = 0; j < atoms; j++) {
+                        // new support value = cur state reward + discount * next state atom reward
+                        temp_supp = state_reward+gamma*distr[e.getKey()].getSupport(j);
+                        // new probability value = current probability of particle + transition probability * success probability of particle
+                        temp_value = e.getValue() * successor_p;
 
-                    // if it already exists, increase probability; else, create particle
-                    if(temp_value > 0){
-                        if(sum_p.containsKey(temp_supp)){
-                            sum_p.put(temp_supp, sum_p.get(temp_supp) + temp_value);
-                        } else{
-                            sum_p.put(temp_supp, temp_value);
+                        // if it already exists, increase probability; else, create particle
+                        if(temp_value > 0){
+                            if(sum_p.containsKey(temp_supp)){
+                                sum_p.put(temp_supp, sum_p.get(temp_supp) + temp_value);
+                            } else{
+                                sum_p.put(temp_supp, temp_value);
+                            }
                         }
                     }
                 }
             }
 
+            // Perform projection on the intermediate target
+            res.project(sum_p);
         }
 
-        // Perform projection on the intermediate target
-        res.project(sum_p);
+        return res;
+    }
+
+    public DiscreteDistribution optimized_step(Iterator<Map.Entry<Integer, Double>> trans_it, double gamma, double state_reward, int cur_state, DiscreteDistribution res){
+
+        int temp_atoms = distr[0].getAtoms();
+        double [] sum_p_cat = new double [temp_atoms];
+
+        while(trans_it.hasNext()){
+            Map.Entry<Integer, Double> e = trans_it.next();
+            double [] successor_p = distr[e.getKey()].getValues();
+            for (int j = 0; j < temp_atoms; j++) { 
+                // increase probability
+                sum_p_cat[j]+= e.getValue() * successor_p[j];
+            }
+        }
+
+        res.project(sum_p_cat, gamma, state_reward);
 
         return res;
     }
