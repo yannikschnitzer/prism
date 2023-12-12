@@ -498,7 +498,7 @@ trace_folder = prefix+'tests/traces/'
 rep_base = ' -distrmethod '
 tail = ' -v -ex -exportstrat stdout'
 log_cmd = ' -mainlog '
-atoms_c51 = 101; atoms_qr=1000; def_vmax = 100; big_atoms_c51=101;  big_atoms_qr=100; def_eps=0.00001; def_alpha = 0.7
+atoms_c51 = 101; atoms_qr=1000; def_vmax = 100; big_atoms_c51=101;  big_atoms_qr=200; def_eps=0.00001; def_alpha = 0.7
 atom_vals={'c51':[1, 10, 25, 50, 75, 100, 1000], 'qr': [1, 10, 25, 50, 75, 100, 500, 1000, 5000]}
 b_atoms_vals =[0, 10, 25, 50, 75, 100]
 # alpha_vals = [0.1, 0.2, 0.5, 0.7, 0.9, 0.99]
