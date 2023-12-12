@@ -15,7 +15,7 @@ import prism.PrismException;
     int atoms ;
     PrismLog mainLog;
     double [] tau_hat; // quantile midpoints
-    Adouble [] z ; // support values
+    double [] z ; // support values
 
     // Constructor
     public DistributionQuantile(int atoms, PrismLog log){
@@ -55,7 +55,7 @@ import prism.PrismException;
     // then we just need to make sure it is sorted.
     @Override
     public void project(ArrayList<Double> arr){
-        z =  arr.toArray(); // FIXME
+        z =  arr.stream().mapToDouble(i -> i).toArray(); // FIXME
         Arrays.sort(z);
         // TODO: do the same cutoff as the other one?
     } 
@@ -125,14 +125,14 @@ import prism.PrismException;
     {
         double cum_p = 0.0;
         double exp_value = 0;
-        double temp_value = 0;
+        double temp_value;
         int index = 0;
         this.empty();
         
         for (Map.Entry<Double, Double> entry : particles.entrySet()){
             if(index >= atoms){
                 break;
-            };
+            }
             temp_value = entry.getValue();
             cum_p += temp_value; // check probability of entry
             if(cum_p >= tau_hat[index]) {
@@ -142,7 +142,7 @@ import prism.PrismException;
                     Arrays.fill(z, index, index + min(temp, atoms-index), entry.getKey());
                     index += min(temp, atoms-index);
                     // if it is still greater than tau(curr atom), add one more
-                    if(z.size()< atoms && cum_p >= tau_hat[index]){
+                    if(index < atoms && cum_p >= tau_hat[index]){
                         z[index] = entry.getKey();
                         index ++;
                     }
@@ -166,8 +166,8 @@ import prism.PrismException;
 
     // update saved distribution
     @Override
-    public void update(ArrayList<Double> arr){
-        this.z = arr.toArray();
+    public void update(double [] arr){
+        this.z = Arrays.copyOf(arr, arr.length);
     }
 
     // compute expected value of the distribution
@@ -183,12 +183,12 @@ import prism.PrismException;
     }
 
     @Override
-    public double getExpValue(ArrayList<Double> temp)
+    public double getExpValue(double [] temp)
     {
         double sum =0;
         for (int j=0; j<atoms; j++)
         {
-            sum+= p * temp.get(j);
+            sum+= p * temp[j];
         }
         return sum;
     }
@@ -342,13 +342,13 @@ import prism.PrismException;
 
     // compute variance
     @Override
-    public double getVariance(ArrayList<Double> probs){
+    public double getVariance(double[] probs){
         double mu = getExpValue(probs);
         double res = 0.0;
 
         for( int j = 0; j<atoms; j++)
         {
-            res += (1.0 / atoms) * pow(((probs.get(j) * p) - mu), 2);
+            res += (1.0 / atoms) * pow(((probs[j] * p) - mu), 2);
         }
 
         return res;
@@ -356,12 +356,12 @@ import prism.PrismException;
 
     // compute W for relevant p, categorical: p=2, quantile p=1
     @Override
-    public double getW(ArrayList<Double> arr)
+    public double getW(double [] arr)
     {
         double sum = 0;
         for (int i =0; i<atoms; i++)
         {
-            sum+= abs(arr.get(i) - z[i]);
+            sum+= abs(arr[i] - z[i]);
         }
         return sum* (1.0/atoms);
     }
@@ -386,21 +386,21 @@ import prism.PrismException;
 
     // iterator over the probability values of the distribution
     @Override
-    public ArrayList<Double> getValues()
+    public double [] getValues()
     {
-        ArrayList<Double> vals = new ArrayList<>(atoms);
-        vals.addAll(Collections.nCopies(atoms, this.p));
+        double [] vals = new double [atoms];
+        Arrays.fill(vals,this.p);
         return vals;
     }
 
      @Override
-     public Double getValue(int index)
+     public double getValue(int index)
      {
          return p;
      }
 
      @Override
-     public double [] getSupport(int index) {
+     public double getSupport(int index) {
          return z[index];
      }
 
@@ -450,7 +450,7 @@ import prism.PrismException;
      }
 
      @Override
-    public int size() { return this.z.size();}
+    public int size() { return this.z.length;}
 
      @Override
      public int getAtoms() { return atoms;}

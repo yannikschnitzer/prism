@@ -36,12 +36,12 @@ abstract class DiscreteDistribution {
     public abstract void project(TreeMap<Double, Double> particles);
 
     // update saved distribution
-    public abstract void update(ArrayList<Double> arr);
+    public abstract void update(double [] arr);
 
     // compute expected value of the distribution
     public abstract double getExpValue();
 
-    public abstract double getExpValue(ArrayList<Double> temp);
+    public abstract double getExpValue(double [] temp);
 
     // compute CVaR with a given alpha
     public abstract double getCvarValue(double alpha);
@@ -62,10 +62,10 @@ abstract class DiscreteDistribution {
     public abstract double getVariance();
 
     // compute variance
-    public abstract double getVariance(ArrayList<Double> probs);
+    public abstract double getVariance(double [] probs);
 
     // compute W for relevant p, categorical: p=2, quantile p=1
-    public abstract double getW(ArrayList<Double> arr);
+    public abstract double getW(double[] arr);
 
     // compute W for relevant p, categorical: p=2, quantile p=1
     public abstract double getW(DiscreteDistribution arr);

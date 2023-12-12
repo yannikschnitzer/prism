@@ -10,7 +10,7 @@ import java.text.DecimalFormat;
 
 public class DistributionalBellmanOperator extends DistributionalBellman {
     int atoms; // FIXME this should be atoms per state or get it from the distribution
-    ArrayList<DiscreteDistribution> distr;
+    DiscreteDistribution [] distr;
     double v_min ;
     double v_max ;
     int numStates;
@@ -30,16 +30,16 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         this.distr_type  = distr_type;
         this.isCategorical = (distr_type.equals("C51"));
 
-        distr = new ArrayList<> (numStates);
+        distr = new DiscreteDistribution [numStates];
 
         switch(distr_type)
         {
             case "C51":
                 for (int i=0; i<numStates;i++){
                     if(isAdaptive){ //Adaptive
-                        distr.add(new DistributionCategorical(atoms, 5, log));
+                        distr[i] = new DistributionCategorical(atoms, 5, log);
                     } else { //normal
-                        distr.add(new DistributionCategorical(atoms, vmin, vmax, log));
+                        distr[i] = new DistributionCategorical(atoms, vmin, vmax, log);
                     }
 
                 }
@@ -48,14 +48,14 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
             case "QR":
                 isCategorical = false;
                 for (int i=0; i<numStates;i++){
-                    distr.add(new DistributionQuantile(atoms, log));
+                    distr[i] = new DistributionQuantile(atoms, log);
                 }
                 break;
             
             default:
                 distr_type = "C51";
                 for (int i=0; i<numStates;i++){
-                    distr.add(new DistributionCategorical(atoms, vmin, vmax, log));
+                    distr[i] = new DistributionCategorical(atoms, vmin, vmax, log);
                 }
         }
 
@@ -63,26 +63,30 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
 
     // Clear a specific state
     public void clear(int state){
-        distr.get(state).clear();
+        distr[state].clear();
     }
 
     // Clear all distr
     @Override
     public void clear(){
-        distr.forEach(DiscreteDistribution::clear);
+        for (DiscreteDistribution d : distr){
+            d.clear();
+        }
     }
 
     // Empty all distr
     @Override
     public void emptyAll(){
-        distr.forEach(DiscreteDistribution::empty);
+        for (DiscreteDistribution d : distr){
+            d.empty();
+        }
     }
 
     // get support for a specific state
     // FIXME: check if this needs to check which distr_type.
-    public ArrayList<Double> getZ(int state)
+    public double [] getZ(int state)
     {
-        return distr.get(state).getSupports();
+        return distr[state].getSupports();
     }
 
     // TODO: convert to treemap
@@ -108,13 +112,13 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         while (trans_it.hasNext()) {
             Map.Entry<Integer, Double> e = trans_it.next();
             if (isCategorical){
-                ArrayList<Double> successor_p = distr.get(e.getKey()).getValues();
-                temp_atoms = distr.get(e.getKey()).getAtoms();
+                double [] successor_p = distr[e.getKey()].getValues();
+                temp_atoms = distr[e.getKey()].getAtoms();
                 for (int j = 0; j < temp_atoms; j++) {
                     // new support value = cur state reward + discount * next state atom reward
-                    temp_supp = state_reward+gamma*distr.get(e.getKey()).getSupport(j);
+                    temp_supp = state_reward+gamma*distr[e.getKey()].getSupport(j);
                     // new probability value = current probability of particle + transition probability * success probability of particle
-                    temp_value = e.getValue() * successor_p.get(j);
+                    temp_value = e.getValue() * successor_p[j];
                     
                     // if it already exists, increase probability; else, create particle
                     if(temp_value > 0) {
@@ -128,10 +132,10 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
 
             } else {
                 // all particle probability values  for the same state are the same for quantile
-                Double successor_p = distr.get(e.getKey()).getValue(0);
+                Double successor_p = distr[e.getKey()].getValue(0);
                 for (int j = 0; j < atoms; j++) {
                     // new support value = cur state reward + discount * next state atom reward
-                    temp_supp = state_reward+gamma*distr.get(e.getKey()).getSupport(j);
+                    temp_supp = state_reward+gamma*distr[e.getKey()].getSupport(j);
                     // new probability value = current probability of particle + transition probability * success probability of particle
                     temp_value = e.getValue() * successor_p;
 
@@ -189,13 +193,13 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
             Map.Entry<Integer, Double> e = trans_it.next();
             if (isCategorical)
             {
-                ArrayList<Double> successor_p = distr.get(e.getKey()).getValues();
+                double [] successor_p = distr[e.getKey()].getValues();
                 for (int j = 0; j < atoms; j++) {
-                    sum_p.set(j, sum_p.get(j) + e.getValue() * successor_p.get(j));
+                    sum_p.set(j, sum_p.get(j) + e.getValue() * successor_p[j]);
                 }
             } else{
                 // for quantile all the values in succesor_p are the same
-                double successor_p = distr.get(e.getKey()).getValue(0);
+                double successor_p = distr[e.getKey()].getValue(0);
 
                 for (int j = 0; j < atoms; j++) {
                     sum_p.set(j, sum_p.get(j) + e.getValue() * successor_p);
@@ -217,11 +221,11 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         while (trans_it.hasNext()) {
 
             Map.Entry<Integer, DiscreteDistribution> e = trans_it.next();
-            ArrayList<Double> successor_p = distr.get(e.getKey()).getValues();
+           double [] successor_p = distr[e.getKey()].getValues();
             // FIXME There should be another loop over values of successor distr
             // TODO write combination code.
             for (int j = 0; j < atoms; j++) {
-                sum_p.set(j, e.getValue().getValue(j) * successor_p.get(j));
+                sum_p.set(j, e.getValue().getValue(j) * successor_p[j]);
             }
 
         }
@@ -237,7 +241,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         ArrayList<Double> m = new ArrayList<> (atoms);
         for (int j =0; j<atoms; j++){
                 // should be successor state not cur_state
-                m.add(state_reward+gamma*distr.get(cur_state).getSupport(j));
+                m.add(state_reward+gamma*distr[cur_state].getSupport(j));
         }
         
         return m;
@@ -250,7 +254,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         ArrayList<Double> m = new ArrayList<> (atoms);
 
         for (int j =0; j<atoms; j++){
-            m.add(state_reward+gamma*distr.get(cur_state).getSupport(j));
+            m.add(state_reward+gamma*distr[cur_state].getSupport(j));
         }
 
         // FIXME: should be one set of supports for each unknown parameter value
@@ -263,38 +267,38 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
     public void update(DiscreteDistribution temp, int state){
 
         if(isCategorical){
-            this.distr.get(state).update(temp.getValues());
+            this.distr[state].update(temp.getValues());
         }
         else{
-            this.distr.get(state).update(temp.getSupports());
+            this.distr[state].update(temp.getSupports());
         }
 
     }
 
     @Override
     public DiscreteDistribution getDist(int state) {
-        return distr.get(state);
+        return distr[state];
     }
 
     @Override
     public double getExpValue(int state){
-        return distr.get(state).getExpValue();
+        return distr[state].getExpValue();
     }
 
     @Override
     public double getValueCvar(int state, double lim){
-        return distr.get(state).getCvarValue(lim);
+        return distr[state].getCvarValue(lim);
     }
 
     @Override
     public double getVar(int state, double lim){
-        return distr.get(state).getVar(lim);
+        return distr[state].getVar(lim);
     }
 
     // Get variance for a distribution <probs>
     @Override
     public double getVariance(int state) {
-        return distr.get(state).getVariance();
+        return distr[state].getVariance();
     }
 
     // distributional distance l2 with p=2 between two distributions
@@ -304,10 +308,10 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
     {   
         if (isCategorical)
         {
-            return distr.get(state1).getW(distr.get(state2).getValues());
+            return distr[state1].getW(distr[state2].getValues());
         }
         else {
-            return distr.get(state1).getW(distr.get(state2).getSupports());
+            return distr[state1].getW(distr[state2].getSupports());
         }
         
     }
@@ -316,18 +320,18 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
     // a distribution <dist1> and the saved distribution for state <state>
     // categorical: compare probabilities
     // quantile: compare support
-    public double getW(ArrayList<Double> dist1, int state)
+    public double getW(double [] dist1, int state)
     {
-        return distr.get(state).getW(dist1);
+        return distr[state].getW(dist1);
     }
 
     @Override
     public double getW(DiscreteDistribution dist1, int state) {
-        return distr.get(state).getW(dist1);
+        return distr[state].getW(dist1);
     }
 
     // Get full saved distributions for all states
-    public ArrayList<DiscreteDistribution> getP ()
+    public DiscreteDistribution[] getP ()
     {
         return distr;
     }
@@ -340,7 +344,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         if (filename == null) {filename="distr_exp_"+distr_type.toLowerCase()+".csv";}
         try (PrintWriter pw = new PrintWriter("prism/"+filename)) {
             pw.println("r,p,z");
-            pw.println(distr.get(state).toFile());
+            pw.println(distr[state].toFile());
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -366,7 +370,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
     @Override
     public String toString(int state)
     {
-        return distr.get(state).toString(df);
+        return distr[state].toString(df);
     }
 
     @Override
@@ -396,7 +400,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
             this.clear();
             for (int ind = 0; ind < numStates; ind ++)
             {
-                this.distr.get(ind).clone(source.getDist(ind));
+                this.distr[ind].clone(source.getDist(ind));
             }
         }
         else {

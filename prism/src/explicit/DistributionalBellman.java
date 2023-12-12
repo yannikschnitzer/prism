@@ -48,7 +48,7 @@ abstract class DistributionalBellman {
 
     // Get distributional distance between a distribution <dist1> and the distribution for a state <state>
     // assumes same support
-    public abstract double getW(ArrayList<Double> dist1, int state);
+    public abstract double getW(double[] dist1, int state);
 
     // Get distributional distance between a distribution <dist1> and the distribution for a state <state>
     // assumes same support
