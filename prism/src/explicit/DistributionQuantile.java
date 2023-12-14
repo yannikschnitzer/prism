@@ -121,10 +121,9 @@ import prism.PrismException;
 
     @Override 
     // TODO: add error metric compute
-    public void project(TreeMap<Double, Double> particles)
-    {
+    public void project(TreeMap<Double, Double> particles) {
         double cum_p = 0.0;
-        double exp_value = 0;
+        //double exp_value = 0;
         double temp_value;
         int index = 0;
         this.empty();
@@ -172,8 +171,7 @@ import prism.PrismException;
 
     // compute expected value of the distribution
     @Override
-    public double getExpValue()
-    {
+    public double getExpValue() {
         double sum =0;
         for (int j=0; j<atoms; j++)
         {
@@ -183,8 +181,7 @@ import prism.PrismException;
     }
 
     @Override
-    public double getExpValue(double [] temp)
-    {
+    public double getExpValue(double [] temp) {
         double sum =0;
         for (int j=0; j<atoms; j++)
         {
@@ -195,8 +192,7 @@ import prism.PrismException;
 
     @Override
     // For treemap
-    public double getExpValue(TreeMap<Double, Double> particles)
-    {
+    public double getExpValue(TreeMap<Double, Double> particles) {
         double sum =0;
         for (Map.Entry<Double, Double> entry : particles.entrySet()){
             // entry.getValue = probability, entry.getKey = support
@@ -207,14 +203,12 @@ import prism.PrismException;
 
     // compute CVaR with a given alpha
     @Override
-    public double getCvarValue(double alpha)
-    {
+    public double getCvarValue(double alpha) {
         double res =0.0;
         double sum_p =0.0;
         double denom ;
 
-        // assume already sorted
-
+        // assume it is already sorted
         for (int i=atoms-1; i>=0; i--){
             if (sum_p < alpha){
                 if(sum_p+ p < alpha){
@@ -233,8 +227,7 @@ import prism.PrismException;
 
     // compute CVaR with a given alpha 
     @Override
-    public double getCvarValue(ArrayList<Double> probs, double alpha)
-    {
+    public double getCvarValue(ArrayList<Double> probs, double alpha) {
         double res =0.0;
         double sum_p =0.0;
         double denom ;
@@ -258,8 +251,7 @@ import prism.PrismException;
 
         // compute CVaR with a given alpha 
     @Override
-    public double getCvarValue(TreeMap<Double, Double> particles, double alpha)
-    {
+    public double getCvarValue(TreeMap<Double, Double> particles, double alpha) {
         double res =0.0;
         double sum_p =0.0;
         double denom ;
@@ -282,10 +274,37 @@ import prism.PrismException;
         return res;
     }
 
-    // compute value at risk
+     @Override
+     public double getCvarValue(double alpha, double b) {
+         double res = 0;
+         for (int i=0; i<atoms; i++){
+             if (z[i] > 0){
+                 res += p * max(0, z[i]-b);
+             }
+         }
+
+         res = b + 1/(1-alpha) * res;
+
+         return res;
+     }
+
+     @Override
+     public double getCvarValue(double[] arr, double alpha, double b) {
+         double res = 0;
+         for (int i=0; i<atoms; i++){
+             if (arr[i] > 0){
+                 res += p * max(0, arr[i]-b);
+             }
+         }
+
+         res = b + 1/(1-alpha) * res;
+
+         return res;
+     }
+
+     // compute value at risk
     @Override
-    public double getVar(double alpha)
-    {
+    public double getVar(double alpha) {
         // Assume already sorted
         double res =0.0;
         double sum_p =0.0;
@@ -305,8 +324,7 @@ import prism.PrismException;
 
     // compute value at risk
     @Override
-    public double getVar(ArrayList<Double> probs, double alpha)
-    {
+    public double getVar(ArrayList<Double> probs, double alpha) {
         double res =0.0;
         double sum_p =0.0;
         ArrayList<Double> temp =  new ArrayList<>(probs);
@@ -327,8 +345,7 @@ import prism.PrismException;
 
     // compute variance of this distribution
     @Override
-    public double getVariance()
-    {
+    public double getVariance() {
         double mu = getExpValue(z);
         double res = 0.0;
 
@@ -354,10 +371,30 @@ import prism.PrismException;
         return res;
     }
 
-    // compute W for relevant p, categorical: p=2, quantile p=1
+     // Compute inner optimization from Bauerle and Ott
+     // paper : Markov Decision Processes with Average-Value-At-Risk Criteria
+     //  E[[dist-b]+]
+     @Override
+     public double getInnerOpt(double b) {
+         double res = 0;
+         for (int j=0; j<atoms; j++){
+             res += p * max(0, (z[j] - b));
+         }
+         return res;
+     }
+
+     @Override
+     public double getInnerOpt(double [] arr, double b) {
+         double res = 0;
+         for (int j=0; j<atoms; j++){
+             res += p * max(0, (arr[j] - b));
+         }
+         return res;
+     }
+
+     // compute W for relevant p, categorical: p=2, quantile p=1
     @Override
-    public double getW(double [] arr)
-    {
+    public double getW(double [] arr) {
         double sum = 0;
         for (int i =0; i<atoms; i++)
         {
@@ -367,8 +404,7 @@ import prism.PrismException;
     }
 
     @Override
-    public double getW(ArrayList<Double> arr, ArrayList<Double> arr2 )
-    {
+    public double getW(ArrayList<Double> arr, ArrayList<Double> arr2) {
         double sum = 0;
         for (int i =0; i<atoms; i++)
         {
@@ -386,8 +422,7 @@ import prism.PrismException;
 
     // iterator over the probability values of the distribution
     @Override
-    public double [] getValues()
-    {
+    public double [] getValues() {
         double [] vals = new double [atoms];
         Arrays.fill(vals,this.p);
         return vals;
@@ -420,8 +455,7 @@ import prism.PrismException;
     }
 
     @Override
-    public String toString(DecimalFormat df)
-    {
+    public String toString(DecimalFormat df) {
         StringBuilder temp = new StringBuilder();
         Arrays.stream(z).forEach(e -> temp.append(df.format(e) + ", " ));
         return temp.toString();

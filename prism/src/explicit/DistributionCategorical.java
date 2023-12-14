@@ -386,6 +386,30 @@ class DistributionCategorical extends DiscreteDistribution {
         return res;
     }
 
+    @Override
+    public double getCvarValue(double alpha, double b) {
+        double res = 0;
+        for (int i=0; i<atoms; i++){
+            if (p[i] > 0){
+                res += p[i] * max(0, z[i]-b);
+            }
+        }
+        res = b + 1/(1-alpha) * res;
+        return res;
+    }
+
+    @Override
+    public double getCvarValue(double[] arr, double alpha, double b) {
+        double res = 0;
+        for (int i=0; i<atoms; i++){
+            if (arr[i] > 0){
+                res += arr[i] * max(0, z[i]-b);
+            }
+        }
+        res = b + 1/(1-alpha) * res;
+        return res;
+    }
+
     // compute value at risk
     @Override
     public double getVar(double alpha)
@@ -450,6 +474,16 @@ class DistributionCategorical extends DiscreteDistribution {
         }
 
         return res;
+    }
+
+    @Override
+    public double getInnerOpt(double b) {
+        return 0;
+    }
+
+    @Override
+    public double getInnerOpt(double[] arr, double b) {
+        return 0;
     }
 
     @Override

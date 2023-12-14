@@ -257,7 +257,7 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
 
     public double getValueCvar(double [] probs, double lim, int idx_b){
         double res = 0;
-        int expected_c= 0;
+        double expected_c= 0;
         for (int i=0; i<atoms; i++){
             if (probs[i] > 0){
                 expected_c += p[i] * max(0, probs[i]-b[idx_b]);

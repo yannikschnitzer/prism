@@ -28,8 +28,8 @@ rewards
 	[west] !wall : 1;
 	[north] !wall : 1;
 
-	[east] wall : 50.0;
-	[south] wall : 50.0;
-	[west] wall : 50.0;
-	[north] wall : 50.0;
+	[east] wall : 30.0;
+	[south] wall : 30.0;
+	[west] wall : 30.0;
+	[north] wall : 30.0;
 endrewards

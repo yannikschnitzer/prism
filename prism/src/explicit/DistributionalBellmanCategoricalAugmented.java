@@ -4,8 +4,6 @@ package explicit;
 import explicit.rewards.MDPRewards;
 import explicit.rewards.StateRewardsArray;
 import prism.PrismException;
-
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
@@ -270,7 +268,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
     public double getValueCvar(double [] probs, double lim, int idx_b){
         double res = 0;
-        int expected_c= 0;
+        double expected_c= 0;
         for (int i=0; i<atoms; i++){
             if (probs[i] > 0){
                 expected_c += probs[i] * max(0, z[i]-b[idx_b]);
@@ -380,7 +378,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
         Iterable<Integer> initials = prod_mdp.getProductModel().getInitialStates();
         Iterator<Integer> initials_it = initials.iterator();
-        int startStateIdx = 0;
+
         // iterate over initial states
         // -> this should correspond to starting state of MDP + all possible values of b
         while(initials_it.hasNext()){
@@ -399,8 +397,6 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
                 res[1] = cvar;
                 res[2] = prod_state;
             }
-
-            startStateIdx +=1;
         }
         return res;
     }
@@ -499,7 +495,7 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
     @Override
     public void writeToFile(int state, String filename){
         if (filename == null) {filename="distr_cvar_c51.csv";}
-        try (PrintWriter pw = new PrintWriter(new File("prism/"+filename))) {
+        try (PrintWriter pw = new PrintWriter("prism/"+filename)) {
             pw.println("r,p,z");
             for (int r = 0; r < atoms; r++) {
                 Double prob = p[state][r];

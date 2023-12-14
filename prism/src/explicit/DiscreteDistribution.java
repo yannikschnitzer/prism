@@ -52,6 +52,12 @@ abstract class DiscreteDistribution {
     // compute CVaR with a given alpha for treemap
     public abstract double getCvarValue(TreeMap<Double, Double> particles, double alpha);
 
+    // compute CVaR with a given alpha and a slack variable
+    public abstract double getCvarValue(double alpha, double b);
+
+    // compute CVaR with a given alpha and a slack variable
+    public abstract double getCvarValue(double [] arr, double alpha, double b);
+
     // compute Value at Risk
     public abstract double getVar(double alpha);
 
@@ -63,6 +69,12 @@ abstract class DiscreteDistribution {
 
     // compute variance
     public abstract double getVariance(double [] probs);
+
+    // compute cvar inner optimization value
+    public abstract double getInnerOpt(double b);
+
+    // compute cvar inner optimization value
+    public abstract double getInnerOpt(double [] arr, double b);
 
     // compute W for relevant p, categorical: p=2, quantile p=1
     public abstract double getW(double[] arr);
