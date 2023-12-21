@@ -95,7 +95,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         // using a treemap means it will automaticatlly be sorted based on the value
         TreeMap<Double, Double>  sum_p= new TreeMap<>();
         Double temp_supp, temp_value; int temp_atoms;
-        DiscreteDistribution res = null;
+        DiscreteDistribution res ;
         
         if(isCategorical){
             if(isAdaptive){
@@ -108,7 +108,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         }
 
         if (isCategorical && !isAdaptive){
-            return this.optimized_step(trans_it, gamma, state_reward, cur_state, res);
+            return this.optimized_step(trans_it, gamma, state_reward, res);
         }
         else {
             // tree map construction
@@ -161,7 +161,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         return res;
     }
 
-    public DiscreteDistribution optimized_step(Iterator<Map.Entry<Integer, Double>> trans_it, double gamma, double state_reward, int cur_state, DiscreteDistribution res){
+    public DiscreteDistribution optimized_step(Iterator<Map.Entry<Integer, Double>> trans_it, double gamma, double state_reward, DiscreteDistribution res){
 
         int temp_atoms = distr[0].getAtoms();
         double [] sum_p_cat = new double [temp_atoms];
@@ -307,7 +307,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         return distr[state].getExpValue();
     }
 
-    @Override
+    // Get cvar value for a state and an alpha limit
     public double getValueCvar(int state, double lim){
         return distr[state].getCvarValue(lim);
     }
@@ -389,6 +389,7 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         return temp.toString();
     }
 
+    // Convert a state to string
     @Override
     public String toString(int state)
     {

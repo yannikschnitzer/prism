@@ -1,5 +1,7 @@
 package explicit;
 //import java.io.File;
+import explicit.rewards.MDPRewards;
+import explicit.rewards.StateRewardsArray;
 import prism.PrismException;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -17,8 +19,10 @@ public class DistributionalBellmanOperatorAugmented extends DistributionalBellma
     DecimalFormat df = new DecimalFormat("0.000");
     boolean isCategorical ;
     boolean isAdaptive = false;
+    double [] b; // array containing values of b
+    double delta_b = 0;
 
-    public DistributionalBellmanOperatorAugmented(int atoms, double vmin, double vmax, int numStates, String distr_type, prism.PrismLog log){
+    public DistributionalBellmanOperatorAugmented(int atoms, int b_atoms, double vmin, double vmax, double bmin, double bmax, int numStates, String distr_type, prism.PrismLog log){
         super();
         this.atoms = atoms;
         this.v_min = vmin;
@@ -28,6 +32,17 @@ public class DistributionalBellmanOperatorAugmented extends DistributionalBellma
         this.distr_type  = distr_type;
         this.isCategorical = (distr_type.equals("C51"));
 
+        // Initialize slack variable atoms
+        if (b_atoms >1) {
+            this.delta_b = (bmax - bmin) / (b_atoms - 1);
+        }
+        
+        for (int i = 0; i < b_atoms; i++) {
+            this.b[i] = (bmin + i *this.delta_b);
+        }
+        log.println(" b: "+ Arrays.toString(b));
+
+        // Initialize distributions
         distr = new DiscreteDistribution [numStates];
 
         switch(distr_type)
@@ -80,11 +95,64 @@ public class DistributionalBellmanOperatorAugmented extends DistributionalBellma
         }
     }
 
-    // get support for a specific state
-    // FIXME: check if this needs to check which distr_type.
-    public double [] getZ(int state)
+    public double [] computeStartingB(double alpha, CVaRProduct prod_mdp)
     {
-        return distr[state].getSupports();
+        double [] res = new double [3]; // contains the min index + min cvar + state in paroduct.
+        double cvar; res[1] = Float.POSITIVE_INFINITY; res[2] = -1; int idx_b;
+        Iterable<Integer> initials = prod_mdp.getProductModel().getInitialStates();
+        // iterate over initial states
+        // -> this should correspond to starting state of MDP + all possible values of b
+        for (int prod_state : initials) {
+            idx_b = prod_mdp.getAutomatonState(prod_state);
+            cvar = distr[prod_state].getCvarValue(alpha, b[idx_b]);
+
+            // save minimum cvar value initial state
+            if (cvar <= res[1]) {
+                res[0] = idx_b;
+                res[1] = cvar;
+                res[2] = prod_state;
+            }
+        }
+
+        mainLog.println("b :"+b[(int)res[0]] + " cvar = " + res[1]+" start="+res[2]);
+
+        return res;
+    }
+
+    public void setInitialStrategy(double alpha, CVaRProduct prod_mdp) throws PrismException {
+        double [] cvar_info = computeStartingB(alpha, prod_mdp);
+        int idx_b = (int) cvar_info[0];
+
+        //  Update product mdp initial state to correct b
+        if (prod_mdp.productModel instanceof ModelExplicit) {
+            if ((int)cvar_info[2] != -1) { // Update the initial state of the product MDP
+                ((ModelExplicit) prod_mdp.productModel).clearInitialStates();
+                ((ModelExplicit) prod_mdp.productModel).addInitialState((int) cvar_info[2]);
+            }
+            else { throw new PrismException("Error: stategy was not able to find an initial state.");}
+        }
+        else { throw new PrismException("Error updating initial states productMDP is not an instance of ModelExplicit");}
+
+        mainLog.println("\nV[0] at state: " + (int)cvar_info[2]
+                + " original model:" + prod_mdp.getModelState((int)cvar_info[2])
+                + " b:"+ b[idx_b] + " alpha:" + alpha);
+        mainLog.println(this.toString((int)cvar_info[2], idx_b));
+    }
+
+    // Udpate the rewards model for product mdp
+    public int [] getUpdatedRewards(MDPRewards mdpRewards, StateRewardsArray rewardsArray, int [] choices, CVaRProduct prod_mdp){
+        double r; int [] res = new int [numStates];
+        // FIXME: why???
+        for (int i = 0; i < numStates; i++) {
+            res[i] = choices[i];
+            // Compute reward
+            r = mdpRewards.getStateReward(prod_mdp.getModelState(i)) ;
+            r += mdpRewards.getTransitionReward(prod_mdp.getModelState(i), res[i]);
+            rewardsArray.setStateReward(i, r);
+//            mainLog.println ("policy: "+res[i]+" - rew:"+r+" - new b :"+b[prod_mdp.getAutomatonState(i)]);
+        }
+
+        return res;
     }
 
     //  Update supports and values then return projected result
@@ -307,9 +375,14 @@ public class DistributionalBellmanOperatorAugmented extends DistributionalBellma
         return distr[state].getExpValue();
     }
 
-    @Override
-    public double getValueCvar(int state, double lim){
-        return distr[state].getCvarValue(lim);
+
+//    public double getValueCvar(int state, double lim) {
+//        return distr[state].getCvarValue(lim);
+//    }
+
+    //@Override
+    public double getValueCvar(int state, double lim, int idx_b){
+        return distr[state].getCvarValue(lim, b[idx_b]);
     }
 
     @Override
@@ -352,10 +425,29 @@ public class DistributionalBellmanOperatorAugmented extends DistributionalBellma
         return distr[state].getW(dist1);
     }
 
+    public double getInnerOpt(int state, int idx_b){
+        return distr[state].getInnerOpt(b[idx_b]);
+    }
+
+    public double getInnerOpt(double [] arr, int idx_b){
+        return distr[0].getInnerOpt(arr, b[idx_b]);
+    }
+
+    public double getBVal(int idx_b){
+        return b[idx_b];
+    }
+
     // Get full saved distributions for all states
     public DiscreteDistribution[] getP ()
     {
         return distr;
+    }
+    
+    // get support for a specific state
+    // FIXME: check if this needs to check which distr_type.
+    public double [] getZ(int state)
+    {
+        return distr[state].getSupports();
     }
 
     // Log distribution for a state to a file <filename> as a csv with columns : 
@@ -388,11 +480,32 @@ public class DistributionalBellmanOperatorAugmented extends DistributionalBellma
         }
         return temp.toString();
     }
+    
+//    public String toString()
+//    {
+//        StringBuilder temp = new StringBuilder();
+//        int index = 0;
+//        for (DiscreteDistribution distr_i: distr)
+//        {
+//            temp.append("State ").append(index).append(":");
+//            temp.append(distr_i.toString(df));
+//            temp.append("\n-------\n");
+//            index ++;
+//
+//        }
+//        return temp.toString();
+//    }
 
+    // convert a state to a string
     @Override
     public String toString(int state)
     {
         return distr[state].toString(df);
+    }
+
+    public String toString(int state, int idx_b)
+    {
+        return distr[state].toString(df, b[idx_b]);
     }
 
     @Override

@@ -2,7 +2,7 @@ package explicit;
 
 // import java.util.Iterator;
 // import java.util.Map;
-import java.lang.reflect.Array;
+//import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.util.*;
 
@@ -476,14 +476,25 @@ class DistributionCategorical extends DiscreteDistribution {
         return res;
     }
 
+    // FIXME: implement
     @Override
     public double getInnerOpt(double b) {
-        return 0;
+        double res = 0;
+        for (int j=0; j<atoms; j++){
+            res += p[j] * max(0, (z[j] - b));
+        }
+
+        return res;
     }
 
     @Override
     public double getInnerOpt(double[] arr, double b) {
-        return 0;
+        double res = 0;
+        for (int j=0; j<atoms; j++){
+            res += arr[j] * max(0, (z[j] - b));
+        }
+
+        return res;
     }
 
     @Override
@@ -556,7 +567,14 @@ class DistributionCategorical extends DiscreteDistribution {
     public String toString(DecimalFormat df)
     {
         StringBuilder temp = new StringBuilder();
-        int index = 0;
+        Arrays.stream(p).forEach(e -> temp.append(df.format(e) + ", " ));
+        return temp.toString();
+    }
+
+    @Override
+    public String toString(DecimalFormat df, double b) {
+        StringBuilder temp = new StringBuilder();
+        temp.append("b: ").append(b).append(" - ");
         Arrays.stream(p).forEach(e -> temp.append(df.format(e) + ", " ));
         return temp.toString();
     }

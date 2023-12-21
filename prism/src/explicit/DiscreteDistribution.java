@@ -114,5 +114,7 @@ abstract class DiscreteDistribution {
     // For treemap
     public abstract double getExpValue(TreeMap<Double, Double> particles);
 
-    public void project(double[] arr, double gamma, double stateReward) {}
+    public abstract void project(double[] arr, double gamma, double stateReward);
+
+    public abstract String toString(DecimalFormat df, double b);
 }

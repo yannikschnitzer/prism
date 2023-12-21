@@ -34,8 +34,10 @@ abstract class DistributionalBellman {
     // Get Expected value of a distribution <probs> with an alpha = <lim>
     public abstract double getExpValue(int state);
 
-    // Get Conditional Value at Risk value of a distribution <probs> with an alpha = <lim> , assumes same support
-    public abstract double getValueCvar(int state, double lim);
+//    // Get Conditional Value at Risk value of a distribution <probs> with an alpha = <lim> , assumes same support
+//    public abstract double getValueCvar(int state, double lim);
+//
+//    public abstract double getValueCvar(int state, double lim, int idx_b);
 
     // Get Value at risk of a distribution <probs> with an alpha = <lim> , assumes same support
     public abstract double getVar(int state, double lim);
@@ -63,7 +65,7 @@ abstract class DistributionalBellman {
     // Log distribution for a state to a file <filename> as a csv with columns : support index, probability, support value
     public abstract void writeToFile(int state, String filename);
 
-    public abstract String toString(int state);
+//    public abstract String toString(int state);
 
     public abstract void setFormat(DecimalFormat d_format);
 
@@ -73,4 +75,5 @@ abstract class DistributionalBellman {
     // Deep copy of a DistributionalBellman operator into current one
     public abstract void clone(DistributionalBellman source) throws PrismException;
 
+    public abstract String toString(int state);
 }

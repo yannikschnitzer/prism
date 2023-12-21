@@ -58,7 +58,19 @@ import prism.PrismException;
         z =  arr.stream().mapToDouble(i -> i).toArray(); // FIXME
         Arrays.sort(z);
         // TODO: do the same cutoff as the other one?
-    } 
+    }
+
+
+     @Override
+     // INFO: this only works if array sizze = atoms, and all probabilities are p
+     public void project(double[] arr, double gamma, double stateReward) {
+        for (int i = 0; i<arr.length; i++)
+        {
+            z[i] = arr[i] *gamma + stateReward;
+        }
+
+        Arrays.sort(z);
+     }
 
     // assume probs.size=supp.size()= atoms
      // project a given array to finite support (different distribution parameters but same number of atoms)
@@ -201,7 +213,7 @@ import prism.PrismException;
         return sum;
     }
 
-    // compute CVaR with a given alpha
+     // compute CVaR with a given alpha
     @Override
     public double getCvarValue(double alpha) {
         double res =0.0;
@@ -460,6 +472,14 @@ import prism.PrismException;
         Arrays.stream(z).forEach(e -> temp.append(df.format(e) + ", " ));
         return temp.toString();
     }
+
+     @Override
+     public String toString(DecimalFormat df, double b) {
+        StringBuilder temp = new StringBuilder();
+        temp.append("b: ").append(b).append(" - ");
+        Arrays.stream(z).forEach(e -> temp.append(df.format(e) + ", " ));
+        return temp.toString();
+     }
 
      @Override
      public String toFile() {
