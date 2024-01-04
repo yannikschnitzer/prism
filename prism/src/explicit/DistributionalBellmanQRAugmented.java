@@ -167,23 +167,14 @@ public class DistributionalBellmanQRAugmented extends DistributionalBellmanAugme
     }
 
     // Interpolate to find the closest b index
+    // choosing lower index -> intuition :"we have used less budget than we actually have"
     public int getClosestB(double temp_b){
         double new_b = max(b_min, min(temp_b,b_max)); double index = 0;
         if (delta_b > 0){
-            index = new_b/delta_b;
+            index = (new_b- b_min)/delta_b;
         }
         int l= (int) floor(index); int u= (int) ceil(index);
-
-        double diff_l = abs(b[(int) index] - b[l]);
-        double diff_u = abs(b[u] - b[(int) index]);
-
-        // check which index is closest:
-        if (diff_u >= diff_l){
-            return l;
-        }
-        else {
-            return u;
-        }
+        return l;
     }
 
     @Override

@@ -8,6 +8,9 @@ import java.io.PrintWriter;
 import java.util.*;
 import java.text.DecimalFormat;
 
+import static java.lang.Math.*;
+import static java.lang.Math.ceil;
+
 public class DistributionalBellmanOperatorAugmented extends DistributionalBellman {
     int atoms; // FIXME this should be atoms per state or get it from the distribution
     DiscreteDistribution [] distr;
@@ -39,6 +42,9 @@ public class DistributionalBellmanOperatorAugmented extends DistributionalBellma
         
         for (int i = 0; i < b_atoms; i++) {
             this.b[i] = (bmin + i *this.delta_b);
+            if (i == b_atoms -1){
+                b[i] = bmax;
+            }
         }
         log.println(" b: "+ Arrays.toString(b));
 
@@ -142,7 +148,6 @@ public class DistributionalBellmanOperatorAugmented extends DistributionalBellma
     // Udpate the rewards model for product mdp
     public int [] getUpdatedRewards(MDPRewards mdpRewards, StateRewardsArray rewardsArray, int [] choices, CVaRProduct prod_mdp){
         double r; int [] res = new int [numStates];
-        // FIXME: why???
         for (int i = 0; i < numStates; i++) {
             res[i] = choices[i];
             // Compute reward
@@ -425,6 +430,15 @@ public class DistributionalBellmanOperatorAugmented extends DistributionalBellma
         return distr[state].getW(dist1);
     }
 
+    public double getInnerOpt(DiscreteDistribution dist, int idx_b){
+        if(isCategorical)
+        {
+            return distr[0].getInnerOpt(dist.getValues(), b[idx_b]);
+        } else{
+            return distr[0].getInnerOpt(dist.getSupports(), b[idx_b]);
+        }
+    }
+
     public double getInnerOpt(int state, int idx_b){
         return distr[state].getInnerOpt(b[idx_b]);
     }
@@ -435,6 +449,19 @@ public class DistributionalBellmanOperatorAugmented extends DistributionalBellma
 
     public double getBVal(int idx_b){
         return b[idx_b];
+    }
+
+    public int getB_atoms(){return b.length;}
+
+    // Interpolate to find the closest b index
+    // choosing lower index -> intuition :"we have used less budget than we actually have"
+    public int getClosestB(double temp_b){
+        double new_b = max(b[0], min(temp_b,b[b.length-1])); double index = 0;
+        if (delta_b > 0){
+            index = (new_b- b[0])/delta_b;
+        }
+        int l= (int) floor(index); int u= (int) ceil(index);
+        return l;
     }
 
     // Get full saved distributions for all states
@@ -518,10 +545,11 @@ public class DistributionalBellmanOperatorAugmented extends DistributionalBellma
     @Override
     public ArrayList<String> getParams()
     {
-        ArrayList<String> res =new ArrayList<>(5);
+        ArrayList<String> res =new ArrayList<>(6);
         res.add(String.valueOf(v_min));
         res.add(String.valueOf(v_max));
         res.add(String.valueOf(atoms));
+        res.add(String.valueOf(b.length));
         res.add(String.valueOf(isCategorical));
         res.add(String.valueOf(numStates));
         return res;

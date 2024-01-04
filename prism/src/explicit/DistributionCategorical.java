@@ -476,7 +476,6 @@ class DistributionCategorical extends DiscreteDistribution {
         return res;
     }
 
-    // FIXME: implement
     @Override
     public double getInnerOpt(double b) {
         double res = 0;
