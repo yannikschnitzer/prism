@@ -24,12 +24,16 @@ public class DistributionalBellmanOperatorAugmented extends DistributionalBellma
     boolean isAdaptive = false;
     double [] b; // array containing values of b
     double delta_b = 0;
+    double b_min = 0;
+    double b_max;
 
     public DistributionalBellmanOperatorAugmented(int atoms, int b_atoms, double vmin, double vmax, double bmin, double bmax, int numStates, String distr_type, prism.PrismLog log){
         super();
         this.atoms = atoms;
         this.v_min = vmin;
         this.v_max = vmax;
+        this.b_max = bmax;
+        this.b_min = bmin;
         this.numStates = numStates;
         this.mainLog = log;
         this.distr_type  = distr_type;
@@ -39,12 +43,13 @@ public class DistributionalBellmanOperatorAugmented extends DistributionalBellma
         if (b_atoms >1) {
             this.delta_b = (bmax - bmin) / (b_atoms - 1);
         }
-        
+
+        this.b = new double[b_atoms];
         for (int i = 0; i < b_atoms; i++) {
             this.b[i] = (bmin + i *this.delta_b);
-            if (i == b_atoms -1){
-                b[i] = bmax;
-            }
+//            if (i == b_atoms -1){
+//                b[i] = bmax;
+//            }
         }
         log.println(" b: "+ Arrays.toString(b));
 
@@ -456,9 +461,9 @@ public class DistributionalBellmanOperatorAugmented extends DistributionalBellma
     // Interpolate to find the closest b index
     // choosing lower index -> intuition :"we have used less budget than we actually have"
     public int getClosestB(double temp_b){
-        double new_b = max(b[0], min(temp_b,b[b.length-1])); double index = 0;
+        double new_b = max(b_min, min(temp_b,b_max)); double index = 0;
         if (delta_b > 0){
-            index = (new_b- b[0])/delta_b;
+            index = (new_b- b_min)/delta_b;
         }
         int l= (int) floor(index); int u= (int) ceil(index);
         return l;

@@ -15,6 +15,9 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
+import static java.lang.Math.*;
+import static java.lang.Math.ceil;
+
 // TODO maybe rename this to Augmented MDP ?
 public class CVaRProduct extends Product<MDP>
 {
@@ -242,14 +245,26 @@ public class CVaRProduct extends Product<MDP>
      //	 * @param statesOfInterest the set of states for which values should be calculated (null = all states)
      //	 * @return The product model
      //	 */
-    public static  <M extends Model> CVaRProduct makeProduct(DistributionalBellmanOperatorAugmented operator, MDP model, MDPRewards mdpRewards, double gamma, BitSet statesOfInterest, PrismLog mainLog) throws PrismException
+    public static  <M extends Model> CVaRProduct makeProduct(double bmin, double bmax, int b_atoms, MDP model, MDPRewards mdpRewards, double gamma, BitSet statesOfInterest, PrismLog mainLog) throws PrismException
     {
         ModelType modelType = model.getModelType();
         int mdpNumStates = model.getNumStates();
         int prodNumStates;
         List<State> prodStatesList = null, bStatesList = null; List<Integer> initialStatesList = null;
         int s_1, s_2, q_1, q_2;
-        int b_atoms = operator.getB_atoms();
+        double delta_b; double [] b = new double[b_atoms];
+        if (b_atoms >1) {
+            delta_b = (bmax - bmin) / (b_atoms - 1);
+        } else {
+            delta_b = 0;
+        }
+        for (int i = 0; i < b_atoms; i++) {
+            b[i] = (bmin + i * delta_b);
+//            if(i == b_atoms-1)
+//            {
+//                b[i] = bmax;
+//            }
+        }
 
         try {
             prodNumStates = Math.multiplyExact(mdpNumStates, b_atoms) ;
@@ -355,7 +370,7 @@ public class CVaRProduct extends Product<MDP>
                     reward += mdpRewards.getTransitionReward(s_1, j);
 
                     // Find corresponding successor in b
-                    q_2 = operator.getClosestB((operator.getBVal(q_1)-reward)/gamma);
+                    q_2 = getClosestB((b[q_1]-reward)/gamma, b, bmax, bmin, delta_b);
 
                     if (q_2 < 0) {
                         throw new PrismException("Cannot find closest b  (b = " + q_1 + ")");
@@ -411,6 +426,15 @@ public class CVaRProduct extends Product<MDP>
 
         return product;
 
+    }
+
+    public static int getClosestB(double temp_b, double[] b, double bmax, double bmin, double delta_b){
+        double new_b = max(bmin, min(temp_b,bmax)); double index = 0;
+        if (delta_b > 0){
+            index = (new_b- bmin)/delta_b;
+        }
+        int l= (int) floor(index); int u= (int) ceil(index);
+        return l;
     }
 }
 

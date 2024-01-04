@@ -3319,7 +3319,8 @@ public class MDPModelChecker extends ProbModelChecker
 		String qr = "QR";
 
 		int nactions = mdp.getMaxNumChoices();
-		int b_atoms;
+		int b_atoms; int product_n;
+		CVaRProduct cvar_mdp;
 
 		BitSet unknown_original = new BitSet();
 		unknown_original.set(0, n);
@@ -3346,9 +3347,11 @@ public class MDPModelChecker extends ProbModelChecker
 			double b_min = Double.parseDouble(params[1]);
 			double b_max = Double.parseDouble(params[2]);
 
-//			nt atoms, int b_atoms, double vmin, double vmax, double bmin, double bmax, int numStates, String distr_type, prism.PrismLog log
-			operator = new DistributionalBellmanOperatorAugmented(atoms, b_atoms, v_min, v_max,b_min, b_max, n, distr_type, mainLog);
-			temp_p = new DistributionalBellmanOperatorAugmented(atoms, b_atoms, v_min, v_max,b_min, b_max, n, distr_type, mainLog);
+			cvar_mdp = CVaRProduct.makeProduct(b_min, b_max, b_atoms, mdp, mdpRewards, gamma, target, mainLog);
+			product_n = cvar_mdp.getProductModel().getNumStates();
+
+			operator = new DistributionalBellmanOperatorAugmented(atoms, b_atoms, v_min, v_max,b_min, b_max, product_n, distr_type, mainLog);
+			temp_p = new DistributionalBellmanOperatorAugmented(atoms, b_atoms, v_min, v_max,b_min, b_max, product_n, distr_type, mainLog);
 
 			if(distr_type.equals(c51)){
 				save_p = new DistributionCategorical(atoms, v_min, v_max, mainLog);
@@ -3368,13 +3371,13 @@ public class MDPModelChecker extends ProbModelChecker
 			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
 			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
 					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
-			operator = new DistributionalBellmanOperatorAugmented(atoms, atoms, v_min, v_max,v_min, v_max, n, distr_type, mainLog);
-			temp_p = new DistributionalBellmanOperatorAugmented(atoms, atoms, v_min, v_max,v_min, v_max, n, distr_type, mainLog);
+			cvar_mdp = CVaRProduct.makeProduct(v_min, v_max, atoms, mdp, mdpRewards, gamma, target, mainLog);
+			product_n = cvar_mdp.getProductModel().getNumStates();
+			operator = new DistributionalBellmanOperatorAugmented(atoms, atoms, v_min, v_max,v_min, v_max, product_n, distr_type, mainLog);
+			temp_p = new DistributionalBellmanOperatorAugmented(atoms, atoms, v_min, v_max,v_min, v_max, product_n, distr_type, mainLog);
 			save_p = new DistributionCategorical(atoms, v_min, v_max, mainLog);
 		}
 
-		CVaRProduct cvar_mdp = CVaRProduct.makeProduct(operator, mdp, mdpRewards, gamma, target, mainLog);
-		int product_n = cvar_mdp.getProductModel().getNumStates();
 		BitSet product_target = cvar_mdp.liftFromModel(target); // compute the target states in the product MDP
 
 		// Determine set of states actually need to compute values for in the augmented MDP
