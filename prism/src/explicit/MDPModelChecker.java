@@ -3347,7 +3347,7 @@ public class MDPModelChecker extends ProbModelChecker
 			double b_min = Double.parseDouble(params[1]);
 			double b_max = Double.parseDouble(params[2]);
 
-			cvar_mdp = CVaRProduct.makeProduct(b_min, b_max, b_atoms, mdp, mdpRewards, gamma, target, mainLog);
+			cvar_mdp = CVaRProduct.makeProduct(b_min, b_max, b_atoms, mdp, mdpRewards, gamma, unknown_original, mainLog);
 			product_n = cvar_mdp.getProductModel().getNumStates();
 
 			operator = new DistributionalBellmanOperatorAugmented(atoms, b_atoms, v_min, v_max,b_min, b_max, product_n, distr_type, mainLog);
@@ -3371,7 +3371,7 @@ public class MDPModelChecker extends ProbModelChecker
 			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
 			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
 					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
-			cvar_mdp = CVaRProduct.makeProduct(v_min, v_max, atoms, mdp, mdpRewards, gamma, target, mainLog);
+			cvar_mdp = CVaRProduct.makeProduct(v_min, v_max, atoms, mdp, mdpRewards, gamma, unknown_original, mainLog);
 			product_n = cvar_mdp.getProductModel().getNumStates();
 			operator = new DistributionalBellmanOperatorAugmented(atoms, atoms, v_min, v_max,v_min, v_max, product_n, distr_type, mainLog);
 			temp_p = new DistributionalBellmanOperatorAugmented(atoms, atoms, v_min, v_max,v_min, v_max, product_n, distr_type, mainLog);
@@ -3418,13 +3418,14 @@ public class MDPModelChecker extends ProbModelChecker
 				double min_magic = Float.POSITIVE_INFINITY;
 				int min_a = 0;
 				save_p.clear();
+//				mainLog.println("state :"+s);
 
 				for (int choice = 0; choice < numChoices; choice++) { // aka action
 					Iterator<Entry<Integer, Double>> it = cvar_mdp.getProductModel().getTransitionsIterator(s, choice);
 
 					reward = mdpRewards.getStateReward(model_s) + mdpRewards.getTransitionReward(model_s, choice);
 					m = operator.step(it, gamma, reward, s);
-
+//					mainLog.println("state: "+ s + " - action:"+choice +"- m:"+m.toString());
 					action_val[choice] = operator.getInnerOpt(m, cvar_mdp.getAutomatonState(s));
 					if (action_val[choice] < min_magic) {
 						min_a = choice;

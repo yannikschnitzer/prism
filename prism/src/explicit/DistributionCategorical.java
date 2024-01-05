@@ -23,6 +23,7 @@ class DistributionCategorical extends DiscreteDistribution {
     // errors [0] is the exp error
     // errors [1] is the cvar error
     double [] errors = new double [2]; // FIXME: make this parameterized
+    double min_error = 1e-6;
 
     // Constructor for non adaptive
     public DistributionCategorical(int atoms, double vmin, double vmax, prism.PrismLog log){
@@ -109,11 +110,15 @@ class DistributionCategorical extends DiscreteDistribution {
             b = ((temp - v_min) / this.delta_z);
             l= (int) floor(b); u= (int) ceil(b);
 
-            if ( l- u != 0){
+            if(b-l < min_error || l== u)
+            {
+                p[l] += arr.get(j);
+            } else if(u-b < min_error)
+            {
+                p[u] += arr.get(j);
+            } else{
                 p[l] += (arr.get(j) * (u - b));
                 p[u] += (arr.get(j) * (b - l));
-            } else{
-                p[l] += arr.get(j);
             }
         }
     }
@@ -124,15 +129,22 @@ class DistributionCategorical extends DiscreteDistribution {
         Arrays.fill(p, 0.0);
 
         for (int j=0; j<arr.length; j++){
-            temp = max(v_min, min(v_max, state_reward+gamma*this.z[j]));
-            b = ((temp - v_min) / this.delta_z);
-            l= (int) floor(b); u= (int) ceil(b);
+            if (arr[j] >0) {
+                temp = max(v_min, min(v_max, state_reward + gamma * this.z[j]));
+                b = ((temp - v_min) / this.delta_z);
+                l = (int) floor(b);
+                u = (int) ceil(b);
 
-            if ( l- u != 0){
-                p[l] += (arr[j] * (u - b));
-                p[u] += (arr[j] * (b - l));
-            } else{
-                p[l] += arr[j];
+                if(b-l < min_error || l== u)
+                {
+                    p[l] += arr[j];
+                } else if(u-b < min_error)
+                {
+                    p[u] += arr[j];
+                } else {
+                    p[l] += (arr[j] * (u - b));
+                    p[u] += (arr[j] * (b - l));
+                }
             }
         }
     }
@@ -150,11 +162,15 @@ class DistributionCategorical extends DiscreteDistribution {
             b = ((temp - v_min) / delta_z);
             l= (int) floor(b); u= (int) ceil(b);
 
-            if ( l- u != 0){
+            if(b-l < min_error || l== u)
+            {
+                p[l] += probs.get(j);
+            } else if(u-b < min_error)
+            {
+                p[u] += probs.get(j);
+            } else{
                 p[l] += (probs.get(j) * (u -b));
                 p[u] += (probs.get(j) * (b-l));
-            } else{
-                p[l] += probs.get(j);
             }
         }
     }
@@ -183,11 +199,15 @@ class DistributionCategorical extends DiscreteDistribution {
             b = ((temp - vmin) / delta_z);
             l= (int) floor(b); u= (int) ceil(b); // lower and upper indices
 
-            if ( l- u != 0){
+            if(b-l < min_error || l== u)
+            {
+                p[l] += probs.get(j);
+            } else if(u-b < min_error)
+            {
+                p[u] += probs.get(j);
+            } else{
                 p[l] += (probs.get(j) * (u -b));
                 p[u] += (probs.get(j) * (b-l));
-            } else{
-                p[l] += probs.get(j);
             }
         }
     }
@@ -254,11 +274,15 @@ class DistributionCategorical extends DiscreteDistribution {
 
                 exp_value += entry.getKey() * entry.getValue();
 
-                if (l - u != 0 && (b-l)>0.00001) {
+                if(b-l < min_error || l== u)
+                {
+                    p[l] += entry.getValue();
+                } else if(u-b < min_error)
+                {
+                    p[u] += entry.getValue();
+                } else{
                     p[l] += (entry.getValue() * (u - b));
                     p[u] += (entry.getValue() * (b - l));
-                } else {
-                    p[l] += entry.getValue();
                 }
             }
         }
