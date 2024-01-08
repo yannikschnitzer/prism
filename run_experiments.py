@@ -498,7 +498,7 @@ trace_folder = prefix+'tests/traces/'
 rep_base = ' -distrmethod '
 tail = ' -v -ex -exportstrat stdout'
 log_cmd = ' -mainlog '
-atoms_c51 = 101; atoms_qr=1000; def_vmax = 100; big_atoms_c51=101;  big_atoms_qr=100; def_eps=0.00001; def_alpha = 0.7
+atoms_c51 = 101; atoms_qr=200; def_vmax = 100; big_atoms_c51=101;  big_atoms_qr=200; def_eps=0.00001; def_alpha = 0.7
 atom_vals={'c51':[1, 10, 25, 50, 75, 100, 1000], 'qr': [1, 10, 25, 50, 75, 100, 500, 1000, 5000]}
 b_atoms_vals =[0, 10, 25, 50, 75, 100]
 # alpha_vals = [0.1, 0.2, 0.5, 0.7, 0.9, 0.99]
@@ -544,7 +544,7 @@ config = {
 ###### Case studies to run 
 experiment_names=[ 'cliffs', 'mud_nails', 'gridmap_10', 'drones']
 set_experiments = ['test', 'betting_g','ds_treasure', 'gridmap_10', 'uav_var', 'drones']
-big_experiments = ['drones_15','gridmap_150_3918']
+big_experiments = ['gridmap_150_3918', 'drones_15']
 ssp_comparison = ['gridworld_4', 'gridworld_8', 'gridworld_16', 'gridworld_32', 'firewire', 'wlan2' ]
 # exp_quantile = ['selfStabilising_10', 'selfStabilising_15']
 egl = [ 'egl_8_3', 'egl_8_4', 'egl_8_5'] #, 'egl_8_6'
