@@ -3307,7 +3307,7 @@ public class MDPModelChecker extends ProbModelChecker
 		int iterations = 1500;
 		double error_thresh = 0.01;
 		Double dtmc_epsilon = null;
-		int min_iter = 50;
+		int min_iter = 30;
 		double gamma = 1;
 		double alpha = 0.7;
 		String bad_states_label = "obs";
@@ -3360,7 +3360,7 @@ public class MDPModelChecker extends ProbModelChecker
 			}
 
 			mainLog.println("Distr type: "+ distr_type);
-			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
+			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min+" - b_atoms:"+b_atoms+" - bmin:"+b_min+" - bmax:"+b_max);
 			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
 					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
 		} else{
@@ -3368,7 +3368,7 @@ public class MDPModelChecker extends ProbModelChecker
 			double v_max = 100;
 			double v_min = 0;
 			mainLog.println("Using default parameters - Distr type: "+ distr_type);
-			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
+			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min+" - b_atoms:"+b_atoms+" - bmin:"+b_min+" - bmax:"+b_max);
 			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
 					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
 			cvar_mdp = CVaRProduct.makeProduct(v_min, v_max, atoms, mdp, mdpRewards, gamma, unknown_original, mainLog);
