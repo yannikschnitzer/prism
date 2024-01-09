@@ -270,14 +270,14 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
 
     public double getValueCvar(double [] probs, double lim, int idx_b){
         double res = 0;
-        int expected_c= 0;
+        double expected_c= 0;
         for (int i=0; i<atoms; i++){
             if (probs[i] > 0){
                 expected_c += probs[i] * max(0, z[i]-b[idx_b]);
             }
         }
 
-        res = b[idx_b] + 1/(1-lim) * expected_c;
+        res = b[idx_b] + 1.0/(1-lim) * expected_c;
 
         return res;
     }
@@ -387,13 +387,13 @@ public class DistributionalBellmanCategoricalAugmented extends DistributionalBel
             expected_cost = 0;
             int prod_state = initials_it.next();
             idx_b = prod_mdp.getAutomatonState(prod_state);
-            for ( int i =0; i < atoms; i++){
+            for (int i =0; i < atoms; i++){
                 double j = p[prod_state][i];
                 if (j >0){
                     expected_cost += j * max(0, z[i] - b[idx_b]);
                 }
             }
-            cvar = b[idx_b] + 1/(1-alpha) * expected_cost;
+            cvar = b[idx_b] + 1.0/(1-alpha) * expected_cost;
             if (cvar <= res[1]){
                 res[0] = idx_b;
                 res[1] = cvar;
