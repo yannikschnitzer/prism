@@ -146,13 +146,13 @@ class DistributionCategorical extends DiscreteDistribution {
         }
     }
 
-    // TODO: do we want to try to reduce the delta z gap as well?
     // Adaptive projection
     @Override 
     public void project(TreeMap<Double, Double> particles)
     {
         // If adaptive, update distribution parameters
         if(isAdaptive){
+            // TODO: do we want to try to reduce the delta z gap as well?
             int req_atoms = (int) ceil((particles.lastKey() - particles.firstKey())/ max_delta) + 1;
 
             // if there are too many values for the desired max gap, trim based on probability values

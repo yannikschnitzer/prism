@@ -26,18 +26,13 @@ abstract class DistributionalBellman {
     public abstract DiscreteDistribution step(Iterator<Map.Entry<Integer, Double>> trans_it,
                                               double gamma, double state_reward, int cur_state);
 
-    //TODO
-    public abstract DiscreteDistribution step(Iterator<Map.Entry<Integer, DiscreteDistribution>> trans_it,
-                                              double gamma, double state_reward,
-                                              int cur_state, boolean isTransCategorical);
-
     // Get Expected value of a distribution <probs> with an alpha = <lim>
     public abstract double getExpValue(int state);
 
-//    // Get Conditional Value at Risk value of a distribution <probs> with an alpha = <lim> , assumes same support
-//    public abstract double getValueCvar(int state, double lim);
-//
-//    public abstract double getValueCvar(int state, double lim, int idx_b);
+    //    // Get Conditional Value at Risk value of a distribution <probs> with an alpha = <lim> , assumes same support
+    //    public abstract double getValueCvar(int state, double lim);
+    //
+    //    public abstract double getValueCvar(int state, double lim, int idx_b);
 
     // Get Value at risk of a distribution <probs> with an alpha = <lim> , assumes same support
     public abstract double getVar(int state, double lim);
