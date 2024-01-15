@@ -21,14 +21,10 @@ abstract class DiscreteDistribution {
     // Deep copy from source with same parameters
     public abstract void clone(DiscreteDistribution source);
 
-    // project a given array to finite support
-    public abstract void project(ArrayList<Double> arr);
+    public abstract void project(double[] arr, double gamma, double stateReward);
 
     // project a given array to finite support (different distribution parameters but same number of atoms)
-    public abstract void project(ArrayList<Double> probs, ArrayList<Double> supp) throws PrismException;
-
-    // project a given array to finite support (different distribution parameters but same number of atoms)
-    public abstract void project(ArrayList<Double> probs, ArrayList<Double> supp, double vmin, double vmax);
+    public abstract void project(ArrayList<Double> probs, ArrayList<Double> supp);
 
     // project using a tree map
     // FIXME: add an adaptive version
@@ -113,8 +109,6 @@ abstract class DiscreteDistribution {
 
     // For treemap
     public abstract double getExpValue(TreeMap<Double, Double> particles);
-
-    public abstract void project(double[] arr, double gamma, double stateReward);
 
     public abstract String toString(DecimalFormat df, double b);
 }

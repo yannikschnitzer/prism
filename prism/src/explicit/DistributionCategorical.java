@@ -18,14 +18,10 @@ class DistributionCategorical extends DiscreteDistribution {
     boolean isAdaptive = false;
     int max_atoms;
     double max_delta;
-//    double alpha;
     prism.PrismLog mainLog;
-    // errors [0] is the exp error
-    // errors [1] is the cvar error
-    double [] errors = new double [2]; // FIXME: make this parameterized
     double min_error = 1e-6;
 
-    // Constructor for non adaptive
+    // Constructor for non-adaptive
     public DistributionCategorical(int atoms, double vmin, double vmax, prism.PrismLog log){
         super();
 
@@ -97,32 +93,7 @@ class DistributionCategorical extends DiscreteDistribution {
         this.p = Arrays.copyOf(source_vals, source_vals.length);
     }
 
-    // project a given array to finite support (same distribution parameters : vmin, vmiax support)
-    // here arr is an array of the probability values for the same support
-    @Override
-    public void project(ArrayList<Double> arr){
-        double temp ; double b; int l,u;
-        // set probability array to 0
-        Arrays.fill(p, 0.0);
-
-        for (int j=0; j<arr.size(); j++){
-            temp = max(v_min, min(v_max, this.z[j]));
-            b = ((temp - v_min) / this.delta_z);
-            l= (int) floor(b); u= (int) ceil(b);
-
-            if(b-l < min_error || l== u)
-            {
-                p[l] += arr.get(j);
-            } else if(u-b < min_error)
-            {
-                p[u] += arr.get(j);
-            } else{
-                p[l] += (arr.get(j) * (u - b));
-                p[u] += (arr.get(j) * (b - l));
-            }
-        }
-    }
-
+    // Projection for optimized step
     public void project(double [] arr, double gamma, double state_reward){
         double temp ; double b; int l,u;
         // set probability array to 0
@@ -175,44 +146,8 @@ class DistributionCategorical extends DiscreteDistribution {
         }
     }
 
-    // project a given array to finite support (different distribution parameters but same number of atoms)
-    public  void project(ArrayList<Double> probs, ArrayList<Double> supp, double vmin, double vmax){
-        double temp; double b; int l,u;
-        // recompute delta_z
-        delta_z = (vmax - vmin) / (atoms - 1);
-        // set probability array to 0
-        Arrays.fill(p, 0.0);
-
-        // if the bounds have changed, update the discrete support
-        if(vmin != this.v_min || vmax != this.v_max){
-            for (int i = 0; i < atoms; i++) {
-                if (i == atoms -1){ // hard set vmax to prevent small rounding error
-                    this.z[i] =vmax;
-                } else {
-                    this.z[i]= vmin + i * delta_z;
-                }
-            }
-        }
-
-        for (int j=0; j<probs.size(); j++){
-            temp = max(vmin, min(vmax, supp.get(j)));
-            b = ((temp - vmin) / delta_z);
-            l= (int) floor(b); u= (int) ceil(b); // lower and upper indices
-
-            if(b-l < min_error || l== u)
-            {
-                p[l] += probs.get(j);
-            } else if(u-b < min_error)
-            {
-                p[u] += probs.get(j);
-            } else{
-                p[l] += (probs.get(j) * (u -b));
-                p[u] += (probs.get(j) * (b-l));
-            }
-        }
-    }
-
     // TODO: do we want to try to reduce the delta z gap as well?
+    // Adaptive projection
     @Override 
     public void project(TreeMap<Double, Double> particles)
     {
@@ -256,8 +191,6 @@ class DistributionCategorical extends DiscreteDistribution {
 //            }
         }
 
-        double exp_value = 0;
-        double exp_value_approx = 0;
         double b, temp; int u,l;
 
         // set probability array to 0
@@ -271,8 +204,6 @@ class DistributionCategorical extends DiscreteDistribution {
                 b = ((temp - v_min) / delta_z);
                 l = (int) floor(b);
                 u = (int) ceil(b);
-
-                exp_value += entry.getKey() * entry.getValue();
 
                 if(b-l < min_error || l== u)
                 {
@@ -291,19 +222,11 @@ class DistributionCategorical extends DiscreteDistribution {
         // mainLog.println("after :" +p);
         // mainLog.println("size :" +atoms);
 
-        // Update saved error on metric
-        // errors[0] += (exp_value - exp_value_approx);
-        // FIXME: make  sure this conversion works
-//        errors[1] += (this.getCvarValue(particles, alpha) - this.getCvarValue(alpha));
-
     }
 
     // update saved distribution
     public void update(double [] arr){
         p = Arrays.copyOf(arr, arr.length);
-        // if (p.size() > atoms) {
-        //     atoms = p.size();
-        // }
     }
 
     // compute expected value of the distribution

@@ -49,17 +49,6 @@ import prism.PrismException;
          this.z =Arrays.copyOf(source_supp, source_supp.length);
      }
 
-     // project a given array to finite support (same distribution parameters : vmin, vmax support)
-    // here arr is an array of the probability values for the same support
-    // If the support is the same (same number of atoms aka same probability)
-    // then we just need to make sure it is sorted.
-    @Override
-    public void project(ArrayList<Double> arr){
-        z =  arr.stream().mapToDouble(i -> i).toArray(); // FIXME
-        Arrays.sort(z);
-        // TODO: do the same cutoff as the other one?
-    }
-
 
      @Override
      // INFO: this only works if array sizze = atoms, and all probabilities are p
@@ -75,43 +64,12 @@ import prism.PrismException;
     // assume probs.size=supp.size()= atoms
      // project a given array to finite support (different distribution parameters but same number of atoms)
     @Override
-    public void project(ArrayList<Double> probs, ArrayList<Double> supp) throws PrismException {
+    public void project(ArrayList<Double> probs, ArrayList<Double> supp) {
         double cum_p = 0.0;
-        if (probs.size() != atoms || supp.size() != atoms){
-            String error_msg = "This function only works when the support size is the same as probs and supp. Provided: probs size:";
-            throw new PrismException(error_msg+probs.size()+", supp size:"+supp.size());
-        }
         ArrayList<MapEntry<Double, Double>> multimap = new ArrayList<>();
         Map.Entry<Double, Double> entry;
         for (int j = 0; j < atoms; j++) {
             multimap.add(new MapEntry<>(probs.get(j), supp.get(j)));
-        }
-
-        multimap.sort(Map.Entry.comparingByValue());
-        this.empty();
-        Iterator<MapEntry<Double, Double>> it = multimap.iterator();
-
-        int index = 0;
-        while(it.hasNext() && index < atoms)
-        {
-            entry = it.next();
-            cum_p += entry.getKey();
-            if(cum_p >= tau_hat[index]) {
-                z[index] = entry.getValue();
-            }
-            index ++;
-        }
-
-    }
-
-    // project a given array to finite support (different distribution parameters but same number of atoms)
-    @Override
-    public void project(ArrayList<Double> probs, ArrayList<Double> supp, double vmin, double vmax){
-        double cum_p = 0.0;
-        ArrayList<MapEntry<Double, Double>> multimap = new ArrayList<>();
-        Map.Entry<Double, Double> entry;
-        for (int i = 0; i < atoms; i++) {
-            multimap.add(new MapEntry<>(probs.get(i), supp.get(i)));
         }
 
         multimap.sort(Map.Entry.comparingByValue());
