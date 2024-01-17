@@ -37,6 +37,7 @@ import explicit.rewards.MCRewards;
 import explicit.rewards.MDPRewards;
 import explicit.rewards.Rewards;
 import explicit.rewards.STPGRewards;
+import param.Function;
 import parser.ast.Coalition;
 import parser.ast.Expression;
 import parser.ast.ExpressionProb;
@@ -1222,7 +1223,15 @@ public class ProbModelChecker extends NonProbModelChecker
 			} else if (modifier != null && modifier.equals("dist")){
 				res = ((MDPModelChecker) this).computeReachRewardsDistr((MDP<Double>) model, (MDPRewards<Double>) modelRewards, target, minMax.isMin());
 			} else {
-				res = ((MDPModelChecker) this).computeReachRewards((MDP<Double>) model, (MDPRewards<Double>) modelRewards, target, minMax.isMin());
+				switch (model.getEvaluator().evalMode()) {
+					case FP:
+						res = ((MDPModelChecker) this).computeReachRewards((MDP<Double>) model, (MDPRewards<Double>) modelRewards, target, minMax.isMin());
+						break;
+					case EXACT: // wrong
+						res = ((MDPModelCheckerDistributional) this).computeReachRewards((MDP<Function>) model, (MDPRewards<Function>) modelRewards, target, minMax.isMin());
+						break;
+				}
+				break;
 			}
 			break;
 		case POMDP:

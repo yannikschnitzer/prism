@@ -45,6 +45,7 @@ import explicit.Distribution;
 import explicit.ExplicitFiles2Model;
 import explicit.FastAdaptiveUniformisation;
 import explicit.FastAdaptiveUniformisationModelChecker;
+import explicit.MDPModelCheckerDistributional;
 import explicit.ModelModelGenerator;
 import explicit.PartiallyObservableModel;
 import hybrid.PrismHybrid;
@@ -246,11 +247,11 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	}
 
 	public enum ModelBuildType {
-		SYMBOLIC, EXPLICIT
+		SYMBOLIC, EXPLICIT, PARAM
 	}
 	
 	public enum PrismEngine {
-		SYMBOLIC, EXPLICIT
+		SYMBOLIC, EXPLICIT, DISTRIBUTIONAL
 	}
 
 	/** Class to store details about a loaded model */
@@ -1755,6 +1756,17 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 		}
 	}
 
+	private String paramNames[] = null;
+	private String paramLowerBounds[] = null;
+	private String paramUpperBounds[] = null;
+
+	public void setModelParameters(String paramNames[], String paramLowerBounds[], String paramUpperBounds[])
+	{
+		this.paramNames = paramNames;
+		this.paramLowerBounds = paramLowerBounds;
+		this.paramUpperBounds = paramUpperBounds;
+	}
+
 	/**
 	 * Load a (built) model, with an accompanying (parsed) PRISM model.
 	 * These will be stored and used for subsequent model checking etc.
@@ -1871,7 +1883,9 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	 */
 	public PrismEngine getCurrentEngine()
 	{
-		if (getEngine() == Prism.EXPLICIT) {
+		if (getSettings().getBoolean(PrismSettings.PRISM_DISTR_ENABLED)) {
+			return PrismEngine.DISTRIBUTIONAL;
+		} else if (getEngine() == Prism.EXPLICIT) {
 			return PrismEngine.EXPLICIT;
 		} else {
 			return PrismEngine.SYMBOLIC;
@@ -1904,7 +1918,15 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 			case PRISM_MODEL:
 				if (getPRISMModel() != null) {
 					// Create a model generator via ModulesFileModelGenerator
-					setModelGenerator(ModulesFileModelGenerator.create(getPRISMModel(), this));
+					ModulesFileModelGenerator<?> mfmg = null;
+					if (getCurrentEngine() == PrismEngine.DISTRIBUTIONAL) {
+						param.ModelBuilder builder = new ModelBuilder(this, param.ParamMode.PARAMETRIC);
+						FunctionFactory functionFactory = builder.getFunctionFactory(paramNames, paramLowerBounds, paramUpperBounds);
+						mfmg = ModulesFileModelGenerator.createForRationalFunctions(getPRISMModel(), functionFactory, this);
+					} else {
+						mfmg = ModulesFileModelGenerator.create(getPRISMModel(), this);
+					}
+					setModelGenerator(mfmg);
 					setRewardGenerator((ModulesFileModelGenerator<?>) currentModelDetails.modelGenerator);
 				} else {
 					throw new PrismException("There is no currently loaded PRISM model");
@@ -2007,6 +2029,8 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 			return ModelBuildType.EXPLICIT;
 		case SYMBOLIC:
 			return ModelBuildType.SYMBOLIC;
+		case DISTRIBUTIONAL:
+			return ModelBuildType.PARAM;
 		default:
 			return null;
 		}
@@ -2169,6 +2193,25 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 					ExplicitFilesRewardGenerator efrg4e = new ExplicitFilesRewardGenerator4Explicit(this, explicitFilesStateRewardsFiles, explicitFilesNumStates);
 					efrg4e.setStatesList(getBuiltModelExplicit().getStatesList());
 					setRewardGenerator(efrg4e);
+					break;
+				default:
+					throw new PrismException("Cannot do explicit model construction for model source " + getModelSource());
+				}
+				break;
+			case DISTRIBUTIONAL:
+				explicit.Model<?> newModelDistr;
+				switch (getModelSource()) {
+				case PRISM_MODEL:
+				case MODEL_GENERATOR:
+					try {
+						getModelGenerator();
+					} catch (PrismException e){
+						throw e.prepend("Distributional engine: ");
+					}
+					ConstructModel constructModel = new ConstructModel(this);
+					constructModel.setFixDeadlocks(getFixDeadlocks());
+					newModelDistr = constructModel.constructModel(getModelGenerator());
+					setBuiltModel(ModelBuildType.PARAM, newModelDistr);
 					break;
 				default:
 					throw new PrismException("Cannot do explicit model construction for model source " + getModelSource());
@@ -3243,7 +3286,13 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 			}
 
 			// Create new model checker object and do model checking
-			if (getCurrentEngine() == PrismEngine.SYMBOLIC) {
+			if (getCurrentEngine() == PrismEngine.DISTRIBUTIONAL) {
+				explicit.StateModelChecker mc = new MDPModelCheckerDistributional(this);
+				mc.setModelCheckingInfo(getModelInfo(), propertiesFile, getRewardGenerator());
+				mc.setGenStrat(genStrat);
+				res = mc.check(getBuiltModelExplicit(), prop.getExpression());
+			}
+			else if (getCurrentEngine() == PrismEngine.SYMBOLIC) {
 				ModelChecker mc = createModelChecker(propertiesFile);
 				res = mc.check(prop.getExpression());
 			} else {
@@ -4271,6 +4320,7 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 				currentModelDetails.modelExpl = null;
 				break;
 			case EXPLICIT:
+			case PARAM:
 				if (!(newModel instanceof explicit.Model)) {
 					throw new PrismException("Attempt to store model of incorrect type");
 				}
