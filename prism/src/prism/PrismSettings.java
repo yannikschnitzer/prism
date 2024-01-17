@@ -120,6 +120,7 @@ public class PrismSettings implements Observer
 	public static final String PRISM_SCC_METHOD						= "prism.sccMethod";
 	public static final String PRISM_SYMM_RED_PARAMS					= "prism.symmRedParams";
 	public static final	String PRISM_EXACT_ENABLED					= "prism.exact.enabled";
+	public static final	String PRISM_DISTR_ENABLED					= "prism.distr.enabled";
 	public static final String PRISM_PTA_METHOD					= "prism.ptaMethod";
 	public static final String PRISM_TRANSIENT_METHOD				= "prism.transientMethod";
 	public static final String PRISM_AR_OPTIONS					= "prism.arOptions";
@@ -248,6 +249,8 @@ public class PrismSettings implements Observer
 																			"Which heuristic mode to use for picking engines/settings (none, speed, memory)." },
 			{ BOOLEAN_TYPE,		PRISM_EXACT_ENABLED,					"Do exact model checking",			"4.2.1",			Boolean.valueOf(false),															"",
 																			"Perform exact model checking." },
+			{ BOOLEAN_TYPE,		PRISM_DISTR_ENABLED,					"Do distributional model checking",			"4.8.1",			Boolean.valueOf(false),															"",
+																			"Perform distributional model checking." },
 																			
 			{ CHOICE_TYPE,		PRISM_PTA_METHOD,						"PTA model checking method",			"3.3",			"Stochastic games",																	"Digital clocks,Stochastic games,Backwards reachability",																
 																			"Which method to use for model checking of PTAs." },
@@ -1023,6 +1026,10 @@ public class PrismSettings implements Observer
 		// Exact model checking
 		else if (sw.equals("exact")) {
 			set(PRISM_EXACT_ENABLED, true);
+		}
+		// Distributional model checking
+		else if (sw.equals("distr")) {
+			set(PRISM_DISTR_ENABLED, true);
 		}
 		// PTA model checking methods
 		else if (sw.equals("ptamethod")) {

@@ -298,6 +298,7 @@ public class PrismCL implements PrismModelListener
 		// Sort out properties to check
 		sortProperties();
 
+		boolean distr = prism.getSettings().getBoolean(PrismSettings.PRISM_DISTR_ENABLED);
 		if (param && numPropertiesToCheck == 0) {
 			errorAndExit("Parametric model checking requires at least one property to check");
 		}
@@ -334,6 +335,9 @@ public class PrismCL implements PrismModelListener
 			}
 		} catch (PrismException e) {
 			errorAndExit(e.getMessage());
+		}
+		if (param) {
+			prism.setModelParameters(paramNames, paramLowerBounds, paramUpperBounds);
 		}
 
 		// If -exportadv was used and the explicit engine has been requested for MDPs,
@@ -436,11 +440,11 @@ public class PrismCL implements PrismModelListener
 								propertiesFile.setSomeUndefinedConstants(definedPFConstants, exactConstants);
 							}
 							// Normal model checking
-							if (!simulate && !param) {
+							if (!simulate && !(param && !distr)) {
 								res = prism.modelCheck(propertiesFile, propertiesToCheck.get(j));
 							}
 							// Parametric model checking
-							else if (param) {
+							else if (param && !distr) {
 								res = prism.modelCheckParametric(propertiesFile, propertiesToCheck.get(j), paramNames, paramLowerBounds, paramUpperBounds);
 							}
 							// Approximate (simulation-based) model checking
@@ -830,7 +834,7 @@ public class PrismCL implements PrismModelListener
 			exportsccs ||
 			exportbsccs ||
 			exportmecs) {
-			if (param) {
+			if (param && !prism.getSettings().getBoolean(PrismSettings.PRISM_DISTR_ENABLED)) {
 				mainLog.printWarning("Skipping exports in parametric model checking mode, currently not supported.");
 				return;
 			}
