@@ -513,7 +513,7 @@ class DistributionCategorical extends DiscreteDistribution {
     public String toString(DecimalFormat df)
     {
         StringBuilder temp = new StringBuilder();
-        Arrays.stream(p).forEach(e -> temp.append(df.format(e) + ", " ));
+        Arrays.stream(p).forEach(e -> temp.append(df.format(e)).append(", "));
         return temp.toString();
     }
 
@@ -521,7 +521,7 @@ class DistributionCategorical extends DiscreteDistribution {
     public String toString(DecimalFormat df, double b) {
         StringBuilder temp = new StringBuilder();
         temp.append("b: ").append(b).append(" - ");
-        Arrays.stream(p).forEach(e -> temp.append(df.format(e) + ", " ));
+        Arrays.stream(p).forEach(e -> temp.append(df.format(e)).append(", "));
         return temp.toString();
     }
 
