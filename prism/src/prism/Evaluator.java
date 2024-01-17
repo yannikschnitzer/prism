@@ -35,6 +35,7 @@ import parser.EvaluateContextState;
 import parser.State;
 import parser.Values;
 import parser.ast.Expression;
+import parser.ast.ExpressionLiteral;
 import parser.type.TypeDouble;
 import parser.type.TypeInterval;
 
@@ -74,6 +75,11 @@ public interface Evaluator<Value>
 	public static Evaluator<Interval<Double>> forDoubleInterval()
 	{
 		return EvaluatorDoubleInterval.EVALUATOR_DOUBLE_INTERVAL;
+	}
+
+	public static Evaluator<Expression> forExpression()
+	{
+		return EvaluatorExpression.EVALUATOR_EXPRESSION;
 	}
 
 	// Methods in the Evaluator interface
@@ -820,6 +826,188 @@ public interface Evaluator<Value>
 		public EvalMode evalMode()
 		{
 			return EvalMode.FP;
+		}
+	}
+
+	// Evaluator for Expressions
+
+	class EvaluatorExpression implements Evaluator<Expression>
+	{
+		private static final Evaluator<Expression> EVALUATOR_EXPRESSION = new EvaluatorExpression();
+
+		// Assume expressions are simplify()ed as much as possible, and keep it that way
+
+		@Override
+		public Expression zero()
+		{
+			return ExpressionLiteral.Double(0.0);
+		}
+
+		@Override
+		public Expression one()
+		{
+			return ExpressionLiteral.Double(1.0);
+		}
+
+		@Override
+		public boolean isZero(Expression x)
+		{
+			// Technically, not quite right since it could miss some cases
+			// where the Expression is globally zero. But, if this returns true,
+			// then it _is_ zero for all values, so still useful to have
+			try {
+				return (x instanceof ExpressionLiteral) && x.evaluateExact().isZero();
+			} catch (PrismException e) {
+				return false;
+			}
+		}
+
+		@Override
+		public boolean isOne(Expression x)
+		{
+			// Technically, not quite right since it could miss some cases
+			// where the Expression is globally one. But, if this returns true,
+			// then it _is_ one for all values, so still useful to have
+			try {
+				return (x instanceof ExpressionLiteral) && x.evaluateExact().isOne();
+			} catch (PrismException e) {
+				return false;
+			}
+		}
+
+		@Override
+		public boolean isFinite(Expression x)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Expression add(Expression x, Expression y)
+		{
+			if (isZero(x)) {
+				return y;
+			} else if (isZero(y)) {
+				return x;
+			} else {
+				return simplify(Expression.Plus(x, y));
+			}
+		}
+
+		@Override
+		public Expression subtract(Expression x, Expression y)
+		{
+			if (isZero(x)) {
+				return simplify(Expression.Minus(y));
+			} else if (isZero(y)) {
+				return x;
+			} else {
+				return simplify(Expression.Minus(x, y));
+			}
+		}
+
+		@Override
+		public Expression multiply(Expression x, Expression y)
+		{
+			if (isZero(x)) {
+				return x;
+			} else if (isOne(x)) {
+				return y;
+			} else if (isZero(y)) {
+				return y;
+			} else if (isOne(y)) {
+				return x;
+			} else {
+				return simplify(Expression.Times(x, y));
+			}
+		}
+
+		@Override
+		public Expression divide(Expression x, Expression y)
+		{
+			if (isOne(y)) {
+				return x;
+			} else {
+				return simplify(Expression.Divide(x, y));
+			}
+		}
+
+		@Override
+		public boolean gt(Expression x, Expression y)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean geq(Expression x, Expression y)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean equals(Expression x, Expression y)
+		{
+			return x.equals(y);
+		}
+
+		@Override
+		public Expression checkProbabilitySum(Expression sum) throws PrismException
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Expression evaluate(Expression expr, Values constantValues, State state) throws PrismLangException
+		{
+			return simplify((Expression) expr.evaluatePartially(constantValues, state));
+			//return expr.getType().castFromBigRational(expr.evaluateExact(state);
+//			return functionFactory.expr2function((Expression) expr.deepCopy().evaluatePartially(constantValues, state));
+//			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public double toDouble(Expression x)
+		{
+			// Cannot do this, in general
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Expression fromString(String s) throws NumberFormatException
+		{
+			// TODO
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean exact()
+		{
+			return true;
+		}
+
+		@Override
+		public boolean isSymbolic()
+		{
+			return true;
+		}
+
+		@Override
+		public EvalMode evalMode()
+		{
+			// Return EXACT for now since exact computation uses this
+			return EvalMode.EXACT;
+		}
+
+		/**
+		 * Simplify an expression; leave unchanged in case of problems.
+		 */
+		private static Expression simplify(Expression expr)
+		{
+			try {
+				// Better keep the old one in case of error
+				return (Expression) expr.deepCopy().simplify();
+			} catch (PrismException e) {
+				return expr;
+			}
 		}
 	}
 }

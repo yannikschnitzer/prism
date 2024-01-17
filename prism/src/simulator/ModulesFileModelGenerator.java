@@ -145,7 +145,21 @@ public class ModulesFileModelGenerator<Value> implements ModelGenerator<Value>, 
 		Evaluator<Double> eval = Evaluator.forDouble();
 		return new ModulesFileModelGenerator<>(modulesFile, eval, parent);
 	}
-	
+
+	/**
+	 * Build a ModulesFileModelGenerator for a particular PRISM model, represented by a {@link ModulesFile} instance.
+	 * This method assumes that Expressions are used to represent probabilities (rather than actual values).
+	 * Use this method to guarantee getting a {@code ModulesFileModelGenerator<Expression>}.
+	 * Throw an explanatory exception if the model generator cannot be created.
+	 * @param modulesFile The PRISM model
+	 * @param parent Parent, used e.g. for settings (can be null)
+	 */
+	public static ModulesFileModelGenerator<Expression> createForExpressions(ModulesFile modulesFile, PrismComponent parent) throws PrismException
+	{
+		Evaluator<Expression> eval = Evaluator.forExpression();
+		return new ModulesFileModelGenerator<>(modulesFile, eval, parent);
+	}
+
 	/**
 	 * Build a ModulesFileModelGenerator for a particular PRISM model, represented by a {@link ModulesFile} instance.
 	 * This constructor assumes that doubles are used to represent probabilities (rather than, say, exact arithmetic).
