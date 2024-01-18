@@ -19,51 +19,12 @@ import java.util.TreeMap;
 
 class DistributionalBellmanOperatorProb extends DistributionalBellmanOperator {
 
-    int atoms;
-    int numStates;
-    double v_min;
-    double v_max;
-    PrismLog mainLog;
-    String distr_type = "C51";
-    boolean isCategorical = true;
-    DiscreteDistribution[] distr;
-
     public DistributionalBellmanOperatorProb(int atoms, double vmin, double vmax, int numStates, String distr_type, prism.PrismLog log) {
         super(atoms, vmin, vmax, numStates, distr_type, log);
-        this.atoms = atoms;
-        this.v_min = vmin;
-        this.v_max = vmax;
-        this.numStates = numStates;
-        this.mainLog = log;
-        this.distr_type = distr_type;
-        this.isCategorical = (distr_type.equals("C51"));
-
-        distr = new DiscreteDistribution[numStates];
-
-        switch (distr_type) {
-            case "C51":
-                for (int i = 0; i < numStates; i++) {
-                    distr[i] = new DistributionCategorical(atoms, vmin, vmax, log);
-                }
-                break;
-
-            case "QR":
-                isCategorical = false;
-                for (int i = 0; i < numStates; i++) {
-                    distr[i] = new DistributionQuantile(atoms, log);
-                }
-                break;
-
-            default:
-                distr_type = "C51";
-                for (int i = 0; i < numStates; i++) {
-                    distr[i] = new DistributionCategorical(atoms, vmin, vmax, log);
-                }
-        }
 
     }
 
-    // this is the main difference.
+    // this is the uncertain transition step
     // Distributional Bellman update using transitions probabilities, discount factor <gamma> and reward <state_reward>
     // This function also performs projection for the distributional operators.
     // This is for transitions as a distribution, but successors will be also be a distribution
@@ -152,25 +113,6 @@ class DistributionalBellmanOperatorProb extends DistributionalBellmanOperator {
             pw.println(distr[state].toFile());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-        }
-    }
-
-    // TODO: Deep copy of a DistributionalBellman operator into current one
-    @Override
-    public void clone(DistributionalBellman source) throws PrismException {
-        ArrayList <String> param_source = source.getParams();
-        ArrayList <String> param_dest = this.getParams();
-
-        if (param_dest.equals(param_source)){
-            this.clear();
-            for (int ind = 0; ind < numStates; ind ++)
-            {
-                this.distr[ind].clone(source.getDist(ind));
-            }
-        }
-        else {
-            throw new PrismException("Trying to clone two different array operators (parameters don't match)\n"
-                    + "source : "+ param_source + "destination : "+ param_dest );
         }
     }
 

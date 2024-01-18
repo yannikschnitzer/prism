@@ -52,17 +52,7 @@ import explicit.rewards.StateRewardsArray;
 import parser.State;
 import parser.ast.Expression;
 import parser.type.TypeDouble;
-import prism.AccuracyFactory;
-import prism.OptionsIntervalIteration;
-import prism.Prism;
-import prism.PrismComponent;
-import prism.PrismDevNullLog;
-import prism.PrismException;
-import prism.PrismFileLog;
-import prism.PrismLog;
-import prism.PrismNotSupportedException;
-import prism.PrismSettings;
-import prism.PrismUtils;
+import prism.*;
 import strat.MDStrategy;
 import strat.MDStrategyArray;
 import strat.Strategy;
@@ -2642,8 +2632,8 @@ public class MDPModelChecker extends ProbModelChecker
 		return res;
 	}
 
-	// TODO: this is the prob version rn
-	public ModelCheckerResult computeReachRewardsDistrProb(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException {
+	// TODO: this is the old prob version
+	public ModelCheckerResult computeReachRewardsDistrNew(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException {
 		// Start expected reachability
 		long timer = System.currentTimeMillis();
 		mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
@@ -2968,7 +2958,7 @@ public class MDPModelChecker extends ProbModelChecker
 	 * @param min Min or max rewards (true=min, false=max)
 	 */
 	// DVI for uncertain distributional transition
-	public ModelCheckerResult computeReachRewardsDistrNew(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException {
+	public ModelCheckerResult computeReachRewardsDistr(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException {
 		// Start expected reachability
 		long timer = System.currentTimeMillis();
 		mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
@@ -3023,7 +3013,7 @@ public class MDPModelChecker extends ProbModelChecker
 		unknown.andNot(inf);
 		IntSet unknownStates = IntSet.asIntSet(unknown);
 		//	int numS = unknownStates.cardinality();
-		DistributionalBellman operator, temp_p; DiscreteDistribution save_p;
+		DistributionalBellmanOperatorProb operator, temp_p; DiscreteDistribution save_p;
 		String distr_type = settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD);
 
 		if (distr_type.equals(c51) || distr_type.equals(qr)) {
@@ -3036,8 +3026,8 @@ public class MDPModelChecker extends ProbModelChecker
 			dtmc_epsilon = Double.parseDouble(params[4]);
 			alpha = Double.parseDouble(params[5]);
 
-			operator = new DistributionalBellmanOperator(atoms, v_min, v_max, n, distr_type, mainLog);
-			temp_p = new DistributionalBellmanOperator(atoms, v_min, v_max, n, distr_type, mainLog);
+			operator = new DistributionalBellmanOperatorProb(atoms, v_min, v_max, n, distr_type, mainLog);
+			temp_p = new DistributionalBellmanOperatorProb(atoms, v_min, v_max, n, distr_type, mainLog);
 
 			if(distr_type.equals(c51)){
 				save_p = new DistributionCategorical(atoms, v_min, v_max, mainLog);
@@ -3057,8 +3047,8 @@ public class MDPModelChecker extends ProbModelChecker
 			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
 			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
 					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
-			operator = new DistributionalBellmanOperator(atoms, v_min, v_max, n, "C51", mainLog);
-			temp_p = new DistributionalBellmanOperator(atoms, v_min, v_max, n, "C51", mainLog);
+			operator = new DistributionalBellmanOperatorProb(atoms, v_min, v_max, n, "C51", mainLog);
+			temp_p = new DistributionalBellmanOperatorProb(atoms, v_min, v_max, n, "C51", mainLog);
 			save_p = new DistributionCategorical(atoms, v_min, v_max, mainLog);
 		}
 
@@ -3073,13 +3063,19 @@ public class MDPModelChecker extends ProbModelChecker
 		int iters; boolean flag;
 
 		// tODO : remove this eventually
-		// transition distribution:
-		ArrayList <Double> transition_distribution = new ArrayList<>(Arrays. asList(0.5,0.6,0.7,0.8));
-		ArrayList <Double>  transition_prob = new ArrayList<>(Arrays. asList(0.1, 0.4, 0.3, 0.2));
-		DiscreteDistribution transition_distr = new DistributionCategorical(4,
+		// distributions over transition probabilities:
+		ArrayList <Double> trans_distr_succ = new ArrayList<>(Arrays. asList(0.5,0.6,0.7,0.8));
+		ArrayList <Double> trans_distr_fail= new ArrayList<>(Arrays. asList(0.5,0.4,0.3,0.2));
+		// Probability of having those transition values
+		ArrayList <Double>  trans_prob = new ArrayList<>(Arrays. asList(0.1, 0.4, 0.3, 0.2));
+		DiscreteDistribution transition_distr_succ = new DistributionCategorical(4,
 				0.5, 0.8, mainLog);
-		transition_distr.project(transition_distribution, transition_prob);
-		mainLog.println("transitions :\n" + transition_distribution);
+		DiscreteDistribution transition_distr_fail = new DistributionCategorical(4,
+				0.2, 0.5, mainLog);
+		transition_distr_succ.project(trans_prob, trans_distr_succ);
+		transition_distr_fail.project(trans_prob, trans_distr_fail);
+		mainLog.println("transitions successful :\n" + transition_distr_succ);
+		mainLog.println("transitions 1-p :\n" + transition_distr_fail);
 
 		// Start iterations - number of episodes
 		for (iters = 0; (iters < iterations) ; iters++)
@@ -3103,13 +3099,36 @@ public class MDPModelChecker extends ProbModelChecker
 				// mainLog.println("state : " + s);
 				for (int choice = 0; choice < numChoices; choice++){ // aka action
 
+					Iterator<Entry<Integer, Double>>it = mdp.getTransitionsIterator(s,choice);
+					double reward = mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choice);
+
 					flag = (s == 0 && mdp.getAction(s, choice).equals("n")) || (s == 1 && mdp.getAction(s, choice).equals("n"));
 					flag = flag || (s == 2 && mdp.getAction(s, choice).equals("e"));
 
-					Iterator<Entry<Integer, Double>>it = mdp.getTransitionsIterator(s,choice);
+					if(flag)
+					{
+						// Uncertain transition, modify transitions to be distributional
+						// TODO: this should be parsed from a file instead of hard coded.
+						ArrayList <Entry<Integer, DiscreteDistribution>> prob_trans = new ArrayList<>();
+						while (it.hasNext()) {
+							Map.Entry<Integer, Double> e = it.next();
+							if (e.getValue() == 0.8) // if successful transition
+							{
+								 Entry<Integer, DiscreteDistribution> entry = new Pair<>(e.getKey(), transition_distr_succ);
+								 prob_trans.add(entry);
+							}
+							else {
+								Entry<Integer, DiscreteDistribution> entry = new Pair<>(e.getKey(), transition_distr_fail);
+								prob_trans.add(entry);
+							}
+						}
 
-					double reward = mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choice);
-					m = operator.step(it, gamma, reward, s);
+						Iterator<Map.Entry<Integer, DiscreteDistribution>> it_prob = prob_trans.iterator();
+						m = operator.step(it_prob, gamma, reward, s, true);
+					}
+					else {
+						m = operator.step(it, gamma, reward, s);
+					}
 					// mainLog.println(m);
 					action_val[choice] = m.getExpValue();
 
@@ -3258,7 +3277,8 @@ public class MDPModelChecker extends ProbModelChecker
 
 	// DVI for risk neutral
 	// becomes compute reachRewardsUpdated
-	public ModelCheckerResult computeReachRewardsDistr(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException {
+	// NOT uncertain transitions
+	public ModelCheckerResult computeReachRewardsDistrUpdated(MDP mdp, MDPRewards mdpRewards, BitSet target, boolean min) throws PrismException {
 		// Start expected reachability
 		long timer = System.currentTimeMillis();
 		mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");

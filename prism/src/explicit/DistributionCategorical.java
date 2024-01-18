@@ -121,10 +121,23 @@ class DistributionCategorical extends DiscreteDistribution {
     }
 
     // project a given array of probs and support to finite support
-    public void project(ArrayList<Double> probs, ArrayList<Double> supp){
-        double temp; double b; int l,u;
-        // recompute delta_z
-        delta_z = (v_max - v_min) / (atoms - 1);
+    public void project(ArrayList<Double> probs, ArrayList<Double> supp) {
+        double temp;
+        double b;
+        int l, u;
+        // recompute delta_z if needed
+        // recompute z if needed
+        if (delta_z != ((v_max - v_min) / (atoms - 1))){
+            delta_z = (v_max - v_min) / (atoms - 1);
+            for (int i = 0; i < atoms; i++) {
+                if (i == atoms - 1) { // hard set vmax to prevent small rounding error
+                    this.z[i] = v_max;
+                } else {
+                    this.z[i] = v_min + i * this.delta_z;
+                }
+            }
+        }
+
         // set probability array to 0
         Arrays.fill(p, 0.0);
 
