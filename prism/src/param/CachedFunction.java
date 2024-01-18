@@ -26,6 +26,9 @@
 
 package param;
 
+import parser.ast.Expression;
+import prism.PrismException;
+
 /**
  * Function representation using cached functions.
  *
@@ -126,10 +129,14 @@ final class CachedFunction extends Function {
 		return factory.check(this, point, strict);
 	}
 
-	
 	@Override
 	public BigRational asBigRational() {
 		return factory.asBigRational(this);
+	}
+
+	@Override
+	public Expression asExpression() throws PrismException {
+		return factory.asExpression(this);
 	}
 
 	@Override
