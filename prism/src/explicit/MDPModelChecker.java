@@ -2988,7 +2988,7 @@ public class MDPModelChecker extends ProbModelChecker
 		// Set up distribution variables
 		int atoms;
 		int iterations = 1500;
-		int min_iter = 8; // TODO switch back to 20
+		int min_iter = 8;
 		double error_thresh = 0.01;
 		double gamma = 1;
 		double alpha=0.5;
@@ -3112,7 +3112,7 @@ public class MDPModelChecker extends ProbModelChecker
 						ArrayList <Entry<Integer, DiscreteDistribution>> prob_trans = new ArrayList<>();
 						while (it.hasNext()) {
 							Map.Entry<Integer, Double> e = it.next();
-							if (e.getValue() == 0.8) // if successful transition
+							if (e.getValue() == 0.66) // if successful transition
 							{
 								 Entry<Integer, DiscreteDistribution> entry = new Pair<>(e.getKey(), transition_distr_succ);
 								 prob_trans.add(entry);
@@ -3123,13 +3123,13 @@ public class MDPModelChecker extends ProbModelChecker
 							}
 						}
 
-						Iterator<Map.Entry<Integer, DiscreteDistribution>> it_prob = prob_trans.iterator();
-						m = operator.step(it_prob, gamma, reward, s, true);
+//						Iterator<Map.Entry<Integer, DiscreteDistribution>> it_prob = prob_trans.iterator();
+						m = operator.step(prob_trans, trans_prob.size(), gamma, reward);
 					}
 					else {
 						m = operator.step(it, gamma, reward, s);
 					}
-					// mainLog.println(m);
+					 mainLog.println("state : "+s+"- choice: "+ mdp.getAction(s, choice)+" -- [" + m.toString(operator.getFormat()) +"]");
 					action_val[choice] = m.getExpValue();
 
 					if (action_val[choice] < min_v) {

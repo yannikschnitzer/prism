@@ -248,6 +248,11 @@ public class DistributionalBellmanOperator extends DistributionalBellman {
         return distr[state].getW(dist1);
     }
 
+    public DecimalFormat getFormat()
+    {
+        return df;
+    }
+
     // Get full saved distributions for all states
     public DiscreteDistribution[] getP ()
     {
