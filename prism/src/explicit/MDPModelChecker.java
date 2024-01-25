@@ -3043,6 +3043,7 @@ public class MDPModelChecker extends ProbModelChecker
 			atoms=101;
 			double v_max = 100;
 			double v_min = 0;
+			distr_type = "C51";
 			mainLog.println("Using default parameters - Distr type: "+ distr_type);
 			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
 			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
@@ -3068,10 +3069,15 @@ public class MDPModelChecker extends ProbModelChecker
 		ArrayList <Double> trans_distr_fail= new ArrayList<>(Arrays. asList(0.5,0.4,0.3,0.2));
 		// Probability of having those transition values
 		ArrayList <Double>  trans_prob = new ArrayList<>(Arrays. asList(0.1, 0.4, 0.3, 0.2));
-		DiscreteDistribution transition_distr_succ = new DistributionCategorical(4,
-				0.5, 0.8, mainLog);
-		DiscreteDistribution transition_distr_fail = new DistributionCategorical(4,
-				0.2, 0.5, mainLog);
+		DiscreteDistribution transition_distr_succ;
+		DiscreteDistribution transition_distr_fail;
+		if (distr_type.equals(c51)) {
+			transition_distr_succ = new DistributionCategorical(4, 0.5, 0.8, mainLog);
+			transition_distr_fail = new DistributionCategorical(4, 0.2, 0.5, mainLog);
+		} else {
+			transition_distr_succ = new DistributionQuantile(10,  mainLog);
+			transition_distr_fail = new DistributionQuantile(10,  mainLog);
+		}
 		transition_distr_succ.project(trans_prob, trans_distr_succ);
 		transition_distr_fail.project(trans_prob, trans_distr_fail);
 		mainLog.println("transitions successful :\n" + transition_distr_succ);
@@ -3124,7 +3130,7 @@ public class MDPModelChecker extends ProbModelChecker
 						}
 
 //						Iterator<Map.Entry<Integer, DiscreteDistribution>> it_prob = prob_trans.iterator();
-						m = operator.step(prob_trans, trans_prob.size(), gamma, reward);
+						m = operator.step(prob_trans, transition_distr_fail.getAtoms(), gamma, reward);
 					}
 					else {
 						m = operator.step(it, gamma, reward, s);

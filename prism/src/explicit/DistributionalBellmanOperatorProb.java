@@ -163,36 +163,40 @@ class DistributionalBellmanOperatorProb extends DistributionalBellmanOperator {
                 }
             }
         }
-//        else{
-//            while (trans_it.hasNext()) {
-//                // TODO : transition_vals *transition_p can be precomputed
-//                // TODO : think about matrix mult for update
-//                Map.Entry<Integer, Double> e = trans_it.next();
-//                // all particle probability values  for the same state are the same for quantile
-//                double successor_p = distr[e.getKey()].getValue(0);
-//                double[] transition_vals = e.getValue().getSupports(); // possible values for the transition probability
-//                // if quantile, all values are the same
-//                double transition_p = e.getValue().getValue(0); // prob of each transition prob
-//
-//                for (int i = 0; i < atoms; i++) {
-//                    for (int j = 0; j < atoms; j++) {
-//                        // supp = cur state reward + discount * supp[next state] * possible transition probability[i]
-//                        temp_supp = state_reward + gamma * distr[e.getKey()].getSupport(j) * transition_vals[i];
-//                        // prob value = current Pr[supp] + Pr[next state | s, choice] * Pr[supp | next state]
-//                        temp_value = transition_vals[i] * transition_p * successor_p;
-//
-//                        // if it already exists, increase probability; else, create particle
-//                        if (temp_value > 0) {
-//                            if (sum_p.containsKey(temp_supp)) {
-//                                sum_p.put(temp_supp, sum_p.get(temp_supp) + temp_value);
-//                            } else {
-//                                sum_p.put(temp_supp, temp_value);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
+        else{
+            // since its quantile, probability for each parameter valueis the same.
+            temp_value = transitions.get(0).getValue().getValue(0); // probability of each parameter atom
+            double temp_p= 0.0;
+            // INFO: quantile representation for
+            for (int i = 0; i < parameter_atoms; i++) {
+                exp_value = 0.0;
+                temp_it = transitions.iterator();
+
+                // Iterate over possible transitions and successors
+                while (temp_it.hasNext()) {
+                    Map.Entry<Integer, DiscreteDistribution> e = temp_it.next();
+
+                    double[] transition_vals = e.getValue().getSupports(); // possible values for the transition probability
+                    temp_atoms = distr[e.getKey()].getAtoms();
+                    temp_p = distr[e.getKey()].getValue(0); // all the same
+                    for (int j = 0; j < temp_atoms; j++) {
+                        // exp += nextstate_val[j] * nextstate_supp[j] * Pr[nextstate | s,a][i]
+                        exp_value += temp_p * distr[e.getKey()].getSupport(j) * transition_vals[i];
+                    }
+                }
+                exp_value = exp_value * gamma; // discount information from successor states
+                exp_value += state_reward; // add reward for current state
+
+                // if it already exists, increase probability; else, create particle
+                if (temp_value > 0) {
+                    if (sum_p.containsKey(exp_value)) {
+                        sum_p.put(exp_value, sum_p.get(exp_value) + temp_value);
+                    } else {
+                        sum_p.put(exp_value, temp_value);
+                    }
+                }
+            }
+        }
 
 
         mainLog.println(sum_p.keySet());

@@ -66,25 +66,35 @@ import prism.PrismException;
     @Override
     public void project(ArrayList<Double> probs, ArrayList<Double> supp) {
         double cum_p = 0.0;
-        ArrayList<MapEntry<Double, Double>> multimap = new ArrayList<>();
-        Map.Entry<Double, Double> entry;
-        for (int j = 0; j < atoms; j++) {
-            multimap.add(new MapEntry<>(probs.get(j), supp.get(j)));
-        }
-
-        multimap.sort(Map.Entry.comparingByValue());
-        this.empty();
-        Iterator<MapEntry<Double, Double>> it = multimap.iterator();
-
+        //double exp_value = 0;
+        double temp_value;
         int index = 0;
-        while(it.hasNext() && index < atoms)
-        {
-            entry = it.next();
-            cum_p += entry.getKey();
-            if(cum_p >= tau_hat[index]) {
-                z[index] = entry.getValue();
+        this.empty();
+
+        for ( int i =0; i< probs.size(); i++){
+            if(index >= atoms){
+                break;
             }
-            index ++;
+            temp_value = probs.get(i);
+            cum_p += temp_value; // check probability of entry
+            if(cum_p >= tau_hat[index]) {
+                if(temp_value>p) {
+                    int temp = (int)floor(temp_value/p);
+                    // make sure z doesn't overflow
+                    Arrays.fill(z, index, index + min(temp, atoms-index), supp.get(i));
+                    index += min(temp, atoms-index);
+                    // if it is still greater than tau(curr atom), add one more
+                    if(index < atoms && cum_p >= tau_hat[index]){
+                        z[index] = supp.get(i);
+                        index ++;
+                    }
+
+                }else {
+                    z[index] = supp.get(i);
+                    index ++;
+                }
+            }
+            // exp_value += entry.getKey()*entry.getValue();
         }
 
     }
