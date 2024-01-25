@@ -110,10 +110,12 @@ class DistributionalBellmanOperatorProb extends DistributionalBellmanOperator {
         return res;
     }
 
+    // Step for when the support represents the possible expected values and the transition is uncertain
+    // Assumption : only one uncertain parameter is associated with a state-action pair.
     public DiscreteDistribution step(ArrayList<Map.Entry<Integer, DiscreteDistribution>> transitions, int parameter_atoms,
                                      double gamma, double state_reward) {
         TreeMap<Double, Double> sum_p = new TreeMap<>();
-        Double temp_supp, temp_value; Double exp_value;
+        Double temp_value; double exp_value;
         int temp_atoms;
         DiscreteDistribution res;
         Iterator<Map.Entry<Integer, DiscreteDistribution>> temp_it ;
@@ -131,36 +133,25 @@ class DistributionalBellmanOperatorProb extends DistributionalBellmanOperator {
 
         if (isCategorical) {
 
-
             for (int i = 0; i < parameter_atoms; i++) {
-                temp_supp = 0.0;
-                temp_value = 0.0;
+                temp_value = transitions.get(0).getValue().getValue(i); // probability of i-th parameter atom
                 exp_value = 0.0;
                 temp_it = transitions.iterator();
 
+                // Iterate over possible transitions and successors
                 while (temp_it.hasNext()) {
-                    // TODO : transition_vals *transition_p can be precomputed
-                    // TODO : think about matrix mult for update
                     Map.Entry<Integer, DiscreteDistribution> e = temp_it.next();
 
                     double[] transition_vals = e.getValue().getSupports(); // possible values for the transition probability
-                    double[] transition_p = e.getValue().getValues(); // prob of each transition prob
-
                     temp_atoms = distr[e.getKey()].getAtoms();
 
                     for (int j = 0; j < temp_atoms; j++) {
-                        // supp = supp[next state] * possible transition probability[i]
-                        temp_supp = distr[e.getKey()].getSupport(j) * transition_vals[i];
-                        // prob value = current Pr[supp] * Pr[next state | s, choice]
-                        temp_value = distr[e.getKey()].getValue(j) * transition_p[i];
-                        exp_value += temp_value*temp_supp;
+                        // exp += nextstate_val[j] * nextstate_supp[j] * Pr[nextstate | s,a][i]
+                        exp_value +=distr[e.getKey()].getValue(j) * distr[e.getKey()].getSupport(j) * transition_vals[i];
                     }
-
-                    temp_value = transition_p[i];
-
                 }
-                exp_value = exp_value * gamma;
-                exp_value += state_reward;
+                exp_value = exp_value * gamma; // discount information from successor states
+                exp_value += state_reward; // add reward for current state
 
                 // if it already exists, increase probability; else, create particle
                 if (temp_value > 0) {
