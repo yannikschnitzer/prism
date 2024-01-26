@@ -1217,7 +1217,13 @@ public class ProbModelChecker extends NonProbModelChecker
 			res = ((CTMCModelChecker) this).computeReachRewards((CTMC<Double>) model, (MCRewards<Double>) modelRewards, target);
 			break;
 		case MDP:
-			res = ((MDPModelChecker) this).computeReachRewards((MDP<Double>) model, (MDPRewards<Double>) modelRewards, target, minMax.isMin());
+			if (modifier != null && modifier.equals("cvar")) {
+				res = ((MDPModelChecker) this).computeReachRewardsCvar((MDP<Double>) model, (MDPRewards<Double>) modelRewards, target, minMax.isMin());
+			} else if (modifier != null && modifier.equals("dist")){
+				res = ((MDPModelChecker) this).computeReachRewardsDistr((MDP<Double>) model, (MDPRewards<Double>) modelRewards, target, minMax.isMin());
+			} else {
+				res = ((MDPModelChecker) this).computeReachRewards((MDP<Double>) model, (MDPRewards<Double>) modelRewards, target, minMax.isMin());
+			}
 			break;
 		case POMDP:
 			res = ((POMDPModelChecker) this).computeReachRewards((POMDP<Double>) model, (MDPRewards<Double>) modelRewards, target, minMax.isMin(), statesOfInterest);
