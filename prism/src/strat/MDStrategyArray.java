@@ -45,7 +45,8 @@ public class MDStrategyArray<Value> extends StrategyExplicit<Value> implements M
 {
 	// Index of choice taken in each state (wrt model above)
 	// Other possible values: -1 (unknown), -2 (arbitrary), -3 (unreachable)
-	private int choices[];
+	// FIXME should be private but hacky way to modify the strategy.
+	public int choices[];
 
 	/**
 	 * Creates an MDStrategyArray from an integer array of choices.
