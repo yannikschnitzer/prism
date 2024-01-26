@@ -26,6 +26,10 @@
 
 package explicit;
 
+import java.io.FileReader;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
@@ -33,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.PrimitiveIterator;
+import java.util.TreeMap;
 
 import acceptance.AcceptanceReach;
 import acceptance.AcceptanceType;
@@ -40,6 +45,9 @@ import common.IntSet;
 import common.IterableBitSet;
 import common.IterableStateSet;
 import common.StopWatch;
+import csv.BasicReader;
+import csv.CsvFormatException;
+import csv.CsvReader;
 import explicit.modelviews.EquivalenceRelationInteger;
 import explicit.modelviews.MDPDroppedAllChoices;
 import explicit.modelviews.MDPEquiv;
@@ -48,10 +56,13 @@ import explicit.rewards.MCRewardsFromMDPRewards;
 import explicit.rewards.MDPRewards;
 import explicit.rewards.Rewards;
 import io.ModelExportOptions;
+import explicit.rewards.StateRewardsArray;
+import parser.State;
 import parser.ast.Expression;
 import parser.type.TypeDouble;
 import prism.AccuracyFactory;
 import prism.OptionsIntervalIteration;
+import prism.Pair;
 import prism.Prism;
 import prism.PrismComponent;
 import prism.PrismDevNullLog;
@@ -66,6 +77,7 @@ import strat.FMDStrategyStep;
 import strat.MDStrategy;
 import strat.MDStrategyArray;
 import strat.Strategy;
+import strat.StrategyInfo;
 
 /**
  * Explicit-state model checker for Markov decision processes (MDPs).
@@ -148,7 +160,7 @@ public class MDPModelChecker extends ProbModelChecker
 	 * Compute rewards for a co-safe LTL reward operator.
 	 */
 	@SuppressWarnings("unchecked")
-	protected StateValues checkRewardCoSafeLTL(Model<?> model, Rewards<?> modelRewards, Expression expr, MinMax minMax, BitSet statesOfInterest) throws PrismException
+	protected StateValues checkRewardCoSafeLTL(Model<?> model, Rewards<?> modelRewards, Expression expr, MinMax minMax, BitSet statesOfInterest, String modifier) throws PrismException
 	{
 		// Build product of MDP and DFA for the LTL formula, convert rewards and do any required exports
 		LTLModelChecker mcLtl = new LTLModelChecker(this);
@@ -162,7 +174,14 @@ public class MDPModelChecker extends ProbModelChecker
 		mainLog.println("\nComputing reachability rewards...");
 		MDPModelChecker mcProduct = new MDPModelChecker(this);
 		mcProduct.inheritSettings(this);
-		ModelCheckerResult res = mcProduct.computeReachRewards((MDP<Double>)product.getProductModel(), productRewards, acc, minMax.isMin());
+		ModelCheckerResult res = null;
+		if (modifier != null && modifier.equals("cvar")) {
+			res = mcProduct.computeReachRewardsCvar((MDP<Double>)product.getProductModel(), productRewards, acc, minMax.isMin());
+		} else if (modifier != null && modifier.equals("dist")){
+			res = mcProduct.computeReachRewardsDistr((MDP<Double>)product.getProductModel(), productRewards, acc, minMax.isMin());
+		} else {
+			res = mcProduct.computeReachRewards((MDP<Double>)product.getProductModel(), productRewards, acc, minMax.isMin());
+		}
 		StateValues rewardsProduct = StateValues.createFromArrayResult(res, product.getProductModel());
 
 		// Output vector over product, if required
@@ -2609,6 +2628,1664 @@ public class MDPModelChecker extends ProbModelChecker
 		res.timeTaken = timer / 1000.0;
 		return res;
 	}
+
+	// TODO: this is the old prob version
+	public ModelCheckerResult computeReachRewardsDistrNew(MDP<Double> mdp, MDPRewards<Double> mdpRewards, BitSet target, boolean min) throws PrismException {
+		// Start expected reachability
+		long timer = System.currentTimeMillis();
+		mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
+
+		// Check for deadlocks in non-target state (because breaks e.g. prob1)
+		mdp.checkForDeadlocks(target);
+
+		// Store num states
+		int n = mdp.getNumStates();
+
+		// Precomputation (not optional)
+		long timerProb1 = System.currentTimeMillis();
+		BitSet inf = prob1(mdp, null, target, !min, null);
+		inf.flip(0, n);
+		timerProb1 = System.currentTimeMillis() - timerProb1;
+
+		// Print results of precomputation
+		int numTarget = target.cardinality();
+		int numInf = inf.cardinality();
+		mainLog.println("target=" + numTarget + ", inf=" + numInf + ", rest=" + (n - (numTarget + numInf)));
+
+		// Timers
+		timer = System.currentTimeMillis();
+		long total_timer = System.currentTimeMillis();
+		long iteration_timer; long max_iteration_timer=-1;
+
+		// Set up distribution variables
+		int atoms;
+		int iterations = 10;
+		int min_iter = 2;
+		double error_thresh = 0.01;
+		double gamma = 1;
+		double alpha=0.5;
+		Double dtmc_epsilon = null;
+		boolean check_reach_dtmc = true;
+		boolean check_reach_dtmc_distr = true;
+		boolean check_reach_dtmc_vi = true;
+		boolean check_reach_dtmc_distr_vi = true;
+		boolean gen_trace = true;
+		boolean compute_dtmc_vi = false; // Toggle computing non distr Exp VI
+		String bad_states_label = "obs";
+
+		String c51 = "C51";
+		String qr = "QR";
+
+		int nactions = mdp.getMaxNumChoices();
+
+		// Determine set of states actually need to compute values for
+		BitSet unknown = new BitSet();
+		unknown.set(0, n);
+		unknown.andNot(target);
+		unknown.andNot(inf);
+		IntSet unknownStates = IntSet.asIntSet(unknown);
+		//	int numS = unknownStates.cardinality();
+		DistributionalBellman operator;
+		String distr_type = settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD);
+
+		if (distr_type.equals(c51) || distr_type.equals(qr)) {
+			// TODO remove this in final version
+			String [] params = readParams(null);
+			atoms = Integer.parseInt(params[0]);
+			double v_min = Double.parseDouble(params[1]);
+			double v_max = Double.parseDouble(params[2]);
+			error_thresh = Double.parseDouble(params[3]); // 0.7 for uav
+			dtmc_epsilon = Double.parseDouble(params[4]);
+			alpha = Double.parseDouble(params[5]);
+
+			operator = new DistributionalBellmanOperator(atoms, v_min, v_max, n,  distr_type, mainLog);
+			mainLog.println("Distr type: " + distr_type);
+			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
+			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
+					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
+		}  else{
+			atoms=101;
+			double v_max = 100;
+			double v_min = 0;
+			operator = new DistributionalBellmanOperator(atoms, v_min, v_max, n, "C51" , mainLog);
+		}
+
+		// Create/initialise solution vector(s)
+		double[][] temp_p =new double[n][nactions];
+		double [][] p = new double [n][nactions];
+		// double [][] action_val = new double[n][nactions];
+		double [] action_cvar = new double[n];
+		Object [] policy = new Object[n];
+		int[] choices = new int[n];
+		double min_v;
+		double max_dist ;
+		double max_cvar_dist ;
+		int iters;
+		boolean flag;
+		double sum_val;
+
+		// transition distribution:
+		ArrayList <Double> transition_distribution = new ArrayList<>(Arrays. asList(0.5,0.6,0.7,0.8));
+		ArrayList <Double>  transition_prob = new ArrayList<>(Arrays. asList(0.1, 0.4, 0.3, 0.2));
+		DiscreteDistribution transition_distr = new DistributionCategorical(4,
+				0.5, 0.8, mainLog);
+		transition_distr.project(transition_distribution, transition_prob);
+		mainLog.println("transitions :\n" + transition_distribution.toString());
+
+		mainLog.println("actions"+nactions);
+
+		// Start iterations - number of episodes
+		for (iters = 0; (iters < iterations) ; iters++)
+		{
+			iteration_timer = System.currentTimeMillis();
+
+
+			PrimitiveIterator.OfInt states = unknownStates.iterator();
+			while (states.hasNext()) {
+				final int s = states.nextInt();
+				int numChoices = mdp.getNumChoices(s);
+				int numTransitions = 0;
+				double[] save_p = new double[numChoices];
+				Arrays.fill(temp_p[s], Float.POSITIVE_INFINITY);
+				// Arrays.fill(action_val[s], Float.POSITIVE_INFINITY);
+				min_v = Float.POSITIVE_INFINITY;
+
+				for (int choice = 0; choice < numChoices; choice++){ // aka action
+					double reward = mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choice);
+
+//					numTransitions = mdp.getNumTransitions(s, choice);
+					Iterator<Entry<Integer, Double>>it = mdp.getTransitionsIterator(s,choice);
+
+					flag = (s == 0 && mdp.getAction(s, choice).equals("n")) || (s == 1 && mdp.getAction(s, choice).equals("n"));
+					flag = flag || (s == 2 && mdp.getAction(s, choice).equals("e"));
+
+					sum_val = 0;
+
+					// transition has a distribution
+					if (flag) {
+						while (it.hasNext()) {
+							Map.Entry<Integer, Double> e = it.next();
+							for (int j = 0; j < atoms; j++) {
+								if (e.getValue() == 0.8) // if successful transition
+								{
+									sum_val += transition_distr.getValue(j) * transition_distr.getSupport(j)* (reward + gamma * p[e.getKey()][choice]);
+								}
+								else {
+									sum_val += transition_distr.getValue(j) * (1 - transition_distr.getSupport(j))* (reward + gamma * p[e.getKey()][choice]);
+								}
+
+							}
+						}
+						mainLog.println(mdp.getAction(s, choice)+" "+ sum_val);
+					}
+					else{
+						while (it.hasNext()) {
+							Map.Entry<Integer, Double> e = it.next();
+							sum_val += e.getValue() * (reward + gamma * p[e.getKey()][choices[e.getKey()]]);
+						}
+						mainLog.println(mdp.getAction(s, choice)+" "+ sum_val);
+					}
+
+					temp_p[s][choice] = sum_val;
+					if (sum_val < min_v)
+					{
+						min_v = sum_val;
+					 	action_cvar[s]=min_v;
+						policy[s] = mdp.getAction(s, choice);
+						choices[s] = choice;
+					}
+				}
+			}
+
+			states = unknownStates.iterator();
+			max_dist = 0.0;
+
+			//ArrayList<Integer> bad = new ArrayList<>();
+			while (states.hasNext()) {
+				final int s = states.nextInt();
+				double tempo = Math.abs(temp_p[s][choices[s]] - p[s][choices[s]]);
+				//if(tempo > max_dist){bad.add(s);}
+				max_dist = Math.max(max_dist, tempo);
+
+				p[s] = Arrays.copyOf(temp_p[s], temp_p[s].length);
+			}
+			mainLog.println("Max Wp dist :"+(max_dist) + " error Wp:" + (error_thresh) +" at iter:"+iters);
+			if ((max_dist <error_thresh)&(iters>min_iter)) {
+				break;
+			}
+
+			iteration_timer = System.currentTimeMillis() - iteration_timer;
+			max_iteration_timer = Math.max(iteration_timer, max_iteration_timer);
+		}
+
+		// Print to file
+		boolean print= false;
+		// if (print) {
+		// 	printToFile(policy, action_val, alpha, "gridmap/cvar_out_"+n+"_"+ settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) +"_"+alpha+".out", n, mdp.getMaxNumChoices());
+		// }
+
+		mainLog.println("\nV[start] at " + (iters + 1) + " with method "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
+		DecimalFormat df = new DecimalFormat("0.000");
+		mainLog.print("[");
+		mainLog.print(Arrays.toString(policy));
+		mainLog.print("]\n");
+
+		mainLog.println("All print");
+		mainLog.print(Arrays.deepToString(p));
+
+		// Policy
+//		mainLog.println("\nPolicy");
+//		//Arrays.toString(policy);
+//		mainLog.println(Arrays.toString(policy));
+
+		timer = System.currentTimeMillis() - timer;
+		if (verbosity >= 1) {
+			mainLog.print("\nValue iteration computation (" + (min ? "min" : "max") + ")");
+			mainLog.println(" : " + timer / 1000.0 + " seconds.");
+			mainLog.println("Max time for 1 iteration :"+max_iteration_timer/1000.0+"s");
+		}
+		timer = System.currentTimeMillis();
+
+		// Compute distribution on induced DTMC
+		// mainLog.println("Computing distribution on induced DTMC...");
+		// MDStrategy strat = new MDStrategyArray(mdp, choices);
+		// DTMC dtmc = new DTMCFromMDPAndMDStrategy(mdp, strat);
+		// int initialState = dtmc.getFirstInitialState();
+		// StateRewardsArray mcRewards = new StateRewardsArray(n);
+		// for (int s = 0; s < n; s++) {
+		// 	mcRewards.setStateReward(s, mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choices[s]));
+		// }
+		// DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
+		// if(check_reach_dtmc_distr) {
+		// 	timer = System.currentTimeMillis();
+		// 	ModelCheckerResult dtmc_result = mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, target, "prism/distr_dtmc_exp.csv", dtmc_epsilon);
+		// 	timer = System.currentTimeMillis() - timer;
+		// 	if (verbosity >= 1) {
+		// 		mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
+		// 		mainLog.println(" : " + timer / 1000.0 + " seconds.");
+		// 		mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
+		// 		mainLog.println(" : " + timer / 1000.0 + " seconds.");
+		// 	}
+		// 	timer = System.currentTimeMillis();
+		// 	double [] adjusted_dtmc_distr=operator.adjust_support(((TreeMap)dtmc_result.solnObj[initialState]));
+		// 	mainLog.println("Wasserstein p="+(distr_typ.equals(c51) ? "2" : "1")+" dtmc vs code distributions: "+operator.getW(adjusted_dtmc_distr, initialState));
+		// }
+
+		// if (check_reach_dtmc){
+		// 	BitSet obs_states= mdp.getLabelStates(bad_states_label);
+		// 	ModelCheckerResult result_obs = mcDTMC.computeReachProbs(dtmc, obs_states);
+		// 	mainLog.println("Probs of reaching bad states :" + result_obs.soln[initialState]);
+		// }
+
+		// operator.writeToFile(dtmc.getFirstInitialState(), null);
+		// MDPSimple mdpToSimulate = new MDPSimple(mdp);
+		// if(gen_trace) {
+		// 	exportTrace(mdpToSimulate, target, strat, "exp");
+		// }
+
+		// // Calling regular Value Iteration for comparison metrics.
+		// if(compute_dtmc_vi){
+		// 	mainLog.println("---------------------------------------\nStarting PRISM VI");
+		// 	DTMCModelChecker vi_mcDTMC= new DTMCModelChecker(this);
+		// 	timer = System.currentTimeMillis();
+		// 	ModelCheckerResult vi_res = this.computeReachRewards(mdp, mdpRewards, target, min);
+		// 	timer = System.currentTimeMillis() - timer;
+		// 	if (verbosity >= 1) {
+		// 		mainLog.print("\nPRISM VI");
+		// 		mainLog.println(" : " + timer / 1000.0 + " seconds.");
+		// 	}
+		// 	timer = System.currentTimeMillis();
+
+		// 	mainLog.println("\nVI result in initial state:"+ vi_res.soln[mdp.getFirstInitialState()]);
+		// 	StateRewardsArray vi_mcRewards = new StateRewardsArray(n); // Compute rewards array
+		// 	for (int s = 0; s < n; s++) {
+		// 		if(target.get(s)) {
+		// 			vi_mcRewards.setStateReward(s,0);
+		// 			((MDStrategyArray) vi_res.strat).choices[s] = 0;
+		// 		}
+		// 		else {
+		// 			double transition_reward = 0;
+		// 			if (((MDStrategy) vi_res.strat).isChoiceDefined(s)) {
+		// 				transition_reward = mdpRewards.getTransitionReward(s, ((MDStrategy) vi_res.strat).getChoiceIndex(s));
+		// 			}
+		// 			else if(((MDStrategy) vi_res.strat).whyUndefined(s, -1) == UndefinedReason.ARBITRARY) {
+		// 				transition_reward = mdpRewards.getTransitionReward(s, 0);
+		// 			}
+		// 			else {
+		// 				mainLog.println(" Error in strategy: choice is :"+ ((MDStrategy) vi_res.strat).getChoiceActionString(s, -1));
+		// 			}
+		// 			vi_mcRewards.setStateReward(s, mdpRewards.getStateReward(s) + transition_reward);
+		// 		}
+		// 	}
+		// 	DTMC vi_dtmc = new DTMCFromMDPAndMDStrategy(mdp, (MDStrategy) vi_res.strat);
+		// 	if (check_reach_dtmc_distr_vi) {
+		// 		timer = System.currentTimeMillis();
+		// 		vi_mcDTMC.computeReachRewardsDistr(vi_dtmc, vi_mcRewards, target, "prism/distr_dtmc_vi.csv", dtmc_epsilon);
+		// 		timer = System.currentTimeMillis() - timer;
+		// 		if (verbosity >= 1) {
+		// 			mainLog.print("\nDTMC computation VI");
+		// 			mainLog.println(" : " + timer / 1000.0 + " seconds.");
+		// 		}
+		// 	}
+
+		// 	if (check_reach_dtmc_vi){
+		// 		BitSet obs_states= mdp.getLabelStates(bad_states_label);
+		// 		ModelCheckerResult result_obs = mcDTMC.computeReachProbs(vi_dtmc, obs_states);
+		// 		mainLog.println("Probs of reaching bad states :" + result_obs.soln[vi_dtmc.getFirstInitialState()]);
+		// 	}
+
+		// 	if(gen_trace) {
+		// 		exportTrace(mdpToSimulate, target, (MDStrategy) vi_res.strat, "vi");
+		// 	}
+
+		// }
+		// Store results
+		ModelCheckerResult res = new ModelCheckerResult();
+		res.soln = Arrays.copyOf(action_cvar, action_cvar.length); // FIXME make it based on y parameter and iterate over columns to get result
+		res.numIters = iterations;
+		res.timeTaken = (System.currentTimeMillis() - total_timer) / 1000.0;
+		return res;
+	}
+
+	/**
+	 * Compute expected reachability rewards.
+	 * @param mdp The MDP
+	 * @param mdpRewards The rewards
+	 * @param target Target states
+	 * @param min Min or max rewards (true=min, false=max)
+	 */
+	// DVI for uncertain distributional transition
+	public ModelCheckerResult computeReachRewardsDistr(MDP<Double> mdp, MDPRewards<Double> mdpRewards, BitSet target, boolean min) throws PrismException {
+		// Start expected reachability
+		long timer = System.currentTimeMillis();
+		mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
+
+		// Check for deadlocks in non-target state (because breaks e.g. prob1)
+		mdp.checkForDeadlocks(target);
+
+		// Store num states
+		int n = mdp.getNumStates();
+
+		// Precomputation (not optional)
+		long timerProb1 = System.currentTimeMillis();
+		BitSet inf = prob1(mdp, null, target, !min, null);
+		inf.flip(0, n);
+//		timerProb1 = System.currentTimeMillis() - timerProb1;
+
+		// Print results of precomputation
+		int numTarget = target.cardinality();
+		int numInf = inf.cardinality();
+		mainLog.println("target=" + numTarget + ", inf=" + numInf + ", rest=" + (n - (numTarget + numInf)));
+
+		// Timers
+		timer = System.currentTimeMillis();
+		long total_timer = System.currentTimeMillis();
+		long iteration_timer; long max_iteration_timer=-1;
+
+		// Set up distribution variables
+		int atoms;
+		int iterations = 1500;
+		int min_iter = 8;
+		double error_thresh = 0.01;
+		double gamma = 1;
+		double alpha=0.5;
+		Double dtmc_epsilon = null;
+		boolean check_reach_dtmc = false;
+		boolean check_reach_dtmc_distr = true;
+		boolean check_reach_dtmc_vi = false;
+		boolean check_reach_dtmc_distr_vi = true;
+		boolean gen_trace = true;
+		boolean compute_dtmc_vi = true; // Toggle computing non distr Exp VI
+		String bad_states_label = "obs";
+
+		String c51 = "C51";
+		String qr = "QR";
+
+		int nactions = mdp.getMaxNumChoices();
+
+		// Determine set of states actually need to compute values for
+		BitSet unknown = new BitSet();
+		unknown.set(0, n);
+		unknown.andNot(target);
+		unknown.andNot(inf);
+		IntSet unknownStates = IntSet.asIntSet(unknown);
+		//	int numS = unknownStates.cardinality();
+		DistributionalBellmanOperatorProb operator, temp_p; DiscreteDistribution save_p;
+		String distr_type = settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD);
+
+		if (distr_type.equals(c51) || distr_type.equals(qr)) {
+			// TODO remove this in final version
+			String [] params = readParams(null);
+			atoms = Integer.parseInt(params[0]);
+			double v_min = Double.parseDouble(params[1]);
+			double v_max = Double.parseDouble(params[2]);
+			error_thresh = Double.parseDouble(params[3]); // 0.7 for uav
+			dtmc_epsilon = Double.parseDouble(params[4]);
+			alpha = Double.parseDouble(params[5]);
+
+			operator = new DistributionalBellmanOperatorProb(atoms, v_min, v_max, n, distr_type, mainLog);
+			temp_p = new DistributionalBellmanOperatorProb(atoms, v_min, v_max, n, distr_type, mainLog);
+
+			if(distr_type.equals(c51)){
+				save_p = new DistributionCategorical(atoms, v_min, v_max, mainLog);
+			} else{
+				save_p = new DistributionQuantile(atoms, mainLog);
+			}
+
+			mainLog.println("Distr type: "+ distr_type);
+			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
+			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
+					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
+		} else{
+			atoms=101;
+			double v_max = 100;
+			double v_min = 0;
+			distr_type = "C51";
+			mainLog.println("Using default parameters - Distr type: "+ distr_type);
+			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
+			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
+					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
+			operator = new DistributionalBellmanOperatorProb(atoms, v_min, v_max, n, "C51", mainLog);
+			temp_p = new DistributionalBellmanOperatorProb(atoms, v_min, v_max, n, "C51", mainLog);
+			save_p = new DistributionCategorical(atoms, v_min, v_max, mainLog);
+		}
+
+		// Create/initialise solution vector(s)
+		DiscreteDistribution m ;
+		double [] action_val = new double[nactions];
+		double [] action_exp = new double[n];
+		Object [] policy = new Object[n];
+		int[] choices = new int[n];
+		double min_v; int min_a;
+		double max_dist ; int numChoices;
+		int iters; boolean flag;
+
+		// tODO : remove this eventually
+		// distributions over transition probabilities:
+		ArrayList <Double> trans_distr_succ = new ArrayList<>(Arrays. asList(0.5,0.6,0.7,0.8));
+		ArrayList <Double> trans_distr_fail= new ArrayList<>(Arrays. asList(0.5,0.4,0.3,0.2));
+		// Probability of having those transition values
+		ArrayList <Double>  trans_prob = new ArrayList<>(Arrays. asList(0.1, 0.4, 0.3, 0.2));
+		DiscreteDistribution transition_distr_succ;
+		DiscreteDistribution transition_distr_fail;
+		if (distr_type.equals(c51)) {
+			transition_distr_succ = new DistributionCategorical(4, 0.5, 0.8, mainLog);
+			transition_distr_fail = new DistributionCategorical(4, 0.2, 0.5, mainLog);
+		} else {
+			transition_distr_succ = new DistributionQuantile(10,  mainLog);
+			transition_distr_fail = new DistributionQuantile(10,  mainLog);
+		}
+		transition_distr_succ.project(trans_prob, trans_distr_succ);
+		transition_distr_fail.project(trans_prob, trans_distr_fail);
+		mainLog.println("transitions successful :\n" + transition_distr_succ);
+		mainLog.println("transitions 1-p :\n" + transition_distr_fail);
+
+		// Start iterations - number of episodes
+		for (iters = 0; (iters < iterations) ; iters++)
+		{
+			iteration_timer = System.currentTimeMillis();
+
+			// copy to temp value from operator
+			if (iters> 0) {
+				temp_p.clone(operator);
+			}
+			// mainLog.println("iteration : " + iters);
+
+			PrimitiveIterator.OfInt states = unknownStates.iterator();
+			while (states.hasNext()) {
+				final int s = states.nextInt();
+				numChoices = mdp.getNumChoices(s);
+				min_v = Float.POSITIVE_INFINITY;
+				min_a = 0;
+				save_p.clear();
+				Arrays.fill(action_val, Float.POSITIVE_INFINITY);
+				// mainLog.println("state : " + s);
+				for (int choice = 0; choice < numChoices; choice++){ // aka action
+
+					Iterator<Entry<Integer, Double>>it = mdp.getTransitionsIterator(s,choice);
+					double reward = mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choice);
+
+					flag = (s == 0 && mdp.getAction(s, choice).equals("n")) || (s == 1 && mdp.getAction(s, choice).equals("n"));
+					flag = flag || (s == 2 && mdp.getAction(s, choice).equals("e"));
+
+					if(flag)
+					{
+						// Uncertain transition, modify transitions to be distributional
+						// TODO: this should be parsed from a file instead of hard coded.
+						ArrayList <Entry<Integer, DiscreteDistribution>> prob_trans = new ArrayList<>();
+						while (it.hasNext()) {
+							Map.Entry<Integer, Double> e = it.next();
+							if (e.getValue() == 0.66) // if successful transition
+							{
+								 Entry<Integer, DiscreteDistribution> entry = new Pair<>(e.getKey(), transition_distr_succ);
+								 prob_trans.add(entry);
+							}
+							else {
+								Entry<Integer, DiscreteDistribution> entry = new Pair<>(e.getKey(), transition_distr_fail);
+								prob_trans.add(entry);
+							}
+						}
+
+//						Iterator<Map.Entry<Integer, DiscreteDistribution>> it_prob = prob_trans.iterator();
+						m = operator.step(prob_trans, transition_distr_fail.getAtoms(), gamma, reward);
+					}
+					else {
+						m = operator.step(it, gamma, reward, s);
+					}
+					 mainLog.println("state : "+s+"- choice: "+ mdp.getAction(s, choice)+" -- [" + m.toString(operator.getFormat()) +"]");
+					action_val[choice] = m.getExpValue();
+
+					if (action_val[choice] < min_v) {
+						min_a = choice;
+						min_v = action_val[choice]; action_exp[s] = min_v;
+						save_p.clone(m);
+					}
+				}
+				policy[s] = mdp.getAction(s, min_a);
+				choices[s] = min_a;
+				temp_p.update(save_p, s);
+			}
+
+			states = unknownStates.iterator();
+			max_dist = 0.0;
+
+			while (states.hasNext()) {
+				final int s = states.nextInt();
+				double tempo = operator.getW(temp_p.getDist(s), s);
+				//if(tempo > max_dist){bad.add(s);}
+				max_dist = Math.max(max_dist, tempo);
+				operator.update(temp_p.getDist(s), s);
+			}
+			mainLog.println("Max Wp dist :"+(max_dist) + " error Wp:" + (error_thresh) +" at iter:"+iters);
+			if ((max_dist <error_thresh)&(iters>min_iter)) {
+				break;
+			}
+
+			iteration_timer = System.currentTimeMillis() - iteration_timer;
+			max_iteration_timer = Math.max(iteration_timer, max_iteration_timer);
+		}
+
+		mainLog.println("\nV[start] at " + (iters + 1) + " with method "+distr_type);
+		DecimalFormat df = new DecimalFormat("0.000");
+		mainLog.print("[");
+		mainLog.print(operator.toString(mdp.getFirstInitialState()));
+		mainLog.print("]\n");
+		mainLog.println("E at initial state:" + operator.getExpValue(mdp.getFirstInitialState()));
+
+		timer = System.currentTimeMillis() - timer;
+		if (verbosity >= 1) {
+			mainLog.print("\nValue iteration computation (" + (min ? "min" : "max") + ")");
+			mainLog.println(" : " + timer / 1000.0 + " seconds.");
+			mainLog.println("Max time for 1 iteration :"+max_iteration_timer/1000.0+"s");
+		}
+
+		// Compute distribution on induced DTMC
+		mainLog.println("Computing distribution on induced DTMC...");
+		MDStrategy strat = new MDStrategyArray(mdp, choices);
+		DTMC dtmc = new DTMCFromMDPAndMDStrategy(mdp, strat);
+		int initialState = dtmc.getFirstInitialState();
+		StateRewardsArray mcRewards = new StateRewardsArray(n);
+		for (int s = 0; s < n; s++) {
+			mcRewards.setStateReward(s, mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choices[s]));
+		}
+		DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
+		if(check_reach_dtmc_distr) {
+			timer = System.currentTimeMillis();
+			ModelCheckerResult dtmc_result = mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, target, "prism/distr_dtmc_exp.csv", dtmc_epsilon);
+			timer = System.currentTimeMillis() - timer;
+			if (verbosity >= 1) {
+				mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
+				mainLog.println(" : " + timer / 1000.0 + " seconds.");
+				mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
+				mainLog.println(" : " + timer / 1000.0 + " seconds.");
+			}
+		}
+
+		if (check_reach_dtmc){
+			BitSet obs_states= mdp.getLabelStates(bad_states_label);
+			ModelCheckerResult result_obs = mcDTMC.computeReachProbs(dtmc, obs_states);
+			mainLog.println("Probs of reaching bad states :" + result_obs.soln[initialState]);
+		}
+
+		operator.writeToFile(dtmc.getFirstInitialState(), null);
+		MDPSimple mdpToSimulate = new MDPSimple(mdp);
+		if(gen_trace) {
+			exportTrace(mdpToSimulate, target, strat, "exp");
+		}
+
+		// Calling regular Value Iteration for comparison metrics.
+		if(compute_dtmc_vi){
+			mainLog.println("---------------------------------------\nStarting PRISM VI");
+			DTMCModelChecker vi_mcDTMC= new DTMCModelChecker(this);
+			timer = System.currentTimeMillis();
+			ModelCheckerResult vi_res = this.computeReachRewards(mdp, mdpRewards, target, min);
+			timer = System.currentTimeMillis() - timer;
+			if (verbosity >= 1) {
+				mainLog.print("\nPRISM VI");
+				mainLog.println(" : " + timer / 1000.0 + " seconds.");
+			}
+
+			mainLog.println("\nVI result in initial state:"+ vi_res.soln[mdp.getFirstInitialState()]);
+			StateRewardsArray vi_mcRewards = new StateRewardsArray(n); // Compute rewards array
+			for (int s = 0; s < n; s++) {
+				if(target.get(s)) {
+					vi_mcRewards.setStateReward(s,0);
+					((MDStrategyArray) vi_res.strat).choices[s] = 0;
+				}
+				else {
+					double transition_reward = 0;
+					if (((MDStrategy) vi_res.strat).isChoiceDefined(s)) {
+						transition_reward = mdpRewards.getTransitionReward(s, ((MDStrategy) vi_res.strat).getChoiceIndex(s));
+					}
+					else if(vi_res.strat.whyUndefined(s, -1) == StrategyInfo.UndefinedReason.ARBITRARY) {
+						transition_reward = mdpRewards.getTransitionReward(s, 0);
+					}
+					else {
+						mainLog.println(" Error in strategy: choice is :"+ ((MDStrategy) vi_res.strat).getChoiceActionString(s, -1));
+					}
+					vi_mcRewards.setStateReward(s, mdpRewards.getStateReward(s) + transition_reward);
+				}
+			}
+			DTMC vi_dtmc = new DTMCFromMDPAndMDStrategy(mdp, (MDStrategy) vi_res.strat);
+			if (check_reach_dtmc_distr_vi) {
+				timer = System.currentTimeMillis();
+				vi_mcDTMC.computeReachRewardsDistr(vi_dtmc, vi_mcRewards, target, "prism/distr_dtmc_vi.csv", dtmc_epsilon);
+				timer = System.currentTimeMillis() - timer;
+				if (verbosity >= 1) {
+					mainLog.print("\nDTMC computation VI");
+					mainLog.println(" : " + timer / 1000.0 + " seconds.");
+				}
+			}
+
+			if (check_reach_dtmc_vi){
+				BitSet obs_states= mdp.getLabelStates(bad_states_label);
+				ModelCheckerResult result_obs = mcDTMC.computeReachProbs(vi_dtmc, obs_states);
+				mainLog.println("Probs of reaching bad states :" + result_obs.soln[vi_dtmc.getFirstInitialState()]);
+			}
+
+			if(gen_trace) {
+				exportTrace(mdpToSimulate, target, (MDStrategy) vi_res.strat, "vi");
+			}
+
+		}
+
+		// Store results
+		operator.writeToFile(initialState, null);
+		ModelCheckerResult res = new ModelCheckerResult();
+		res.soln = Arrays.copyOf(action_exp, action_exp.length); // return the expected values for each state
+		res.numIters = iterations;
+		res.timeTaken = (System.currentTimeMillis() - total_timer) / 1000.0;
+		return res;
+	}
+
+	// DVI for risk neutral
+	// becomes compute reachRewardsUpdated
+	// NOT uncertain transitions
+	public ModelCheckerResult computeReachRewardsDistrUpdated(MDP<Double> mdp, MDPRewards<Double> mdpRewards, BitSet target, boolean min) throws PrismException {
+		// Start expected reachability
+		long timer = System.currentTimeMillis();
+		mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
+
+		// Check for deadlocks in non-target state (because breaks e.g. prob1)
+		mdp.checkForDeadlocks(target);
+
+		// Store num states
+		int n = mdp.getNumStates();
+
+		// Precomputation (not optional)
+		long timerProb1 = System.currentTimeMillis();
+		BitSet inf = prob1(mdp, null, target, !min, null);
+		inf.flip(0, n);
+//		timerProb1 = System.currentTimeMillis() - timerProb1;
+
+		// Print results of precomputation
+		int numTarget = target.cardinality();
+		int numInf = inf.cardinality();
+		mainLog.println("target=" + numTarget + ", inf=" + numInf + ", rest=" + (n - (numTarget + numInf)));
+
+		// Timers
+		timer = System.currentTimeMillis();
+		long total_timer = System.currentTimeMillis();
+		long iteration_timer; long max_iteration_timer=-1;
+
+		// Set up distribution variables
+		int atoms;
+		int iterations = 1500;
+		int min_iter = 8; // TODO switch back to 20
+		double error_thresh = 0.01;
+		double gamma = 1;
+		double alpha=0.5;
+		Double dtmc_epsilon = null;
+		boolean check_reach_dtmc = false;
+		boolean check_reach_dtmc_distr = true;
+		boolean check_reach_dtmc_vi = false;
+		boolean check_reach_dtmc_distr_vi = true;
+		boolean gen_trace = true;
+		boolean compute_dtmc_vi = true; // Toggle computing non distr Exp VI
+		String bad_states_label = "obs";
+
+		String c51 = "C51";
+		String qr = "QR";
+
+		int nactions = mdp.getMaxNumChoices();
+
+		// Determine set of states actually need to compute values for
+		BitSet unknown = new BitSet();
+		unknown.set(0, n);
+		unknown.andNot(target);
+		unknown.andNot(inf);
+		IntSet unknownStates = IntSet.asIntSet(unknown);
+		//	int numS = unknownStates.cardinality();
+		DistributionalBellman operator, temp_p; DiscreteDistribution save_p;
+		String distr_type = settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD);
+
+		if (distr_type.equals(c51) || distr_type.equals(qr)) {
+			// TODO remove this in final version
+			String [] params = readParams(null);
+			atoms = Integer.parseInt(params[0]);
+			double v_min = Double.parseDouble(params[1]);
+			double v_max = Double.parseDouble(params[2]);
+			error_thresh = Double.parseDouble(params[3]); // 0.7 for uav
+			dtmc_epsilon = Double.parseDouble(params[4]);
+			alpha = Double.parseDouble(params[5]);
+
+			operator = new DistributionalBellmanOperator(atoms, v_min, v_max, n, distr_type, mainLog);
+			temp_p = new DistributionalBellmanOperator(atoms, v_min, v_max, n, distr_type, mainLog);
+
+			if(distr_type.equals(c51)){
+				save_p = new DistributionCategorical(atoms, v_min, v_max, mainLog);
+			} else{
+				save_p = new DistributionQuantile(atoms, mainLog);
+			}
+
+			mainLog.println("Distr type: "+ distr_type);
+			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
+			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
+					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
+		} else{
+			atoms=101;
+			double v_max = 100;
+			double v_min = 0;
+			mainLog.println("Using default parameters - Distr type: "+ distr_type);
+			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
+			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
+					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
+			operator = new DistributionalBellmanOperator(atoms, v_min, v_max, n, "C51", mainLog);
+			temp_p = new DistributionalBellmanOperator(atoms, v_min, v_max, n, "C51", mainLog);
+			save_p = new DistributionCategorical(atoms, v_min, v_max, mainLog);
+		}
+
+		// Create/initialise solution vector(s)
+		DiscreteDistribution m ;
+		double [] action_val = new double[nactions];
+		double [] action_exp = new double[n];
+		Object [] policy = new Object[n];
+		int[] choices = new int[n];
+		double min_v; int min_a;
+		double max_dist ; int numChoices;
+		int iters;
+
+		// Start iterations - number of episodes
+		for (iters = 0; (iters < iterations) ; iters++)
+		{
+			iteration_timer = System.currentTimeMillis();
+
+			// copy to temp value from operator
+			if (iters> 0) {
+				temp_p.clone(operator);
+			}
+			// mainLog.println("iteration : " + iters);
+
+			PrimitiveIterator.OfInt states = unknownStates.iterator();
+			while (states.hasNext()) {
+				final int s = states.nextInt();
+				numChoices = mdp.getNumChoices(s);
+				min_v = Float.POSITIVE_INFINITY;
+				min_a = 0;
+				save_p.clear();
+				Arrays.fill(action_val, Float.POSITIVE_INFINITY);
+				// mainLog.println("state : " + s);
+				for (int choice = 0; choice < numChoices; choice++){ // aka action
+					Iterator<Entry<Integer, Double>>it = mdp.getTransitionsIterator(s,choice);
+
+					double reward = mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choice);
+					m = operator.step(it, gamma, reward, s);
+					// mainLog.println(m);
+					action_val[choice] = m.getExpValue();
+
+					if (action_val[choice] < min_v) {
+						min_a = choice;
+						min_v = action_val[choice]; action_exp[s] = min_v;
+						save_p.clone(m);
+					}
+				}
+				policy[s] = mdp.getAction(s, min_a);
+				choices[s] = min_a;
+				temp_p.update(save_p, s);
+			}
+
+			states = unknownStates.iterator();
+			max_dist = 0.0;
+
+			while (states.hasNext()) {
+				final int s = states.nextInt();
+				double tempo = operator.getW(temp_p.getDist(s), s);
+				//if(tempo > max_dist){bad.add(s);}
+				max_dist = Math.max(max_dist, tempo);
+				operator.update(temp_p.getDist(s), s);
+			}
+			mainLog.println("Max Wp dist :"+(max_dist) + " error Wp:" + (error_thresh) +" at iter:"+iters);
+			if ((max_dist <error_thresh)&(iters>min_iter)) {
+				break;
+			}
+
+			iteration_timer = System.currentTimeMillis() - iteration_timer;
+			max_iteration_timer = Math.max(iteration_timer, max_iteration_timer);
+		}
+
+		mainLog.println("\nV[start] at " + (iters + 1) + " with method "+distr_type);
+		DecimalFormat df = new DecimalFormat("0.000");
+		mainLog.print("[");
+		mainLog.print(operator.toString(mdp.getFirstInitialState()));
+		mainLog.print("]\n");
+		mainLog.println("E at initial state:" + operator.getExpValue(mdp.getFirstInitialState()));
+
+		timer = System.currentTimeMillis() - timer;
+		if (verbosity >= 1) {
+			mainLog.print("\nValue iteration computation (" + (min ? "min" : "max") + ")");
+			mainLog.println(" : " + timer / 1000.0 + " seconds.");
+			mainLog.println("Max time for 1 iteration :"+max_iteration_timer/1000.0+"s");
+		}
+
+		// Compute distribution on induced DTMC
+		mainLog.println("Computing distribution on induced DTMC...");
+		MDStrategy strat = new MDStrategyArray(mdp, choices);
+		DTMC dtmc = new DTMCFromMDPAndMDStrategy(mdp, strat);
+		int initialState = dtmc.getFirstInitialState();
+		StateRewardsArray mcRewards = new StateRewardsArray(n);
+		for (int s = 0; s < n; s++) {
+			mcRewards.setStateReward(s, mdpRewards.getStateReward(s) + mdpRewards.getTransitionReward(s, choices[s]));
+		}
+		DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
+		if(check_reach_dtmc_distr) {
+			timer = System.currentTimeMillis();
+			ModelCheckerResult dtmc_result = mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, target, "prism/distr_dtmc_exp.csv", dtmc_epsilon);
+			timer = System.currentTimeMillis() - timer;
+			if (verbosity >= 1) {
+				mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
+				mainLog.println(" : " + timer / 1000.0 + " seconds.");
+				mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
+				mainLog.println(" : " + timer / 1000.0 + " seconds.");
+			}
+		}
+
+		if (check_reach_dtmc){
+			BitSet obs_states= mdp.getLabelStates(bad_states_label);
+			ModelCheckerResult result_obs = mcDTMC.computeReachProbs(dtmc, obs_states);
+			mainLog.println("Probs of reaching bad states :" + result_obs.soln[initialState]);
+		}
+
+		operator.writeToFile(dtmc.getFirstInitialState(), null);
+		MDPSimple mdpToSimulate = new MDPSimple(mdp);
+		if(gen_trace) {
+			exportTrace(mdpToSimulate, target, strat, "exp");
+		}
+
+		// Calling regular Value Iteration for comparison metrics.
+		if(compute_dtmc_vi){
+			mainLog.println("---------------------------------------\nStarting PRISM VI");
+			DTMCModelChecker vi_mcDTMC= new DTMCModelChecker(this);
+			timer = System.currentTimeMillis();
+			ModelCheckerResult vi_res = this.computeReachRewards(mdp, mdpRewards, target, min);
+			timer = System.currentTimeMillis() - timer;
+			if (verbosity >= 1) {
+				mainLog.print("\nPRISM VI");
+				mainLog.println(" : " + timer / 1000.0 + " seconds.");
+			}
+
+			mainLog.println("\nVI result in initial state:"+ vi_res.soln[mdp.getFirstInitialState()]);
+			StateRewardsArray vi_mcRewards = new StateRewardsArray(n); // Compute rewards array
+			for (int s = 0; s < n; s++) {
+				if(target.get(s)) {
+					vi_mcRewards.setStateReward(s,0);
+					((MDStrategyArray) vi_res.strat).choices[s] = 0;
+				}
+				else {
+					double transition_reward = 0;
+					if (((MDStrategy) vi_res.strat).isChoiceDefined(s)) {
+						transition_reward = mdpRewards.getTransitionReward(s, ((MDStrategy) vi_res.strat).getChoiceIndex(s));
+					}
+					else if(vi_res.strat.whyUndefined(s, -1) == StrategyInfo.UndefinedReason.ARBITRARY) {
+						transition_reward = mdpRewards.getTransitionReward(s, 0);
+					}
+					else {
+						mainLog.println(" Error in strategy: choice is :"+ ((MDStrategy) vi_res.strat).getChoiceActionString(s, -1));
+					}
+					vi_mcRewards.setStateReward(s, mdpRewards.getStateReward(s) + transition_reward);
+				}
+			}
+			DTMC vi_dtmc = new DTMCFromMDPAndMDStrategy(mdp, (MDStrategy) vi_res.strat);
+			if (check_reach_dtmc_distr_vi) {
+				timer = System.currentTimeMillis();
+				vi_mcDTMC.computeReachRewardsDistr(vi_dtmc, vi_mcRewards, target, "prism/distr_dtmc_vi.csv", dtmc_epsilon);
+				timer = System.currentTimeMillis() - timer;
+				if (verbosity >= 1) {
+					mainLog.print("\nDTMC computation VI");
+					mainLog.println(" : " + timer / 1000.0 + " seconds.");
+				}
+			}
+
+			if (check_reach_dtmc_vi){
+				BitSet obs_states= mdp.getLabelStates(bad_states_label);
+				ModelCheckerResult result_obs = mcDTMC.computeReachProbs(vi_dtmc, obs_states);
+				mainLog.println("Probs of reaching bad states :" + result_obs.soln[vi_dtmc.getFirstInitialState()]);
+			}
+
+			if(gen_trace) {
+				exportTrace(mdpToSimulate, target, (MDStrategy) vi_res.strat, "vi");
+			}
+
+		}
+
+		// Store results
+		operator.writeToFile(initialState, null);
+		ModelCheckerResult res = new ModelCheckerResult();
+		res.soln = Arrays.copyOf(action_exp, action_exp.length); // return the expected values for each state
+		res.numIters = iterations;
+		res.timeTaken = (System.currentTimeMillis() - total_timer) / 1000.0;
+		return res;
+	}
+
+	public void exportTrace(MDPSimple<Double> mdp, BitSet target, MDStrategy strat, String method)
+	{
+		List<State> mdpStatesList = mdp.getStatesList();
+		int maxPathLen = 1000;
+		int s = mdp.getFirstInitialState();
+		int idx_b;
+		mainLog.println("Generating random trace");
+//		mainLog.println(mdpStatesList.get(s));
+		PrismFileLog trace_out = new PrismFileLog("prism/tests/traces/distr_"+method+"_"+ settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) +"_trace.csv");
+		trace_out.println("s; actions; policy");
+		int pathLen = 0;
+		List<Object> available = new ArrayList<>();
+		while (pathLen < maxPathLen  && mdp.getNumTransitions(s, strat.getChoiceIndex(s)) > 0) {
+			available=mdp.getAvailableActions(s);
+			trace_out.println(mdpStatesList.get(s).toString()+";"+available.toString()+";"+strat.getChoiceAction(s));
+			Distribution distr = mdp.getChoice(s, strat.getChoiceIndex(s));
+			if (target.get(s))
+			{
+				mainLog.println("Terminal state reached s: "+mdpStatesList.get(s).toString());
+				break;
+			}
+			s = distr.sample();
+			pathLen++;
+		}
+		trace_out.close();
+	}
+
+
+	public ModelCheckerResult computeReachRewardsCvar(MDP<Double> mdp, MDPRewards<Double> mdpRewards, BitSet target, boolean min) throws PrismException {
+		// Start expected reachability
+		long timer = System.currentTimeMillis();
+		mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
+
+		// Check for deadlocks in non-target state (because breaks e.g. prob1)
+		mdp.checkForDeadlocks(target);
+
+		// Store num states
+		int n = mdp.getNumStates();
+		int n_actions = mdp.getMaxNumChoices();
+
+		// Precomputation (not optional)
+		long timerProb1 = System.currentTimeMillis();
+		BitSet inf = prob1(mdp, null, target, !min, null);
+		inf.flip(0, n);
+		timerProb1 = System.currentTimeMillis() - timerProb1;
+
+		// Print results of precomputation
+		int numTarget = target.cardinality();
+		int numInf = inf.cardinality();
+		mainLog.println("target=" + numTarget + ", inf=" + numInf + ", rest=" + (n - (numTarget + numInf)));
+
+		if (numInf == n){
+			throw new PrismException("All states are infinite");
+		}
+
+		// Timers
+		timer = System.currentTimeMillis();
+		long total_timer = System.currentTimeMillis();
+		long max_iteration_timer = -1; long iteration_timer;
+
+		// Set up CVAR variables
+		int atoms;
+		int iterations = 1500;
+		double error_thresh = 0.01;
+		Double dtmc_epsilon = null;
+		int min_iter = 30;
+		double gamma = 1;
+		double alpha = 0.7;
+		String bad_states_label = "obs";
+		boolean check_reach_dtmc = true;
+		boolean check_reach_dtmc_distr= true;
+		boolean gen_trace = true;
+
+		String c51 = "C51";
+		String qr = "QR";
+
+		int nactions = mdp.getMaxNumChoices();
+		int b_atoms; int product_n;
+		CVaRProduct cvar_mdp;
+
+		BitSet unknown_original = new BitSet();
+		unknown_original.set(0, n);
+		unknown_original.andNot(target);
+		unknown_original.andNot(inf);
+
+		mainLog.println(" Starting Cvar iteration with method: "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
+
+		DistributionalBellmanOperatorAugmented operator, temp_p; DiscreteDistribution save_p;
+		String distr_type = settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD);
+
+		if (distr_type.equals(c51) || distr_type.equals(qr)) {
+			// TODO remove this in final version
+			String [] params = readParams(null);
+			atoms = Integer.parseInt(params[0]);
+			double v_min = Double.parseDouble(params[1]);
+			double v_max = Double.parseDouble(params[2]);
+			error_thresh = Double.parseDouble(params[3]); // 0.7 for uav
+			dtmc_epsilon = Double.parseDouble(params[4]);
+			alpha = Double.parseDouble(params[5]);
+
+			params = readParams("prism/tests/params_b.csv");
+			b_atoms = Integer.parseInt(params[0]);
+			double b_min = Double.parseDouble(params[1]);
+			double b_max = Double.parseDouble(params[2]);
+
+			cvar_mdp = CVaRProduct.makeProduct(b_min, b_max, b_atoms, mdp, mdpRewards, gamma, unknown_original, mainLog);
+			product_n = cvar_mdp.getProductModel().getNumStates();
+
+			operator = new DistributionalBellmanOperatorAugmented(atoms, b_atoms, v_min, v_max,b_min, b_max, product_n, distr_type, mainLog);
+			temp_p = new DistributionalBellmanOperatorAugmented(atoms, b_atoms, v_min, v_max,b_min, b_max, product_n, distr_type, mainLog);
+
+			if(distr_type.equals(c51)){
+				save_p = new DistributionCategorical(atoms, v_min, v_max, mainLog);
+			} else{
+				save_p = new DistributionQuantile(atoms, mainLog);
+			}
+
+			mainLog.println("Distr type: "+ distr_type);
+			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min+" - b_atoms:"+b_atoms+" - bmin:"+b_min+" - bmax:"+b_max);
+			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
+					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
+		} else{
+			atoms=101;
+			double v_max = 100;
+			double v_min = 0;
+			mainLog.println("Using default parameters - Distr type: "+ distr_type);
+			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min+" - b_atoms:"+atoms+" - bmin:"+v_min+" - bmax:"+v_max);
+			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
+					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
+			cvar_mdp = CVaRProduct.makeProduct(v_min, v_max, atoms, mdp, mdpRewards, gamma, unknown_original, mainLog);
+			product_n = cvar_mdp.getProductModel().getNumStates();
+			operator = new DistributionalBellmanOperatorAugmented(atoms, atoms, v_min, v_max,v_min, v_max, product_n, distr_type, mainLog);
+			temp_p = new DistributionalBellmanOperatorAugmented(atoms, atoms, v_min, v_max,v_min, v_max, product_n, distr_type, mainLog);
+			save_p = new DistributionCategorical(atoms, v_min, v_max, mainLog);
+		}
+
+		BitSet product_target = cvar_mdp.liftFromModel(target); // compute the target states in the product MDP
+
+		// Determine set of states actually need to compute values for in the augmented MDP
+		BitSet unknown = new BitSet();
+		unknown.set(0, product_n);
+		unknown.andNot(product_target);
+		unknown.andNot(inf);
+		IntSet unknownStates = IntSet.asIntSet(unknown);
+
+		// Create/initialise solution vector(s)
+		// adjust dimensions to augmented
+		double[] action_val = new double[nactions];
+		Object[] policy = new Object[product_n]; // policy is now state x slack variable b
+		int[] choices = new int[product_n];
+		double max_dist;
+		int iters;
+		double reward = 0;
+		int numChoices;
+		int model_s;
+		DiscreteDistribution m;
+
+		// Start iterations - number of episodes
+		for (iters = 0; (iters < iterations); iters++) {
+
+			iteration_timer = System.currentTimeMillis();
+			// copy to temp value from operator
+			if (iters> 0) {
+				temp_p.clone(operator);
+			}
+
+			PrimitiveIterator.OfInt states = unknownStates.iterator();
+			// Loop over augmented state
+			while (states.hasNext()) {
+				final int s = states.nextInt();
+				numChoices = cvar_mdp.getProductModel().getNumChoices(s);
+				model_s = cvar_mdp.getModelState(s);
+				Arrays.fill(action_val, Float.POSITIVE_INFINITY);
+				double min_magic = Float.POSITIVE_INFINITY;
+				int min_a = 0;
+				save_p.clear();
+//				mainLog.println("state :"+s);
+
+				for (int choice = 0; choice < numChoices; choice++) { // aka action
+					Iterator<Entry<Integer, Double>> it = cvar_mdp.getProductModel().getTransitionsIterator(s, choice);
+
+					reward = mdpRewards.getStateReward(model_s) + mdpRewards.getTransitionReward(model_s, choice);
+					m = operator.step(it, gamma, reward, s);
+//					mainLog.println("state: "+ s + " - action:"+choice +"- m:"+m.toString());
+					action_val[choice] = operator.getInnerOpt(m, cvar_mdp.getAutomatonState(s));
+					if (action_val[choice] < min_magic) {
+						min_a = choice;
+						min_magic = action_val[choice];
+						save_p.clone(m);
+					}
+				}
+				policy[s] = cvar_mdp.getProductModel().getAction(s, min_a);
+				choices[s] = min_a;
+				temp_p.update(save_p, s);
+			}
+
+			states = unknownStates.iterator();
+			max_dist = 0.0;
+
+			while (states.hasNext()) {
+				final int s = states.nextInt();
+				double tempo = operator.getW(temp_p.getDist(s), s);
+				max_dist = Math.max(max_dist, tempo);
+				operator.update(temp_p.getDist(s), s);
+			}
+
+			mainLog.println("Max Wp dist :"+(max_dist) + " error Wp:" + (error_thresh) +" at iter:"+iters);
+
+			if ((max_dist <error_thresh) &(iters>min_iter)) {
+				break;
+			}
+
+			iteration_timer = System.currentTimeMillis() - iteration_timer;
+			max_iteration_timer = Math.max(iteration_timer, max_iteration_timer);
+		}
+
+		operator.setInitialStrategy(alpha, cvar_mdp);
+		int initialState = cvar_mdp.getProductModel().getFirstInitialState();
+		// should display the correct initial state
+		mainLog.println("\nV["+initialState+"] at " + (iters + 1) + " with method " + settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
+		mainLog.println(operator.toString(initialState));
+
+		// Policy
+//		mainLog.println("\nPolicy");
+//		//Arrays.toString(policy);
+//		Arrays.stream(policy).forEach(e -> mainLog.print(e + ", "));
+
+		// Finished CVAR
+		timer = System.currentTimeMillis() - timer;
+		if (verbosity >= 1) {
+			mainLog.print("\nCVAR (" + (min ? "min" : "max") + ")");
+			mainLog.println(" ran " + iters + " iterations and " + timer / 1000.0 + " seconds.");
+			mainLog.println("Max time for 1 iteration :"+max_iteration_timer/1000.0+"s");
+		}
+
+		// Assumption: the original MDP model has only one initial state.
+		StateRewardsArray mcRewards = new StateRewardsArray(cvar_mdp.getProductModel().getNumStates());
+		int [] pol = operator.getUpdatedRewards(mdpRewards, mcRewards, choices, cvar_mdp);
+		MDStrategyArray strat = new MDStrategyArray(cvar_mdp.productModel, pol);
+
+		if (gen_trace) {
+			MDPSimple mdpToSimulate = (MDPSimple) cvar_mdp.productModel;
+			List<State> mdpStatesList = mdpToSimulate.getStatesList();
+			int maxPathLen = 1000;
+			int s = mdpToSimulate.getFirstInitialState();
+			int idx_b;
+			mainLog.println("Generating random trace");
+//		mainLog.println(mdpStatesList.get(s));
+			PrismFileLog trace_out = new PrismFileLog("prism/tests/traces/distr_cvar_" + settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) + "_trace.csv");
+			trace_out.println("s; actions; policy; b");
+			int pathLen = 0;
+			List<Object> available = new ArrayList<>();
+			while (pathLen < maxPathLen && mdpToSimulate.getNumTransitions(s, strat.getChoiceIndex(s)) > 0) {
+				available = mdpToSimulate.getAvailableActions(s);
+				idx_b = cvar_mdp.getAutomatonState(s);
+
+				trace_out.println(mdpStatesList.get(s).toString() + ";" + available.toString() + ";" + policy[s] + ";" + operator.getBVal(idx_b));
+				Distribution distr = mdpToSimulate.getChoice(s, strat.getChoiceIndex(s));
+				if (product_target.get(s)) {
+					mainLog.println("Terminal state reached s: " + mdpStatesList.get(s).toString());
+					break;
+				}
+				s = distr.sample();
+				pathLen++;
+			}
+			trace_out.close();
+		}
+
+		// Compute distribution on induced DTMC
+		mainLog.println("\n\nComputing distribution on induced DTMC...");
+
+		DTMC dtmc = new DTMCFromMDPAndMDStrategy(cvar_mdp.productModel, strat);
+		DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
+
+		if (check_reach_dtmc_distr) {
+			timer = System.currentTimeMillis();
+			ModelCheckerResult dtmc_result = mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, product_target, "prism/distr_dtmc_cvar.csv", dtmc_epsilon);
+			timer = System.currentTimeMillis() - timer;
+			if (verbosity >= 1) {
+				mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
+				mainLog.println(" : " + timer / 1000.0 + " seconds.");
+			}
+		}
+		if (check_reach_dtmc){
+			BitSet obs_states= cvar_mdp.getProductModel().getLabelStates(bad_states_label);
+			timer = System.currentTimeMillis();
+			ModelCheckerResult result_obs = mcDTMC.computeReachProbs(dtmc, obs_states);
+			timer = System.currentTimeMillis() - timer;
+			if (verbosity >= 1) {
+				mainLog.print("\nChecking Probability of bad events :");
+				mainLog.println(" ran " + iters + " iterations and " + timer / 1000.0 + " seconds.");
+			}
+			mainLog.println("Probs of reaching obstacle :" + result_obs.soln[initialState]);
+		}
+
+		int starting = 0;
+		if (dtmc.getInitialStates().iterator().hasNext()) {
+			if (verbosity >= 1){
+				mainLog.println("# Initial states: ", dtmc.getNumInitialStates());
+			}
+			starting = cvar_mdp.getAutomatonState(cvar_mdp.getProductModel().getFirstInitialState());
+		} else {
+			if (verbosity >= 1){
+				mainLog.println("Error no initial states: ", dtmc.getNumInitialStates());
+			}
+		}
+
+		operator.writeToFile(initialState, null);
+		// Store results
+		ModelCheckerResult res = new ModelCheckerResult();
+		res.soln = Arrays.stream(pol).asDoubleStream().toArray(); //FIXME value im returning is policy not value
+		res.numIters = iterations;
+		res.timeTaken = (System.currentTimeMillis() - total_timer) / 1000.0;
+		return res;
+	}
+
+	// alternative version to be integrated with cvar focused iteration
+	public ModelCheckerResult computeReachRewardsCvarOld(MDP<Double> mdp, MDPRewards<Double> mdpRewards, BitSet target, boolean min) throws PrismException {
+		// Start expected reachability
+		long timer = System.currentTimeMillis();
+		mainLog.println("\nStarting expected reachability (" + (min ? "min" : "max") + ")...");
+
+		// Check for deadlocks in non-target state (because breaks e.g. prob1)
+		mdp.checkForDeadlocks(target);
+
+		// Store num states
+		int n = mdp.getNumStates();
+		int n_actions = mdp.getMaxNumChoices();
+
+		// Precomputation (not optional)
+		long timerProb1 = System.currentTimeMillis();
+		BitSet inf = prob1(mdp, null, target, !min, null);
+		inf.flip(0, n);
+		timerProb1 = System.currentTimeMillis() - timerProb1;
+
+		// Print results of precomputation
+		int numTarget = target.cardinality();
+		int numInf = inf.cardinality();
+		mainLog.println("target=" + numTarget + ", inf=" + numInf + ", rest=" + (n - (numTarget + numInf)));
+
+		if (numInf == n){
+			throw new PrismException("All states are infinite");
+		}
+
+		// Timers
+		timer = System.currentTimeMillis();
+		long total_timer = System.currentTimeMillis();
+		long max_iteration_timer = -1; long iteration_timer;
+
+		// Set up CVAR variables
+		int atoms;
+		int iterations = 1500;
+		double error_thresh = 0.01;
+		Double dtmc_epsilon = null;
+		int min_iter = 50;
+		double gamma = 1;
+		double alpha = 0.7;
+		String bad_states_label = "obs";
+		boolean check_reach_dtmc = true;
+		boolean check_reach_dtmc_distr= true;
+		boolean gen_trace = true;
+
+		String c51 = "C51";
+		String qr = "QR";
+
+		int nactions = mdp.getMaxNumChoices();
+		DistributionalBellmanAugmented operator;
+		int b_atoms;
+
+		BitSet unknown_original = new BitSet();
+		unknown_original.set(0, n);
+		unknown_original.andNot(target);
+		unknown_original.andNot(inf);
+
+		mainLog.println(" Starting Cvar iteration with method: "+settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
+
+		if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51)) {
+			// TODO make this a point variable or something to be a bit cleaner
+			String [] params = readParams(null);
+			atoms = Integer.parseInt(params[0]);
+			double v_min = Double.parseDouble(params[1]);
+			double v_max = Double.parseDouble(params[2]);
+			dtmc_epsilon = Double.parseDouble(params[4]);
+			alpha = Double.parseDouble(params[5]);
+
+			params = readParams("prism/tests/params_b.csv");
+			b_atoms = Integer.parseInt(params[0]);
+			double b_min = Double.parseDouble(params[1]);
+			double b_max = Double.parseDouble(params[2]);
+
+			operator = new DistributionalBellmanCategoricalAugmented(atoms, b_atoms, v_min, v_max, b_min, b_max, n, n_actions, mainLog);
+			operator.initialize(mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
+			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min+" - b_atoms:"+b_atoms+" - bmin:"+b_min+" - bmax:"+b_max);
+			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
+					" - error thresh:"+error_thresh + " - epsilon:"+ dtmc_epsilon);
+		}
+		else if (settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(qr)) {
+			//error_thresh = 1.0/atoms*3.1; // 0.7 for uav
+			String [] params = readParams(null);
+			atoms = Integer.parseInt(params[0]);
+			error_thresh = Double.parseDouble(params[3]);
+			dtmc_epsilon = Double.parseDouble(params[4]);
+			alpha = Double.parseDouble(params[5]);
+
+			params = readParams("prism/tests/params_b.csv");
+			b_atoms = Integer.parseInt(params[0]);
+			double b_min = Double.parseDouble(params[1]);
+			double b_max = Double.parseDouble(params[2]);
+
+			operator = new DistributionalBellmanQRAugmented(atoms, b_atoms, b_min, b_max, n, n_actions, mainLog);
+			operator.initialize(mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
+			mainLog.println("----- Parameters:\natoms:"+atoms+" - b_atoms:"+b_atoms+" - bmin:"+b_min+" - bmax:"+b_max);
+			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
+					" - error thresh:"+error_thresh+ " - epsilon:"+ dtmc_epsilon);
+		}
+		else {
+			atoms = 101;
+			b_atoms = 11;
+			double b_max = 20;
+			double b_min = 0;
+			double v_max = 100;
+			double v_min = 0;
+			operator = new DistributionalBellmanCategoricalAugmented(atoms, b_atoms, v_min, v_max, b_min, b_max, n, n_actions, mainLog);
+			operator.initialize(mdp, mdpRewards, gamma, unknown_original); // initialization based on parameters.
+		}
+
+		CVaRProduct cvar_mdp = operator.getProductMDP();
+		int product_n = cvar_mdp.getProductModel().getNumStates();
+		BitSet product_target = cvar_mdp.liftFromModel(target); // compute the target states in the product MDP
+
+		// Determine set of states actually need to compute values for in the augmented MDP
+		BitSet unknown = new BitSet();
+		unknown.set(0, product_n);
+		unknown.andNot(product_target);
+		unknown.andNot(inf);
+		IntSet unknownStates = IntSet.asIntSet(unknown);
+
+		// Create/initialise solution vector(s)
+		// adjust dimensions to augmented
+		DistributionalBellmanAugmented temp_p;
+		double[] action_val = new double[nactions];
+		Object[] policy = new Object[product_n]; // policy is now state x slack variable b
+		int[] choices = new int[product_n];
+		double max_dist;
+		int iters;
+		double reward = 0;
+		int numChoices;
+		int numTransitions;
+		int model_s;
+
+		// Start iterations - number of episodes
+		for (iters = 0; (iters < iterations); iters++) {
+
+			iteration_timer = System.currentTimeMillis();
+			temp_p = operator.copy();
+
+			PrimitiveIterator.OfInt states = unknownStates.iterator();
+			// Loop over augmented state
+			while (states.hasNext()) {
+				final int s = states.nextInt();
+				numChoices = cvar_mdp.getProductModel().getNumChoices(s);
+				model_s = cvar_mdp.getModelState(s);
+				Arrays.fill(action_val, Float.POSITIVE_INFINITY);
+				double min_magic = Float.POSITIVE_INFINITY;
+				int min_a = 0;
+				double [] save_p = new double[atoms];
+
+				for (int choice = 0; choice < numChoices; choice++) { // aka action
+					double[] m;
+					numTransitions = cvar_mdp.getProductModel().getNumTransitions(s, choice);
+					Iterator<Entry<Integer, Double>> it = cvar_mdp.getProductModel().getTransitionsIterator(s, choice);
+
+					reward = mdpRewards.getStateReward(model_s) + mdpRewards.getTransitionReward(model_s, choice);
+					m = operator.step(it, numTransitions, gamma, reward);
+
+					action_val[choice] = operator.getMagic(m, cvar_mdp.getAutomatonState(s));
+					if (action_val[choice] < min_magic) {
+						min_a = choice;
+						min_magic = action_val[choice];
+						save_p = Arrays.copyOf(m, m.length);
+					}
+				}
+				policy[s] = cvar_mdp.getProductModel().getAction(s, min_a);
+				choices[s] = min_a;
+				temp_p.update(save_p, s);
+			}
+
+			states = unknownStates.iterator();
+			max_dist = 0.0;
+
+			while (states.hasNext()) {
+				final int s = states.nextInt();
+				int b = cvar_mdp.getAutomatonState(s);
+				double tempo = operator.getW(temp_p.getDist(s), s);
+				max_dist = Math.max(max_dist, tempo);
+				operator.update(temp_p.getDist(s), s);
+
+			}
+
+			mainLog.println("Max Wp dist :"+(max_dist) + " error Wp:" + (error_thresh) +" at iter:"+iters);
+
+//			& (max_cvar_dist < error_thresh_cvar)
+			if ((max_dist <error_thresh) &(iters>min_iter)) {
+				break;
+			}
+
+			iteration_timer = System.currentTimeMillis() - iteration_timer;
+			max_iteration_timer = Math.max(iteration_timer, max_iteration_timer);
+		}
+
+		// FIXME: displaying the wrong initial state (before we find out which one is the best)
+		mainLog.println("\nV[0] at " + (iters + 1) + " with method " + settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD));
+		operator.display(cvar_mdp.getProductModel().getFirstInitialState());
+
+		// Policy
+//		mainLog.println("\nPolicy");
+//		//Arrays.toString(policy);
+//		Arrays.stream(policy).forEach(e -> mainLog.print(e + ", "));
+
+		// Finished CVAR
+		timer = System.currentTimeMillis() - timer;
+		if (verbosity >= 1) {
+			mainLog.print("\nCVAR (" + (min ? "min" : "max") + ")");
+			mainLog.println(" ran " + iters + " iterations and " + timer / 1000.0 + " seconds.");
+			mainLog.println("Max time for 1 iteration :"+max_iteration_timer/1000.0+"s");
+		}
+
+		// Assumption: the original MDP model has only one initial state.
+		StateRewardsArray mcRewards = new StateRewardsArray(cvar_mdp.getProductModel().getNumStates());
+
+		int [] pol =operator.getStrategy(mdpRewards, mcRewards, choices, alpha);
+		MDStrategyArray strat = new MDStrategyArray(cvar_mdp.productModel, pol);
+
+		if (gen_trace) {
+			MDPSimple mdpToSimulate = (MDPSimple) cvar_mdp.productModel;
+			List<State> mdpStatesList = mdpToSimulate.getStatesList();
+			int maxPathLen = 1000;
+			int s = mdpToSimulate.getFirstInitialState();
+			int idx_b;
+			mainLog.println("Generating random trace");
+//		mainLog.println(mdpStatesList.get(s));
+			PrismFileLog trace_out = new PrismFileLog("prism/tests/traces/distr_cvar_" + settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD) + "_trace.csv");
+			trace_out.println("s; actions; policy; b");
+			int pathLen = 0;
+			List<Object> available = new ArrayList<>();
+			while (pathLen < maxPathLen && mdpToSimulate.getNumTransitions(s, strat.getChoiceIndex(s)) > 0) {
+				available = mdpToSimulate.getAvailableActions(s);
+				idx_b = cvar_mdp.getAutomatonState(s);
+
+				trace_out.println(mdpStatesList.get(s).toString() + ";" + available.toString() + ";" + policy[s] + ";" + operator.getBVal(idx_b));
+				Distribution distr = mdpToSimulate.getChoice(s, strat.getChoiceIndex(s));
+				if (product_target.get(s)) {
+					mainLog.println("Terminal state reached s: " + mdpStatesList.get(s).toString());
+					break;
+				}
+				s = distr.sample();
+				pathLen++;
+			}
+			trace_out.close();
+		}
+
+		// Compute distribution on induced DTMC
+		mainLog.println("\n\nComputing distribution on induced DTMC...");
+
+		DTMC dtmc = new DTMCFromMDPAndMDStrategy(cvar_mdp.productModel, strat);
+		DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
+
+		int initialState = dtmc.getFirstInitialState();
+		if (check_reach_dtmc_distr) {
+			timer = System.currentTimeMillis();
+			ModelCheckerResult dtmc_result = mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, product_target, "prism/distr_dtmc_cvar.csv", dtmc_epsilon);
+			timer = System.currentTimeMillis() - timer;
+			if (verbosity >= 1) {
+				mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
+				mainLog.println(" : " + timer / 1000.0 + " seconds.");
+			}
+
+			double [] adjusted_dtmc_distr=operator.adjust_support(((TreeMap)dtmc_result.solnObj[initialState]));
+			mainLog.println(adjusted_dtmc_distr);
+			mainLog.println("Wasserstein p="+(settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD).equals(c51) ? "2" : "1")+" dtmc vs code distributions: "+operator.getW(adjusted_dtmc_distr, initialState));
+		}
+		if (check_reach_dtmc){
+			BitSet obs_states= cvar_mdp.getProductModel().getLabelStates(bad_states_label);
+			timer = System.currentTimeMillis();
+			ModelCheckerResult result_obs = mcDTMC.computeReachProbs(dtmc, obs_states);
+			timer = System.currentTimeMillis() - timer;
+			if (verbosity >= 1) {
+				mainLog.print("\nChecking Probability of bad events :");
+				mainLog.println(" ran " + iters + " iterations and " + timer / 1000.0 + " seconds.");
+			}
+			mainLog.println("Probs of reaching obstacle :" + result_obs.soln[initialState]);
+		}
+
+		int starting = 0;
+		if (dtmc.getInitialStates().iterator().hasNext()) {
+			if (verbosity >= 1){
+				mainLog.println("# Initial states: ", dtmc.getNumInitialStates());
+			}
+			starting = cvar_mdp.getAutomatonState(cvar_mdp.getProductModel().getFirstInitialState());
+		} else {
+			if (verbosity >= 1){
+				mainLog.println("Error no initial states: ", dtmc.getNumInitialStates());
+			}
+		}
+
+		operator.writeToFile(initialState, null);
+		// Store results
+		ModelCheckerResult res = new ModelCheckerResult();
+		res.soln = Arrays.stream(pol).asDoubleStream().toArray(); //FIXME value im returning is policy not value
+		res.numIters = iterations;
+		res.timeTaken = (System.currentTimeMillis() - total_timer) / 1000.0;
+		return res;
+	}
+
+	public String[] readParams(String filename)
+	{
+		if (filename == null){
+			filename = "prism/tests/params_vi.csv";
+		}
+		String [] params = null;
+		try {
+			BasicReader r = new BasicReader.Wrapper(new FileReader(filename));
+			CsvReader reader = new CsvReader(r, true, true, true, CsvReader.COMMA, BasicReader.LF);
+			params = reader.nextRecord();
+
+			r.close();
+			reader.close();
+
+		} catch (IOException | CsvFormatException e) {
+			e.printStackTrace();
+		}
+
+		return params;
+	}
+
+	public void printToFile(Object [] policy, double [] value, String filename, int n)
+	{
+		mainLog.println("\nExporting solution to file \"" + filename + "\"...");
+		PrismFileLog out = new PrismFileLog(filename);
+		out.println("States");
+		out.println(n);
+		out.println("Policy");
+		out.println(Arrays.toString(policy));
+		out.println("Alpha value");
+		out.println(0);
+
+		DecimalFormat df = new DecimalFormat("0.000");
+		Arrays.stream(value).forEach(e -> out.print(df.format(e) + ","));
+		out.close();
+
+	}
+	public void printToFile(Object [] policy, double [][] action_cvar, double alpha, String filename, int n, int maxchoices)
+	{
+		mainLog.println("\nExporting solution to file \"" + filename + "\"...");
+		PrismFileLog out = new PrismFileLog("prism/tests/"+filename);
+		out.println("States");
+		out.println(n);
+		out.println("Policy");
+		out.println(Arrays.toString(policy));
+
+		out.println("Alpha value");
+		out.println(alpha);
+
+		out.println("Max number of actions");
+		out.println(maxchoices);
+
+		for (double[] doubles : action_cvar) // copy  temp value soln2 back to soln -> corresponds to Value table
+		{
+			DecimalFormat df = new DecimalFormat("0.000");
+			Arrays.stream(doubles).forEach(e -> {
+				if (e==Float.POSITIVE_INFINITY) {out.print("0.000,");}
+			    else {out.print(df.format(e) + ",");}});
+		}
+
+		out.print("\n");
+		out.close();
+	}
+
+	public void printToFile(Object [] policy, int [] choices, double [][] action_cvar, double alpha, int b_atoms, double[] b, int startB, String filename, int n, int maxchoices)
+	{
+		mainLog.println("\nExporting solution to file \"" + filename + "\"...");
+		PrismFileLog out = new PrismFileLog("prism/tests/"+filename);
+		out.println("This is new code !");
+		out.println("States");
+		out.println(n);
+//		out.println("Policy");
+//		out.println(Arrays.toString(policy));
+
+		out.println("Alpha value");
+		out.println(alpha);
+
+		out.println("Max number of actions");
+		out.println(maxchoices);
+
+		for (int i=0; i<n; i++) // copy  temp value soln2 back to soln -> corresponds to Value table
+		{
+			double [] state_vals = action_cvar[i];
+			DecimalFormat df = new DecimalFormat("0.000");
+			DecimalFormat df_state = new DecimalFormat("0");
+			int finalI = i;
+			Arrays.stream(state_vals).forEach(e -> {
+				if (e == Float.POSITIVE_INFINITY) {
+					out.println(df_state.format(finalI)+ ", "+df.format(choices[finalI]) +", 0.000,");
+				} else {
+					out.println(df_state.format(finalI)+ ", "+df.format(choices[finalI]) + ", "+df.format(e) + ",");
+				}
+			});
+		}
+
+		out.println("# b");
+		out.println(b_atoms);
+
+		out.println("b vals");
+		out.println(Arrays.toString(b));
+
+		out.println("Optimal start b");
+		out.println(startB);
+
+		out.print("\n");
+		out.close();
+	}
+
+	/**
+	 * generates n logarithmically-spaced points between d1 and d2 using the
+	 * provided base.
+	 *
+	 * @param atoms the number of supports
+	 * @param numStates the number of MDP states
+	 * @return p size of p -> states * actions * number of supports
+	 */
 
 	/**
 	 * Construct strategy information for min/max expected reachability.
