@@ -1,0 +1,2 @@
+R(dist)min=?[(F area1) & (F area2) & (F area3)]
+R(cvar)min=?[(F area1) & (F area2) & (F area3)]
