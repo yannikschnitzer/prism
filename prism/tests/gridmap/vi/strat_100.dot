@@ -1,0 +1,7 @@
+States
+100
+Policy
+[east, east, east, east, east, east, south, south, west, west, east, east, south, east, east, east, south, south, west, west, east, east, south, west, south, south, south, south, west, west, east, east, south, south, south, south, south, west, west, south, east, east, south, east, south, east, south, south, west, south, east, east, south, south, south, east, south, south, west, south, east, east, east, south, south, south, south, south, west, south, south, south, south, south, west, south, south, south, south, south, south, south, south, south, south, south, south, west, west, south, null, west, west, west, west, west, west, west, west, west]
+Alpha value
+0
+28.639,27.548,26.418,25.287,24.134,22.983,21.870,22.820,23.931,25.003,28.097,26.963,25.826,25.272,24.059,21.896,20.682,21.703,22.853,23.962,28.169,25.930,24.672,27.450,51.165,21.418,19.445,20.545,21.733,22.861,58.686,26.632,23.368,50.921,20.816,19.261,18.174,19.388,21.549,22.229,54.649,53.405,21.067,20.593,17.523,18.052,16.930,18.861,49.027,21.120,54.193,52.059,18.691,42.664,16.157,17.669,15.660,16.685,18.869,18.934,81.334,49.526,15.368,12.018,13.957,43.051,14.389,15.451,17.606,17.744,67.301,37.451,38.338,9.576,11.759,12.797,12.130,14.253,44.410,16.594,34.554,34.755,6.953,7.228,37.466,10.628,10.832,12.059,14.216,14.411,0.000,2.358,3.640,4.921,7.199,8.435,9.635,10.837,12.071,13.226,

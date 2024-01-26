@@ -1,0 +1,40 @@
+mdp
+const int N=10; // N*N grid map
+const double p=0.1; // with probability p, a move to a neighboring state state occurs due to seeing and control noise
+
+formula wall= (r=6 & c=2) | (r=8 & c=1) | (r=4 & c=1) | (r=5 & c=2) | (r=7 & c=1) | (r=8 & c=3) | (r=9 & c=2) | (r=9 & c=1) | (r=4 & c=4) | (r=7 & c=5) | (r=9 & c=5) | (r=3 & c=4) | (r=6 & c=4) | (r=7 & c=2) | (r=5 & c=9) | (r=8 & c=9);
+
+module robot
+	//define robot position
+	r:[1..N] init 1; //grid row
+	c:[1..N] init 1; //grid column
+
+	// go to the terminal state when hitting an obstacle
+	// [obstacle] wall -> (r'=10) & (c'=1);
+
+	// transitions
+	[east]  (c<N | c=N) -> p/3:(r'=min(r+1, N))+ p/3: (c'=max(c-1, 1))+ p/3: (r'=max(r-1, 1)) + (1-p): (c'=min(c+1, N));
+	[south] (r<N | r=N) -> (1-p):(r'=min(r+1, N)) + p/3: (c'=min(c+1, N)) + p/3:(r'=max(r-1, 1))+ p/3: (c'=max(c-1, 1));
+	[west]  (c>1 | c=1) -> p/3:(r'=max(r-1, 1))+ p/3:(r'=min(r+1, N))+ p/3: (c'=min(c+1, N)) + (1-p): (c'=max(c-1, 1));
+	[north] (r=1 | r>1) -> (1-p):(r'=max(r-1, 1)) + p/3: (c'=max(c-1, 1)) + p/3: (c'=min(c+1, N)) + p/3:(r'=min(r+1, N));
+
+	// terminal state self-loop to avoid deadlock
+	[] r=10 & c=1 -> true;
+
+endmodule
+
+label "goal" = r=10 & c=1;
+
+label "obs" = (r=6 & c=2) | (r=8 & c=1) | (r=4 & c=1) | (r=5 & c=2) | (r=7 & c=1) | (r=8 & c=3) | (r=9 & c=2) | (r=9 & c=1) | (r=4 & c=4) | (r=7 & c=5) | (r=9 & c=5) | (r=3 & c=4) | (r=6 & c=4) | (r=7 & c=2) | (r=5 & c=9) | (r=8 & c=9);
+
+rewards
+		[east] !wall : 1;
+    	[south] !wall : 1;
+    	[west] !wall : 1;
+    	[north] !wall : 1;
+
+    	[east] wall : 20;
+        [south] wall : 20;
+        [west] wall : 20;
+        [north] wall : 20;
+endrewards

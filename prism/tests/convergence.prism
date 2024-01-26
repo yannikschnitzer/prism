@@ -1,0 +1,21 @@
+mdp
+const double epsilon=0.02;
+
+module robot
+    s:[0..5] init 0;
+
+    [] s =0 -> 1.0 : (s' = 1);
+	[left] s=1 -> 1.0 : (s'=2);
+	[right] s=1 -> 0.5 : (s'=3) + 0.5 : (s'=4);
+	[] (s = 2  | s=3 | s=4) -> (s'=5);
+	[] s=5 -> true;
+
+endmodule
+
+label "end" = (s=5);
+
+rewards
+	[] s=2 : 0;
+	[] s=3 : 1 + epsilon;
+	[] s=4 : 1 - epsilon;
+endrewards

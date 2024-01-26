@@ -1,0 +1,16 @@
+// Coverage
+R{"time"}min=? [ (F w1) & (F w2) & (F w6) ]
+R(dist){"time"}min=? [ (F w1) & (F w2) & (F w6) ]
+R(cvar){"time"}min=? [ (F w1) & (F w2) & (F w6) ]
+// Coverage 2
+R{"time"}min=? [ (F w1) & (F w3) & (F w6) ]
+R(dist){"time"}min=? [ (F w1) & (F w3) & (F w6) ]
+R(cvar){"time"}min=? [ (F w1) & (F w3) & (F w6) ]
+// Sequencing
+R{"time"}min=? [ F (w1 & (F (w2 & (F w6))))]
+R(dist){"time"}min=? [ F (w1 & (F (w2 & (F w6)))) ]
+R(cvar){"time"}min=? [ F (w1 & (F (w2 & (F w6)))) ]
+// Options
+R{"time"}min=?[F((w1 & w2 & w6 & w5) | (w1 & w2 & w3 & w4 & w5))]
+R(dist){"time"}min=?[F((w1 & w2 & w6 & w5) | (w1 & w2 & w3 & w4 & w5))]
+R(cvar){"time"}min=?[F((w1 & w2 & w6 & w5) | (w1 & w2 & w3 & w4 & w5))]
