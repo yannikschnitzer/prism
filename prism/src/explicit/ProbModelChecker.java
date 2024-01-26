@@ -958,7 +958,7 @@ public class ProbModelChecker extends NonProbModelChecker
 		Rewards<?> rewards = Expression.usesInstantaneousReward(expr.getExpression()) ? constructRewards(model, r) : constructExpectedRewards(model, r);
 
 		// Compute rewards
-		StateValues rews = checkRewardFormula(model, rewards, expr.getExpression(), minMax, statesOfInterest);
+		StateValues rews = checkRewardFormula(model, rewards, expr.getExpression(), minMax, statesOfInterest, expr.getModifier());
 
 		// Print out rewards
 		if (getVerbosity() > 5) {
@@ -976,7 +976,7 @@ public class ProbModelChecker extends NonProbModelChecker
 	/**
 	 * Compute rewards for the contents of an R operator.
 	 */
-	protected StateValues checkRewardFormula(Model<?> model, Rewards<?> modelRewards, Expression expr, MinMax minMax, BitSet statesOfInterest) throws PrismException
+	protected StateValues checkRewardFormula(Model<?> model, Rewards<?> modelRewards, Expression expr, MinMax minMax, BitSet statesOfInterest, String modifier) throws PrismException
 	{
 		StateValues rewards = null;
 
@@ -1000,7 +1000,7 @@ public class ProbModelChecker extends NonProbModelChecker
 				throw new PrismNotSupportedException("Explicit engine does not yet handle the " + exprTemp.getOperatorSymbol() + " reward operator");
 			}
 		} else if (expr.getType() instanceof TypePathBool || expr.getType() instanceof TypeBool) {
-			rewards = checkRewardPathFormula(model, modelRewards, expr, minMax, statesOfInterest);
+			rewards = checkRewardPathFormula(model, modelRewards, expr, minMax, statesOfInterest, modifier);
 		}
 
 		if (rewards == null)
@@ -1151,13 +1151,13 @@ public class ProbModelChecker extends NonProbModelChecker
 	/**
 	 * Compute rewards for a path formula in a reward operator.
 	 */
-	protected StateValues checkRewardPathFormula(Model<?> model, Rewards<?> modelRewards, Expression expr, MinMax minMax, BitSet statesOfInterest) throws PrismException
+	protected StateValues checkRewardPathFormula(Model<?> model, Rewards<?> modelRewards, Expression expr, MinMax minMax, BitSet statesOfInterest, String modifier) throws PrismException
 	{
 		if (Expression.isReach(expr)) {
-			return checkRewardReach(model, modelRewards, (ExpressionTemporal) expr, minMax, statesOfInterest);
+			return checkRewardReach(model, modelRewards, (ExpressionTemporal) expr, minMax, statesOfInterest, modifier);
 		}
 		else if (Expression.isCoSafeLTLSyntactic(expr, true)) {
-			return checkRewardCoSafeLTL(model, modelRewards, expr, minMax, statesOfInterest);
+			return checkRewardCoSafeLTL(model, modelRewards, expr, minMax, statesOfInterest, modifier);
 		}
 		throw new PrismException("R operator contains a path formula that is not syntactically co-safe: " + expr);
 	}
@@ -1166,7 +1166,7 @@ public class ProbModelChecker extends NonProbModelChecker
 	 * Compute rewards for a reachability reward operator.
 	 */
 	@SuppressWarnings("unchecked")
-	protected StateValues checkRewardReach(Model<?> model, Rewards<?> modelRewards, ExpressionTemporal expr, MinMax minMax, BitSet statesOfInterest) throws PrismException
+	protected StateValues checkRewardReach(Model<?> model, Rewards<?> modelRewards, ExpressionTemporal expr, MinMax minMax, BitSet statesOfInterest, String modifier) throws PrismException
 	{
 		// No time bounds allowed
 		if (expr.hasBounds()) {
@@ -1180,7 +1180,11 @@ public class ProbModelChecker extends NonProbModelChecker
 		ModelCheckerResult res = null;
 		switch (model.getModelType()) {
 		case DTMC:
-			res = ((DTMCModelChecker) this).computeReachRewards((DTMC<Double>) model, (MCRewards<Double>) modelRewards, target);
+			if (modifier != null && modifier.equals("dist")) {
+				res = ((DTMCModelChecker) this).computeReachRewardsDistr((DTMC<Double>) model, (MCRewards<Double>) modelRewards, target);
+			} else {
+				res = ((DTMCModelChecker) this).computeReachRewards((DTMC<Double>) model, (MCRewards<Double>) modelRewards, target);
+			}
 			break;
 		case CTMC:
 			res = ((CTMCModelChecker) this).computeReachRewards((CTMC<Double>) model, (MCRewards<Double>) modelRewards, target);
@@ -1211,7 +1215,7 @@ public class ProbModelChecker extends NonProbModelChecker
 	/**
 	 * Compute rewards for a co-safe LTL reward operator.
 	 */
-	protected StateValues checkRewardCoSafeLTL(Model<?> model, Rewards<?> modelRewards, Expression expr, MinMax minMax, BitSet statesOfInterest) throws PrismException
+	protected StateValues checkRewardCoSafeLTL(Model<?> model, Rewards<?> modelRewards, Expression expr, MinMax minMax, BitSet statesOfInterest, String modifier) throws PrismException
 	{
 		// To be overridden by subclasses
 		throw new PrismException("Computation not implemented yet");
