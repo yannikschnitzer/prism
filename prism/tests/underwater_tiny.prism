@@ -20,7 +20,7 @@ module M
 endmodule
 
 label "goal" = s=3;
-//label "obs" = s=2;
+label "obs" = s=2;
 
 rewards
 	s=0 : 1;

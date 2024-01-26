@@ -538,6 +538,7 @@ config = {
     'leader_sync10_3': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync10_3.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 30, 'atoms':31, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
     'leader_sync10_4': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync10_4.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 30, 'atoms':31, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
     'leader_sync10_5': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync10_5.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
+    'underwater_tiny' :{'model':prefix+'tests/underwater_tiny.prism', 'props':prefix+'tests/underwater_tiny.props', 'pn':[1,2], 'vmax': 5, 'atoms':11, 'epsilon':def_eps, 'b':11, 'alpha':0.7},
 }
 
 
@@ -546,12 +547,12 @@ experiment_names=[ 'cliffs', 'mud_nails', 'gridmap_10', 'drones']
 set_experiments = ['test', 'betting_g','ds_treasure', 'gridmap_10', 'uav_var', 'drones']
 big_experiments = ['drones_15','gridmap_150_3918']
 ssp_comparison = ['gridworld_4', 'gridworld_8', 'gridworld_16', 'gridworld_32', 'firewire', 'wlan2' ]
-# exp_quantile = ['selfStabilising_10', 'selfStabilising_15']
+prob_experiments = ['underwater_tiny']
 egl = [ 'egl_8_3', 'egl_8_4', 'egl_8_5'] #, 'egl_8_6'
 leader = ['leader_sync8_5', 'leader_sync10_4', 'leader_sync8_6'] # , 'leader_sync12_3']
 herman = ['herman_13', 'herman_15', 'herman_17']
 exp_dtmc = egl + herman + leader
-all_experiments = set_experiments+big_experiments + ssp_comparison + exp_dtmc
+all_experiments = set_experiments+big_experiments + ssp_comparison + exp_dtmc + prob_experiments
 rep_types = ['c51', 'qr'] # 'c51', 'qr'
 alg_types= ['exp', 'cvar'] # 'exp', 'cvar'
 cmd_base_copy = "cp "
