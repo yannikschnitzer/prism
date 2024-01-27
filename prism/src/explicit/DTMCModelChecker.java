@@ -27,14 +27,19 @@
 package explicit;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.PrimitiveIterator;
 import java.util.PrimitiveIterator.OfInt;
+import java.util.TreeMap;
 
 import acceptance.AcceptanceReach;
 import acceptance.AcceptanceType;
@@ -52,6 +57,7 @@ import parser.type.TypeInt;
 import prism.AccuracyFactory;
 import prism.ModelType;
 import prism.OptionsIntervalIteration;
+import prism.Pair;
 import prism.Prism;
 import prism.PrismComponent;
 import prism.PrismException;
@@ -239,7 +245,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		
 		return res;
 	}
-	
+
 	public Distribution computeInstantaneousExpressionDistribution(DTMC<Double> dtmc, int k, Expression expr) throws PrismException
 	{
 		if (expr.getType() != TypeInt.getInstance()) {
@@ -2619,6 +2625,228 @@ public class DTMCModelChecker extends ProbModelChecker
 		res.numIters = iters;
 		res.timeTaken = timer / 1000.0;
 		return res;
+	}
+
+	/** State-reward pair */
+	class StateRew
+	{
+		int s;
+		int r;
+		StateRew(int s, int r)
+		{
+			this.s = s;
+			this.r = r;
+		}
+		@Override
+		public int hashCode()
+		{
+			return Objects.hash(r, s);
+		}
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			StateRew other = (StateRew) obj;
+			return r == other.r && s == other.s;
+		}
+		@Override
+		public String toString()
+		{
+			return s+","+r;
+		}
+	}
+
+	/**
+	 * Compute the full distribution for the reward accumulated until a target is reached and distribution is exported
+	 * to a default location.
+	 * @param dtmc The DTMC
+	 * @param mcRewards The rewards
+	 * @param target Target states
+	 */
+	public ModelCheckerResult computeReachRewardsDistr(DTMC<Double> dtmc, MCRewards<Double> mcRewards, BitSet target) throws PrismException
+	{
+		return computeReachRewardsDistr(dtmc, mcRewards, target, "prism/distr.csv", null);
+	}
+
+
+	enum DistrTermCrit {
+		NON_TARGET, // Probability left in non-target states
+		SUCC_DIFF // Convergence based on difference between iters
+	};
+
+	/**
+	 * Compute the full distribution for the reward accumulated until a target is reached.
+	 * @param dtmc The DTMC
+	 * @param mcRewards The rewards
+	 * @param target Target states
+	 * @param filename name of file where distribution will be exported
+	 */
+	public ModelCheckerResult computeReachRewardsDistr(DTMC<Double> dtmc, MCRewards<Double> mcRewards, BitSet target, String filename, Double epsilon) throws PrismException
+	{
+		DistrTermCrit distrTermCrit = DistrTermCrit.NON_TARGET;
+		int maxIters = 1000;
+		double termCritEpsilon = 1e-4;
+		if (epsilon != null) {
+			termCritEpsilon = epsilon;
+		}
+		// INFO : default is 1e-6, but should change to 1e-4 or 12-3 if taking too long in large models
+
+		if (verbosity >= 1) {
+			mainLog.println("DTMC #initial states: " + dtmc.getNumInitialStates());
+		}
+
+		// Initialise solution vector (equiprob in init states)
+		HashMap<StateRew, Double> rewProbs = new HashMap<>();
+		for (int s : dtmc.getInitialStates()) {
+			rewProbs.put(new StateRew(s, 0), 1.0 / dtmc.getNumInitialStates());
+		}
+
+		// Start iterations
+		long timer = System.currentTimeMillis();
+		mainLog.println("Starting reward distribution computation...");
+		int iters = 0;
+		boolean done = false;
+		while (!done && iters < maxIters) {
+			iters++;
+			HashMap<StateRew, Double> rewProbsNew = new HashMap<>();
+			// For each state/rew in the current iter
+			Iterator<Map.Entry<StateRew, Double>> it = rewProbs.entrySet().iterator();
+			double pNonTarget = 0.0;
+			while(it.hasNext()) {
+				Map.Entry<StateRew, Double> entry1 = it.next();
+				StateRew sr = entry1.getKey();
+				double val = entry1.getValue();
+				int s = sr.s;
+				int r = sr.r;
+				// Target states are absorbing (and zero-reward)
+				if (target.get(s)) {
+					Double valLookup = rewProbsNew.get(new StateRew(s, r));
+					double valNext = valLookup == null ? val : val + valLookup;
+					rewProbsNew.put(new StateRew(s, r), valNext);
+				}
+				// Non-target: For each DTMC transition in the current state...
+				else {
+					// TODO: check rewards are integers
+					int rNext = r + (int) (double) mcRewards.getStateReward(s);
+					Iterator<Entry<Integer, Double>> iter = dtmc.getTransitionsIterator(s);
+					while (iter.hasNext()) {
+						Entry<Integer, Double> entry = iter.next();
+						double prob = val * entry.getValue();
+						int sNext = entry.getKey();
+						Double valLookup = rewProbsNew.get(new StateRew(sNext, rNext));
+						double valNext = valLookup == null ? prob : prob + valLookup;
+						rewProbsNew.put(new StateRew(sNext, rNext), valNext);
+						// Update total prob of non-target states in rewProbsNew
+						if (!target.get(sNext)) {
+							pNonTarget += prob;
+						}
+					}
+				}
+			}
+
+			//Pair<Integer,Map<Integer,Double>> maxAndDist = extractRewardDist(rewProbsNew);
+			//exportRewardDistLine(maxAndDist.first, maxAndDist.second, "distr"+iters+".csv");
+
+			// Check convergence
+			switch (distrTermCrit ) {
+				case SUCC_DIFF:
+					// Check max diff between iters
+					double diff = PrismUtils.measureSupNorm(rewProbs, rewProbsNew, true);
+					done = diff < termCritEpsilon;
+					if (verbosity >= 1) {
+						mainLog.println(iters+": n="+rewProbs.size() + ", diff=" + diff);
+					}
+					break;
+				case NON_TARGET:
+				default:
+					done = pNonTarget < termCritEpsilon;
+					if (verbosity >= 1) {
+						mainLog.println(iters+": n="+rewProbs.size() + ", pNonTarget=" + pNonTarget);
+					}
+					break;
+			}
+
+			// Swap vectors for next iter
+			rewProbs = rewProbsNew;
+		}
+		timer = System.currentTimeMillis() - timer;
+		mainLog.println("Reward distribution computed in " + iters + " iterations and " + timer / 1000.0 + " seconds.");
+
+		// Export the final distribution to a file
+		Pair<Integer,Map<Integer,Double>> maxAndDist = extractRewardDist(rewProbs);
+		exportRewardDist(maxAndDist.first, maxAndDist.second, filename);
+
+		// Return results
+		Object solnObj[] = new Object[dtmc.getNumStates()];
+		solnObj[dtmc.getFirstInitialState()] = maxAndDist.second;
+		ModelCheckerResult res = new ModelCheckerResult();
+		res.solnObj = solnObj;
+		return res;
+	}
+
+	/**
+	 * Project a distribution over state/reward pairs to the distribution over rewards.
+	 * Return a pair containing the max reward value and the distribution.
+	 */
+	private Pair<Integer,Map<Integer,Double>> extractRewardDist(HashMap<StateRew, Double> rewProbs)
+	{
+		TreeMap<Integer,Double> dist = new TreeMap<>();
+		int rMax = -1;
+		Iterator<Map.Entry<StateRew, Double>> it = rewProbs.entrySet().iterator();
+		while(it.hasNext()) {
+			Map.Entry<StateRew, Double> entry1 = it.next();
+			StateRew sr = entry1.getKey();
+			double val = entry1.getValue();
+			int r = sr.r;
+			rMax = Math.max(rMax, r);
+			Double p = dist.get(r);
+			if (p == null) {
+				dist.put(r, val);
+			} else {
+				dist.put(r, p + val);
+			}
+		}
+		return new Pair<>(rMax, dist);
+	}
+
+	/**
+	 * Export a reward distribution to a line in a file
+	 */
+	private void exportRewardDistLine(int rMax, Map<Integer,Double> dist, String filename)
+	{
+		try (PrintWriter pw = new PrintWriter(new File(filename))) {
+			for (int r = 0; r <= rMax; r++) {
+				Double p = dist.get(r);
+				p = (p == null) ? 0.0 : p;
+				if (r > 0) pw.print(",");
+				pw.print(p);
+			}
+			pw.println();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Export a reward distribution to a CSV file
+	 */
+	private void exportRewardDist(int rMax, Map<Integer,Double> dist, String filename)
+	{
+		try (PrintWriter pw = new PrintWriter(new File(filename))) {
+			pw.println("r,p");
+			for (int r = 0; r <= rMax; r++) {
+				Double p = dist.get(r);
+				p = (p == null) ? 0.0 : p;
+				pw.println(r + "," + p);
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
