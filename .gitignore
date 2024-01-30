@@ -36,3 +36,19 @@ prism/\.project
 # Eclipse project custom settings
 \.settings/
 prism/\.settings/
+
+# Python jupyter Lab
+.ipynb_checkpoints/
+prism/.ipynb_checkpoints/
+
+# distribution + experiment files
+/prism/tests/gridmap/*.out
+tests/gridmap/*.out
+/prism/tests/experiments/
+tests/experiments/
+/prism/distr*.csv
+/prism/tests/traces/
+
+#IDEA java IDE
+.idea/
+/umdp_test.iml
