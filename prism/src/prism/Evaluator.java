@@ -524,7 +524,7 @@ public interface Evaluator<Value>
 	
 	class EvaluatorFunction implements Evaluator<Function>
 	{
-		protected FunctionFactory functionFactory;
+		public FunctionFactory functionFactory;
 
 		public EvaluatorFunction(FunctionFactory functionFactory)
 		{

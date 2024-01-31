@@ -2,7 +2,7 @@
 //	
 //	Copyright (c) 2013-
 //	Authors:
-//	* Dave Parker <david.parker@comlab.ox.ac.uk> (University of Oxford)
+//	* Dave Parker <david.parker@cs.ox.ac.uk> (University of Oxford)
 //	* Ernst Moritz Hahn <emhahn@cs.ox.ac.uk> (University of Oxford)
 //	
 //------------------------------------------------------------------------------
@@ -57,6 +57,8 @@ package param;
 import java.util.BitSet;
 import java.util.List;
 
+import explicit.rewards.ConstructRewards;
+import explicit.rewards.Rewards;
 import param.Lumper.BisimType;
 import param.StateEliminator.EliminationOrder;
 import parser.State;
@@ -84,12 +86,12 @@ import parser.ast.ModulesFile;
 import parser.ast.PropertiesFile;
 import parser.ast.Property;
 import parser.ast.RelOp;
-import parser.ast.RewardStruct;
 import parser.type.TypeBool;
 import parser.type.TypeDouble;
 import parser.type.TypeInt;
 import parser.type.TypePathBool;
 import parser.type.TypePathDouble;
+import prism.Evaluator;
 import prism.ModelType;
 import prism.PrismComponent;
 import prism.PrismException;
@@ -98,6 +100,7 @@ import prism.PrismNotSupportedException;
 import prism.Result;
 import edu.jas.kern.ComputerThreads;
 import explicit.Model;
+import prism.RewardGenerator;
 
 /**
  * Model checker for parametric Markov models.
@@ -108,6 +111,7 @@ final public class ParamModelChecker extends PrismComponent
 {
 	// Model file (for reward structures, etc.)
 	private ModulesFile modulesFile = null;
+	private RewardGenerator<?> rewardGen = null;
 
 	// Properties file (for labels, constants, etc.)
 	private PropertiesFile propertiesFile = null;
@@ -198,10 +202,11 @@ final public class ParamModelChecker extends PrismComponent
 	 * Set the attached model file (for e.g. reward structures when model checking)
 	 * and the attached properties file (for e.g. constants/labels when model checking)
 	 */
-	public void setModulesFileAndPropertiesFile(ModulesFile modulesFile, PropertiesFile propertiesFile)
+	public void setModelCheckingInfo(ModulesFile modulesFile, PropertiesFile propertiesFile, RewardGenerator<?> rewardGen)
 	{
 		this.modulesFile = modulesFile;
 		this.propertiesFile = propertiesFile;
+		this.rewardGen = rewardGen;
 		// Get combined constant values from model/properties
 		constantValues = new Values();
 		constantValues.addValues(modulesFile.getConstantValues());
@@ -223,14 +228,13 @@ final public class ParamModelChecker extends PrismComponent
 	 * {@link #setModulesFile} and {@link #setPropertiesFile}
 	 * to attach the original model/properties files.
 	 */
-	public Result check(Model model, Expression expr) throws PrismException
+	public Result check(Model<?> model, Expression expr) throws PrismException
 	{
-		ParamModel paramModel = (ParamModel) model;
-		functionFactory = paramModel.getFunctionFactory();
+		functionFactory = ((Evaluator.EvaluatorFunction) model.getEvaluator()).functionFactory;
 		constraintChecker = new ConstraintChecker(numRandomPoints);
 		regionFactory = new BoxRegionFactory(functionFactory, constraintChecker, precision,
 				model.getNumStates(), model.getFirstInitialState(), simplifyRegions, splitMethod);
-		valueComputer = new ValueComputer(this, mode, paramModel, regionFactory, precision, eliminationOrder, bisimType);
+		valueComputer = new ValueComputer(this, mode, regionFactory, precision, eliminationOrder, bisimType);
 		
 		long timer = 0;
 		
@@ -250,7 +254,7 @@ final public class ParamModelChecker extends PrismComponent
 		timer = System.currentTimeMillis();
 		BitSet needStates = new BitSet(model.getNumStates());
 		needStates.set(0, model.getNumStates());
-		RegionValues vals = checkExpression(paramModel, expr, needStates);
+		RegionValues vals = checkExpression(model, expr, needStates);
 		timer = System.currentTimeMillis() - timer;
 		mainLog.println("\nTime for model checking: " + timer / 1000.0 + " seconds.");
 
@@ -361,7 +365,7 @@ final public class ParamModelChecker extends PrismComponent
 	 * {@link #setModulesFile} and {@link #setPropertiesFile}
 	 * to attach the original model/properties files.
 	 */
-	RegionValues checkExpression(ParamModel model, Expression expr, BitSet needStates) throws PrismException
+	RegionValues checkExpression(Model<?> model, Expression expr, BitSet needStates) throws PrismException
 	{
 		RegionValues res;
 		if (expr instanceof ExpressionUnaryOp) {
@@ -402,7 +406,7 @@ final public class ParamModelChecker extends PrismComponent
 		return res;
 	}
 
-	private RegionValues checkExpressionAtomic(ParamModel model, Expression expr, BitSet needStates) throws PrismException
+	private RegionValues checkExpressionAtomic(Model<?> model, Expression expr, BitSet needStates) throws PrismException
 	{
 		expr = (Expression) expr.deepCopy().replaceConstants(constantValues);
 		
@@ -444,7 +448,7 @@ final public class ParamModelChecker extends PrismComponent
 		return regionFactory.completeCover(stateValues);
 	}
 
-	protected RegionValues checkExpressionUnaryOp(ParamModel model, ExpressionUnaryOp expr, BitSet needStates) throws PrismException
+	protected RegionValues checkExpressionUnaryOp(Model<?> model, ExpressionUnaryOp expr, BitSet needStates) throws PrismException
 	{
 		RegionValues resInner = checkExpression(model, expr.getOperand(), needStates);
 		resInner.clearNotNeeded(needStates);
@@ -455,7 +459,7 @@ final public class ParamModelChecker extends PrismComponent
 	/**
 	 * Model check a binary operator.
 	 */
-	protected RegionValues checkExpressionBinaryOp(ParamModel model, ExpressionBinaryOp expr, BitSet needStates) throws PrismException
+	protected RegionValues checkExpressionBinaryOp(Model<?> model, ExpressionBinaryOp expr, BitSet needStates) throws PrismException
 	{
 		RegionValues res1 = checkExpression(model, expr.getOperand1(), needStates);
 		RegionValues res2 = checkExpression(model, expr.getOperand2(), needStates);
@@ -468,7 +472,7 @@ final public class ParamModelChecker extends PrismComponent
 	/**
 	 * Model check an If-Then-Else operator.
 	 */
-	protected RegionValues checkExpressionITE(ParamModel model, ExpressionITE expr, BitSet needStates) throws PrismException
+	protected RegionValues checkExpressionITE(Model<?> model, ExpressionITE expr, BitSet needStates) throws PrismException
 	{
 		RegionValues resI = checkExpression(model, expr.getOperand1(), needStates);
 		RegionValues resT = checkExpression(model, expr.getOperand2(), needStates);
@@ -483,7 +487,7 @@ final public class ParamModelChecker extends PrismComponent
 	/**
 	 * Model check a label.
 	 */
-	protected RegionValues checkExpressionLabel(ParamModel model, ExpressionLabel expr, BitSet needStates) throws PrismException
+	protected RegionValues checkExpressionLabel(Model<?> model, ExpressionLabel expr, BitSet needStates) throws PrismException
 	{
 		LabelList ll;
 		int i;
@@ -515,7 +519,7 @@ final public class ParamModelChecker extends PrismComponent
 
 	// Check property ref
 
-	protected RegionValues checkExpressionProp(ParamModel model, ExpressionProp expr, BitSet needStates) throws PrismException
+	protected RegionValues checkExpressionProp(Model<?> model, ExpressionProp expr, BitSet needStates) throws PrismException
 	{
 		// Look up property and check recursively
 		Property prop = propertiesFile.lookUpPropertyObjectByName(expr.getName());
@@ -529,7 +533,7 @@ final public class ParamModelChecker extends PrismComponent
 
 	// Check filter
 
-	protected RegionValues checkExpressionFilter(ParamModel model, ExpressionFilter expr, BitSet needStates) throws PrismException
+	protected RegionValues checkExpressionFilter(Model<?> model, ExpressionFilter expr, BitSet needStates) throws PrismException
 	{
 		Expression filter = expr.getFilter();
 		if (filter == null) {
@@ -631,7 +635,7 @@ final public class ParamModelChecker extends PrismComponent
 
 	// check filter over parameters
 	
-	protected RegionValues checkExpressionFilterParam(ParamModel model, ExpressionFilter expr, BitSet needStates) throws PrismException
+	protected RegionValues checkExpressionFilterParam(Model<?> model, ExpressionFilter expr, BitSet needStates) throws PrismException
 	{
 		// Filter info
 		Expression filter = expr.getFilter();
@@ -896,7 +900,7 @@ final public class ParamModelChecker extends PrismComponent
 	/**
 	 * Model check a P operator expression and return the values for all states.
 	 */
-	protected RegionValues checkExpressionProb(ParamModel model, ExpressionProb expr, BitSet needStates) throws PrismException
+	protected RegionValues checkExpressionProb(Model<?> model, ExpressionProb expr, BitSet needStates) throws PrismException
 	{
 		Expression pb; // Probability bound (expression)
 		BigRational p = null; // Probability bound (actual value)
@@ -939,7 +943,7 @@ final public class ParamModelChecker extends PrismComponent
 		}
 	}
 	
-	private RegionValues checkProbPathFormulaSimple(ParamModel model, Expression expr, boolean min, BitSet needStates) throws PrismException
+	private RegionValues checkProbPathFormulaSimple(Model<?> model, Expression expr, boolean min, BitSet needStates) throws PrismException
 	{
 		boolean negated = false;
 		RegionValues probs = null;
@@ -986,11 +990,12 @@ final public class ParamModelChecker extends PrismComponent
 		return probs;
 	}
 
-	private RegionValues checkProbUntil(ParamModel model, RegionValues b1, RegionValues b2, boolean min, BitSet needStates) throws PrismException {
-		return valueComputer.computeUnbounded(b1, b2, min, null);
+	private RegionValues checkProbUntil(Model<?> model, RegionValues b1, RegionValues b2, boolean min, BitSet needStates) throws PrismException
+	{
+		return valueComputer.computeUnbounded(model, b1, b2, min, null);
 	}
 		
-	private RegionValues checkProbBoundedUntil(ParamModel model, RegionValues b1, RegionValues b2, boolean min) throws PrismException {
+	private RegionValues checkProbBoundedUntil(Model<?> model, RegionValues b1, RegionValues b2, boolean min) throws PrismException {
 		ModelType modelType = model.getModelType();
 		//RegionValues probs;
 		switch (modelType) {
@@ -1010,7 +1015,7 @@ final public class ParamModelChecker extends PrismComponent
 	/**
 	 * Model check an R operator expression and return the values for all states.
 	 */
-	protected RegionValues checkExpressionReward(ParamModel model, ExpressionReward expr, BitSet needStates) throws PrismException
+	protected RegionValues checkExpressionReward(Model<?> model, ExpressionReward expr, BitSet needStates) throws PrismException
 	{
 		Expression rb; // Reward bound (expression)
 		BigRational r = null; // Reward bound (actual value)
@@ -1019,7 +1024,6 @@ final public class ParamModelChecker extends PrismComponent
 
 		// Get info from reward operator
 		
-		RewardStruct rewStruct = modulesFile.getRewardStruct(expr.getRewardStructIndexByIndexObject(modulesFile.getRewardStructNames(), constantValues));
 		RelOp relOp = expr.getRelOp();
 		rb = expr.getReward();
 		if (rb != null) {
@@ -1029,7 +1033,9 @@ final public class ParamModelChecker extends PrismComponent
 		}
 		min = relOp.isLowerBound() || relOp.isMin();
 
-		ParamRewardStruct rew = constructRewards(model, rewStruct, constantValues);
+		int r2 = expr.getRewardStructIndexByIndexObject(rewardGen, constantValues);
+		Rewards<?> rew = constructRewards(model, r2);
+
 		mainLog.println("Building reward structure...");
 		rews = checkRewardFormula(model, rew, expr.getExpression(), min, needStates);
 		rews.clearNotNeeded(needStates);
@@ -1049,9 +1055,21 @@ final public class ParamModelChecker extends PrismComponent
 			return rews.binaryOp(Region.getOp(relOp.toString()), r);
 		}
 	}
-	
-	private RegionValues checkRewardFormula(ParamModel model,
-			ParamRewardStruct rew, Expression expr, boolean min, BitSet needStates) throws PrismException {
+
+	/**
+	 * Construct rewards for the reward structure with index r of the reward generator and a model.
+	 * Ensures non-negative rewards.
+	 * <br>
+	 * Note: Relies on the stored RewardGenerator for constructing the reward structure.
+	 */
+	protected <Value> Rewards<Value> constructRewards(Model<Value> model, int r) throws PrismException
+	{
+		ConstructRewards constructRewards = new ConstructRewards(this);
+		return constructRewards.buildRewardStructure(model, (RewardGenerator<Value>) rewardGen, r);
+	}
+
+	private RegionValues checkRewardFormula(Model<?> model,
+			Rewards<?> rew, Expression expr, boolean min, BitSet needStates) throws PrismException {
 		RegionValues rewards = null;
 
 		if (expr.getType() instanceof TypePathDouble) {
@@ -1077,7 +1095,7 @@ final public class ParamModelChecker extends PrismComponent
 	/**
 	 * Compute rewards for a path formula in a reward operator.
 	 */
-	private RegionValues checkRewardPathFormula(ParamModel model, ParamRewardStruct rew, Expression expr, boolean min, BitSet needStates) throws PrismException
+	private RegionValues checkRewardPathFormula(Model<?> model, Rewards<?> rew, Expression expr, boolean min, BitSet needStates) throws PrismException
 	{
 		if (Expression.isReach(expr)) {
 			return checkRewardReach(model, rew, (ExpressionTemporal) expr, min, needStates);
@@ -1088,83 +1106,30 @@ final public class ParamModelChecker extends PrismComponent
 		}
 	}
 
-	private RegionValues checkRewardReach(ParamModel model,
-			ParamRewardStruct rew, ExpressionTemporal expr, boolean min, BitSet needStates) throws PrismException {
+	private RegionValues checkRewardReach(Model<?> model,
+			Rewards<?> rew, ExpressionTemporal expr, boolean min, BitSet needStates) throws PrismException {
 		RegionValues allTrue = regionFactory.completeCover(true);
 		BitSet needStatesInner = new BitSet(needStates.size());
 		needStatesInner.set(0, needStates.size());
 		RegionValues reachSet = checkExpression(model, expr.getOperand2(), needStatesInner);
-		return valueComputer.computeUnbounded(allTrue, reachSet, min, rew);
+		return valueComputer.computeUnbounded(model, allTrue, reachSet, min, rew);
 	}
 	
-	private RegionValues checkRewardSteady(ParamModel model,
-			ParamRewardStruct rew, ExpressionTemporal expr, boolean min, BitSet needStates) throws PrismException {
+	private RegionValues checkRewardSteady(Model<?> model,
+			Rewards<?> rew, ExpressionTemporal expr, boolean min, BitSet needStates) throws PrismException {
 		if (model.getModelType() != ModelType.DTMC && model.getModelType() != ModelType.CTMC) {
 			throw new PrismNotSupportedException(mode.Engine() + " long-run average rewards are only supported for DTMCs and CTMCs");
 		}
 		RegionValues allTrue = regionFactory.completeCover(true);
 		BitSet needStatesInner = new BitSet(needStates.size());
 		needStatesInner.set(0, needStates.size());
-		return valueComputer.computeSteadyState(allTrue, min, rew);
+		return valueComputer.computeSteadyState(model, allTrue, min, rew);
 	}
 
-	private ParamRewardStruct constructRewards(ParamModel model, RewardStruct rewStruct, Values constantValues2)
-			throws PrismException {
-		int numStates = model.getNumStates();
-		List<State> statesList = model.getStatesList();
-		ParamRewardStruct rewSimple = new ParamRewardStruct(functionFactory, model.getNumChoices());
-		int numRewItems = rewStruct.getNumItems();
-		for (int rewItem = 0; rewItem < numRewItems; rewItem++) {
-			Expression expr = rewStruct.getReward(rewItem);
-			expr = (Expression) expr.deepCopy().replaceConstants(constantValues);
-			Expression guard = rewStruct.getStates(rewItem);
-			String action = rewStruct.getSynch(rewItem);
-			boolean isTransitionReward = rewStruct.getRewardStructItem(rewItem).isTransitionReward();
-			for (int state = 0; state < numStates; state++) {
-				if (isTransitionReward && model.isDeadlockState(state)) {
-					// As state is a deadlock state, any outgoing transition
-					// was added to "fix" the deadlock and thus does not get a reward.
-					// Skip to next state
-					continue;
-				}
-				if (guard.evaluateExact(constantValues, statesList.get(state)).toBoolean()) {
-					int[] varMap = new int[statesList.get(0).varValues.length];
-					for (int i = 0; i < varMap.length; i++) {
-						varMap[i] = i;
-					}
-					Expression exprState = (Expression) expr.deepCopy().evaluatePartially(statesList.get(state), varMap);
-					Function newReward = functionFactory.expr2function(exprState, constantValues);
-					for (int choice = model.stateBegin(state); choice < model.stateEnd(state); choice++) {
-						Function sumOut = model.sumLeaving(choice);
-						Function choiceReward;
-						if (!isTransitionReward) {
-							// for state reward, scale by sumOut
-							// For DTMC/MDP, this changes nothing;
-							// for CTMC this takes the expected duration
-							// in this state into account
-							choiceReward = newReward.divide(sumOut);
-						} else {
-							choiceReward = functionFactory.getZero();
-							for (int succ = model.choiceBegin(choice); succ < model.choiceEnd(choice); succ++) {
-								String mdpAction = model.getLabel(succ);
-								if ((isTransitionReward && (mdpAction == null ? (action.isEmpty()) : mdpAction.equals(action)))) {
-									choiceReward = choiceReward.add(newReward.multiply(model.succProb(succ)));
-								}
-							}
-							// does not get scaled by sumOut
-						}
-						rewSimple.addReward(choice, choiceReward);
-					}
-				}
-			}
-		}
-		return rewSimple;
-	}
-	
 	/**
 	 * Model check an S operator expression and return the values for all states.
 	 */
-	protected RegionValues checkExpressionSteadyState(ParamModel model, ExpressionSS expr, BitSet needStates) throws PrismException
+	protected RegionValues checkExpressionSteadyState(Model<?> model, ExpressionSS expr, BitSet needStates) throws PrismException
 	{
 		Expression pb; // Probability bound (expression)
 		BigRational p = null; // Probability bound (actual value)
@@ -1204,7 +1169,7 @@ final public class ParamModelChecker extends PrismComponent
 		}
 	}
 
-	private RegionValues checkProbSteadyState(ParamModel model, Expression expr, boolean min, BitSet needStates)
+	private RegionValues checkProbSteadyState(Model<?> model, Expression expr, boolean min, BitSet needStates)
 	throws PrismException
 	{
 		BitSet needStatesInner = new BitSet(model.getNumStates());
@@ -1214,7 +1179,7 @@ final public class ParamModelChecker extends PrismComponent
 				&& model.getModelType() != ModelType.CTMC) {
 			throw new PrismNotSupportedException(mode.Engine() + " currently only implements steady state for DTMCs and CTMCs.");
 		}
-		return valueComputer.computeSteadyState(b, min, null);
+		return valueComputer.computeSteadyState(model, b, min, null);
 	}
 
 	/**

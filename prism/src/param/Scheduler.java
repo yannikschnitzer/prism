@@ -26,6 +26,9 @@
 
 package param;
 
+import explicit.MDP;
+import explicit.NondetModel;
+
 /**
  * Simple scheduler for a parametric model.
  * Assigns a single nonrandomised decision to each state of the model.
@@ -34,7 +37,7 @@ package param;
  */
 final class Scheduler {
 	/** represents the choice taken for each state */
-	private int[] choices;
+	public int[] choices; // TODO
 	
 	/**
 	 * Constructs a new scheduler for {@code model}.
@@ -42,11 +45,11 @@ final class Scheduler {
 	 * 
 	 * @param model model to generate scheduler for
 	 */
-	Scheduler(ParamModel model)
+	Scheduler(NondetModel<Function> model)
 	{
 		choices = new int[model.getNumStates()];
 		for (int state = 0; state < model.getNumStates(); state++) {
-			choices[state] = model.stateEnd(state) - 1;
+			choices[state] = model.getNumChoices(state) - 1;
 		}
 	}
 

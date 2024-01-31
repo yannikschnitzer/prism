@@ -53,9 +53,9 @@ import jdd.JDDVars;
 import mtbdd.PrismMTBDD;
 import odd.ODDUtils;
 import param.BigRational;
+import param.Function;
 import param.FunctionFactory;
 import param.ModelBuilder;
-import param.ParamModel;
 import param.ParamModelChecker;
 import param.ParamResult;
 import parser.PrismParser;
@@ -3542,10 +3542,13 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 		// And execute parameteric model checking
 		param.ModelBuilder builder = new ModelBuilder(this, param.ParamMode.EXACT);
 		FunctionFactory functionFactory = builder.getFunctionFactory(paramNames, paramLowerBounds, paramUpperBounds);
-		ParamModel modelExpl = builder.constructModel(ModulesFileModelGenerator.createForRationalFunctions(getPRISMModel(), functionFactory, this));
+		ConstructModel constructModel = new ConstructModel(this);
+		constructModel.setFixDeadlocks(getFixDeadlocks());
+		ModulesFileModelGenerator<Function> modelGenFunc  = ModulesFileModelGenerator.createForRationalFunctions(getPRISMModel(), functionFactory, this);
+		explicit.Model<?> modelExpl = constructModel.constructModel(modelGenFunc);
 		ParamModelChecker mc = new ParamModelChecker(this, param.ParamMode.EXACT);
 		mc.setParameters(paramNames, paramLowerBounds, paramUpperBounds);
-		mc.setModulesFileAndPropertiesFile(getPRISMModel(), propertiesFile);
+		mc.setModelCheckingInfo(getPRISMModel(), propertiesFile, modelGenFunc);
 
 		if (isModelSourceDigitalClocks()) {
 			// have to do deadlock checks, as we are in digital clock mode for PTA checking,
@@ -3614,13 +3617,16 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 
 		// Remove old strategy if present
 		clearStrategy();
-		
+
 		param.ModelBuilder builder = new ModelBuilder(this, param.ParamMode.PARAMETRIC);
 		FunctionFactory functionFactory = builder.getFunctionFactory(paramNames, paramLowerBounds, paramUpperBounds);
-		ParamModel modelExpl = builder.constructModel(ModulesFileModelGenerator.createForRationalFunctions(getPRISMModel(), functionFactory, this));
+		ConstructModel constructModel = new ConstructModel(this);
+		constructModel.setFixDeadlocks(getFixDeadlocks());
+		ModulesFileModelGenerator<Function> modelGenFunc  = ModulesFileModelGenerator.createForRationalFunctions(getPRISMModel(), functionFactory, this);
+		explicit.Model<?> modelExpl = constructModel.constructModel(modelGenFunc);
 		ParamModelChecker mc = new ParamModelChecker(this, param.ParamMode.PARAMETRIC);
 		mc.setParameters(paramNames, paramLowerBounds, paramUpperBounds);
-		mc.setModulesFileAndPropertiesFile(getPRISMModel(), propertiesFile);
+		mc.setModelCheckingInfo(getPRISMModel(), propertiesFile, modelGenFunc);
 		Result result = mc.check(modelExpl, prop.getExpression());
 
 		// Print result to log
