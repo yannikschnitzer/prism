@@ -2892,7 +2892,6 @@ public class MDPModelChecker extends ProbModelChecker
 			mainLog.println("Probs of reaching bad states :" + result_obs.soln[initialState]);
 		}
 
-		operator.writeToFile(dtmc.getFirstInitialState(), null);
 		MDPSimple mdpToSimulate = new MDPSimple(mdp);
 		if(gen_trace) {
 			exportTrace(mdpToSimulate, target, strat, "exp");
@@ -3170,7 +3169,6 @@ public class MDPModelChecker extends ProbModelChecker
 			mainLog.println("Probs of reaching bad states :" + result_obs.soln[initialState]);
 		}
 
-		operator.writeToFile(dtmc.getFirstInitialState(), null);
 		MDPSimple mdpToSimulate = new MDPSimple(mdp);
 		if(gen_trace) {
 			exportTrace(mdpToSimulate, target, strat, "exp");
