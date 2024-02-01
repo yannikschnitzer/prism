@@ -19,13 +19,7 @@ import strat.MDStrategyArray;
 import strat.StrategyInfo;
 
 import java.text.DecimalFormat;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.PrimitiveIterator;
+import java.util.*;
 
 public class MDPModelCheckerDistributional extends ProbModelChecker
 {
@@ -135,6 +129,7 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 		//	int numS = unknownStates.cardinality();
 		DistributionalBellmanOperatorProb operator, temp_p; DiscreteDistribution save_p;
 		String distr_type = settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD);
+		int uncertain_atoms;
 
 		if (distr_type.equals(c51) || distr_type.equals(qr)) {
 			// TODO remove this in final version
@@ -145,6 +140,7 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 			error_thresh = Double.parseDouble(params.get(0)[3]); // 0.7 for uav
 			dtmc_epsilon = Double.parseDouble(params.get(0)[4]);
 			alpha = Double.parseDouble(params.get(0)[5]);
+			uncertain_atoms = Integer.parseInt(params.get(0)[6]);
 
 			operator = new DistributionalBellmanOperatorProb(atoms, v_min, v_max, n, distr_type, mainLog);
 			temp_p = new DistributionalBellmanOperatorProb(atoms, v_min, v_max, n, distr_type, mainLog);
@@ -164,6 +160,7 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 			double v_max = 100;
 			double v_min = 0;
 			distr_type = "C51";
+			uncertain_atoms = 11;
 			mainLog.println("Using default parameters - Distr type: "+ distr_type);
 			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
 			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
@@ -173,22 +170,36 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 			save_p = new DistributionCategorical(atoms, v_min, v_max, mainLog);
 		}
 
-		// TODO : parse distribution info here - store in paramValues
-		Point paramValues = new Point(new BigRational[]{new BigRational("0.8")});
+		//  Parse distribution info here
+		//  TODO : store in paramValues
+		ArrayList<String []> params = mcMDP.readParams("prism/tests/params_distr.csv", 2);
+		ArrayList<Double> trans_distr_succ = new ArrayList<>(uncertain_atoms);
+		ArrayList <Double> trans_distr_fail= new ArrayList<>(uncertain_atoms);
+		ArrayList <Double>  trans_prob = new ArrayList<>(uncertain_atoms);
 
-		// distributions over transition probabilities:
-		ArrayList<Double> trans_distr_succ = new ArrayList<>(Arrays. asList(0.5,0.6,0.7,0.8));
-		ArrayList <Double> trans_distr_fail= new ArrayList<>(Arrays. asList(0.5,0.4,0.3,0.2));
-		// Probability of having those transition values
-		ArrayList <Double>  trans_prob = new ArrayList<>(Arrays. asList(0.1, 0.4, 0.3, 0.2));
+		// parse distributional information for
+		for(int i =0; i< uncertain_atoms; i++)
+		{
+			// distributions over transition probabilities:
+			trans_distr_succ.add(Double.parseDouble(params.get(0)[i]));
+			trans_distr_fail.add(1-Double.parseDouble(params.get(0)[i]));
+			// Probability of having those transition values
+			trans_prob.add(Double.parseDouble(params.get(1)[i]));
+		}
+
+		Point paramValues = new Point(new BigRational[]{new BigRational("0.8")});
+		// Create the Discrete distributions for uncertain parameter
+		// FIXME: find a better way to determine operators such as 1-p
 		DiscreteDistribution transition_distr_succ;
 		DiscreteDistribution transition_distr_fail;
 		if (distr_type.equals(c51)) {
-			transition_distr_succ = new DistributionCategorical(4, 0.5, 0.8, mainLog);
-			transition_distr_fail = new DistributionCategorical(4, 0.2, 0.5, mainLog);
+			transition_distr_succ = new DistributionCategorical(uncertain_atoms,
+					Collections.min(trans_distr_succ), Collections.max(trans_distr_succ), mainLog);
+			transition_distr_fail = new DistributionCategorical(uncertain_atoms,
+					Collections.min(trans_distr_fail), Collections.max(trans_distr_fail), mainLog);
 		} else {
-			transition_distr_succ = new DistributionQuantile(10,  mainLog);
-			transition_distr_fail = new DistributionQuantile(10,  mainLog);
+			transition_distr_succ = new DistributionQuantile(uncertain_atoms,  mainLog);
+			transition_distr_fail = new DistributionQuantile(uncertain_atoms,  mainLog);
 		}
 		transition_distr_succ.project(trans_prob, trans_distr_succ);
 		transition_distr_fail.project(trans_prob, trans_distr_fail);
@@ -231,6 +242,7 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 					double reward = mdpRewards.getStateReward(s).evaluate(paramValues).doubleValue() ;
 					reward +=  mdpRewards.getTransitionReward(s, choice).evaluate(paramValues).doubleValue();
 
+					// FIXME : figure out how to make this work
 					iter = mdp.getTransitionsMappedIterator(s, choice, p -> p.evaluate(paramValues).doubleValue());
 
 					flag = (s == 0 && mdp.getAction(s, choice).equals("n")) || (s == 1 && mdp.getAction(s, choice).equals("n"));
