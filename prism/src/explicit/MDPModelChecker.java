@@ -28,6 +28,7 @@ package explicit;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2691,13 +2692,13 @@ public class MDPModelChecker extends ProbModelChecker
 
 		if (distr_type.equals(c51) || distr_type.equals(qr)) {
 			// TODO remove this in final version
-			String [] params = readParams(null);
-			atoms = Integer.parseInt(params[0]);
-			double v_min = Double.parseDouble(params[1]);
-			double v_max = Double.parseDouble(params[2]);
-			error_thresh = Double.parseDouble(params[3]); // 0.7 for uav
-			dtmc_epsilon = Double.parseDouble(params[4]);
-			alpha = Double.parseDouble(params[5]);
+			ArrayList<String []> params = readParams(null, -1);
+			atoms = Integer.parseInt(params.get(0)[0]);
+			double v_min = Double.parseDouble(params.get(0)[1]);
+			double v_max = Double.parseDouble(params.get(0)[2]);
+			error_thresh = Double.parseDouble(params.get(0)[3]); // 0.7 for uav
+			dtmc_epsilon = Double.parseDouble(params.get(0)[4]);
+			alpha = Double.parseDouble(params.get(0)[5]);
 
 			operator = new DistributionalBellmanOperator(atoms, v_min, v_max, n, distr_type, mainLog);
 			temp_p = new DistributionalBellmanOperator(atoms, v_min, v_max, n, distr_type, mainLog);
@@ -2998,18 +2999,18 @@ public class MDPModelChecker extends ProbModelChecker
 
 		if (distr_type.equals(c51) || distr_type.equals(qr)) {
 			// TODO remove this in final version
-			String [] params = readParams(null);
-			atoms = Integer.parseInt(params[0]);
-			double v_min = Double.parseDouble(params[1]);
-			double v_max = Double.parseDouble(params[2]);
-			error_thresh = Double.parseDouble(params[3]); // 0.7 for uav
-			dtmc_epsilon = Double.parseDouble(params[4]);
-			alpha = Double.parseDouble(params[5]);
+			ArrayList<String []> params = readParams(null, -1);
+			atoms = Integer.parseInt(params.get(0)[0]);
+			double v_min = Double.parseDouble(params.get(0)[1]);
+			double v_max = Double.parseDouble(params.get(0)[2]);
+			error_thresh = Double.parseDouble(params.get(0)[3]); // 0.7 for uav
+			dtmc_epsilon = Double.parseDouble(params.get(0)[4]);
+			alpha = Double.parseDouble(params.get(0)[5]);
 
-			params = readParams("prism/tests/params_b.csv");
-			b_atoms = Integer.parseInt(params[0]);
-			double b_min = Double.parseDouble(params[1]);
-			double b_max = Double.parseDouble(params[2]);
+			params = readParams("prism/tests/params_b.csv", -1);
+			b_atoms = Integer.parseInt(params.get(0)[0]);
+			double b_min = Double.parseDouble(params.get(0)[1]);
+			double b_max = Double.parseDouble(params.get(0)[2]);
 
 			cvar_mdp = CVaRProduct.makeProduct(b_min, b_max, b_atoms, mdp, mdpRewards, gamma, unknown_original, mainLog);
 			product_n = cvar_mdp.getProductModel().getNumStates();
@@ -3221,16 +3222,22 @@ public class MDPModelChecker extends ProbModelChecker
 		res.timeTaken = (System.currentTimeMillis() - total_timer) / 1000.0;
 		return res;
 	}
-	public String[] readParams(String filename)
+
+	// TODO update this to read a number of lines instead of just one
+	public ArrayList<String[]> readParams(String filename, int lines)
 	{
+		int linesToRead = (lines <= 0? 1: lines);
 		if (filename == null){
 			filename = "prism/tests/params_vi.csv";
 		}
-		String [] params = null;
+		ArrayList<String[]> params = new ArrayList<>(linesToRead);
 		try {
 			BasicReader r = new BasicReader.Wrapper(new FileReader(filename));
 			CsvReader reader = new CsvReader(r, true, true, true, CsvReader.COMMA, BasicReader.LF);
-			params = reader.nextRecord();
+
+			for (int i =0; i<linesToRead; i++) {
+				params.add(reader.nextRecord());
+			}
 
 			r.close();
 			reader.close();

@@ -145,17 +145,17 @@ def base_exp(all_experiments, alg_types, rep_types, apdx='', debug=False):
 
                     if r==0:
                         # save output for prism vi
-                        if 'exp' in alg:
-                            print("... Saving PRISM VI output files...")
-                            copy_trace_files(cmd_base_copy, experiment_folder, exp, 'vi', rep, apd, prefix, debug)
-                            copy_dtmc_files(cmd_base_copy, experiment_folder, exp, 'vi', rep, apd, prefix, debug)
+                        # if 'exp' in alg:
+                        #     print("... Saving PRISM VI output files...")
+                        #     copy_trace_files(cmd_base_copy, experiment_folder, exp, 'vi', rep, apd, prefix, debug)
+                        #     copy_dtmc_files(cmd_base_copy, experiment_folder, exp, 'vi', rep, apd, prefix, debug)
 
                         # save output for current algorithm
                         print(f"... Saving {alg} VI output files...")
                         # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, apdx, prefix, debug)
                         copy_vi_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug)
-                        copy_trace_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug)
-                        copy_dtmc_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug)
+                        # copy_trace_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug)
+                        # copy_dtmc_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug)
                     else:
                         print(f'Error running experiment')
                         # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, apdx, prefix, debug)
