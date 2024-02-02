@@ -269,6 +269,17 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 					Iterator<Map.Entry<Integer, Double>> iter2;
 					iter2 = mdp.getTransitionsMappedIterator(s, choice, p -> p.evaluate(new Point(new BigRational[]{BigRational.ZERO})).doubleValue());
 
+					boolean isConstant = true;
+					Iterator<Map.Entry<Integer, Function>> iter3;
+					iter3 = mdp.getTransitionsIterator(s, choice);
+					while (iter3.hasNext()) {
+						Map.Entry<Integer, Function> e = iter3.next();
+						isConstant &= e.getValue().isConstant();
+						mainLog.println(e.getValue());
+						mainLog.println(isConstant);
+					}
+					flag = !isConstant;
+
 					flag = (s == 0 && mdp.getAction(s, choice).equals("n")) || (s == 1 && mdp.getAction(s, choice).equals("n"));
 					flag = flag || (s == 2 && mdp.getAction(s, choice).equals("e"));
 
