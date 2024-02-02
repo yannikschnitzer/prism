@@ -177,7 +177,7 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 		//  TODO : store in paramValues
 		ArrayList<String []> params = mcMDP.readParams("prism/tests/params_distr.csv", 2);
 		ArrayList<Double> trans_distr_succ = new ArrayList<>(uncertain_atoms);
-		ArrayList<BigRational> trans_distr_succ_br = new ArrayList<>(uncertain_atoms);
+		ArrayList<Point> trans_distr_succ_point = new ArrayList<>(uncertain_atoms);
 		ArrayList <Double> trans_distr_fail= new ArrayList<>(uncertain_atoms);
 		ArrayList <Double>  trans_prob = new ArrayList<>(uncertain_atoms);
 
@@ -186,7 +186,7 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 		{
 			// distributions over transition probabilities:
 			trans_distr_succ.add(Double.parseDouble(params.get(0)[i]));
-			trans_distr_succ_br.add(BigRational.from(params.get(0)[i]));
+			trans_distr_succ_point.add(new Point(new BigRational[] { BigRational.from(params.get(0)[i])}));
 			trans_distr_fail.add(1-Double.parseDouble(params.get(0)[i]));
 			// Probability of having those transition values
 			trans_prob.add(Double.parseDouble(params.get(1)[i]));
@@ -252,8 +252,8 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 					iter = mdp.getTransitionsMappedIterator(s, choice, p -> {
 						DiscreteDistribution transition_distr;
 						ArrayList<Double> trans_distr = new ArrayList<>();
-						for (BigRational br : trans_distr_succ_br) {
-							trans_distr.add(p.evaluate(new Point(new BigRational[]{br})).doubleValue());
+						for (Point point : trans_distr_succ_point) {
+							trans_distr.add(p.evaluate(point).doubleValue());
 						}
 						if (distr_type_final.equals(c51)) {
 							transition_distr = new DistributionCategorical(uncertain_atoms,
