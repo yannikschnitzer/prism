@@ -33,7 +33,7 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 
 	public ModelCheckerResult computeReachRewardsExample(MDP<Function> mdp, MDPRewards<Function> mdpRewards, BitSet target, boolean min) throws PrismException
 	{
-		Point paramValues = new Point(new BigRational[]{new BigRational("0.8")});
+		Point paramValues =  new Point(new BigRational[]{new BigRational("0.8"), new BigRational("0.6")});
 
 		// Print out MDP (before and after parameter instantiation)
 		System.out.println(mdp);
@@ -41,12 +41,14 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 		for (int s = 0; s < numStates; s++) {
 			int numChoices = mdp.getNumChoices(s);
 			for (int i = 0; i < numChoices; i++) {
-				//Iterator<Map.Entry<Integer, Function>> iter = mdp.getTransitionsIterator(s, i);
-				FunctionalIterator<Map.Entry<Integer, Double>> iter = mdp.getTransitionsMappedIterator(s, i, p -> p.evaluate(paramValues).doubleValue());
+
+				Iterator<Map.Entry<Integer, Function>> iter = mdp.getTransitionsIterator(s, i);
+//				FunctionalIterator<Map.Entry<Integer, Double>> iter = mdp.getTransitionsMappedIterator(s, i, p -> p.evaluate(paramValues).doubleValue());
 				while (iter.hasNext()) {
-					Map.Entry<Integer, Double> e = iter.next();
-					mainLog.println(s + "," + mdp.getAction(s, i) + ":" + e.getKey() + "=" + e.getValue());
+					Map.Entry<Integer, Function> e = iter.next();
+					mainLog.println(s + "," + mdp.getAction(s, i) + ":" + e.getKey() + "=" + e.getValue().evaluate(paramValues).doubleValue());
 				}
+
 			}
 		}
 
@@ -59,6 +61,7 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 				double rewA = mdpRewards.getTransitionReward(s, i).evaluate(paramValues).doubleValue();
 				mainLog.println(s + "," + mdp.getAction(s, i) + ":" + rewA);
 			}
+
 		}
 
 		// Dummy result
