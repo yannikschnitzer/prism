@@ -177,6 +177,7 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 		//  TODO : store in paramValues
 		ArrayList<String []> params = mcMDP.readParams("prism/tests/params_distr.csv", 2);
 		ArrayList<Double> trans_distr_succ = new ArrayList<>(uncertain_atoms);
+		ArrayList<Point> trans_distr_succ_point = new ArrayList<>(uncertain_atoms);
 		ArrayList <Double> trans_distr_fail= new ArrayList<>(uncertain_atoms);
 		ArrayList <Double>  trans_prob = new ArrayList<>(uncertain_atoms);
 
@@ -185,6 +186,7 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 		{
 			// distributions over transition probabilities:
 			trans_distr_succ.add(Double.parseDouble(params.get(0)[i]));
+			trans_distr_succ_point.add(new Point(new BigRational[] { BigRational.from(params.get(0)[i])}));
 			trans_distr_fail.add(1-Double.parseDouble(params.get(0)[i]));
 			// Probability of having those transition values
 			trans_prob.add(Double.parseDouble(params.get(1)[i]));
@@ -210,7 +212,7 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 		mainLog.println("transitions 1-p :\n" + transition_distr_fail);
 
 		// Create/initialise solution vector(s)
-		DiscreteDistribution m ;
+		DiscreteDistribution m = null;
 		double [] action_val = new double[nactions];
 		double [] action_exp = new double[n];
 		Object [] policy = new Object[n];
@@ -218,7 +220,6 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 		double min_v; int min_a;
 		double max_dist ; int numChoices;
 		int iters; boolean flag;
-		FunctionalIterator<Map.Entry<Integer, Double>> iter;
 
 		// Start iterations - number of episodes
 		for (iters = 0; (iters < iterations) ; iters++)
@@ -246,7 +247,41 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 					reward +=  mdpRewards.getTransitionReward(s, choice).evaluate(paramValues).doubleValue();
 
 					// FIXME : figure out how to make this work
-					iter = mdp.getTransitionsMappedIterator(s, choice, p -> p.evaluate(paramValues).doubleValue());
+					String distr_type_final = distr_type;
+					Iterator<Map.Entry<Integer, DiscreteDistribution>> iter;
+					iter = mdp.getTransitionsMappedIterator(s, choice, p -> {
+						DiscreteDistribution transition_distr;
+						ArrayList<Double> trans_distr = new ArrayList<>();
+						for (Point point : trans_distr_succ_point) {
+							trans_distr.add(p.evaluate(point).doubleValue());
+						}
+						if (distr_type_final.equals(c51)) {
+							transition_distr = new DistributionCategorical(uncertain_atoms,
+									Collections.min(trans_distr), Collections.max(trans_distr), mainLog);
+						} else {
+							transition_distr = new DistributionQuantile(uncertain_atoms,  mainLog);
+						}
+						transition_distr.project(trans_prob, trans_distr);
+						return transition_distr;
+					});
+					ArrayList<Map.Entry<Integer, DiscreteDistribution>> array = new ArrayList();
+					while (iter.hasNext()) {
+						array.add(iter.next());
+					}
+
+					Iterator<Map.Entry<Integer, Double>> iter2;
+					iter2 = mdp.getTransitionsMappedIterator(s, choice, p -> p.evaluate(new Point(new BigRational[]{BigRational.ZERO})).doubleValue());
+
+					boolean isConstant = true;
+					Iterator<Map.Entry<Integer, Function>> iter3;
+					iter3 = mdp.getTransitionsIterator(s, choice);
+					while (iter3.hasNext()) {
+						Map.Entry<Integer, Function> e = iter3.next();
+						isConstant &= e.getValue().isConstant();
+						mainLog.println(e.getValue());
+						mainLog.println(isConstant);
+					}
+					flag = !isConstant;
 
 					flag = (s == 0 && mdp.getAction(s, choice).equals("n")) || (s == 1 && mdp.getAction(s, choice).equals("n"));
 					flag = flag || (s == 2 && mdp.getAction(s, choice).equals("e"));
@@ -255,25 +290,25 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 					{
 						// Uncertain transition, modify transitions to be distributional
 						// TODO: this should be parsed from a file instead of hard coded.
-						ArrayList <Map.Entry<Integer, DiscreteDistribution>> prob_trans = new ArrayList<>();
-						while (iter.hasNext()) {
-							Map.Entry<Integer, Double> e = iter.next();
-							if (e.getValue() == 0.66) // if successful transition
-							{
-								Map.Entry<Integer, DiscreteDistribution> entry = new Pair<>(e.getKey(), transition_distr_succ);
-								prob_trans.add(entry);
-							}
-							else {
-								Map.Entry<Integer, DiscreteDistribution> entry = new Pair<>(e.getKey(), transition_distr_fail);
-								prob_trans.add(entry);
-							}
-						}
+//						ArrayList <Map.Entry<Integer, DiscreteDistribution>> prob_trans = new ArrayList<>();
+//						while (iter.hasNext()) {
+//							Map.Entry<Integer, Double> e = iter.next();
+//							if (e.getValue() == 0.66) // if successful transition
+//							{
+//								Map.Entry<Integer, DiscreteDistribution> entry = new Pair<>(e.getKey(), transition_distr_succ);
+//								prob_trans.add(entry);
+//							}
+//							else {
+//								Map.Entry<Integer, DiscreteDistribution> entry = new Pair<>(e.getKey(), transition_distr_fail);
+//								prob_trans.add(entry);
+//							}
+//						}
 
 //						Iterator<Map.Entry<Integer, DiscreteDistribution>> it_prob = prob_trans.iterator();
-						m = operator.step(prob_trans, transition_distr_fail.getAtoms(), gamma, reward);
+						m = operator.step(array, transition_distr_fail.getAtoms(), gamma, reward);
 					}
 					else {
-						m = operator.step(iter, gamma, reward, s);
+						m = operator.step(iter2, gamma, reward, s);
 					}
 					mainLog.println("state : "+s+"- choice: "+ mdp.getAction(s, choice)+" -- [" + m.toString(operator.getFormat()) +"]");
 					action_val[choice] = m.getExpValue();
