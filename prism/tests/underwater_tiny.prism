@@ -1,6 +1,6 @@
 mdp
 
-const double p=0.66;
+const double p;
 
 module M
 
