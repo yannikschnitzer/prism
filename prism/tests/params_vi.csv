@@ -1,2 +1,2 @@
-atoms,vmin,vmax,error,epsilon,alpha
-11,0,5,0.01,1e-05,0.7
+atoms,vmin,vmax,error,epsilon,alpha,uatoms,nd
+11,0,10,0.01,1e-05,0.7,4,0.0
