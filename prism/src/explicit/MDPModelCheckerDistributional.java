@@ -139,10 +139,9 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 		//	int numS = unknownStates.cardinality();
 		DistributionalBellmanOperatorProb operator, temp_p; DiscreteDistribution save_p;
 		String distr_type = settings.getString(PrismSettings.PRISM_DISTR_SOLN_METHOD);
-		int uncertain_atoms;
+		int uncertain_atoms; double  u_vmax; double u_vmin;
 
 		if (distr_type.equals(c51) || distr_type.equals(qr)) {
-			// TODO remove this in final version
 			ArrayList<String []> params = mcMDP.readParams(null, -1);
 			atoms = Integer.parseInt(params.get(0)[0]);
 			double v_min = Double.parseDouble(params.get(0)[1]);
@@ -150,7 +149,11 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 			error_thresh = Double.parseDouble(params.get(0)[3]); // 0.7 for uav
 			dtmc_epsilon = Double.parseDouble(params.get(0)[4]);
 			alpha = Double.parseDouble(params.get(0)[5]);
+
+			// Uncertain parameter distribution info
 			uncertain_atoms = Integer.parseInt(params.get(0)[6]);
+			u_vmin = Double.parseDouble(params.get(0)[7]);
+			u_vmax = Double.parseDouble(params.get(0)[8]);
 
 			operator = new DistributionalBellmanOperatorProb(atoms, v_min, v_max, n, distr_type, mainLog);
 			temp_p = new DistributionalBellmanOperatorProb(atoms, v_min, v_max, n, distr_type, mainLog);
@@ -171,6 +174,7 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 			double v_min = 0;
 			distr_type = "C51";
 			uncertain_atoms = 11;
+			u_vmin =0.0; u_vmax = 1.0;
 			mainLog.println("Using default parameters - Distr type: "+ distr_type);
 			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
 			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
@@ -182,19 +186,22 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 
 		String distr_type_final = distr_type;
 
-		//  Parse distribution info here
+		//  Parse uncertain parameter distribution info here
 		//  TODO : store in paramValues
 		ArrayList<String []> params = mcMDP.readParams("prism/tests/params_distr.csv", 2);
 		ArrayList<Point> trans_distr_point = new ArrayList<>(uncertain_atoms);
 		ArrayList <Double>  trans_prob = new ArrayList<>(uncertain_atoms);
 
-		// parse distributional information for
-		for(int i =0; i< uncertain_atoms; i++)
 		{
-			// distributions over transition probabilities
-			trans_distr_point.add(new Point(new BigRational[] { BigRational.from(params.get(0)[i])}));
-			// Probability of having those transition values
-			trans_prob.add(Double.parseDouble(params.get(1)[i]));
+			int i = 0;
+			// parse distributional information for
+			for (String param : params.get(0)) {
+				// distributions over transition probabilities
+				trans_distr_point.add(new Point(new BigRational[]{BigRational.from(param)}));
+				// Probability of having those transition values
+				trans_prob.add(Double.parseDouble(params.get(1)[i]));
+				i+=1;
+			}
 		}
 
 		// Create/initialise solution vector(s)
@@ -251,17 +258,21 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 						iter = mdp.getTransitionsMappedIterator(s, choice, p -> {
 							DiscreteDistribution transition_distr;
 							ArrayList<Double> trans_distr = new ArrayList<>();
+							ArrayList<BigRational> extremes = new ArrayList<>();
+							extremes.add(p.evaluate(new Point(new BigRational[]{new BigRational(u_vmin)})));
+							extremes.add(p.evaluate(new Point(new BigRational[]{new BigRational(u_vmax)})));
 							for (Point point : trans_distr_point) {
 								trans_distr.add(p.evaluate(point).doubleValue());
 							}
 							if (distr_type_final.equals(c51)) {
 								transition_distr = new DistributionCategorical(uncertain_atoms,
-										Collections.min(trans_distr), Collections.max(trans_distr), mainLog);
+										Collections.min(extremes).doubleValue(), Collections.max(extremes).doubleValue(), mainLog);
 							} else {
 								transition_distr = new DistributionQuantile(uncertain_atoms,  mainLog);
 							}
 							transition_distr.project(trans_prob, trans_distr);
 							mainLog.println("function p : "+p);
+							mainLog.println("u_vmin, u_vmax : "+extremes);
 							mainLog.println("Possible uncertain parameters :" + Arrays.toString(transition_distr.getSupports()));
 							mainLog.println("Probabilities ot the parameter:" + transition_distr);
 							return transition_distr;
