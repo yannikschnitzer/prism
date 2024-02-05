@@ -187,8 +187,8 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 		String distr_type_final = distr_type;
 
 		//  Parse uncertain parameter distribution info here
-		//  TODO : store in paramValues
-		ArrayList<String []> params = mcMDP.readParams("prism/tests/params_distr.csv", 2);
+		//  TODO: DO this for each parameter!!!
+		ArrayList<String []> params = mcMDP.readParams("prism/tests/param_distr/param_p.csv", 2);
 		ArrayList<Point> trans_distr_point = new ArrayList<>(uncertain_atoms);
 		ArrayList <Double>  trans_prob = new ArrayList<>(uncertain_atoms);
 
