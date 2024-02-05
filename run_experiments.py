@@ -33,59 +33,75 @@ def check_save_location(exp_folder, exp_name, prefix, debug):
         os.system(command)
 
 # Create Log target
-def log_target(exp_folder, exp_name, alg, rep, apdx, debug):
+def log_target(exp_folder, exp_name, alg, rep, apdx, debug, isUncertain=False):
     if 'vi' in alg:
         return
-    target = exp_folder+exp_name+'/'+exp_name+'_log_'+alg+'_'+rep+apdx+'.log'
+    temp_alg=alg
+    if isUncertain:
+        temp_alg = alg+'_prob'
+    target = exp_folder+exp_name+'/'+exp_name+'_log_'+temp_alg+'_'+rep+apdx+'.log'
     if debug: 
         print(target)
     return target
 # Copy Log file
-def copy_log_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix, debug):
+def copy_log_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix, debug, isUncertain=False):
     if 'vi' in alg:
         return
-    source =  prefix+'log_'+alg+'.log'
-    target = exp_folder+exp_name+'/'+exp_name+'_log_'+alg+'_'+rep+apdx+'.log'
+    temp_alg=alg
+    if isUncertain:
+        temp_alg = alg+'_prob'
+    source =  prefix+'log_'+temp_alg+'.log'
+    target = exp_folder+exp_name+'/'+exp_name+'_log_'+temp_alg+'_'+rep+apdx+'.log'
     command = cmd_base+source+' '+target
     if debug:
         print(command)
     os.system(command)
             
 # Copy VI files
-def copy_vi_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix, debug):
+def copy_vi_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix, debug, isUncertain=False):
     if 'vi' in alg:
         return
-    source =  prefix+'distr_'+alg+'_'+rep+'.csv'
-    target = exp_folder+exp_name+'/'+exp_name+'_distr_'+alg+'_'+rep+apdx+'.csv'
+    
+    temp_alg=alg
+    if isUncertain:
+        temp_alg = alg+'_prob'
+    source =  prefix+'distr_'+temp_alg+'_'+rep+'.csv'
+    target = exp_folder+exp_name+'/'+exp_name+'_distr_'+temp_alg+'_'+rep+apdx+'.csv'
     command = cmd_base+source+' '+target
     if debug:
         print(command)
     os.system(command)
 
-def copy_trace_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix,debug):
+def copy_trace_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix,debug,isUncertain):
+    temp_alg=alg
+    if isUncertain:
+        temp_alg = alg+'_prob'
     # Copy trace files
     trace_path = prefix+ 'tests/traces/'
-    source = trace_path+'distr_'+alg+'_'+rep.upper()+'_trace.csv'
-    target = exp_folder+exp_name+'/'+exp_name+'_distr_'+alg+'_'+rep+apdx+'_trace.csv'
+    source = trace_path+'distr_'+temp_alg+'_'+rep.upper()+'_trace.csv'
+    target = exp_folder+exp_name+'/'+exp_name+'_distr_'+temp_alg+'_'+rep+apdx+'_trace.csv'
     command = cmd_base+source+' '+target
     if debug:
         print(command)
     os.system(command)
 
-def copy_dtmc_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix, debug):
+def copy_dtmc_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix, debug, isUncertain):
+    temp_alg=alg
+    if isUncertain:
+        temp_alg = alg+'_prob'
     # Copy DTMC files
-    source = prefix+'distr_dtmc_'+alg+'.csv'
+    source = prefix+'distr_dtmc_'+temp_alg+'.csv'
     if 'dtmc' in alg:
         source = prefix+'distr.csv' 
-    target = exp_folder+exp_name+'/'+exp_name+'_distr_dtmc_'+alg+'_'+rep+apdx+'.csv'
+    target = exp_folder+exp_name+'/'+exp_name+'_distr_dtmc_'+temp_alg+'_'+rep+apdx+'.csv'
     command = cmd_base+source+' '+target
     if debug:
         print(command)
     os.system(command)
 
-def create_params(atoms, v_bounds, error, epsilon, b_atoms, b_bounds, alpha):
+def create_params(atoms, v_bounds, error, epsilon, b_atoms, b_bounds, alpha, u_atoms=10, u_bounds=[0.0,1.0]):
     # make rows
-    row_vi = [atoms]+[ v for v in v_bounds]+[error, epsilon]+[alpha]
+    row_vi = [atoms]+[ v for v in v_bounds]+[error, epsilon]+[alpha]+[u_atoms]+[u for u in u_bounds]
     row_b = [b_atoms]+[ b for b in b_bounds]
     print(f'Params: vi:{row_vi}, b:{row_b}')
     
@@ -105,10 +121,25 @@ def create_params(atoms, v_bounds, error, epsilon, b_atoms, b_bounds, alpha):
         write.writerow(header_b)
         write.writerow(row_b)
 
+def copy_distr_prob(cmd_base, exp_folder, exp_name, parameters, debug=True):
+    # Clean param_distr/ folder
+    command = 'rm '+prefix+'tests/param_distr/*'
+    if debug:
+        print(command)
+        os.system(command)
+
+    # Copy Distribution for  each of the uncertain parameters
+    for p in parameters:
+        source = prefix+'tests/'+exp_name+'/'+'param_'+p+'.csv'
+        target = prefix+'tests/param_distr/param_'+p+'.csv'
+        command = cmd_base+ source+' '+target
+        if debug:
+            print(command)
+        os.system(command)
 
 # #### Base experiment
 
-def base_exp(all_experiments, alg_types, rep_types, apdx='', debug=False):
+def base_exp(all_experiments, alg_types, rep_types, apdx='', debug=False, isUncertain=False):
     apd = '_'+ apdx if apdx != '' else apdx
     for exp in all_experiments:
         for alg in alg_types:
@@ -118,26 +149,49 @@ def base_exp(all_experiments, alg_types, rep_types, apdx='', debug=False):
             else:
                 for rep in rep_types:
                     print(f'\nRunning base experiment:{exp}, alg:{alg}, rep:{rep}')
-                    b_atoms = (b_atoms_vals[5]+1) if exp in experiment_names else config[exp]['b']
+                    b_atoms = (b_atoms_vals[5]+1) if exp in experiment_names else config[exp]['b'] 
+
                     # create parameters
                     if 'c51' in rep:
                         if 'atoms' in config[exp]:
                             atoms = config[exp]['atoms']
                         else:
                             atoms= atoms_c51 if exp in experiment_names else big_atoms_c51
-                        create_params(atoms, [0, config[exp]['vmax']], 0.01, config[exp]['epsilon'], b_atoms, [0, config[exp]['vmax']], config[exp]['alpha'])
+                        if not isUncertain:
+                            create_params(atoms, [0, config[exp]['vmax']], 0.01, config[exp]['epsilon'], b_atoms, [0, config[exp]['vmax']], 
+                                        config[exp]['alpha'])
+                        else:
+                            create_params(atoms, [0, config[exp]['vmax']], 0.01, config[exp]['epsilon'], b_atoms, [0, config[exp]['vmax']], 
+                                        config[exp]['alpha'], config[exp]['u_atoms'], config[exp]['u_bounds'])
                     else:
                         if 'atoms' in config[exp]:
                             atoms = config[exp]['atoms']-1
                         else:
                             atoms= atoms_qr if exp in experiment_names else big_atoms_qr
-                        create_params(atoms, [0, config[exp]['vmax']], ((1.0/atoms)*10 if 'uav' not in exp else 0.07), config[exp]['epsilon'], b_atoms, [0, config[exp]['vmax']], config[exp]['alpha'])
+                        if not isUncertain:
+                            create_params(atoms, [0, config[exp]['vmax']], ((1.0/atoms)*10 if 'uav' not in exp else 0.07), config[exp]['epsilon'], 
+                                          b_atoms, [0, config[exp]['vmax']], config[exp]['alpha'])
+                        else:
+                            create_params(atoms, [0, config[exp]['vmax']], ((1.0/atoms)*10 if 'uav' not in exp else 0.07), config[exp]['epsilon'], 
+                                          b_atoms, [0, config[exp]['vmax']], config[exp]['alpha'],config[exp]['u_atoms'], config[exp]['u_bounds'])
+     
+                    if isUncertain:
+                        copy_distr_prob(cmd_base_copy, experiment_folder, exp, config[exp]['params'])
 
                     # create cmd + run
                     base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
                     if 'const' in config[exp]:
                         base_command += ' '+config[exp]['const']
-                    options =' -prop '+str(config[exp]['pn'][alg_map[alg]])+tail+log_cmd+log_target(experiment_folder, exp,alg, rep, apd, debug)
+                    
+                    if isUncertain:
+                        options=' -prop '+str(config[exp]['pn'][alg_map['vi']])
+                        options += ' -param '
+                        for p in config[exp]['params']:
+                            options += p # TODO: this needs to be all parameters
+                        options+= ' -distr'
+                    else :
+                        options =' -prop '+str(config[exp]['pn'][alg_map[alg]])
+                    options += tail+log_cmd+log_target(experiment_folder, exp,alg, rep, apd, debug, isUncertain)
                     if debug:
                         print(prism_exec+' '+base_command+options)
                     r=os.system(prism_exec+' '+base_command+options)
@@ -152,13 +206,13 @@ def base_exp(all_experiments, alg_types, rep_types, apdx='', debug=False):
 
                         # save output for current algorithm
                         print(f"... Saving {alg} VI output files...")
-                        # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, apdx, prefix, debug)
-                        copy_vi_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug)
-                        # copy_trace_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug)
-                        # copy_dtmc_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug)
+                        # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, apdx, prefix, debug, isUncertain)
+                        copy_vi_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug, isUncertain)
+                        # copy_trace_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug, isUncertain)
+                        # copy_dtmc_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug, isUncertain)
                     else:
                         print(f'Error running experiment')
-                        # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, apdx, prefix, debug)
+                        # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, apdx, prefix, debug, isUncertain)
 
 # #### Compute risk neutral and risk sensitive with varying alphas experiment
 
@@ -472,6 +526,7 @@ def init_argparse() -> argparse.ArgumentParser:
     
     # Additional experiments
     parser.add_argument('-b', "--base", action='store_true', help='Base experiment')
+    parser.add_argument('-u', "--uncertain", action='store_true', help='Uncertain transition base experiment')
     parser.add_argument('-a', "--varyatoms", action='store_true', help='Vary the number of atoms in the distr representation from: '+str(atom_vals))
     parser.add_argument('-t', "--varyatomscvar", action='store_true', help='Vary the number of atoms in the distr representation for cvar from: '+str(atom_vals))
     parser.add_argument('-c', "--varybatoms", action='store_true', help='Vary the number of atoms in the CVaR budget from:'+ str(b_atoms_vals))
@@ -504,9 +559,9 @@ b_atoms_vals =[0, 10, 25, 50, 75, 100]
 # alpha_vals = [0.1, 0.2, 0.5, 0.7, 0.9, 0.99]
 alpha_vals = [0.1, 0.5, 0.99]
 eps_vals = [0.01, 0.001, 0.0001, 0.00001]
-header_vi =['atoms', 'vmin', 'vmax', 'error', 'epsilon','alpha']
+header_vi =['atoms', 'vmin', 'vmax', 'error', 'epsilon','alpha','uatoms','u_vmin','u_vmax']
 header_b = ['atoms', 'bmin', 'bmax']
-alg_map= {'exp': 0, 'cvar': 1, 'dtmc':2}
+alg_map= {'exp': 0, 'cvar': 1, 'dtmc':2, 'vi':3}
 config = {
     'test': {'model':prefix+'tests/corridor.prism', 'props':prefix+'tests/corridor.props', 'pn':[3,2], 'vmax': 25, 'atoms':11, 'epsilon':def_eps, 'b':30, 'alpha':def_alpha},
     'cliffs' : {'model':prefix+'tests/cliffs_v2.prism', 'props':prefix+'tests/cliffs_v2.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
@@ -538,7 +593,7 @@ config = {
     'leader_sync10_3': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync10_3.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 30, 'atoms':31, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
     'leader_sync10_4': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync10_4.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 30, 'atoms':31, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
     'leader_sync10_5': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync10_5.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
-    'underwater_tiny' :{'model':prefix+'tests/underwater_tiny.prism', 'props':prefix+'tests/underwater_tiny.props', 'pn':[1,2], 'vmax': 5, 'atoms':11, 'epsilon':def_eps, 'b':11, 'alpha':0.7},
+    'underwater_tiny' :{'model':prefix+'tests/underwater_tiny/underwater_tiny.prism', 'props':prefix+'tests/underwater_tiny/underwater_tiny.props', 'pn':[1,2,-1,3], 'vmax': 5, 'atoms':11, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':11, 'u_bounds':[0.0, 1.0], 'params':['p']},
 }
 
 
@@ -552,7 +607,7 @@ egl = [ 'egl_8_3', 'egl_8_4', 'egl_8_5'] #, 'egl_8_6'
 leader = ['leader_sync8_5', 'leader_sync10_4', 'leader_sync8_6'] # , 'leader_sync12_3']
 herman = ['herman_13', 'herman_15', 'herman_17']
 exp_dtmc = egl + herman + leader
-all_experiments = set_experiments+big_experiments + ssp_comparison + exp_dtmc + prob_experiments
+all_experiments = config.keys()
 rep_types = ['c51', 'qr'] # 'c51', 'qr'
 alg_types= ['exp', 'cvar'] # 'exp', 'cvar'
 cmd_base_copy = "cp "
@@ -571,6 +626,8 @@ if __name__ == "__main__":
         experiments = all_experiments
     elif args.set == 'big':
         experiments = big_experiments
+    elif args.set == 'prob':
+        experiments = prob_experiments
     elif args.set == 'main':
         experiments = ['betting_g','ds_treasure', 'gridmap_150_3918', 'uav_var', 'drones_15']
     elif args.set =='set':
@@ -613,6 +670,9 @@ if __name__ == "__main__":
 
     if args.base :
         base_exp(experiments, algs, reps, apdx=args.apdx, debug=args.debug)
+    
+    if args.uncertain :
+        base_exp(experiments, algs, reps, apdx=args.apdx, debug=args.debug, isUncertain=True)
 
     if args.varyatoms: 
         vary_atoms_exp(experiments, reps, apdx=args.apdx, debug=args.debug)

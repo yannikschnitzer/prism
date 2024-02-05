@@ -127,7 +127,7 @@ class DistributionalBellmanOperatorProb extends DistributionalBellmanOperator {
     // Quantile : support value, probability, cumulative probability
     @Override
     public void writeToFile(int state, String filename){
-        if (filename == null) {filename="distr_exp_"+distr_type.toLowerCase()+"_prob.csv";}
+        if (filename == null) {filename="distr_exp_prob_"+distr_type.toLowerCase()+".csv";}
         try (PrintWriter pw = new PrintWriter("prism/"+filename)) {
             pw.println("r,p,z");
             pw.println(distr[state].toFile());
