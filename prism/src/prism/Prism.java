@@ -3145,10 +3145,13 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 		
 		// PTA (and similar) model checking is handled separately
 		if (getModelType().realTime()) {
+			if (settings.getBoolean(PrismSettings.PRISM_EXACT_ENABLED)) {
+				throw new PrismNotSupportedException("Real-time model checking not supported in exact mode");
+			}
 			return modelCheckPTA(propertiesFile, prop.getExpression(), definedPFConstants);
 		}
 
-		// For exact model checking
+		// For exact model checkingedit
 		if (settings.getBoolean(PrismSettings.PRISM_EXACT_ENABLED)) {
 			return modelCheckExact(propertiesFile, prop);
 		}
