@@ -121,6 +121,12 @@ public class ExpressionITE extends Expression
 		return operand1.returnsSingleValue() && operand2.returnsSingleValue() && operand3.returnsSingleValue();
 	}
 
+	@Override
+	public Precedence getPrecedence()
+	{
+		return Precedence.ITE;
+	}
+
 	// Methods required for ASTElement:
 
 	@Override

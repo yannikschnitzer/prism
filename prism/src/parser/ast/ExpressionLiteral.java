@@ -125,6 +125,12 @@ public class ExpressionLiteral extends Expression
 		return true;
 	}
 
+	@Override
+	public Precedence getPrecedence()
+	{
+		return Precedence.BASIC;
+	}
+
 	// Methods required for ASTElement:
 	
 	@Override

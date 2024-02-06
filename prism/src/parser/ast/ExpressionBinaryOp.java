@@ -26,16 +26,20 @@
 
 package parser.ast;
 
+import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
+import java.util.ArrayList;
 
 import param.BigRational;
 import parser.EvaluateContext;
 import parser.EvaluateContext.EvalMode;
+import parser.PrismParser;
 import parser.type.TypeDouble;
 import parser.type.TypeInt;
 import parser.visitor.ASTVisitor;
 import parser.visitor.DeepCopy;
 import prism.PrismLangException;
+import simulator.RandomNumberGenerator;
 
 public class ExpressionBinaryOp extends Expression
 {
@@ -326,6 +330,37 @@ public class ExpressionBinaryOp extends Expression
 		return operand1.returnsSingleValue() && operand2.returnsSingleValue();
 	}
 
+	@Override
+	public Precedence getPrecedence()
+	{
+		switch (op) {
+			case IMPLIES:
+				return Precedence.IMPLIES;
+			case IFF:
+				return Precedence.IFF;
+			case OR:
+				return Precedence.OR;
+			case AND:
+				return Precedence.AND;
+			case EQ:
+			case NE:
+				return Precedence.EQUALITY;
+			case GT:
+			case GE:
+			case LT:
+			case LE:
+				return Precedence.RELOP;
+			case PLUS:
+			case MINUS:
+				return Precedence.PLUS_MINUS;
+			case TIMES:
+			case DIVIDE:
+				return Precedence.TIMES_DIVIDE;
+			default:
+				return null;
+		}
+	}
+
 	// Methods required for ASTElement:
 
 	@Override
@@ -354,7 +389,15 @@ public class ExpressionBinaryOp extends Expression
 	@Override
 	public String toString()
 	{
-		return operand1 + opSymbols[op] + operand2;
+		StringBuilder builder = new StringBuilder();
+		builder.append(Expression.toStringPrecLt(operand1, this));
+		builder.append(opSymbols[op]);
+		if (op == MINUS) {
+			builder.append(Expression.toStringPrecLeq(operand2, this));
+		} else {
+			builder.append(Expression.toStringPrecLt(operand2, this));
+		}
+		return builder.toString();
 	}
 
 	@Override
@@ -390,6 +433,39 @@ public class ExpressionBinaryOp extends Expression
 		} else if (!operand2.equals(other.operand2))
 			return false;
 		return true;
+	}
+
+	public static void main(String args[])
+	{
+		PrismParser prismParser = new PrismParser();
+		RandomNumberGenerator rng = new RandomNumberGenerator();
+		ArrayList<Expression> list = new ArrayList<>();
+		list.add(Expression.Int(rng.randomUnifInt(10)));
+		list.add(Expression.Int(rng.randomUnifInt(10)));
+		list.add(Expression.Int(rng.randomUnifInt(10)));
+		for (int k = 0; k < 100; k++) {
+			int i = rng.randomUnifInt(list.size());
+			int j = rng.randomUnifInt(list.size());
+			if (rng.randomUnifInt(2) == 0) {
+				list.add(Expression.Plus(list.get(i), list.get(j)));
+			} else {
+				list.add(Expression.Minus(list.get(i), list.get(j)));
+			}
+		}
+		for (Expression expr : list) {
+			try {
+				Expression expr2 = prismParser.parseSingleExpression(new ByteArrayInputStream(expr.toString().getBytes()));
+				int eval1 = expr.evaluateInt();
+				int eval2 = expr2.evaluateInt();
+				System.out.println(expr + " -> " + eval1 + " && " + expr2 + " -> " + eval2);
+				if (eval1 != eval2) {
+					System.out.println("WRONG");
+					System.exit(1);
+				}
+			} catch (PrismLangException e) {
+				throw new RuntimeException(e);
+			}
+		}
 	}
 }
 

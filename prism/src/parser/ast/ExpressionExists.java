@@ -86,6 +86,12 @@ public class ExpressionExists extends Expression
 		return false;
 	}
 
+	@Override
+	public Precedence getPrecedence()
+	{
+		return Precedence.BASIC;
+	}
+
 	// Methods required for ASTElement:
 	
 	@Override

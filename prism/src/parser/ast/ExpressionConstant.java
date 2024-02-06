@@ -94,6 +94,12 @@ public class ExpressionConstant extends Expression
 		return true;
 	}
 
+	@Override
+	public Precedence getPrecedence()
+	{
+		return Precedence.BASIC;
+	}
+
 	// Methods required for ASTElement:
 	
 	@Override
