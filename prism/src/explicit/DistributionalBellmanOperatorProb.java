@@ -7,16 +7,13 @@ package explicit;
 // Still saves a distribution for each state. the number of atoms 
 // is based on the number of atoms in the parameter distribution.
 
-import prism.PrismException;
-import prism.PrismLog;
+import param.BigRational;
+import param.Function;
+import param.Point;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 class DistributionalBellmanOperatorProb extends DistributionalBellmanOperator {
 
@@ -27,16 +24,12 @@ class DistributionalBellmanOperatorProb extends DistributionalBellmanOperator {
 
     // Step for when the support represents the possible expected values and the transition is uncertain
     // Assumption : only one uncertain parameter is associated with a state-action pair.
-    public DiscreteDistribution step(ArrayList<Map.Entry<Integer, DiscreteDistribution>> transitions, int parameter_atoms,
-                                     double gamma, double state_reward) {
+    public DiscreteDistribution step(MDP<Function> mdp, DiscreteDistribution param, int param_idx, int s, int choice, double gamma, double state_reward) {
         TreeMap<Double, Double> sum_p = new TreeMap<>();
-        Double temp_value; double exp_value;
+        Iterator<Map.Entry<Integer,Double>> iter;
+        double exp_value;
         int temp_atoms;
         DiscreteDistribution res;
-        Iterator<Map.Entry<Integer, DiscreteDistribution>> temp_it ;
-
-        ArrayList<Double> probsyyy = new ArrayList<>();
-        ArrayList<Double> suppsyyy = new ArrayList<>();
 
         if (isCategorical) {
             res = new DistributionCategorical(atoms, v_min, v_max, mainLog);
@@ -48,68 +41,86 @@ class DistributionalBellmanOperatorProb extends DistributionalBellmanOperator {
 
         if (isCategorical) {
 
-            for (int i = 0; i < parameter_atoms; i++) {
-                temp_value = transitions.get(0).getValue().getValue(i); // probability of i-th parameter atom
+            // Iterate over each possible transition probability group
+            // For ex. (p, 1-p), (1-p, p/2, p/2), etc.
+            for (int i = 0; i < param.getAtoms(); i++) {
+
                 exp_value = 0.0;
-                temp_it = transitions.iterator();
 
-                // Iterate over possible transitions and successors
-                while (temp_it.hasNext()) {
-                    Map.Entry<Integer, DiscreteDistribution> e = temp_it.next();
+                if(param.getValue(i)>0) {
+                    // instantiate the transitions for a possible parameter
+                    int finalI = i;
+                    // TODO: this line would change to have extra input to evaluate based on the number of parameters
+                    iter = mdp.getTransitionsMappedIterator(s, choice,
+                            p -> p.evaluate(toBigRationalPoint(param.getSupport(finalI))).doubleValue());
 
-                    double[] transition_vals = e.getValue().getSupports(); // possible values for the transition probability
-                    temp_atoms = distr[e.getKey()].getAtoms();
+                    // Iterate over possible transitions and successors
+                    while (iter.hasNext()) {
+                        Map.Entry<Integer, Double> e = iter.next();
 
-                    for (int j = 0; j < temp_atoms; j++) {
-                        // exp += nextstate_val[j] * nextstate_supp[j] * Pr[nextstate | s,a][i]
-                        exp_value +=distr[e.getKey()].getValue(j) * distr[e.getKey()].getSupport(j) * transition_vals[i];
+                        double transition_val = e.getValue(); // possible values for the transition probability
+                        temp_atoms = distr[e.getKey()].getAtoms();
+
+                        for (int j = 0; j < temp_atoms; j++) {
+                            // exp += nextstate_val[j] * nextstate_supp[j] * Pr[nextstate | s,a][i]
+                            double temp = distr[e.getKey()].getValue(j) * distr[e.getKey()].getSupport(j) * transition_val;
+                            exp_value += (distr[e.getKey()].getValue(j) * distr[e.getKey()].getSupport(j) * transition_val);
+                            if (temp > 0) {
+                                mainLog.print("i:" + i + " - val: " + distr[e.getKey()].getValue(j) + " - supp: " + distr[e.getKey()].getSupport(j)
+                                        + " - parameter val: " + transition_val + "- exp: " + exp_value + "\n");
+                                mainLog.println("supps:" + Arrays.toString(distr[e.getKey()].getSupports()));
+                                mainLog.println("vals:" + Arrays.toString(distr[e.getKey()].getValues()));
+                            }
+                        }
                     }
-                }
-                exp_value = exp_value * gamma; // discount information from successor states
-                exp_value += state_reward; // add reward for current state
 
-                // if it already exists, increase probability; else, create particle
-                if (temp_value > 0) {
+                    mainLog.println("------------------------------------------");
+                    exp_value = exp_value * gamma; // discount information from successor states
+                    exp_value += state_reward; // add reward for current state
+
+                    // if it already exists, increase probability; else, create particle
                     if (sum_p.containsKey(exp_value)) {
-                        sum_p.put(exp_value, sum_p.get(exp_value) + temp_value);
+                        sum_p.put(exp_value, sum_p.get(exp_value) + param.getValue(i));
                     } else {
-                        sum_p.put(exp_value, temp_value);
+                        sum_p.put(exp_value,  param.getValue(i));
                     }
+
                 }
             }
         }
         else{
-            // since its quantile, probability for each parameter valueis the same.
-            temp_value = transitions.get(0).getValue().getValue(0); // probability of each parameter atom
+            // since its quantile, probability for each parameter value is the same and strictly positive
+            double temp_value = param.getValue(0); // probability of each parameter atom
             double temp_p= 0.0;
             // INFO: quantile representation for
-            for (int i = 0; i < parameter_atoms; i++) {
+            for (int i = 0; i < param.getAtoms(); i++) {
                 exp_value = 0.0;
-                temp_it = transitions.iterator();
+                int finalI = i;
+                iter = mdp.getTransitionsMappedIterator(s, choice,
+                        p -> p.evaluate(toBigRationalPoint(param.getSupport(finalI))).doubleValue());
 
                 // Iterate over possible transitions and successors
-                while (temp_it.hasNext()) {
-                    Map.Entry<Integer, DiscreteDistribution> e = temp_it.next();
+                while (iter.hasNext()) {
+                    Map.Entry<Integer, Double> e = iter.next();
 
-                    double[] transition_vals = e.getValue().getSupports(); // possible values for the transition probability
+                    double transition_val = e.getValue(); // possible values for the transition probability
                     temp_atoms = distr[e.getKey()].getAtoms();
                     temp_p = distr[e.getKey()].getValue(0); // all the same
                     for (int j = 0; j < temp_atoms; j++) {
                         // exp += nextstate_val[j] * nextstate_supp[j] * Pr[nextstate | s,a][i]
-                        exp_value += temp_p * distr[e.getKey()].getSupport(j) * transition_vals[i];
+                        exp_value += (temp_p * distr[e.getKey()].getSupport(j) * transition_val);
                     }
                 }
                 exp_value = exp_value * gamma; // discount information from successor states
                 exp_value += state_reward; // add reward for current state
 
                 // if it already exists, increase probability; else, create particle
-                if (temp_value > 0) {
-                    if (sum_p.containsKey(exp_value)) {
-                        sum_p.put(exp_value, sum_p.get(exp_value) + temp_value);
-                    } else {
-                        sum_p.put(exp_value, temp_value);
-                    }
+                if (sum_p.containsKey(exp_value)) {
+                    sum_p.put(exp_value, sum_p.get(exp_value) + temp_value);
+                } else {
+                    sum_p.put(exp_value, temp_value);
                 }
+
             }
         }
 
@@ -134,6 +145,11 @@ class DistributionalBellmanOperatorProb extends DistributionalBellmanOperator {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    public static Point toBigRationalPoint(Double input)
+    {
+        return new Point(new BigRational[]{new BigRational(input)});
     }
 
 }
