@@ -21,6 +21,8 @@ import strat.StrategyInfo;
 import java.text.DecimalFormat;
 import java.util.*;
 
+import static explicit.DistributionalBellmanOperatorProb.toBigRationalPoint;
+
 public class MDPModelCheckerDistributional extends ProbModelChecker
 {
 	/**
@@ -184,12 +186,10 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 			save_p = new DistributionCategorical(atoms, v_min, v_max, mainLog);
 		}
 
-		String distr_type_final = distr_type;
-
 		//  Parse uncertain parameter distribution info here
 		//  TODO: DO this for each parameter!!!
 		ArrayList<String []> params = mcMDP.readParams("prism/tests/param_distr/param_p.csv", 2);
-		ArrayList<Point> trans_distr_point = new ArrayList<>(uncertain_atoms);
+		ArrayList<Double> trans_distr_file = new ArrayList<>(uncertain_atoms);
 		ArrayList <Double>  trans_prob = new ArrayList<>(uncertain_atoms);
 
 		{
@@ -197,12 +197,21 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 			// parse distributional information for
 			for (String param : params.get(0)) {
 				// distributions over transition probabilities
-				trans_distr_point.add(new Point(new BigRational[]{BigRational.from(param)}));
+				trans_distr_file.add(Double.parseDouble(param));;
 				// Probability of having those transition values
 				trans_prob.add(Double.parseDouble(params.get(1)[i]));
 				i+=1;
 			}
 		}
+
+		DiscreteDistribution transition_distr;
+		if (distr_type.equals(c51)) {
+			transition_distr = new DistributionCategorical(uncertain_atoms,
+					u_vmin, u_vmax, mainLog);
+		} else {
+			transition_distr = new DistributionQuantile(uncertain_atoms,  mainLog);
+		}
+		transition_distr.project(trans_prob, trans_distr_file);
 
 		// Create/initialise solution vector(s)
 		DiscreteDistribution m = null;
@@ -237,8 +246,8 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 
 					// INFO: the value passed to evaluate doesn't matter here because the rewards don't depend on the
 					// 		  transition probabilities
-					double reward = mdpRewards.getStateReward(s).evaluate(trans_distr_point.get(0)).doubleValue() ;
-					reward +=  mdpRewards.getTransitionReward(s, choice).evaluate(trans_distr_point.get(0)).doubleValue();
+					double reward = mdpRewards.getStateReward(s).evaluate(toBigRationalPoint(0.0)).doubleValue() ;
+					reward +=  mdpRewards.getTransitionReward(s, choice).evaluate(toBigRationalPoint(0.0)).doubleValue();
 
 					// TODO: probably have the check for which parameter here
 					// check if the transition is uncertain
@@ -253,43 +262,14 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 
 					if(!isUncertain)
 					{
-						// Evaluate Uncertain Transitions
-						Iterator<Map.Entry<Integer, DiscreteDistribution>> iter;
-						iter = mdp.getTransitionsMappedIterator(s, choice, p -> {
-							DiscreteDistribution transition_distr;
-							ArrayList<Double> trans_distr = new ArrayList<>();
-							ArrayList<BigRational> extremes = new ArrayList<>();
-							extremes.add(p.evaluate(new Point(new BigRational[]{new BigRational(u_vmin)})));
-							extremes.add(p.evaluate(new Point(new BigRational[]{new BigRational(u_vmax)})));
-							for (Point point : trans_distr_point) {
-								trans_distr.add(p.evaluate(point).doubleValue());
-							}
-							if (distr_type_final.equals(c51)) {
-								transition_distr = new DistributionCategorical(uncertain_atoms,
-										Collections.min(extremes).doubleValue(), Collections.max(extremes).doubleValue(), mainLog);
-							} else {
-								transition_distr = new DistributionQuantile(uncertain_atoms,  mainLog);
-							}
-							transition_distr.project(trans_prob, trans_distr);
-							mainLog.println("function p : "+p);
-							mainLog.println("u_vmin, u_vmax : "+extremes);
-							mainLog.println("Possible uncertain parameters :" + Arrays.toString(transition_distr.getSupports()));
-							mainLog.println("Probabilities ot the parameter:" + transition_distr);
-							return transition_distr;
-						});
-
-						// Create an array with all the transitions
-						ArrayList<Map.Entry<Integer, DiscreteDistribution>> array = new ArrayList<>();
-						while (iter.hasNext()) {
-							array.add(iter.next());
-						}
-
 						// Uncertain transition step
-						m = operator.step(array, uncertain_atoms, gamma, reward);
+						// TODO : send the distr for the right parameter, the parameter idx, and the number of parameters
+						m = operator.step(mdp, transition_distr,0, s, choice, gamma, reward);
+
 					}
 					else {
 						Iterator<Map.Entry<Integer, Double>> iter2;
-						iter2 = mdp.getTransitionsMappedIterator(s, choice, p -> p.evaluate(new Point(new BigRational[]{BigRational.ZERO})).doubleValue());
+						iter2 = mdp.getTransitionsMappedIterator(s, choice, p -> p.evaluate(toBigRationalPoint(0.0)).doubleValue());
 						m = operator.step(iter2, gamma, reward, s);
 					}
 					mainLog.println("state : "+s+"- choice: "+ mdp.getAction(s, choice)+" -- [" + m.toString(operator.getFormat()) +"]");
