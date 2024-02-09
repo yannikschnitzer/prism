@@ -1,0 +1,2 @@
+// Maximum expected time spent sending before electing a leader
+"time_sending": R{"time_sending"}max=? [ F "done" ];

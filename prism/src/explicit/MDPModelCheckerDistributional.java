@@ -212,6 +212,9 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 			transition_distr = new DistributionQuantile(uncertain_atoms,  mainLog);
 		}
 		transition_distr.project(trans_prob, trans_distr_file);
+		mainLog.println("Param p distr:");
+		mainLog.println(transition_distr.getValues());
+		mainLog.println(transition_distr.getSupports());
 
 		// Create/initialise solution vector(s)
 		DiscreteDistribution m = null;
@@ -272,7 +275,7 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 						iter2 = mdp.getTransitionsMappedIterator(s, choice, p -> p.evaluate(toBigRationalPoint(0.0)).doubleValue());
 						m = operator.step(iter2, gamma, reward, s);
 					}
-					mainLog.println("state : "+s+"- choice: "+ mdp.getAction(s, choice)+" -- [" + m.toString(operator.getFormat()) +"]");
+					// mainLog.println("state : "+s+"- choice: "+ mdp.getAction(s, choice)+" -- [" + m.toString(operator.getFormat()) +"]");
 					action_val[choice] = m.getExpValue();
 
 					if (action_val[choice] < min_v) {
@@ -288,6 +291,10 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 
 			states = unknownStates.iterator();
 			max_dist = 0.0;
+
+			mainLog.print("initial s: "+ mdp.getFirstInitialState()+" -- [");
+			mainLog.print(operator.toString(mdp.getFirstInitialState()));
+			mainLog.print("]\n");
 
 			while (states.hasNext()) {
 				final int s = states.nextInt();
