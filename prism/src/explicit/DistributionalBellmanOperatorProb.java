@@ -65,16 +65,16 @@ class DistributionalBellmanOperatorProb extends DistributionalBellmanOperator {
                             // exp += nextstate_val[j] * nextstate_supp[j] * Pr[nextstate | s,a][i]
                             double temp = distr[e.getKey()].getValue(j) * distr[e.getKey()].getSupport(j) * transition_val;
                             exp_value += (distr[e.getKey()].getValue(j) * distr[e.getKey()].getSupport(j) * transition_val);
-                            if (temp > 0) {
-                                mainLog.print("i:" + i + " - val: " + distr[e.getKey()].getValue(j) + " - supp: " + distr[e.getKey()].getSupport(j)
-                                        + " - parameter val: " + transition_val + "- exp: " + exp_value + "\n");
-                                mainLog.println("supps:" + Arrays.toString(distr[e.getKey()].getSupports()));
-                                mainLog.println("vals:" + Arrays.toString(distr[e.getKey()].getValues()));
-                            }
+                            // if (temp > 0) {
+                            //     mainLog.print("i:" + i + " - val: " + distr[e.getKey()].getValue(j) + " - supp: " + distr[e.getKey()].getSupport(j)
+                            //             + " - parameter val: " + transition_val + "- exp: " + exp_value + "\n");
+                            //     mainLog.println("supps:" + Arrays.toString(distr[e.getKey()].getSupports()));
+                            //     mainLog.println("vals:" + Arrays.toString(distr[e.getKey()].getValues()));
+                            // }
                         }
                     }
 
-                    mainLog.println("------------------------------------------");
+                    // mainLog.println("------------------------------------------");
                     exp_value = exp_value * gamma; // discount information from successor states
                     exp_value += state_reward; // add reward for current state
 
