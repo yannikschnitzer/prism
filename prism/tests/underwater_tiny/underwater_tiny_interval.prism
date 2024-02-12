@@ -1,0 +1,30 @@
+mdp
+
+const double p;
+
+module M
+
+	s : [0..3] init 0;
+
+	[n] s=0 -> p : (s'=2) + 1-p : (s'=0);
+	[e] s=0 -> 1 : (s'=1) ;
+
+    [n] s=1 -> p : (s'=3) + 1-p : (s'=1);
+	[w] s=1 -> 1 : (s'=0) ;
+
+    [e] s=2 -> p : (s'=3) + 1-p : (s'=1);
+	[s] s=2 -> 1 : (s'=0) ;
+
+	[] s=3 -> true;
+
+endmodule
+
+label "goal" = s=3;
+label "obs" = s=2;
+
+rewards
+	s=0 : 1;
+	s=1 : 1;
+	s=2 : 1;
+	s=3 : 0;
+endrewards
