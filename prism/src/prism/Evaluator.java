@@ -684,6 +684,25 @@ public interface Evaluator<Value>
 			// Return EXACT for now since exact computation uses this
 			return EvalMode.EXACT;
 		}
+
+		// Get information about the parameters
+		// return the parameter name for a given index
+		public String getParameterName(int index)
+		{
+			return functionFactory.getParameterName(index);
+		}
+
+		// return the number of parameters
+		public int getNumParameters()
+		{
+			return functionFactory.getNumVariables();
+		}
+
+		// return index of parameter
+		public int getParamIndex(String name)
+		{
+			return functionFactory.getParameterIndex(name);
+		}
 	}
 	
 	// Evaluator for intervals (of doubles)

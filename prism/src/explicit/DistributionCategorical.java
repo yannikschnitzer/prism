@@ -3,6 +3,8 @@ package explicit;
 // import java.util.Iterator;
 // import java.util.Map;
 //import java.lang.reflect.Array;
+import param.BigRational;
+
 import java.text.DecimalFormat;
 import java.util.*;
 
@@ -156,6 +158,48 @@ class DistributionCategorical extends DiscreteDistribution {
                 p[l] += (probs.get(j) * (u -b));
                 p[u] += (probs.get(j) * (b-l));
             }
+        }
+    }
+
+    @Override
+    public void project(Collection<BigRational> probs, Object [] supp) {
+        double temp;
+        double b;
+        int l, u;
+        // recompute delta_z if needed
+        // recompute z if needed
+        if (delta_z != ((v_max - v_min) / (atoms - 1))){
+            delta_z = (v_max - v_min) / (atoms - 1);
+            for (int i = 0; i < atoms; i++) {
+                if (i == atoms - 1) { // hard set vmax to prevent small rounding error
+                    this.z[i] = v_max;
+                } else {
+                    this.z[i] = v_min + i * this.delta_z;
+                }
+            }
+        }
+
+        // set probability array to 0
+        Arrays.fill(p, 0.0);
+        Iterator<BigRational> prob_it = probs.iterator(); int j=0;
+        while(prob_it.hasNext()){
+            double p_j = prob_it.next().doubleValue();
+            temp = max(v_min, min(v_max,
+                    (double) supp[j]));
+            b = ((temp - v_min) / delta_z);
+            l= (int) floor(b); u= (int) ceil(b);
+
+            if(b-l < min_error || l== u)
+            {
+                p[l] += p_j;
+            } else if(u-b < min_error)
+            {
+                p[u] += p_j;
+            } else{
+                p[l] += (p_j * (u -b));
+                p[u] += (p_j * (b-l));
+            }
+            j++;
         }
     }
 

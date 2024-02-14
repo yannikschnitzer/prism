@@ -5,6 +5,8 @@ import java.util.*;
 import edu.jas.util.MapEntry;
 import java.util.ArrayList;
 import java.text.DecimalFormat;
+
+import param.BigRational;
 import prism.PrismLog;
 import static java.lang.Math.*;
 import prism.PrismException;
@@ -99,7 +101,44 @@ import prism.PrismException;
 
     }
 
-    @Override 
+     @Override
+     public void project(Collection<BigRational> probs, Object[] supp) {
+         double cum_p = 0.0;
+         //double exp_value = 0;
+         double temp_value;
+         int index = 0;
+         this.empty();
+
+         Iterator<BigRational> prob_it = probs.iterator();
+         int i=0;
+         while(prob_it.hasNext()){
+             if(index >= atoms){
+                 break;
+             }
+             temp_value = prob_it.next().doubleValue();
+             cum_p += temp_value; // check probability of entry
+             if(cum_p >= tau_hat[index]) {
+                 if(temp_value>p) {
+                     int temp = (int)floor(temp_value/p);
+                     // make sure z doesn't overflow
+                     Arrays.fill(z, index, index + min(temp, atoms-index), (double) supp[i]);
+                     index += min(temp, atoms-index);
+                     // if it is still greater than tau(curr atom), add one more
+                     if(index < atoms && cum_p >= tau_hat[index]){
+                         z[index] = (double) supp[i];
+                         index ++;
+                     }
+
+                 }else {
+                     z[index] = (double) supp[i];
+                     index ++;
+                 }
+             }
+             // exp_value += entry.getKey()*entry.getValue();
+         }
+     }
+
+     @Override
     // TODO: add error metric compute
     public void project(TreeMap<Double, Double> particles) {
         double cum_p = 0.0;
