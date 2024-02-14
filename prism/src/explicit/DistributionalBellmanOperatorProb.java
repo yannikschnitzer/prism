@@ -152,4 +152,13 @@ class DistributionalBellmanOperatorProb extends DistributionalBellmanOperator {
         return new Point(new BigRational[]{new BigRational(input)});
     }
 
+    public static Point toBigRationalPoint(Double [] input)
+    {
+        BigRational [] temp = new BigRational[input.length];
+        for (int i=0; i<input.length; i++){
+            temp[i] = new BigRational(input[i]);
+        }
+        return new Point(temp);
+    }
+
 }

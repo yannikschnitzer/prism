@@ -4,7 +4,11 @@ package explicit;
 // import java.util.Map;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
 import java.util.TreeMap;
+
+import param.BigRational;
 import prism.PrismException;
 
 abstract class DiscreteDistribution {
@@ -26,9 +30,11 @@ abstract class DiscreteDistribution {
     // project a given array to finite support (different distribution parameters but same number of atoms)
     public abstract void project(ArrayList<Double> probs, ArrayList<Double> supp);
 
+    // project for joint distribution
+    public abstract void project(Collection<BigRational> probs, Object [] supp) ;
+
     // project using a tree map
     // FIXME: add an adaptive version
-    // TODO: add error metric compute
     public abstract void project(TreeMap<Double, Double> particles);
 
     // update saved distribution
@@ -111,4 +117,5 @@ abstract class DiscreteDistribution {
     public abstract double getExpValue(TreeMap<Double, Double> particles);
 
     public abstract String toString(DecimalFormat df, double b);
+
 }

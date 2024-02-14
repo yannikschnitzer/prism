@@ -147,6 +147,15 @@ public abstract class FunctionFactory
 	}
 
 	/**
+	 * Returns the index when given the parameter name
+	 * @param var - name of the variable
+	 * @return index of the variable
+	 */
+	public int getParameterIndex(String var) {
+        return varnameToInt.getOrDefault(var, -1);
+	}
+
+	/**
 	 * Returns lower bound of variable with the given index.
 	 * 
 	 * @param var index of the variable to obtain lower bound of
