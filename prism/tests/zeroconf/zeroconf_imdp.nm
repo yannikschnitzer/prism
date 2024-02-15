@@ -256,7 +256,7 @@ module host0
 	
 endmodule
 
-label "goal" = (l=4 & ip=1);
+label "goal" = (l=4 & ip_mess=0 & b=0 & z=0);
 
 // time
 rewards
