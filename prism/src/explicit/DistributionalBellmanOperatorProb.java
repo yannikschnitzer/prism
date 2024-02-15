@@ -24,7 +24,7 @@ class DistributionalBellmanOperatorProb extends DistributionalBellmanOperator {
 
     // Step for when the support represents the possible expected values and the transition is uncertain
     // Assumption : only one uncertain parameter is associated with a state-action pair.
-    public DiscreteDistribution step(MDP<Function> mdp, DiscreteDistribution param, int param_idx, int s, int choice, double gamma, double state_reward) {
+    public DiscreteDistribution step(MDP<Function> mdp, DiscreteDistribution param, Map<Integer, Point> jointMap, int s, int choice, double gamma, double state_reward) {
         TreeMap<Double, Double> sum_p = new TreeMap<>();
         Iterator<Map.Entry<Integer,Double>> iter;
         double exp_value;
@@ -50,9 +50,15 @@ class DistributionalBellmanOperatorProb extends DistributionalBellmanOperator {
                 if(param.getValue(i)>0) {
                     // instantiate the transitions for a possible parameter
                     int finalI = i;
-                    // TODO: this line would change to have extra input to evaluate based on the number of parameters
-                    iter = mdp.getTransitionsMappedIterator(s, choice,
-                            p -> p.evaluate(toBigRationalPoint(param.getSupport(finalI))).doubleValue());
+
+                    // For multiple parameters, use the jointmap to get the support, and the joint distr for values
+                    if (!jointMap.isEmpty()){
+                        iter = mdp.getTransitionsMappedIterator(s, choice,
+                                p -> p.evaluate(jointMap.get(finalI)).doubleValue());
+                    } else {
+                        iter = mdp.getTransitionsMappedIterator(s, choice,
+                                p -> p.evaluate(toBigRationalPoint(param.getSupport(finalI))).doubleValue());
+                    }
 
                     // Iterate over possible transitions and successors
                     while (iter.hasNext()) {
@@ -63,13 +69,12 @@ class DistributionalBellmanOperatorProb extends DistributionalBellmanOperator {
 
                         for (int j = 0; j < temp_atoms; j++) {
                             // exp += nextstate_val[j] * nextstate_supp[j] * Pr[nextstate | s,a][i]
-                            double temp = distr[e.getKey()].getValue(j) * distr[e.getKey()].getSupport(j) * transition_val;
                             exp_value += (distr[e.getKey()].getValue(j) * distr[e.getKey()].getSupport(j) * transition_val);
+
+                            //double temp = distr[e.getKey()].getValue(j) * distr[e.getKey()].getSupport(j) * transition_val;
                             // if (temp > 0) {
                             //     mainLog.print("i:" + i + " - val: " + distr[e.getKey()].getValue(j) + " - supp: " + distr[e.getKey()].getSupport(j)
                             //             + " - parameter val: " + transition_val + "- exp: " + exp_value + "\n");
-                            //     mainLog.println("supps:" + Arrays.toString(distr[e.getKey()].getSupports()));
-                            //     mainLog.println("vals:" + Arrays.toString(distr[e.getKey()].getValues()));
                             // }
                         }
                     }
@@ -96,8 +101,15 @@ class DistributionalBellmanOperatorProb extends DistributionalBellmanOperator {
             for (int i = 0; i < param.getAtoms(); i++) {
                 exp_value = 0.0;
                 int finalI = i;
-                iter = mdp.getTransitionsMappedIterator(s, choice,
-                        p -> p.evaluate(toBigRationalPoint(param.getSupport(finalI))).doubleValue());
+
+                // For multiple parameters, use the jointmap to get the support, and the joint distr for values
+                if (!jointMap.isEmpty()){
+                    iter = mdp.getTransitionsMappedIterator(s, choice,
+                            p -> p.evaluate(jointMap.get(finalI)).doubleValue());
+                } else {
+                    iter = mdp.getTransitionsMappedIterator(s, choice,
+                            p -> p.evaluate(toBigRationalPoint(param.getSupport(finalI))).doubleValue());
+                }
 
                 // Iterate over possible transitions and successors
                 while (iter.hasNext()) {
@@ -125,7 +137,7 @@ class DistributionalBellmanOperatorProb extends DistributionalBellmanOperator {
         }
 
 
-        mainLog.println(sum_p.keySet());
+        //mainLog.println(sum_p.keySet());
         //mainLog.println(sum_p.values());
 
         // Perform projection on the intermediate target
