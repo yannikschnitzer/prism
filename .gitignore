@@ -48,7 +48,10 @@ tests/gridmap/*.out
 tests/experiments/
 /prism/distr*.csv
 /prism/tests/traces/
+prism/tests/param_distr/*
+prism/umdp_out/*
 
 #IDEA java IDE
 .idea/
 /umdp_test.iml
+

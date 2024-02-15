@@ -185,7 +185,7 @@ class DistributionCategorical extends DiscreteDistribution {
         while(prob_it.hasNext()){
             double p_j = prob_it.next().doubleValue();
             temp = max(v_min, min(v_max,
-                    (double) supp[j]));
+                    (int) supp[j]));
             b = ((temp - v_min) / delta_z);
             l= (int) floor(b); u= (int) ceil(b);
 

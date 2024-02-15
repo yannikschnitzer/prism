@@ -189,7 +189,7 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 		Evaluator.EvaluatorFunction eval = (Evaluator.EvaluatorFunction) mdp.getEvaluator();
 		int numParams = eval.getNumParameters();
 		ArrayList<DiscreteDistribution> transition_distr = new ArrayList<>(numParams);
-		// TODO : make a joint distribution
+		Double [] empty_eval_array = new Double[numParams];
 //		ArrayList<Double> joint_distr_supports = new ArrayList<>(numParams*numParams);
 //		ArrayList<Double> joint_distr_probs = new ArrayList<>(numParams*numParams);
 
@@ -200,7 +200,7 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 			ArrayList<Double> trans_distr_file = new ArrayList<>(uncertain_atoms);
 			ArrayList<Double> trans_prob = new ArrayList<>(uncertain_atoms);
 
-			int i = 0;
+			int i = 0; empty_eval_array[j] = 0.0;
 			// parse distributional information for
 			for (String param : params.get(0)) {
 				// distributions over transition probabilities
@@ -226,12 +226,13 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 			transition_distr.add(transition_temp);
 		}
 
-		Map<Integer, Point> jointSupp; Map<Integer, BigRational> jointProb;
+		Map<Integer, Point> jointSupp=new HashMap<>(uncertain_atoms); Map<Integer, BigRational> jointProb;
 		DiscreteDistribution joint_distr; int joint_atoms = 0;
 		if(numParams >1) {
-			jointSupp = new HashMap<>(uncertain_atoms);
 			jointProb = new HashMap<>(uncertain_atoms);
 			joint_atoms = getIndexCombinations(numParams,uncertain_atoms, jointSupp, jointProb, transition_distr, new int[numParams], 0);
+
+			mainLog.println("\nJoint distr:");
 			mainLog.println(jointProb);
 			mainLog.println(jointSupp);
 
@@ -244,10 +245,12 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 
 			joint_distr.project(jointProb.values(), jointSupp.keySet().toArray());
 
-		}
+		} else {
+            joint_distr = null;
+        }
 
 
-		// Create/initialise solution vector(s)
+        // Create/initialise solution vector(s)
 		DiscreteDistribution m = null;
 		double [] action_val = new double[nactions];
 		double [] action_exp = new double[n];
@@ -280,10 +283,9 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 
 					// INFO: the value passed to evaluate doesn't matter here because the rewards don't depend on the
 					// 		  transition probabilities
-					double reward = mdpRewards.getStateReward(s).evaluate(toBigRationalPoint(new Double [numParams])).doubleValue() ;
-					reward +=  mdpRewards.getTransitionReward(s, choice).evaluate(toBigRationalPoint(new Double [numParams])).doubleValue();
+					double reward = mdpRewards.getStateReward(s).evaluate(toBigRationalPoint(empty_eval_array)).doubleValue() ;
+					reward +=  mdpRewards.getTransitionReward(s, choice).evaluate(toBigRationalPoint(empty_eval_array)).doubleValue();
 
-					// TODO: probably have the check for which parameter here
 					// check if the transition is uncertain
 					isUncertain = true;
 					Iterator<Map.Entry<Integer, Function>> iter3 = mdp.getTransitionsIterator(s, choice);
@@ -292,21 +294,22 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 						isUncertain &= e.getValue().isConstant();
 //						mainLog.println(e.getValue());
 //						mainLog.println(isUncertain);
-						// FIXME get the name of the parameter from here, need to see what it looks like with multiple
-						// e.getValue().getFactory().getParameterName(0);
 					}
 
 					if(!isUncertain)
 					{
-
 						// Uncertain transition step
-						// TODO : send the distr for the right parameter, the parameter idx, and the number of parameters
-						m = operator.step(mdp, transition_distr.get(0),0, s, choice, gamma, reward);
+						// if multiple parameters exist, send the joint distribution
+						if(numParams>1){
+							m = operator.step(mdp, joint_distr, jointSupp, s, choice, gamma, reward);
+						} else{
+							m = operator.step(mdp, transition_distr.get(0), jointSupp, s, choice, gamma, reward);
+						}
 
 					}
 					else {
 						Iterator<Map.Entry<Integer, Double>> iter2;
-						iter2 = mdp.getTransitionsMappedIterator(s, choice, p -> p.evaluate(toBigRationalPoint(new Double [numParams])).doubleValue());
+						iter2 = mdp.getTransitionsMappedIterator(s, choice, p -> p.evaluate(toBigRationalPoint(empty_eval_array)).doubleValue());
 						m = operator.step(iter2, gamma, reward, s);
 					}
 					// mainLog.println("state : "+s+"- choice: "+ mdp.getAction(s, choice)+" -- [" + m.toString(operator.getFormat()) +"]");
@@ -365,32 +368,36 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 		mainLog.println("Computing distribution on induced DTMC...");
 		if (check_dtmc_distr) {
 			double expected_dtmc = 0;
-			double [] exp_dtmc_atom = new  double[uncertain_atoms];
-			for(int i=0; i<uncertain_atoms; i++) {
+			int total_atoms = (!jointSupp.isEmpty()? joint_atoms : uncertain_atoms );
+			double [] exp_dtmc_atom = new double[total_atoms];
+			for(int i=0; i<total_atoms; i++) {
 				int finalI=i;
-//				Double [] joint_val = new Double[numParams];
-//				for (int j=0; j<numParams; j++)
-//				{
-//					joint_val[j] = transition_distr.get(j).getSupport(finalI);
-//				}
-				// fixme: multiple param support
-				MDP<Double> atom_mdp = new MDPSimple<>(mdp,
-						p->p.evaluate(toBigRationalPoint(transition_distr.get(0).getSupport(finalI))).doubleValue(),
-						Evaluator.forDouble());
+
+				// if multiple parameters, use jointSupp which maps an index to a point
+				MDP<Double> atom_mdp;
+				if(!jointSupp.isEmpty()) {
+					atom_mdp = new MDPSimple<>(mdp,
+							p -> p.evaluate(jointSupp.get(finalI)).doubleValue(),
+							Evaluator.forDouble());
+				} else {
+					atom_mdp = new MDPSimple<>(mdp,
+							p -> p.evaluate(toBigRationalPoint(transition_distr.get(0).getSupport(finalI))).doubleValue(),
+							Evaluator.forDouble());
+				}
 
 				MDStrategy strat = new MDStrategyArray(atom_mdp, choices);
 				DTMC dtmc = new DTMCFromMDPAndMDStrategy(atom_mdp, strat);
 				StateRewardsArray mcRewards = new StateRewardsArray(n);
 
 				for (int s = 0; s < n; s++) {
-					double reward = mdpRewards.getStateReward(s).evaluate(toBigRationalPoint(new Double [numParams])).doubleValue() ;
-					reward +=  mdpRewards.getTransitionReward(s, choices[s]).evaluate(toBigRationalPoint(new Double [numParams])).doubleValue();
+					double reward = mdpRewards.getStateReward(s).evaluate(toBigRationalPoint(empty_eval_array)).doubleValue() ;
+					reward +=  mdpRewards.getTransitionReward(s, choices[s]).evaluate(toBigRationalPoint(empty_eval_array)).doubleValue();
 					mcRewards.setStateReward(s, reward);
 				}
 				DTMCModelChecker mcDTMC = new DTMCModelChecker(this);
 
 				timer = System.currentTimeMillis();
-				ModelCheckerResult dtmc_result = mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, target, "prism/distr_dtmc_exp_prob_"+i+".csv", dtmc_epsilon);
+				ModelCheckerResult dtmc_result = mcDTMC.computeReachRewardsDistr(dtmc, mcRewards, target, "prism/umdp_out/distr_dtmc_prob_exp_"+i+".csv", dtmc_epsilon);
 				timer = System.currentTimeMillis() - timer;
 				if (verbosity >= 1) {
 					mainLog.print("\nDTMC computation (" + (min ? "min" : "max") + ")");
@@ -403,16 +410,24 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 					exp_dtmc_atom[i]+= entry.getKey() *entry.getValue();
 				}
 
-				// FIXME : this won't work for multiple params
-				expected_dtmc +=  transition_distr.get(0).getValue(i)*exp_dtmc_atom[i];
+				// Use the joint distribution if there are multiple parameters
+				if(!jointSupp.isEmpty()) {
+					expected_dtmc += joint_distr.getValue(i) * exp_dtmc_atom[i];
+				} else{
+					expected_dtmc += transition_distr.get(0).getValue(i) * exp_dtmc_atom[i];
+				}
 			}
 
-			// fIXME: mulplite param update
-			mainLog.println("-----Atoms: "+ Arrays.toString(transition_distr.get(0).getSupports()));
-			mainLog.println("---Weights: "+ Arrays.toString(transition_distr.get(0).getValues()));
-			mainLog.println("Exp values: "+ Arrays.toString(exp_dtmc_atom));
+			// print info for DTMC results
+			if(!jointSupp.isEmpty()) {
+				mainLog.println("-----Atoms: " + Arrays.toString(joint_distr.getSupports()));
+				mainLog.println("---Weights: " + Arrays.toString(joint_distr.getValues()));
+			} else {
+				mainLog.println("-----Atoms: " + Arrays.toString(transition_distr.get(0).getSupports()));
+				mainLog.println("---Weights: " + Arrays.toString(transition_distr.get(0).getValues()));
+			}
+			mainLog.println("Exp values: " + Arrays.toString(exp_dtmc_atom));
 			mainLog.println("DTMC weighted expected value :" + expected_dtmc);
-			//mainLog.print(choices);
 		}
 
 
@@ -445,10 +460,9 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 					BigRational[] big_temp = new BigRational[indexList.length];
 					indexList[0] = i;
 					BigRational joint_value = new BigRational(1);
-					joint_value.
 					for (int j = 0; j < indexList.length; j++) {
 						big_temp[j] = new BigRational(distr_list.get(j).getSupport(indexList[j]));
-						joint_value .multiply(new BigRational(distr_list.get(j).getValue(indexList[j])));
+						joint_value = joint_value.multiply(new BigRational(distr_list.get(j).getValue(indexList[j])));
 					}
 					supp.put(count, new Point(big_temp));
 					prob.put(count, joint_value);
