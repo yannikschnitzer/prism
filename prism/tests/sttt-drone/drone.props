@@ -2,3 +2,7 @@
 R(dist)min=?[F "done"]
 R(cvar)min=?[F "done"]
 Rmin=?[F "done"]
+
+// time imdp
+Rminmin=?[F "done"]
+Rminmax=?[F "done"]

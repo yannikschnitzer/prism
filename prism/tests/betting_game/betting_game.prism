@@ -3,8 +3,10 @@ mdp
 const int M = 5; // represents starting amount
 const int MAX_MONEY = 100;
 const int STAGES = 10; // number of stages
-const double p_win = 0.7;
-const double p_jackpot = 0.05;
+
+// Uncertain parameters
+const double p_win; // original 0.7
+const double p_jackpot; // original 0.05
 
 module game
     m:[0..MAX_MONEY] init M; // represents current money

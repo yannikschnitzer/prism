@@ -54,7 +54,8 @@ mdp
 // VARIABLES
 const int N; // number of abstract hosts
 const int K; // number of probes to send
-const double loss; // probability of message loss
+//const double loss = 0.1; // probability of message loss
+const double e = 0.15;
 
 // PROBABILITIES
 const double old = N/65024; // probability pick an ip address being used
@@ -142,7 +143,7 @@ module environment
 	[send] l>0 & n=8 -> (n'=n); // buffer full so lose message
 	
 	// start sending message from host
-	[] l>0 & b=0 & n>0 -> (1-loss) : (b'=1) & (ip_mess'=b_ip0) 
+	[] l>0 & b=0 & n>0 -> [0.8-e,0.8+e] : (b'=1) & (ip_mess'=b_ip0) 
 	                                & (n'=n-1)
 	                                & (b_ip7'=0) 
 	                                & (b_ip6'=b_ip7) 
@@ -152,7 +153,7 @@ module environment
 	                                & (b_ip2'=b_ip3) 
 	                                & (b_ip1'=b_ip2) 
 	                                & (b_ip0'=b_ip1) // send message
-	                         + loss : (n'=n-1)
+	                         + [0.2-e,0.2+e] : (n'=n-1)
 	                                & (b_ip7'=0) 
 	                                & (b_ip6'=b_ip7) 
 	                                & (b_ip5'=b_ip6) 
@@ -163,8 +164,8 @@ module environment
 	                                & (b_ip0'=b_ip1); // lose message
 	
 	// start sending message to host
-	[] l>0 & b=0 & n0>0 -> (1-loss) : (b'=2) & (ip_mess'=0) & (n0'=n0-1) + loss : (n0'=n0-1); // different ip
-	[] l>0 & b=0 & n1>0 -> (1-loss) : (b'=2) & (ip_mess'=1) & (n1'=n1-1) + loss : (n1'=n1-1); // same ip
+	[] l>0 & b=0 & n0>0 -> [0.8-e,0.8+e] : (b'=2) & (ip_mess'=0) & (n0'=n0-1) + [0.2-e,0.2+e] : (n0'=n0-1); // different ip
+	[] l>0 & b=0 & n1>0 -> [0.8-e,0.8+e] : (b'=2) & (ip_mess'=1) & (n1'=n1-1) + [0.2-e,0.2+e] : (n1'=n1-1); // same ip
 	
 	// finish sending message from host
 	[] l>0 & b=1 & ip_mess=0 -> (b'=0) & (z'=0) & (n0'=min(n0+1,B0)) & (ip_mess'=0);
@@ -261,4 +262,3 @@ label "goal" = (l=4 & ip=1);
 rewards
 	true : 1;
 endrewards
-

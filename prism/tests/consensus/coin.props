@@ -1,0 +1,7 @@
+Rmin=?[F "finished"] // maybe max of Rmin/Pmax for best policy
+R(cvar)min=? [ F "finished" ];
+R(dist)min=? [ F "finished" ];
+
+// IMDP props
+Rminmin=?[F "finished"]
+Rminmax=?[F "finished"]

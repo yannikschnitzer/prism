@@ -1,10 +1,11 @@
 //Randomised Consensus Protocol
 
 mdp
-const double p1; // in [0.2 , 0.8]
-const double p2; // in [0.2 , 0.8]
-const double p3; // in [0.2 , 0.8]
-const double p4; // in [0.2 , 0.8]
+//const double p1; // in [0.2 , 0.8]
+//const double p2; // in [0.2 , 0.8]
+//const double p3; // in [0.2 , 0.8]
+//const double p4; // in [0.2 , 0.8]
+const double e=0.3;
 
 
 const int N=4;
@@ -30,7 +31,7 @@ module process1
 	coin1 : [0..1];	
 
 	// flip coin
-	[] (pc1=0)  -> p1 : (coin1'=0) & (pc1'=1) + 1 - p1 : (coin1'=1) & (pc1'=1);
+	[] (pc1=0)  -> [0.5-e, 0.5+e] : (coin1'=0) & (pc1'=1) + [0.5-e, 0.5+e] : (coin1'=1) & (pc1'=1);
 	// write tails -1  (reset coin to add regularity)
 	[] (pc1=1) & (coin1=0) & (counter>0) -> (counter'=counter-1) & (pc1'=2) & (coin1'=0);
 	// write heads +1 (reset coin to add regularity)
@@ -47,9 +48,9 @@ module process1
 
 endmodule
 
-module process2 = process1[pc1=pc2,coin1=coin2,p1=p2] endmodule
-module process3 = process1[pc1=pc3,coin1=coin3,p1=p3] endmodule
-module process4 = process1[pc1=pc4,coin1=coin4,p1=p4] endmodule
+module process2 = process1[pc1=pc2,coin1=coin2,e=e] endmodule
+module process3 = process1[pc1=pc3,coin1=coin3,e=e] endmodule
+module process4 = process1[pc1=pc4,coin1=coin4,e=e] endmodule
 
 label "finished" = pc1=3 &pc2=3 &pc3=3 &pc4=3;
 label "all_coins_equal_1" = coin1=1 &coin2=1 &coin3=1 &coin4=1 ;
