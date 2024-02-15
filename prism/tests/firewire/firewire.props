@@ -3,6 +3,10 @@ R(dist){"time"}min=?[F "done"]
 R(cvar){"time"}min=?[F "done"]
 R{"time"}min=?[F "done"]
 
+// time imdp
+Rminmin=?[F "done"]
+Rminmax=?[F "done"]
+
 // time sending
 R(dist){"time_sending"}min=?[F "done"]
 R(cvar){"time_sending"}min=?[F "done"]
