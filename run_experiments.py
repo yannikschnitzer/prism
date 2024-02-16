@@ -9,7 +9,28 @@ import numpy as np
 
 
 # #### Functions for saving output files
-def check_save_location(exp_folder, exp_name, prefix, debug):
+def check_save_location(exp_folder, exp_name, prefix, debug, isUncertain=False):
+
+    if isUncertain:
+        if not os.path.isdir(distr_out_folder):
+            command = 'mkdir '+ distr_out_folder
+            print("Making uncertain output folder")
+            if debug:
+                print(command)
+            os.system(command)
+        else :
+            command = 'rm '+ distr_out_folder+"*"
+            print("Removing old info")
+            if debug:
+                print(command)
+            os.system(command)
+        
+        if not os.path.isdir(distr_param_folder):
+            command = 'mkdir '+ distr_param_folder
+            print("Making uncertain param distribution folder")
+            if debug:
+                print(command)
+            os.system(command)
 
     if not os.path.isdir(exp_folder):
         command = 'mkdir '+ exp_folder
@@ -17,6 +38,14 @@ def check_save_location(exp_folder, exp_name, prefix, debug):
         if debug:
             print(command)
         os.system(command)
+
+    if not os.path.isdir(exp_folder+exp_name+'/umdp_out/'):
+        if isUncertain:
+            command = 'mkdir '+ exp_folder+exp_name+'/umdp_out/'
+            print("Making distr experiment folder")
+            if debug:
+                print(command)
+            os.system(command)
 
     if not os.path.isdir(exp_folder+exp_name):
         command = 'mkdir '+ exp_folder+exp_name
@@ -86,15 +115,17 @@ def copy_trace_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix,debu
     os.system(command)
 
 def copy_dtmc_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix, debug, isUncertain):
-    temp_alg=alg
     if isUncertain:
-        temp_alg = alg+'_prob'
-    # Copy DTMC files
-    source = prefix+'distr_dtmc_'+temp_alg+'.csv'
-    if 'dtmc' in alg:
-        source = prefix+'distr.csv' 
-    target = exp_folder+exp_name+'/'+exp_name+'_distr_dtmc_'+temp_alg+'_'+rep+apdx+'.csv'
-    command = cmd_base+source+' '+target
+        source = distr_out_folder+'*'
+        target = exp_folder+exp_name+'/umdp_out/'
+        command = cmd_base+ '-a '+source+' '+target
+    else :
+        # Copy DTMC files
+        source = prefix+'distr_dtmc_'+alg+'.csv'
+        if 'dtmc' in alg:
+            source = prefix+'distr.csv' 
+        target = exp_folder+exp_name+'/'+exp_name+'_distr_dtmc_'+alg+'_'+rep+apdx+'.csv'
+        command = cmd_base+source+' '+target
     if debug:
         print(command)
     os.system(command)
@@ -209,7 +240,43 @@ def base_exp(all_experiments, alg_types, rep_types, apdx='', debug=False, isUnce
                         # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, apdx, prefix, debug, isUncertain)
                         copy_vi_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug, isUncertain)
                         # copy_trace_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug, isUncertain)
-                        # copy_dtmc_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug, isUncertain)
+                        copy_dtmc_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug, isUncertain)
+                    else:
+                        print(f'Error running experiment')
+                        # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, apdx, prefix, debug, isUncertain)
+
+# #### IMDP Base experiment
+
+def interval_exp(all_experiments, alg_types, rep_types, apdx='', debug=False, isUncertain=False):
+    apd = '_'+ apdx if apdx != '' else apdx
+    for exp in all_experiments:
+        for alg in alg_types: # imin imax
+            if '-' in alg:
+                print(f'\nSkipping experiment:{exp}, alg:{alg}')
+                continue
+            else:
+                temp_model = config[exp]['model']
+                res = temp_model.rsplit('.', 1)
+                temp_model = res[0]+'_imdp.'+res[1]
+                for rep in rep_types:
+                    print(f'\nRunning base experiment:{exp}, alg:{alg}, rep:{rep}')
+
+                    # create cmd + run
+                    base_command = mem_alloc+temp_model+' '+config[exp]['props']+rep_base+rep
+                    if 'const' in config[exp]:
+                        base_command += ' '+config[exp]['const']
+                    
+                    options =' -prop '+str(config[exp]['pn'][alg_map[alg]])
+                    options += tail+log_cmd+log_target(experiment_folder, exp,alg, rep, apd, debug, isUncertain)
+                    if debug:
+                        print(prism_exec+' '+base_command+options)
+                    r=os.system(prism_exec+' '+base_command+options)
+                    print(f'Return code: {r}')
+
+                    if r==0:
+                        # save output for current algorithm
+                        print(f"... Saving {alg} VI output files...")
+
                     else:
                         print(f'Error running experiment')
                         # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, apdx, prefix, debug, isUncertain)
@@ -527,6 +594,7 @@ def init_argparse() -> argparse.ArgumentParser:
     # Additional experiments
     parser.add_argument('-b', "--base", action='store_true', help='Base experiment')
     parser.add_argument('-u', "--uncertain", action='store_true', help='Uncertain transition base experiment')
+    parser.add_argument('-l', "--interval", action='store_true', help='IMDP base experiment')
     parser.add_argument('-a', "--varyatoms", action='store_true', help='Vary the number of atoms in the distr representation from: '+str(atom_vals))
     parser.add_argument('-t', "--varyatomscvar", action='store_true', help='Vary the number of atoms in the distr representation for cvar from: '+str(atom_vals))
     parser.add_argument('-c', "--varybatoms", action='store_true', help='Vary the number of atoms in the CVaR budget from:'+ str(b_atoms_vals))
@@ -550,6 +618,8 @@ prism_exec = prefix+'bin/prism'
 mem_alloc='-javastack 100m -javamaxmem 14g '
 experiment_folder = prefix+'tests/experiments/'
 trace_folder = prefix+'tests/traces/'
+distr_out_folder = prefix+'umdp_out/'
+distr_param_folder = prefix+'tests/param_distr/'
 rep_base = ' -distrmethod '
 tail = ' -v -ex -exportstrat stdout'
 log_cmd = ' -mainlog '
@@ -561,11 +631,11 @@ alpha_vals = [0.1, 0.5, 0.99]
 eps_vals = [0.01, 0.001, 0.0001, 0.00001]
 header_vi =['atoms', 'vmin', 'vmax', 'error', 'epsilon','alpha','uatoms','u_vmin','u_vmax']
 header_b = ['atoms', 'bmin', 'bmax']
-alg_map= {'exp': 0, 'cvar': 1, 'dtmc':2, 'vi':3}
+alg_map= {'exp': 0, 'cvar': 1, 'dtmc':2, 'vi':3, 'imin':4, 'imax':5}
 config = {
     'test': {'model':prefix+'tests/corridor.prism', 'props':prefix+'tests/corridor.props', 'pn':[3,2], 'vmax': 25, 'atoms':11, 'epsilon':def_eps, 'b':30, 'alpha':def_alpha},
     'cliffs' : {'model':prefix+'tests/cliffs_v2.prism', 'props':prefix+'tests/cliffs_v2.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
-    'betting_g' :{'model':prefix+'tests/betting_game.prism', 'props':prefix+'tests/betting_game.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.8},
+    'betting_g_old' :{'model':prefix+'tests/betting_game.prism', 'props':prefix+'tests/betting_game.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.8},
     'ds_treasure' :{'model':prefix+'tests/ds_treasure.prism', 'props':prefix+'tests/ds_treasure.props', 'pn':[3,2], 'vmax': 800, 'atoms':201, 'epsilon':def_eps, 'b':101, 'alpha':0.8},
     'drones' :{'model':prefix+'tests/drones.prism', 'props':prefix+'tests/drones.props', 'pn':[1,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
     'gridmap_10' : {'model':prefix+'tests/gridmap/gridmap_10_10.prism', 'props':prefix+'tests/gridmap/gridmap_10_10.props', 'pn':[3,2], 'vmax': def_vmax, 'epsilon':def_eps, 'alpha':def_alpha},
@@ -577,7 +647,7 @@ config = {
     'gridworld_8': {'model':prefix+'tests/gridworld/gridworld.nm', 'props':prefix+'tests/gridworld/gridworld.props', 'pn':[3,2], 'vmax': 50, 'atoms':51, 'epsilon':def_eps, 'b':51, 'alpha':0.9, 'const':'-const xm=08,ym=04,jx_min=02,jx_max=06,jy_min=1,jy_max=5,jr=0.1,fr=0.00'},
     'gridworld_16': {'model':prefix+'tests/gridworld/gridworld.nm', 'props':prefix+'tests/gridworld/gridworld.props', 'pn':[3,2], 'vmax': 50, 'atoms':51, 'epsilon':def_eps, 'b':51, 'alpha':0.9, 'const':'-const xm=16,ym=04,jx_min=06,jx_max=10,jy_min=1,jy_max=5,jr=0.1,fr=0.00'},
     'gridworld_32': {'model':prefix+'tests/gridworld/gridworld.nm', 'props':prefix+'tests/gridworld/gridworld.props', 'pn':[3,2], 'vmax': 50, 'atoms':51, 'epsilon':def_eps, 'b':51, 'alpha':0.9, 'const':'-const xm=32,ym=04,jx_min=14,jx_max=18,jy_min=1,jy_max=5,jr=0.1,fr=0.00'},
-    'firewire': {'model':prefix+'tests/firewire/firewire.nm', 'props':prefix+'tests/firewire/firewire.props', 'pn':[3,2,-1,3], 'vmax': 160, 'atoms':161, 'epsilon':def_eps, 'b':31, 'alpha':0.9, 'const':'-const delay=3', 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p']},
+    'firewire_old': {'model':prefix+'tests/firewire/firewire.nm', 'props':prefix+'tests/firewire/firewire.props', 'pn':[3,2,-1,3], 'vmax': 160, 'atoms':161, 'epsilon':def_eps, 'b':31, 'alpha':0.9, 'const':'-const delay=3', 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p']},
     'wlan2': {'model':prefix+'tests/wlan/wlan2.nm', 'props':prefix+'tests/wlan/wlan.props', 'pn':[3,2], 'vmax': 80, 'atoms':41, 'epsilon':def_eps, 'b':41, 'alpha':0.9, 'const':'-const TRANS_TIME_MAX=315'},
     'selfStabilising_10': {'model':prefix+'tests/quantile/selfStabilising/10procs.prism', 'props':prefix+'tests/quantile/selfStabilising/minimalSteps.props', 'pn':[3,2], 'vmax': 200, 'epsilon':def_eps, 'b':101, 'alpha':def_alpha},
     'selfStabilising_15': {'model':prefix+'tests/quantile/selfStabilising/15procs.prism', 'props':prefix+'tests/quantile/selfStabilising/minimalSteps.props', 'pn':[3,2], 'vmax': 300, 'epsilon':0.001, 'b':51, 'alpha':def_alpha},
@@ -593,7 +663,13 @@ config = {
     'leader_sync10_3': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync10_3.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 30, 'atoms':31, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
     'leader_sync10_4': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync10_4.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 30, 'atoms':31, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
     'leader_sync10_5': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync10_5.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
-    'underwater_tiny' :{'model':prefix+'tests/underwater_tiny/underwater_tiny.prism', 'props':prefix+'tests/underwater_tiny/underwater_tiny.props', 'pn':[1,2,-1,3], 'vmax': 5, 'atoms':11, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':11, 'u_bounds':[0.0, 1.0], 'params':['p']},
+    'underwater_tiny' :{'model':prefix+'tests/underwater_tiny/underwater_tiny.prism', 'props':prefix+'tests/underwater_tiny/underwater_tiny.props', 'pn':[1,2,-1,3,4,5], 'vmax': 5, 'atoms':11, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':11, 'u_bounds':[0.0, 1.0], 'params':['p']},
+    'zeroconf' :{'model':prefix+'tests/underwater_tiny/underwater_tiny.prism', 'props':prefix+'tests/underwater_tiny/underwater_tiny.props', 'pn':[1,2,-1,3,4,5], 'vmax': 5, 'atoms':11, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':11, 'u_bounds':[0.0, 1.0], 'params':['p']},
+    'firewire' :{'model':prefix+'tests/firewire/firewire.nm', 'props':prefix+'tests/firewire/firewire.props', 'pn':[1,2,-1,3,4,5], 'vmax': 160, 'atoms':161, 'epsilon':def_eps, 'b':31, 'alpha':0.9, 'const':'-const delay=3', 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p']},
+    'betting_g' :{'model':prefix+'tests/betting_game/betting_game.prism', 'props':prefix+'tests/betting_game/betting_game.props', 'pn':[3,2,-1,1,4,5], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.8, 'u_atoms':21, 'u_bounds':[0.0, 1.0], 'params':['p_win', 'p_jackpot']},
+    'coin2' :{'model':prefix+'tests/consensus/coin2.pm', 'props':prefix+'tests/consensus/coin.props', 'pn':[1,2,-1,3,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1', 'p2']},
+    'coin4' :{'model':prefix+'tests/consensus/coin4.pm', 'props':prefix+'tests/consensus/coin.props', 'pn':[1,2,-1,3,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1','p2','p3','p4']},
+    'drone_small' :{'model':prefix+'tests/sttt-drone/drone_model_small.prism', 'props':prefix+'tests/sttt-drone/drone.props', 'pn':[1,2,-1,3,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1','p2']},
 }
 
 
@@ -602,7 +678,7 @@ experiment_names=[ 'cliffs', 'mud_nails', 'gridmap_10', 'drones']
 set_experiments = ['test', 'betting_g','ds_treasure', 'gridmap_10', 'uav_var', 'drones']
 big_experiments = ['drones_15','gridmap_150_3918']
 ssp_comparison = ['gridworld_4', 'gridworld_8', 'gridworld_16', 'gridworld_32', 'firewire', 'wlan2' ]
-prob_experiments = ['underwater_tiny','firewire']
+prob_experiments = ['underwater_tiny','firewire','zeroconf','betting_g','coin2','coin4','drone_small']
 egl = [ 'egl_8_3', 'egl_8_4', 'egl_8_5'] #, 'egl_8_6'
 leader = ['leader_sync8_5', 'leader_sync10_4', 'leader_sync8_6'] # , 'leader_sync12_3']
 herman = ['herman_13', 'herman_15', 'herman_17']
@@ -650,7 +726,7 @@ if __name__ == "__main__":
 
     # create necessary locations
     for exp in experiments:
-        check_save_location(experiment_folder, exp, prefix, args.debug)
+        check_save_location(experiment_folder, exp, prefix, args.debug, args.uncertain)
 
     if args.alg == 'all':
         algs = alg_types
@@ -670,6 +746,9 @@ if __name__ == "__main__":
 
     if args.base :
         base_exp(experiments, algs, reps, apdx=args.apdx, debug=args.debug)
+    
+    if args.interval :
+        interval_exp(experiments, ['imin','imax'], reps, apdx=args.apdx, debug=args.debug, isUncertain=True)
     
     if args.uncertain :
         base_exp(experiments, algs, reps, apdx=args.apdx, debug=args.debug, isUncertain=True)

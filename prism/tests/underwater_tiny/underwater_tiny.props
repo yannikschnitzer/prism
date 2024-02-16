@@ -1,3 +1,7 @@
 R(dist)min=?[F "goal"]
 R(cvar)min=?[F "goal"]
 Rmin=?[F "goal"]
+
+// IMDP props
+Rminmin=?[F"goal"]
+Rminmax=?[F"goal"]
