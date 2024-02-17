@@ -1,0 +1,7 @@
+R{"attacks"}min=? [F s11=2 ]
+R(dist){"attacks"}min=?[F s11=2 ]
+R(cvar){"attacks"}min=?[F s11=2 ]
+
+// imdp
+R{"attacks"}minmin=?[F s11=2 ]
+R{"attacks"}minmax=?[F s11=2 ]
