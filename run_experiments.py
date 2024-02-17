@@ -18,12 +18,6 @@ def check_save_location(exp_folder, exp_name, prefix, debug, isUncertain=False):
             if debug:
                 print(command)
             os.system(command)
-        else :
-            command = 'rm '+ distr_out_folder+"*"
-            print("Removing old info")
-            if debug:
-                print(command)
-            os.system(command)
         
         if not os.path.isdir(distr_param_folder):
             command = 'mkdir '+ distr_param_folder
@@ -61,6 +55,13 @@ def check_save_location(exp_folder, exp_name, prefix, debug, isUncertain=False):
             print(command)
         os.system(command)
 
+def remove_old_info(exp_folder, exp_name, prefix, debug, isUncertain=False):
+    command = 'rm '+ distr_out_folder+"*"
+    print("Removing old info")
+    if debug:
+        print(command)
+    os.system(command)
+
 # Create Log target
 def log_target(exp_folder, exp_name, alg, rep, apdx, debug, isUncertain=False):
     if 'vi' in alg:
@@ -72,6 +73,7 @@ def log_target(exp_folder, exp_name, alg, rep, apdx, debug, isUncertain=False):
     if debug: 
         print(target)
     return target
+
 # Copy Log file
 def copy_log_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix, debug, isUncertain=False):
     if 'vi' in alg:
@@ -116,9 +118,15 @@ def copy_trace_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix,debu
 
 def copy_dtmc_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix, debug, isUncertain):
     if isUncertain:
-        source = distr_out_folder+'*'
-        target = exp_folder+exp_name+'/umdp_out/'
-        command = cmd_base+ '-a '+source+' '+target
+        source = distr_out_folder
+
+        for f in os.listdir(source):
+            res = f.rsplit('.', 1)
+            target =  exp_folder+exp_name+'/umdp_out/' +res[0]+'_'+alg+'_'+rep+apdx+'.'+res[1]
+            command = 'mv '+source+f+' '+target
+        if debug:
+            print(command)
+        os.system(command)
     else :
         # Copy DTMC files
         source = prefix+'distr_dtmc_'+alg+'.csv'
@@ -126,9 +134,9 @@ def copy_dtmc_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix, debu
             source = prefix+'distr.csv' 
         target = exp_folder+exp_name+'/'+exp_name+'_distr_dtmc_'+alg+'_'+rep+apdx+'.csv'
         command = cmd_base+source+' '+target
-    if debug:
-        print(command)
-    os.system(command)
+        if debug:
+            print(command)
+        os.system(command)
 
 def create_params(atoms, v_bounds, error, epsilon, b_atoms, b_bounds, alpha, u_atoms=10, u_bounds=[0.0,1.0]):
     # make rows
@@ -161,7 +169,10 @@ def copy_distr_prob(cmd_base, exp_folder, exp_name, parameters, debug=True):
 
     # Copy Distribution for  each of the uncertain parameters
     for p in parameters:
-        source = prefix+'tests/'+exp_name+'/'+'param_'+p+'.csv'
+        if 'dir' in config[exp_name]:
+            source = prefix+'tests/'+config[exp_name]['dir']+'param_'+p+'.csv'
+        else:
+            source = prefix+'tests/'+exp_name+'/'+'param_'+p+'.csv'
         target = prefix+'tests/param_distr/param_'+p+'.csv'
         command = cmd_base+ source+' '+target
         if debug:
@@ -208,6 +219,7 @@ def base_exp(all_experiments, alg_types, rep_types, apdx='', debug=False, isUnce
      
                     if isUncertain:
                         copy_distr_prob(cmd_base_copy, experiment_folder, exp, config[exp]['params'])
+                        remove_old_info(experiment_folder,exp,prefix,debug=True)
 
                     # create cmd + run
                     base_command = mem_alloc+config[exp]['model']+' '+config[exp]['props']+rep_base+rep
@@ -217,8 +229,10 @@ def base_exp(all_experiments, alg_types, rep_types, apdx='', debug=False, isUnce
                     if isUncertain:
                         options=' -prop '+str(config[exp]['pn'][alg_map['vi']])
                         options += ' -param '
-                        for p in config[exp]['params']:
+                        for i,p in enumerate(config[exp]['params']):
                             options += p # TODO: this needs to be all parameters
+                            if i < len(config[exp]['params'])-1:
+                                options+=','
                         options+= ' -distr'
                     else :
                         options =' -prop '+str(config[exp]['pn'][alg_map[alg]])
@@ -664,12 +678,12 @@ config = {
     'leader_sync10_4': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync10_4.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 30, 'atoms':31, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
     'leader_sync10_5': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync10_5.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
     'underwater_tiny' :{'model':prefix+'tests/underwater_tiny/underwater_tiny.prism', 'props':prefix+'tests/underwater_tiny/underwater_tiny.props', 'pn':[1,2,-1,3,4,5], 'vmax': 5, 'atoms':11, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':11, 'u_bounds':[0.0, 1.0], 'params':['p']},
-    'zeroconf' :{'model':prefix+'tests/underwater_tiny/underwater_tiny.prism', 'props':prefix+'tests/underwater_tiny/underwater_tiny.props', 'pn':[1,2,-1,3,4,5], 'vmax': 5, 'atoms':11, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':11, 'u_bounds':[0.0, 1.0], 'params':['p']},
+    'zeroconf' :{'model':prefix+'tests/zeroconf/zeroconf.nm', 'props':prefix+'tests/zeroconf/zeroconf.props', 'dir':'zeroconf/', 'pn':[1,2,-1,3,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':11, 'u_bounds':[0.0, 1.0], 'params':['loss']},
     'firewire' :{'model':prefix+'tests/firewire/firewire.nm', 'props':prefix+'tests/firewire/firewire.props', 'pn':[1,2,-1,3,4,5], 'vmax': 160, 'atoms':161, 'epsilon':def_eps, 'b':31, 'alpha':0.9, 'const':'-const delay=3', 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p']},
-    'betting_g' :{'model':prefix+'tests/betting_game/betting_game.prism', 'props':prefix+'tests/betting_game/betting_game.props', 'pn':[3,2,-1,1,4,5], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.8, 'u_atoms':21, 'u_bounds':[0.0, 1.0], 'params':['p_win', 'p_jackpot']},
-    'coin2' :{'model':prefix+'tests/consensus/coin2.pm', 'props':prefix+'tests/consensus/coin.props', 'pn':[1,2,-1,3,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1', 'p2']},
-    'coin4' :{'model':prefix+'tests/consensus/coin4.pm', 'props':prefix+'tests/consensus/coin.props', 'pn':[1,2,-1,3,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1','p2','p3','p4']},
-    'drone_small' :{'model':prefix+'tests/sttt-drone/drone_model_small.prism', 'props':prefix+'tests/sttt-drone/drone.props', 'pn':[1,2,-1,3,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1','p2']},
+    'betting_g' :{'model':prefix+'tests/betting_game/betting_game.prism', 'props':prefix+'tests/betting_game/betting_game.props', 'dir':'betting_game/', 'pn':[3,2,-1,1,4,5], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.8, 'u_atoms':21, 'u_bounds':[0.0, 1.0], 'params':['p_win', 'p_jackpot']},
+    'coin2' :{'model':prefix+'tests/consensus/coin2.pm', 'props':prefix+'tests/consensus/coin.props', 'dir':'consensus/', 'pn':[1,2,-1,1,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1', 'p2']},
+    'coin4' :{'model':prefix+'tests/consensus/coin4.pm', 'props':prefix+'tests/consensus/coin.props', 'dir':'consensus/', 'pn':[1,2,-1,1,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1','p2','p3','p4']},
+    'drone_small' :{'model':prefix+'tests/sttt-drone/drone_model_small.nm', 'props':prefix+'tests/sttt-drone/drone.props', 'dir':'sttt-drone/', 'pn':[1,2,-1,3,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1','p2']},
 }
 
 

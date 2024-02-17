@@ -57,6 +57,8 @@ import explicit.rewards.MCRewardsFromMDPRewards;
 import explicit.rewards.MDPRewards;
 import explicit.rewards.Rewards;
 import explicit.rewards.StateRewardsArray;
+import param.BigRational;
+import param.Point;
 import parser.State;
 import parser.ast.Expression;
 import parser.type.TypeDouble;
@@ -3247,93 +3249,6 @@ public class MDPModelChecker extends ProbModelChecker
 		}
 
 		return params;
-	}
-
-	public void printToFile(Object [] policy, double [] value, String filename, int n)
-	{
-		mainLog.println("\nExporting solution to file \"" + filename + "\"...");
-		PrismFileLog out = new PrismFileLog(filename);
-		out.println("States");
-		out.println(n);
-		out.println("Policy");
-		out.println(Arrays.toString(policy));
-		out.println("Alpha value");
-		out.println(0);
-
-		DecimalFormat df = new DecimalFormat("0.000");
-		Arrays.stream(value).forEach(e -> out.print(df.format(e) + ","));
-		out.close();
-
-	}
-	public void printToFile(Object [] policy, double [][] action_cvar, double alpha, String filename, int n, int maxchoices)
-	{
-		mainLog.println("\nExporting solution to file \"" + filename + "\"...");
-		PrismFileLog out = new PrismFileLog("prism/tests/"+filename);
-		out.println("States");
-		out.println(n);
-		out.println("Policy");
-		out.println(Arrays.toString(policy));
-
-		out.println("Alpha value");
-		out.println(alpha);
-
-		out.println("Max number of actions");
-		out.println(maxchoices);
-
-		for (double[] doubles : action_cvar) // copy  temp value soln2 back to soln -> corresponds to Value table
-		{
-			DecimalFormat df = new DecimalFormat("0.000");
-			Arrays.stream(doubles).forEach(e -> {
-				if (e==Float.POSITIVE_INFINITY) {out.print("0.000,");}
-			    else {out.print(df.format(e) + ",");}});
-		}
-
-		out.print("\n");
-		out.close();
-	}
-
-	public void printToFile(Object [] policy, int [] choices, double [][] action_cvar, double alpha, int b_atoms, double[] b, int startB, String filename, int n, int maxchoices)
-	{
-		mainLog.println("\nExporting solution to file \"" + filename + "\"...");
-		PrismFileLog out = new PrismFileLog("prism/tests/"+filename);
-		out.println("This is new code !");
-		out.println("States");
-		out.println(n);
-//		out.println("Policy");
-//		out.println(Arrays.toString(policy));
-
-		out.println("Alpha value");
-		out.println(alpha);
-
-		out.println("Max number of actions");
-		out.println(maxchoices);
-
-		for (int i=0; i<n; i++) // copy  temp value soln2 back to soln -> corresponds to Value table
-		{
-			double [] state_vals = action_cvar[i];
-			DecimalFormat df = new DecimalFormat("0.000");
-			DecimalFormat df_state = new DecimalFormat("0");
-			int finalI = i;
-			Arrays.stream(state_vals).forEach(e -> {
-				if (e == Float.POSITIVE_INFINITY) {
-					out.println(df_state.format(finalI)+ ", "+df.format(choices[finalI]) +", 0.000,");
-				} else {
-					out.println(df_state.format(finalI)+ ", "+df.format(choices[finalI]) + ", "+df.format(e) + ",");
-				}
-			});
-		}
-
-		out.println("# b");
-		out.println(b_atoms);
-
-		out.println("b vals");
-		out.println(Arrays.toString(b));
-
-		out.println("Optimal start b");
-		out.println(startB);
-
-		out.print("\n");
-		out.close();
 	}
 
 	/**
