@@ -5,18 +5,46 @@ mdp
 
 // note made changes since cannot have strict inequalities
 // in digital clocks approach and suppose a station only sends one message
+const int sigma=1; // time for messages to propagate along the bus
+const int lambda=30; // time to send a message
 
 // actual parameters
 const int N = 2; // number of processes
 const int K = 4; // exponential backoff limit
 const int slot = 2*sigma; // length of slot
 const int M = floor(pow(2, K))-1 ; // max number of slots to wait
+const double p21;
+const double p22_1;
+const double p22_2;
+const double p22_3;
+const double p23_1;
+const double p23_2;
+const double p23_3;
+const double p23_4;
+const double p23_5;
+const double p23_6;
+const double p23_7;
+const double p24_1;
+const double p24_2;
+const double p24_3;
+const double p24_4;
+const double p24_5;
+const double p24_6;
+const double p24_7;
+const double p24_8;
+const double p24_9;
+const double p24_10;
+const double p24_11;
+const double p24_12;
+const double p24_13;
+const double p24_14;
+const double p24_15;
+
+
 //const int lambda=782;
 //const int sigma=26;
 
 // simplified parameters scaled
-const int sigma=1; // time for messages to propagate along the bus
-const int lambda=30; // time to send a message
 
 //----------------------------------------------------------------------------------------------------------------------------
 // the bus
@@ -90,10 +118,10 @@ module station1
 	
 	// set backoff (no time can pass in this state)
 	// probability depends on which transmission this is (cd1)
-	[] s1=2 & cd1=1 ->  1/2 : (s1'=3) & (bc1'=0) + 1/2 : (s1'=3) & (bc1'=1) ;
-	[] s1=2 & cd1=2 ->  1/4 : (s1'=3) & (bc1'=0) + 1/4 : (s1'=3) & (bc1'=1) + 1/4 : (s1'=3) & (bc1'=2) + 1/4 : (s1'=3) & (bc1'=3) ;
-	[] s1=2 & cd1=3 ->  1/8 : (s1'=3) & (bc1'=0) + 1/8 : (s1'=3) & (bc1'=1) + 1/8 : (s1'=3) & (bc1'=2) + 1/8 : (s1'=3) & (bc1'=3) + 1/8 : (s1'=3) & (bc1'=4) + 1/8 : (s1'=3) & (bc1'=5) + 1/8 : (s1'=3) & (bc1'=6) + 1/8 : (s1'=3) & (bc1'=7) ;
-	[] s1=2 & cd1=4 ->  1/16 : (s1'=3) & (bc1'=0) + 1/16 : (s1'=3) & (bc1'=1) + 1/16 : (s1'=3) & (bc1'=2) + 1/16 : (s1'=3) & (bc1'=3) + 1/16 : (s1'=3) & (bc1'=4) + 1/16 : (s1'=3) & (bc1'=5) + 1/16 : (s1'=3) & (bc1'=6) + 1/16 : (s1'=3) & (bc1'=7) + 1/16 : (s1'=3) & (bc1'=8) + 1/16 : (s1'=3) & (bc1'=9) + 1/16 : (s1'=3) & (bc1'=10) + 1/16 : (s1'=3) & (bc1'=11) + 1/16 : (s1'=3) & (bc1'=12) + 1/16 : (s1'=3) & (bc1'=13) + 1/16 : (s1'=3) & (bc1'=14) + 1/16 : (s1'=3) & (bc1'=15) ;
+	[] s1=2 & cd1=1 ->  p21 : (s1'=3) & (bc1'=0) + 1-p21 : (s1'=3) & (bc1'=1) ;
+	[] s1=2 & cd1=2 ->  p22_1 : (s1'=3) & (bc1'=0) + p22_2 : (s1'=3) & (bc1'=1) + p22_3 : (s1'=3) & (bc1'=2) + 1-p22_1-p22_3-p22_2 : (s1'=3) & (bc1'=3) ;
+	[] s1=2 & cd1=3 ->  p23_1 : (s1'=3) & (bc1'=0) + p23_2 : (s1'=3) & (bc1'=1) + p23_3 : (s1'=3) & (bc1'=2) + p23_4 : (s1'=3) & (bc1'=3) + p23_5 : (s1'=3) & (bc1'=4) + p23_6 : (s1'=3) & (bc1'=5) + p23_7 : (s1'=3) & (bc1'=6) + 1-p23_1-p23_2-p23_3-p23_4-p23_5-p23_6-p23_7 : (s1'=3) & (bc1'=7) ;
+	[] s1=2 & cd1=4 ->  p24_1 : (s1'=3) & (bc1'=0) + p24_2 : (s1'=3) & (bc1'=1) + p24_3 : (s1'=3) & (bc1'=2) + p24_4 : (s1'=3) & (bc1'=3) + p24_5 : (s1'=3) & (bc1'=4) + p24_6 : (s1'=3) & (bc1'=5) + p24_7 : (s1'=3) & (bc1'=6) + p24_8 : (s1'=3) & (bc1'=7) + p24_9 : (s1'=3) & (bc1'=8) + p24_10 : (s1'=3) & (bc1'=9) + p24_11 : (s1'=3) & (bc1'=10) + p24_12 : (s1'=3) & (bc1'=11) + p24_13 : (s1'=3) & (bc1'=12) + p24_14 : (s1'=3) & (bc1'=13) + p24_15 : (s1'=3) & (bc1'=14) + 1-p24_1-p24_2-p24_3-p24_4-p24_5-p24_6-p24_7-p24_8-p24_9-p24_10-p24_11-p24_12-p24_13-p24_14-p24_15 : (s1'=3) & (bc1'=15) ;
 	
 	// wait until backoff counter reaches 0 then send again
 	[time] (s1=3) & (x1<slot) -> (x1'=x1+1); // let time pass (in slot)
