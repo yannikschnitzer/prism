@@ -11,9 +11,9 @@ const int N=4;
 const int MAX=128;
 
 // reliability of channels
-// pL = probability of success on channel L
-const double pL;
-const double pK;
+const double eL=0.4;
+const double eK=0.45;
+
 
 module sender
 
@@ -116,7 +116,7 @@ module	channelK
 	k : [0..2];
 	
 	// idle
-	[aF] (k=0) -> pK : (k'=1) + 1-pK : (k'=2);
+	[aF] (k=0) -> [0.55-eK,0.55+eK] : (k'=1) + [0.45-eK,0.45+eK] : (k'=2);
 	// sending
 	[aG] (k=1) -> (k'=0);
 	// lost
@@ -129,7 +129,7 @@ module	channelL
 	l : [0..2];
 	
 	// idle
-	[aA] (l=0) -> pL : (l'=1) + 1-pL : (l'=2);
+	[aA] (l=0) -> [0.5-eL, 0.5+eL] : (l'=1) + [0.5-eL,0.5+eL] : (l'=2);
 	// sending
 	[aB] (l=1) -> (l'=0);
 	// lost
@@ -142,4 +142,3 @@ label "done" = (srep=3 & rrep=3);
 rewards 
 	true:1;
 endrewards
-
