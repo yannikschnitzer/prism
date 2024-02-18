@@ -1,7 +1,7 @@
-R{"attacks"}min=? [F s11=2 ]
-R(dist){"attacks"}min=?[F s11=2 ]
-R(cvar){"attacks"}min=?[F s11=2 ]
+R{"attacks"}min=? [F "infected" ]
+R(dist){"attacks"}min=?[F "infected" ]
+R(cvar){"attacks"}min=?[F "infected" ]
 
 // imdp
-R{"attacks"}minmin=?[F s11=2 ]
-R{"attacks"}minmax=?[F s11=2 ]
+R{"attacks"}minmin=?[F "infected" ]
+R{"attacks"}minmax=?[F "infected" ]

@@ -29,8 +29,8 @@ const double infH; // high infection rate : 22, 31, 32
 // const double detect31; 
 // const double detect32; 
 // const double detect33;  
-const detectL; // low detection rate : 11, 12, 13
-const detectH; // High detection rate
+const double detectL; // low detection rate : 11, 12, 13
+const double detectH; // High detection rate
 
 // first column (1..N)
 module n11
@@ -123,6 +123,8 @@ module n33
 	[attack23_33] (s33=2) -> true;
 	
 endmodule
+
+label "infected" = s11=2 & s12=2 & s21=2;
 
 // reward structure (number of attacks)
 rewards "attacks"
