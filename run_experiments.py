@@ -11,35 +11,12 @@ import numpy as np
 # #### Functions for saving output files
 def check_save_location(exp_folder, exp_name, prefix, debug, isUncertain=False):
 
-    if isUncertain:
-        if not os.path.isdir(distr_out_folder):
-            command = 'mkdir '+ distr_out_folder
-            print("Making uncertain output folder")
-            if debug:
-                print(command)
-            os.system(command)
-        
-        if not os.path.isdir(distr_param_folder):
-            command = 'mkdir '+ distr_param_folder
-            print("Making uncertain param distribution folder")
-            if debug:
-                print(command)
-            os.system(command)
-
     if not os.path.isdir(exp_folder):
         command = 'mkdir '+ exp_folder
         print("Making experiment folder")
         if debug:
             print(command)
         os.system(command)
-
-    if not os.path.isdir(exp_folder+exp_name+'/umdp_out/'):
-        if isUncertain:
-            command = 'mkdir '+ exp_folder+exp_name+'/umdp_out/'
-            print("Making distr experiment folder")
-            if debug:
-                print(command)
-            os.system(command)
 
     if not os.path.isdir(exp_folder+exp_name):
         command = 'mkdir '+ exp_folder+exp_name
@@ -54,6 +31,29 @@ def check_save_location(exp_folder, exp_name, prefix, debug, isUncertain=False):
         if debug:
             print(command)
         os.system(command)
+
+    if not os.path.isdir(exp_folder+exp_name+'/umdp_out/'):
+        if isUncertain:
+            command = 'mkdir '+ exp_folder+exp_name+'/umdp_out/'
+            print("Making distr experiment folder")
+            if debug:
+                print(command)
+            os.system(command)
+
+    if isUncertain:
+        if not os.path.isdir(distr_out_folder):
+            command = 'mkdir '+ distr_out_folder
+            print("Making uncertain output folder")
+            if debug:
+                print(command)
+            os.system(command)
+        
+        if not os.path.isdir(distr_param_folder):
+            command = 'mkdir '+ distr_param_folder
+            print("Making uncertain param distribution folder")
+            if debug:
+                print(command)
+            os.system(command)
 
 def remove_old_info(exp_folder, exp_name, prefix, debug, isUncertain=False):
     command = 'rm '+ distr_out_folder+"*"
@@ -684,7 +684,7 @@ config = {
     'coin2' :{'model':prefix+'tests/consensus/coin2.pm', 'props':prefix+'tests/consensus/coin.props', 'dir':'consensus/', 'pn':[1,2,-1,1,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1', 'p2']},
     'coin4' :{'model':prefix+'tests/consensus/coin4.pm', 'props':prefix+'tests/consensus/coin.props', 'dir':'consensus/', 'pn':[1,2,-1,1,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1','p2','p3','p4']},
     'drone_small' :{'model':prefix+'tests/sttt-drone/drone_model_small.nm', 'props':prefix+'tests/sttt-drone/drone.props', 'dir':'sttt-drone/', 'pn':[1,2,-1,3,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1','p2']},
-    'brp' :{'model':prefix+'tests/brp/brp.pm', 'props':prefix+'tests/brp/brp.props', 'dir':'brp/', 'pn':[1,2,-1,3,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':11, 'u_bounds':[0.0, 1.0], 'params':['pL','pK']},
+    'brp' :{'model':prefix+'tests/brp/brp.pm', 'props':prefix+'tests/brp/brp.props', 'dir':'brp/', 'pn':[1,2,-1,3,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':10, 'u_bounds':[0.1, 1.0], 'params':['pL','pK']},
     'virus' :{'model':prefix+'tests/virus/virus.pm', 'props':prefix+'tests/virus/virus.props', 'dir':'virus/', 'pn':[1,2,-1,1,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':11, 'u_bounds':[0.0, 1.0], 'params':['infL','infH','detectL','detectH']},
     #'wlan0' :{'model':prefix+'tests/sttt-drone/drone_model_small.nm', 'props':prefix+'tests/sttt-drone/drone.props', 'dir':'sttt-drone/', 'pn':[1,2,-1,3,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1','p2']},
 }
