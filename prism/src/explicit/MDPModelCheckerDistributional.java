@@ -1,23 +1,17 @@
 package explicit;
 
 import common.IntSet;
-import common.Interval;
-import common.iterable.FunctionalIterator;
-import common.iterable.Reducible;
 import explicit.rewards.MDPRewards;
 import explicit.rewards.StateRewardsArray;
 import param.BigRational;
 import param.Function;
-import parser.ast.Expression;
 import prism.Evaluator;
 import param.Point;
-import prism.Pair;
 import prism.PrismComponent;
 import prism.PrismException;
 import prism.PrismSettings;
 import strat.MDStrategy;
 import strat.MDStrategyArray;
-import strat.StrategyInfo;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -114,17 +108,14 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 
 		// Set up distribution variables
 		int atoms;
-		int iterations = 1500;
+		int iterations = 3000;
 		int min_iter = 8;
 		double error_thresh = 0.01;
 		double gamma = 1;
 		double alpha=0.5;
 		Double dtmc_epsilon = null;
-		boolean check_reach_dtmc = false;
 		boolean check_dtmc_distr = true;
 		boolean gen_trace = true;
-		boolean compute_dtmc_vi = true; // Toggle computing non distr Exp VI
-		String bad_states_label = "obs";
 
 		String c51 = "C51";
 		String qr = "QR";
@@ -233,12 +224,18 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 			joint_atoms = getIndexCombinations(numParams,uncertain_atoms, jointSupp, jointProb, transition_distr, new int[numParams], 0);
 
 			mainLog.println("\nJoint distr:");
-			mainLog.println(jointProb);
+			Iterator<Integer> iter_prob = jointProb.keySet().iterator();
+			DecimalFormat df = new DecimalFormat("0.000");
+			while (iter_prob.hasNext()) {
+				int key = iter_prob.next();
+				mainLog.print(key+"="+df.format(jointProb.get(key).doubleValue())+", ");
+			}
+			mainLog.println();
 			mainLog.println(jointSupp);
 
 			if (distr_type.equals(c51)) {
 				joint_distr = new DistributionCategorical(joint_atoms,
-						0, joint_atoms, mainLog);
+						0, joint_atoms-1, mainLog);
 			} else {
 				joint_distr = new DistributionQuantile(joint_atoms, mainLog);
 			}
@@ -370,6 +367,7 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 			double expected_dtmc = 0;
 			int total_atoms = (!jointSupp.isEmpty()? joint_atoms : uncertain_atoms );
 			double [] exp_dtmc_atom = new double[total_atoms];
+			long dtmc_timer = System.currentTimeMillis();
 			for(int i=0; i<total_atoms; i++) {
 				int finalI=i;
 
@@ -416,7 +414,16 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 				} else{
 					expected_dtmc += transition_distr.get(0).getValue(i) * exp_dtmc_atom[i];
 				}
+				
+				
 			}
+
+			dtmc_timer = System.currentTimeMillis() - dtmc_timer;
+			if (verbosity >= 1) {
+				mainLog.print("\nTotal DTMC computation for total atoms - "+total_atoms);
+				mainLog.println(" : " + dtmc_timer / 1000.0 + " seconds.");
+			}
+			
 
 			// print info for DTMC results
 			if(!jointSupp.isEmpty()) {
