@@ -160,6 +160,7 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
 			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
 					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
+			mainLog.println("u_atoms:"+uncertain_atoms+" - u_vmax:"+u_vmax+" - u_vmin:"+u_vmin);
 		} else{
 			atoms=101;
 			double v_max = 100;
@@ -171,6 +172,7 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 			mainLog.println("----- Parameters:\natoms:"+atoms+" - vmax:"+v_max+" - vmin:"+v_min);
 			mainLog.println("alpha:"+alpha+" - discount:"+gamma+" - max iterations:"+iterations+
 					" - error thresh:"+error_thresh+ " - epsilon:"+dtmc_epsilon);
+			mainLog.println("u_atoms:"+uncertain_atoms+" - u_vmax:"+u_vmax+" - u_vmin:"+u_vmin);
 			operator = new DistributionalBellmanOperatorProb(atoms, v_min, v_max, n, "C51", mainLog);
 			temp_p = new DistributionalBellmanOperatorProb(atoms, v_min, v_max, n, "C51", mainLog);
 			save_p = new DistributionCategorical(atoms, v_min, v_max, mainLog);
@@ -223,7 +225,7 @@ public class MDPModelCheckerDistributional extends ProbModelChecker
 			jointProb = new HashMap<>(uncertain_atoms);
 			joint_atoms = getIndexCombinations(numParams,uncertain_atoms, jointSupp, jointProb, transition_distr, new int[numParams], 0);
 
-			mainLog.println("\nJoint distr:");
+			mainLog.println("\nJoint distr with joint atoms:"+joint_atoms);
 			Iterator<Integer> iter_prob = jointProb.keySet().iterator();
 			DecimalFormat df = new DecimalFormat("0.000");
 			while (iter_prob.hasNext()) {

@@ -678,8 +678,8 @@ config = {
     'leader_sync10_5': {'model':prefix+'tests/dtmcs/leader_sync/leader_sync10_5.pm', 'props':prefix+'tests/dtmcs/leader_sync/time.props', 'pn':[2,-1, 1], 'vmax': 100, 'atoms':101, 'epsilon':def_eps, 'b':101, 'alpha':0.9},
     #'zeroconf' :{'model':prefix+'tests/zeroconf/zeroconf.nm', 'props':prefix+'tests/zeroconf/zeroconf.props', 'dir':'zeroconf/', 'pn':[1,2,-1,3,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':11, 'u_bounds':[0.0, 1.0], 'params':['loss']},
     'underwater_tiny' :{'model':prefix+'tests/underwater_tiny/underwater_tiny.prism', 'props':prefix+'tests/underwater_tiny/underwater_tiny.props', 'pn':[1,2,-1,3,4,5], 'vmax': 5, 'atoms':11, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':11, 'u_bounds':[0.0, 1.0], 'params':['p']},
-    'firewire' :{'model':prefix+'tests/firewire/firewire.nm', 'props':prefix+'tests/firewire/firewire.props', 'pn':[1,2,-1,3,4,5], 'vmax': 160, 'atoms':161, 'epsilon':def_eps, 'b':31, 'alpha':0.9, 'const':'-const delay=3', 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p']},
-    'betting_g' :{'model':prefix+'tests/betting_game/betting_game.prism', 'props':prefix+'tests/betting_game/betting_game.props', 'dir':'betting_game/', 'pn':[3,2,-1,1,4,5], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.8, 'u_atoms':21, 'u_bounds':[0.0, 1.0], 'params':['p_win', 'p_jackpot']},
+    'firewire' :{'model':prefix+'tests/firewire/firewire.nm', 'props':prefix+'tests/firewire/firewire.props', 'pn':[1,2,-1,3,4,5], 'vmax': 200, 'atoms':201, 'epsilon':def_eps, 'b':31, 'alpha':0.9, 'const':'-const delay=3', 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p']},
+    'betting_g' :{'model':prefix+'tests/betting_game/betting_game.prism', 'props':prefix+'tests/betting_game/betting_game.props', 'dir':'betting_game/', 'pn':[3,2,-1,1,4,5], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.8, 'u_atoms':17, 'u_bounds':[0.0, 0.8], 'params':['p_win', 'p_jackpot']},
     'coin2' :{'model':prefix+'tests/consensus/coin2.pm', 'props':prefix+'tests/consensus/coin.props', 'dir':'consensus/', 'pn':[1,2,-1,1,4,5], 'vmax': 300, 'atoms':301, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1', 'p2'], 'const':'-const K=4'},
     'coin2_big' :{'model':prefix+'tests/consensus/coin2.pm', 'props':prefix+'tests/consensus/coin.props', 'dir':'consensus/', 'pn':[1,2,-1,1,4,5], 'vmax': 1000, 'atoms':1001, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1', 'p2'], 'const':'-const K=8'},
     'coin4' :{'model':prefix+'tests/consensus/coin4.pm', 'props':prefix+'tests/consensus/coin.props', 'dir':'consensus/', 'pn':[1,2,-1,1,4,5], 'vmax': 1000, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1','p2','p3','p4']},
@@ -695,7 +695,7 @@ experiment_names=[ 'cliffs', 'mud_nails', 'gridmap_10', 'drones']
 set_experiments = ['test', 'betting_g','ds_treasure', 'gridmap_10', 'uav_var', 'drones']
 big_experiments = ['drones_15','gridmap_150_3918']
 ssp_comparison = ['gridworld_4', 'gridworld_8', 'gridworld_16', 'gridworld_32', 'firewire', 'wlan2' ]
-prob_experiments = ['underwater_tiny','firewire','betting_g','coin2', 'drone_small']
+prob_experiments = ['underwater_tiny','firewire','betting_g','coin2', 'drone_small', 'coin2_big']
 egl = [ 'egl_8_3', 'egl_8_4', 'egl_8_5'] #, 'egl_8_6'
 leader = ['leader_sync8_5', 'leader_sync10_4', 'leader_sync8_6'] # , 'leader_sync12_3']
 herman = ['herman_13', 'herman_15', 'herman_17']

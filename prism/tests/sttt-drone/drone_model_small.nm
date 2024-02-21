@@ -33,7 +33,7 @@ formula zarea3 = 7 <= z & z < MAXZ;
 // -z is not possible with this env model
 
 const double p1; // -x wind : (x1 y3 z0) & (x1 y3 z2) & (x1 y0 z3) 
-const double p2=0.4; // -y wind : (x0 y1 z0) & (x0 y1 z1) & (x0 y1 z2) & (x0 y1 z3)
+const double p2; // -y wind : (x0 y1 z0) & (x0 y1 z1) & (x0 y1 z2) & (x0 y1 z3)
 
 const double p = 1/13; // uniform for all other areas
 
