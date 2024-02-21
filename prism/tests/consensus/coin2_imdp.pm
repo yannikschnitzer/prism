@@ -6,7 +6,7 @@ mdp
 const double e=0.3;
 
 const int N=2;
-const int K=2;
+const int K;
 const int range = 2*(K+1)*N;
 const int counter_init = (K+1)*N;
 const int left = N;

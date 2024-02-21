@@ -14,8 +14,8 @@ mdp
 // const double infect31;
 // const double infect32;
 // const double infect33;
-const double infL=0.4; // low infection rate 
-const double infH=0.4; // high infection rate : 22, 31, 32
+const double infL=0.3; // low infection rate 
+const double infH=0.35; // high infection rate : 22, 31, 32
 
 // low nodes (those above the ceil(N/2) row)
 // const double detect11; 
@@ -71,10 +71,10 @@ module n21
 
 endmodule
 
-module n31=n11[s11=s31,detectL=detectH,infL=infH,attack21_11=attack21_31,attack12_11=attack32_31,attack11_21=attack31_21,attack11_12=attack31_32] endmodule
+module n31=n11[s11=s31,detectL=detectL,infL=infH,attack21_11=attack21_31,attack12_11=attack32_31,attack11_21=attack31_21,attack11_12=attack31_32] endmodule
 
 // second column
-module n12=n21[s21=s12,detectH=detectL,infL=infL,attack31_21=attack13_12,attack22_21=attack22_12,attack11_21=attack11_12,attack21_31=attack12_13,attack21_22=attack12_22,attack21_11=attack12_11] endmodule
+module n12=n21[s21=s12,detectH=detectH,infL=infL,attack31_21=attack13_12,attack22_21=attack22_12,attack11_21=attack11_12,attack21_31=attack12_13,attack21_22=attack12_22,attack21_11=attack12_11] endmodule
 
 module n22
 	
