@@ -1,0 +1,10 @@
+// Modified properties for upDTMC:
+
+// Expected reward to reach the goal
+Rmin=?[F "goal"]
+
+// Conditional Value at Risk (CVaR) for reaching the goal
+R(cvar)=?[F "goal"]
+
+// Distributional expected reward for reaching the goal
+R(dist)=?[F "goal"]

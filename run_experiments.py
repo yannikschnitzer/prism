@@ -103,7 +103,7 @@ def copy_vi_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix, debug,
         print(command)
     os.system(command)
 
-def copy_trace_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix,debug,isUncertain):
+def copy_trace_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix,debug,isUncertain=False):
     temp_alg=alg
     if isUncertain:
         temp_alg = alg+'_prob'
@@ -116,7 +116,7 @@ def copy_trace_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix,debu
         print(command)
     os.system(command)
 
-def copy_dtmc_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix, debug, isUncertain):
+def copy_dtmc_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix, debug, isUncertain=False):
     if isUncertain:
         source = distr_out_folder
 
@@ -160,7 +160,7 @@ def create_params(atoms, v_bounds, error, epsilon, b_atoms, b_bounds, alpha, u_a
         write.writerow(header_b)
         write.writerow(row_b)
 
-def copy_distr_prob(cmd_base, exp_folder, exp_name, parameters, debug=True):
+""" def copy_distr_prob(cmd_base, exp_folder, exp_name, parameters, debug=True):
     # Clean param_distr/ folder
     command = 'rm '+prefix+'tests/param_distr/*'
     if debug:
@@ -177,7 +177,28 @@ def copy_distr_prob(cmd_base, exp_folder, exp_name, parameters, debug=True):
         command = cmd_base+ source+' '+target
         if debug:
             print(command)
+        os.system(command) """
+def copy_distr_prob(cmd_base, exp_folder, exp_name, parameters, debug=True):
+    # Ensure param_distr folder exists
+    param_distr_folder = prefix + 'tests/param_distr/'
+    if not os.path.exists(param_distr_folder):
+        os.makedirs(param_distr_folder)
+
+    # Clean param_distr/ folder
+    command = 'rm ' + param_distr_folder + '*'
+    if debug:
+        print(command)
+    os.system(command)
+
+    # Copy Distribution for each of the uncertain parameters
+    for p in parameters:
+        source = prefix + 'tests/' + exp_name + '/' + 'param_' + p + '.csv'
+        target = param_distr_folder + 'param_' + p + '.csv'
+        command = cmd_base + source + ' ' + target
+        if debug:
+            print(command)
         os.system(command)
+
 
 # #### Base experiment
 
@@ -583,7 +604,91 @@ def dtmc_comparison(all_experiments, rep_types, apdx='', debug=False):
                         copy_dtmc_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug)
                     else:
                         print(f'Error running experiment')
-                        # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, apdx, prefix, debug)                   
+                        # copy_log_files(cmd_base_copy, experiment_folder, exp, alg, rep, apdx, prefix, debug)      
+
+# ### Run updtmc
+def run_updtmc_experiment(experiments, alg_types, rep_types, apdx='', debug=False, isUncertain=True):
+    apd = '_' + apdx if apdx != '' else apdx
+    for exp in experiments:
+        for alg in alg_types:
+            if '-' in alg:
+                print(f'\nSkipping experiment:{exp}, alg:{alg}')
+                continue
+            else:
+                for rep in rep_types:
+                    print(f'\nRunning upDTMC experiment: {exp}, alg: {alg}, rep: {rep}')
+
+                    # Create parameters for upDTMC
+                    if 'c51' in rep:
+                        if 'atoms' in config[exp]:
+                            atoms = config[exp]['atoms']
+                        else:
+                            atoms = atoms_c51 if exp in experiment_names else big_atoms_c51
+                        if not isUncertain:
+                            create_params(atoms, [0, config[exp]['vmax']], 0.01, config[exp]['epsilon'], config[exp]['b'], 
+                                          [0, config[exp]['vmax']], config[exp]['alpha'])
+                        else:
+                            create_params(atoms, [0, config[exp]['vmax']], 0.01, config[exp]['epsilon'], config[exp]['b'], 
+                                          [0, config[exp]['vmax']], config[exp]['alpha'], config[exp]['u_atoms'], config[exp]['u_bounds'])
+                    else:
+                        if 'atoms' in config[exp]:
+                            atoms = config[exp]['atoms'] - 1
+                        else:
+                            atoms = atoms_qr if exp in experiment_names else big_atoms_qr
+                        if not isUncertain:
+                            create_params(atoms, [0, config[exp]['vmax']], ((1.0 / atoms) * 10 if 'uav' not in exp else 0.07), 
+                                          config[exp]['epsilon'], config[exp]['b'], [0, config[exp]['vmax']], config[exp]['alpha'])
+                        else:
+                            create_params(atoms, [0, config[exp]['vmax']], ((1.0 / atoms) * 10 if 'uav' not in exp else 0.07), 
+                                          config[exp]['epsilon'], config[exp]['b'], [0, config[exp]['vmax']], config[exp]['alpha'], 
+                                          config[exp]['u_atoms'], config[exp]['u_bounds'])
+
+                    # Copy parameter distribution files if uncertain
+                    if isUncertain:
+                        copy_distr_prob(cmd_base_copy, experiment_folder, exp, config[exp]['params'], debug=debug)
+                        remove_old_info(experiment_folder, exp, prefix, debug=debug)
+
+                    # Ensure the property index exists for the selected algorithm
+                    if alg in alg_map and len(config[exp]['pn']) > alg_map[alg]:
+                        prop_index = alg_map[alg]
+                    else:
+                        raise ValueError(f"Invalid property index for experiment {exp} with algorithm {alg}. Check 'pn' list in the config.")
+
+                    # Create command to run upDTMC experiment
+                    base_command = mem_alloc + config[exp]['model'] + ' ' + config[exp]['props'] + rep_base + rep
+                    if 'const' in config[exp]:
+                        base_command += ' ' + config[exp]['const']
+
+                    if isUncertain:
+                        options = ' -prop ' + str(config[exp]['pn'][prop_index])
+                        options += ' -param '
+                        for i, p in enumerate(config[exp]['params']):
+                            options += p
+                            if i < len(config[exp]['params']) - 1:
+                                options += ','
+                        options += ' -distr'
+                    else:
+                        options = ' -prop ' + str(config[exp]['pn'][alg_map[alg]])
+                    options += tail + log_cmd + log_target(experiment_folder, exp, alg, rep, apd, debug, isUncertain)
+
+                    if debug:
+                        print(prism_exec + ' ' + base_command + options)
+
+                    # Run the experiment
+                    result = os.system(prism_exec + ' ' + base_command + options)
+                    print(f'Return code: {result}')
+
+                    if result == 0:
+                        # Save the outputs
+                        print(f"... Saving {alg} VI output files for {alg} ...")
+                        copy_vi_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug)
+                        copy_trace_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug)
+                        copy_dtmc_files(cmd_base_copy, experiment_folder, exp, alg, rep, apd, prefix, debug)
+                    else:
+                        print(f'Error running upDTMC experiment for {alg}')
+
+
+
 
 # #### Run experiments 
 # example command:
@@ -614,6 +719,8 @@ def init_argparse() -> argparse.ArgumentParser:
     parser.add_argument('-e', "--epsilon", action='store_true', help='Vary epsilon values from:'+str(eps_vals))
     parser.add_argument('-p', "--alpha", action='store_true', help='Vary alpha values from: '+str(alpha_vals))
     parser.add_argument('-m', "--dtmc", action='store_true', help='Run approximate DVI and Forward DTMC methods')
+    parser.add_argument('-k', "--updtmc", action='store_true', help='Run upDTMC experiment with uncertain transition probabilities')
+
     
     # Other
     parser.add_argument('-r', "--rep", metavar='rep', action='store', default='c51', help='representation of distribution')
@@ -679,7 +786,7 @@ config = {
     #'zeroconf' :{'model':prefix+'tests/zeroconf/zeroconf.nm', 'props':prefix+'tests/zeroconf/zeroconf.props', 'dir':'zeroconf/', 'pn':[1,2,-1,3,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':11, 'u_bounds':[0.0, 1.0], 'params':['loss']},
     'underwater_tiny' :{'model':prefix+'tests/underwater_tiny/underwater_tiny.prism', 'props':prefix+'tests/underwater_tiny/underwater_tiny.props', 'pn':[1,2,-1,3,4,5], 'vmax': 5, 'atoms':11, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':11, 'u_bounds':[0.0, 1.0], 'params':['p']},
     'firewire' :{'model':prefix+'tests/firewire/firewire.nm', 'props':prefix+'tests/firewire/firewire.props', 'pn':[1,2,-1,3,4,5], 'vmax': 200, 'atoms':201, 'epsilon':def_eps, 'b':31, 'alpha':0.9, 'const':'-const delay=3', 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p']},
-    'betting_g' :{'model':prefix+'tests/betting_game/betting_game.prism', 'props':prefix+'tests/betting_game/betting_game.props', 'dir':'betting_game/', 'pn':[3,2,-1,1,4,5], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.8, 'u_atoms':17, 'u_bounds':[0.0, 0.8], 'params':['p_win', 'p_jackpot']},
+    'betting_game' :{'model':prefix+'tests/betting_game/betting_game.prism', 'props':prefix+'tests/betting_game/betting_game.props', 'dir':'betting_game/', 'pn':[3,2,-1,1,4,5], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.8, 'u_atoms':17, 'u_bounds':[0.0, 0.8], 'params':['p_win', 'p_jackpot']},
     'betting_g_gran_low' :{'model':prefix+'tests/betting_game/betting_game_gran_low.prism', 'props':prefix+'tests/betting_game/betting_game.props', 'dir':'betting_game/', 'pn':[3,2,-1,1,4,5], 'vmax': def_vmax, 'atoms':201, 'epsilon':def_eps, 'b':101, 'alpha':0.8, 'u_atoms':11, 'u_bounds':[0.0, 0.95], 'params':['p_11']},
     'betting_g_gran_high' :{'model':prefix+'tests/betting_game/betting_game_gran_high.prism', 'props':prefix+'tests/betting_game/betting_game.props', 'dir':'betting_game/', 'pn':[3,2,-1,1,4,5], 'vmax': def_vmax, 'atoms':201, 'epsilon':def_eps, 'b':101, 'alpha':0.8, 'u_atoms':51, 'u_bounds':[0.0, 0.95], 'params':['p_51']},
     'coin2' :{'model':prefix+'tests/consensus/coin2.pm', 'props':prefix+'tests/consensus/coin.props', 'dir':'consensus/', 'pn':[1,2,-1,1,4,5], 'vmax': 300, 'atoms':301, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1', 'p2'], 'const':'-const K=2'},
@@ -690,6 +797,7 @@ config = {
     'brp' :{'model':prefix+'tests/brp/brp.pm', 'props':prefix+'tests/brp/brp.props', 'dir':'brp/', 'pn':[1,2,-1,3,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':10, 'u_bounds':[0.1, 1.0], 'params':['pL','pK']},
     'virus' :{'model':prefix+'tests/virus/virus.pm', 'props':prefix+'tests/virus/virus.props', 'dir':'virus/', 'pn':[1,2,-1,1,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':21, 'u_bounds':[0.0, 1.0], 'params':['infL','infH','detectL','detectH']},
     #'wlan0' :{'model':prefix+'tests/sttt-drone/drone_model_small.nm', 'props':prefix+'tests/sttt-drone/drone.props', 'dir':'sttt-drone/', 'pn':[1,2,-1,3,4,5], 'vmax': def_vmax, 'atoms':atoms_c51, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1','p2']},
+    'parametric_dtmc': {'model': prefix+'tests/parametric_dtmc/updtmc.prism','props': prefix+'tests/parametric_dtmc/updtmc.props', 'dir':'updtmc/', 'pn': [1,2,3],'vmax': 100,'epsilon': def_eps,'b': 101,'alpha': 0.8,'u_atoms': 17,'u_bounds': [0.0, 1.0],'params': ['p_win', 'p_jackpot']},
 }
 
 
@@ -790,6 +898,10 @@ if __name__ == "__main__":
 
     if args.dtmc:
         dtmc_comparison(experiments, reps, apdx=args.apdx, debug=args.debug)
+
+    if args.updtmc:
+        run_updtmc_experiment(experiments, algs, reps, apdx=args.apdx, debug=args.debug)
+
     
     
 

@@ -1,0 +1,60 @@
+dtmc
+
+// Uncertain parameters representing probabilities of winning and hitting the jackpot
+const double p_win; // Probability of winning (uncertain)
+const double p_jackpot; // Probability of hitting the jackpot (uncertain)
+const int MAX_MONEY = 100; // Maximum money you can have
+
+// States: m represents money, s represents stage
+module betting_game
+    m : [0..MAX_MONEY] init 5;  // Money, starting at 5
+    s : [1..11] init 1;         // Stages, starting at stage 1, total stages = 10
+
+    // Transition logic for different bets
+
+    // Bet nothing (zero bet)
+    [] (s < 11) -> (s' = min(s + 1, 11)) & (m' = m);
+
+    // Bet 1 money
+    [] m > 0 & (s < 11) -> p_win: (s' = min(s + 1, 11)) & (m' = min(m + 1, MAX_MONEY))
+                          + p_jackpot: (s' = min(s + 1, 11)) & (m' = min(m + 10, MAX_MONEY))
+                          + (1 - (p_win + p_jackpot)): (s' = min(s + 1, 11)) & (m' = max(m - 1, 0));
+
+    // Bet 2 money
+    [] m > 1 & (s < 11) -> p_win: (s' = min(s + 1, 11)) & (m' = min(m + 2, MAX_MONEY))
+                          + p_jackpot: (s' = min(s + 1, 11)) & (m' = min(m + 20, MAX_MONEY))
+                          + (1 - (p_win + p_jackpot)): (s' = min(s + 1, 11)) & (m' = max(m - 2, 0));
+
+    // Bet 3 money
+    [] m > 2 & (s < 11) -> p_win: (s' = min(s + 1, 11)) & (m' = min(m + 3, MAX_MONEY))
+                          + p_jackpot: (s' = min(s + 1, 11)) & (m' = min(m + 30, MAX_MONEY))
+                          + (1 - (p_win + p_jackpot)): (s' = min(s + 1, 11)) & (m' = max(m - 3, 0));
+
+    // Bet 4 money
+    [] m > 3 & (s < 11) -> p_win: (s' = min(s + 1, 11)) & (m' = min(m + 4, MAX_MONEY))
+                          + p_jackpot: (s' = min(s + 1, 11)) & (m' = min(m + 40, MAX_MONEY))
+                          + (1 - (p_win + p_jackpot)): (s' = min(s + 1, 11)) & (m' = max(m - 4, 0));
+
+    // Bet 5 money
+    [] m > 4 & (s < 11) -> p_win: (s' = min(s + 1, 11)) & (m' = min(m + 5, MAX_MONEY))
+                          + p_jackpot: (s' = min(s + 1, 11)) & (m' = min(m + 50, MAX_MONEY))
+                          + (1 - (p_win + p_jackpot)): (s' = min(s + 1, 11)) & (m' = max(m - 5, 0));
+
+    // End of the game
+    [] s = 11 -> true;
+
+endmodule
+
+// Labels for the goal and losing conditions
+label "goal" = (s = 11);
+label "bankrupt" = (m = 0);
+
+// Rewards structure for the final stage
+rewards
+    // Reward for each transition based on current money
+    [ ] (m > 0 & s < 11) : m;
+
+    // Final reward at the last stage
+    [ ] s = 11 : MAX_MONEY - m;
+endrewards
+
