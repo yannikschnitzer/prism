@@ -107,7 +107,7 @@ public class CVaRProduct extends Product<MDP<Double>>
             // NB: if DA only has one state, we add an extra dummy state
             // Inform for bounds of idx_b
             Declaration decl = new Declaration(bVar, new DeclarationInt(Expression.Int(0), Expression.Int(b_atoms)));
-            newVarList.addVar(0, decl, 1, model.getConstantValues());
+            newVarList.addVarAtStart(decl, 1);
         }
 
         // Create a (simple, mutable) MDP
