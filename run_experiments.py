@@ -258,6 +258,7 @@ def base_exp(all_experiments, alg_types, rep_types, apdx='', debug=False, isUnce
                     else :
                         options =' -prop '+str(config[exp]['pn'][alg_map[alg]])
                     options += tail+log_cmd+log_target(experiment_folder, exp,alg, rep, apd, debug, isUncertain)
+                    print(prism_exec+' '+base_command+options)
                     if debug:
                         print(prism_exec+' '+base_command+options)
                     r=os.system(prism_exec+' '+base_command+options)
