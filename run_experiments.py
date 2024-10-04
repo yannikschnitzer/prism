@@ -124,9 +124,9 @@ def copy_dtmc_files(cmd_base, exp_folder, exp_name, alg, rep, apdx, prefix, debu
             res = f.rsplit('.', 1)
             target =  exp_folder+exp_name+'/umdp_out/' +res[0]+'_'+alg+'_'+rep+apdx+'.'+res[1]
             command = 'mv '+source+f+' '+target
-        if debug:
-            print(command)
-        os.system(command)
+        #if debug:
+            #print(command)
+        #os.system(command)
     else :
         # Copy DTMC files
         source = prefix+'distr_dtmc_'+alg+'.csv'
@@ -788,7 +788,7 @@ config = {
     'underwater_tiny' :{'model':prefix+'tests/underwater_tiny/underwater_tiny.prism', 'props':prefix+'tests/underwater_tiny/underwater_tiny.props', 'pn':[1,2,-1,3,4,5], 'vmax': 5, 'atoms':11, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':11, 'u_bounds':[0.0, 1.0], 'params':['p']},
     'firewire' :{'model':prefix+'tests/firewire/firewire.nm', 'props':prefix+'tests/firewire/firewire.props', 'pn':[1,2,-1,3,4,5], 'vmax': 200, 'atoms':201, 'epsilon':def_eps, 'b':31, 'alpha':0.9, 'const':'-const delay=3', 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p']},
     'betting_game' :{'model':prefix+'tests/betting_game/betting_game.prism', 'props':prefix+'tests/betting_game/betting_game.props', 'dir':'betting_game/', 'pn':[3,2,-1,1,4,5], 'vmax': def_vmax, 'epsilon':def_eps, 'b':101, 'alpha':0.8, 'u_atoms':17, 'u_bounds':[0.0, 0.8], 'params':['p_win', 'p_jackpot']},
-    'betting_g_gran_low' :{'model':prefix+'tests/betting_game/betting_game_gran_low.prism', 'props':prefix+'tests/betting_game/betting_game.props', 'dir':'betting_game/', 'pn':[3,2,-1,1,4,5], 'vmax': def_vmax, 'atoms':201, 'epsilon':def_eps, 'b':101, 'alpha':0.8, 'u_atoms':11, 'u_bounds':[0.0, 0.95], 'params':['p_11']},
+    'betting_g_gran_low' :{'model':prefix+'tests/betting_game/betting_game_gran_low.prism', 'props':prefix+'tests/betting_game/betting_game.props', 'dir':'betting_game/', 'pn':[3,2,1,4,5], 'vmax': def_vmax, 'atoms':201, 'epsilon':def_eps, 'b':101, 'alpha':0.8, 'u_atoms':11, 'u_bounds':[0.0, 0.95], 'params':['p_11']},
     'betting_g_gran_high' :{'model':prefix+'tests/betting_game/betting_game_gran_high.prism', 'props':prefix+'tests/betting_game/betting_game.props', 'dir':'betting_game/', 'pn':[3,2,-1,1,4,5], 'vmax': def_vmax, 'atoms':201, 'epsilon':def_eps, 'b':101, 'alpha':0.8, 'u_atoms':51, 'u_bounds':[0.0, 0.95], 'params':['p_51']},
     'coin2' :{'model':prefix+'tests/consensus/coin2.pm', 'props':prefix+'tests/consensus/coin.props', 'dir':'consensus/', 'pn':[1,2,-1,1,4,5], 'vmax': 300, 'atoms':301, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1', 'p2'], 'const':'-const K=2'},
     'coin2_mid' :{'model':prefix+'tests/consensus/coin2.pm', 'props':prefix+'tests/consensus/coin.props', 'dir':'consensus/', 'pn':[1,2,-1,1,4,5], 'vmax': 300, 'atoms':301, 'epsilon':def_eps, 'b':11, 'alpha':0.7, 'u_atoms':7, 'u_bounds':[0.2, 0.8], 'params':['p1', 'p2'], 'const':'-const K=4 -maxiters 1000000'},
