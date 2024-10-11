@@ -1,0 +1,113 @@
+./prism/tests/transit_dtmc_example/src/jltl2ba/LTLFragments.java:	private LTLFragments nextstep()
+./prism/tests/transit_dtmc_example/src/jltl2ba/LTLFragments.java:			return analyse(root.left).nextstep();
+./prism/tests/transit_dtmc_example/src/explicit/DistributionalBellmanOperatorProb.java:    public DiscreteDistribution step(MDP<Function> mdp, DiscreteDistribution param, Map<Integer, Point> jointMap, int s, int choice, double gamma, double state_reward) {
+./prism/tests/transit_dtmc_example/src/explicit/DTMCSparse.java:	public boolean prob0step(final int s, final BitSet u)
+./prism/tests/transit_dtmc_example/src/explicit/DTMCSparse.java:	public boolean prob1step(final int s, final BitSet u, final BitSet v)
+./prism/tests/transit_dtmc_example/src/explicit/STPGSimple.java:	public void prob0step(BitSet subset, BitSet u, boolean forall1, boolean forall2, BitSet result)
+./prism/tests/transit_dtmc_example/src/explicit/STPGSimple.java:	public void prob1step(BitSet subset, BitSet u, BitSet v, boolean forall1, boolean forall2, BitSet result)
+./prism/tests/transit_dtmc_example/src/explicit/MDPModelChecker.java:			mdp.prob0step(unknown, u, min, soln);
+./prism/tests/transit_dtmc_example/src/explicit/MDPModelChecker.java:					mdp.prob1Astep(unknown, u, v, soln);
+./prism/tests/transit_dtmc_example/src/explicit/MDPModelChecker.java:					mdp.prob1Estep(unknown, u, v, soln, null);
+./prism/tests/transit_dtmc_example/src/explicit/MDPModelChecker.java:				mdp.prob1Estep(unknown, u, v, soln, strat);
+./prism/tests/transit_dtmc_example/src/explicit/MDPModelChecker.java:					m = operator.step(it, gamma, reward, s);
+./prism/tests/transit_dtmc_example/src/explicit/MDPModelChecker.java:					m = operator.step(it, gamma, reward, s);
+./prism/tests/transit_dtmc_example/src/explicit/DTMC.java:	public default boolean prob0step(int s, BitSet u)
+./prism/tests/transit_dtmc_example/src/explicit/DTMC.java:	 * <i>Default implementation</i>: Iterate over {@code subset} and use {@code prob0step(s,u)}
+./prism/tests/transit_dtmc_example/src/explicit/DTMC.java:	public default void prob0step(BitSet subset, BitSet u, BitSet result)
+./prism/tests/transit_dtmc_example/src/explicit/DTMC.java:			result.set(s, prob0step(s,u));
+./prism/tests/transit_dtmc_example/src/explicit/DTMC.java:	public default boolean prob1step(int s, BitSet u, BitSet v)
+./prism/tests/transit_dtmc_example/src/explicit/DTMC.java:	public default void prob1step(BitSet subset, BitSet u, BitSet v, BitSet result)
+./prism/tests/transit_dtmc_example/src/explicit/DTMC.java:			result.set(s, prob1step(s,u,v));
+./prism/tests/transit_dtmc_example/src/explicit/MDPModelCheckerDistributional.java:							m = operator.step(mdp, joint_distr, jointSupp, s, choice, gamma, reward);
+./prism/tests/transit_dtmc_example/src/explicit/MDPModelCheckerDistributional.java:							m = operator.step(mdp, transition_distr.get(0), jointSupp, s, choice, gamma, reward);
+./prism/tests/transit_dtmc_example/src/explicit/MDPModelCheckerDistributional.java:						m = operator.step(iter2, gamma, reward, s);
+./prism/tests/transit_dtmc_example/src/explicit/DistributionalBellman.java:    public abstract DiscreteDistribution step(Iterator<Map.Entry<Integer, Double>> trans_it,
+./prism/tests/transit_dtmc_example/src/explicit/MDP.java:	public default void prob0step(final BitSet subset, final BitSet u, final boolean forall, final BitSet result)
+./prism/tests/transit_dtmc_example/src/explicit/MDP.java:	public default void prob1Astep(BitSet subset, BitSet u, BitSet v, BitSet result)
+./prism/tests/transit_dtmc_example/src/explicit/MDP.java:	public default void prob1Estep(BitSet subset, BitSet u, BitSet v, BitSet result, int strat[])
+./prism/tests/transit_dtmc_example/src/explicit/MDP.java:	public default void prob1step(BitSet subset, BitSet u, BitSet v, boolean forall, BitSet result)
+./prism/tests/transit_dtmc_example/src/explicit/DistributionalBellmanOperator.java:    public DiscreteDistribution step(Iterator<Map.Entry<Integer, Double>> trans_it, double gamma, double state_reward, int cur_state)
+./prism/tests/transit_dtmc_example/src/explicit/DistributionalBellmanOperator.java:            return this.optimized_step(trans_it, gamma, state_reward, res);
+./prism/tests/transit_dtmc_example/src/explicit/DistributionalBellmanOperator.java:    public DiscreteDistribution optimized_step(Iterator<Map.Entry<Integer, Double>> trans_it, double gamma, double state_reward, DiscreteDistribution res){
+./prism/tests/transit_dtmc_example/src/explicit/DistributionalBellmanOperatorAugmented.java:    public DiscreteDistribution step(Iterator<Map.Entry<Integer, Double>> trans_it, double gamma, double state_reward, int cur_state)
+./prism/tests/transit_dtmc_example/src/explicit/DistributionalBellmanOperatorAugmented.java:            return this.optimized_step(trans_it, gamma, state_reward, cur_state, res);
+./prism/tests/transit_dtmc_example/src/explicit/DistributionalBellmanOperatorAugmented.java:    public DiscreteDistribution optimized_step(Iterator<Map.Entry<Integer, Double>> trans_it, double gamma, double state_reward, int cur_state, DiscreteDistribution res){
+./prism/tests/transit_dtmc_example/src/explicit/STPGModelChecker.java:			stpg.prob0step(unknown, u, min1, min2, soln);
+./prism/tests/transit_dtmc_example/src/explicit/STPGModelChecker.java:				stpg.prob1step(unknown, u, v, min1, min2, soln);
+./prism/tests/transit_dtmc_example/src/explicit/MDPSparse.java:	public void prob0step(BitSet subset, BitSet u, boolean forall, BitSet result)
+./prism/tests/transit_dtmc_example/src/explicit/MDPSparse.java:	public void prob1Astep(BitSet subset, BitSet u, BitSet v, BitSet result)
+./prism/tests/transit_dtmc_example/src/explicit/MDPSparse.java:	public void prob1Estep(BitSet subset, BitSet u, BitSet v, BitSet result, int strat[])
+./prism/tests/transit_dtmc_example/src/explicit/MDPSparse.java:	public void prob1step(BitSet subset, BitSet u, BitSet v, boolean forall, BitSet result)
+./prism/tests/transit_dtmc_example/src/explicit/DTMCModelChecker.java:			dtmc.prob0step(unknown, u, soln);
+./prism/tests/transit_dtmc_example/src/explicit/DTMCModelChecker.java:				dtmc.prob1step(unknown, u, v, soln);
+./prism/tests/transit_dtmc_example/src/explicit/STPG.java:	public void prob0step(BitSet subset, BitSet u, boolean forall1, boolean forall2, BitSet result);
+./prism/tests/transit_dtmc_example/src/explicit/STPG.java:	public void prob1step(BitSet subset, BitSet u, BitSet v, boolean forall1, boolean forall2, BitSet result);
+./prism/tests/transit_dtmc_example/src/explicit/STPGAbstrSimple.java:	public void prob0step(BitSet subset, BitSet u, boolean forall1, boolean forall2, BitSet result)
+./prism/tests/transit_dtmc_example/src/explicit/STPGAbstrSimple.java:	public void prob1step(BitSet subset, BitSet u, BitSet v, boolean forall1, boolean forall2, BitSet result)
+./prism/tests/transit_dtmc_example/src/simulator/GenerateSimulationPath.java:				displayer.step(path.getTimeInPreviousState(), path.getTotalTime(), path.getPreviousActionString(), path.getPreviousProbability(),
+./prism/tests/transit_dtmc_example/src/simulator/PathFull.java:			displayer.step(getTime(i - 1), getCumulativeTime(i), getActionString(i - 1), getProbability(i - 1), getTransitionRewards(i), i, getState(i),
+./prism/tests/transit_dtmc_example/src/simulator/PathDisplayer.java:	public void step(double timeSpent, double timeCumul, String actionString, Object probability, double[] transitionRewards, long newStateIndex, State newState, double[] newStateRewards)
+./prism/tests/transit_dtmc_example/src/symbolic/comp/SCCComputerLockstep.java:	public SCCComputerLockstep(PrismComponent parent, JDDNode reach, JDDNode trans01, JDDVars allDDRowVars, JDDVars allDDColVars) throws PrismException
+./prism/tests/transit_dtmc_example/src/symbolic/comp/SCCComputerLockstep.java:			lockstep(tasks.pop());
+./prism/tests/transit_dtmc_example/src/symbolic/comp/SCCComputerLockstep.java:			lockstep(tasks.pop(), filter);
+./prism/tests/transit_dtmc_example/src/symbolic/comp/SCCComputerLockstep.java:	private void lockstep(DecompTask task)
+./prism/tests/transit_dtmc_example/src/symbolic/comp/SCCComputerLockstep.java:	private void lockstep(DecompTask task, JDDNode filter)
+./prism/tests/transit_dtmc_example/src/symbolic/comp/SCCComputer.java:			sccComputer = new SCCComputerLockstep(parent, reach, trans01, allDDRowVars, allDDColVars);
+./prism/tests/transit_dtmc_example/src/symbolic/comp/SCCComputer.java:			sccComputer = new SCCComputerLockstep(parent, reach, trans01, allDDRowVars, allDDColVars);
+./prism/src/jltl2ba/LTLFragments.java:	private LTLFragments nextstep()
+./prism/src/jltl2ba/LTLFragments.java:			return analyse(root.left).nextstep();
+./prism/src/explicit/DistributionalBellmanOperatorProb.java:    public DiscreteDistribution step(MDP<Function> mdp, DiscreteDistribution param, Map<Integer, Point> jointMap, int s, int choice, double gamma, double state_reward) {
+./prism/src/explicit/DistributionalBellmanOperatorProb.java:   /*  public DiscreteDistribution step(MDP<Function> mdp, DiscreteDistribution param, Map<Integer, Point> jointMap, int s, int choice, double gamma, double state_reward) {
+./prism/src/explicit/DTMCSparse.java:	public boolean prob0step(final int s, final BitSet u)
+./prism/src/explicit/DTMCSparse.java:	public boolean prob1step(final int s, final BitSet u, final BitSet v)
+./prism/src/explicit/STPGSimple.java:	public void prob0step(BitSet subset, BitSet u, boolean forall1, boolean forall2, BitSet result)
+./prism/src/explicit/STPGSimple.java:	public void prob1step(BitSet subset, BitSet u, BitSet v, boolean forall1, boolean forall2, BitSet result)
+./prism/src/explicit/MDPModelChecker.java:			mdp.prob0step(unknown, u, min, soln);
+./prism/src/explicit/MDPModelChecker.java:					mdp.prob1Astep(unknown, u, v, soln);
+./prism/src/explicit/MDPModelChecker.java:					mdp.prob1Estep(unknown, u, v, soln, null);
+./prism/src/explicit/MDPModelChecker.java:				mdp.prob1Estep(unknown, u, v, soln, strat);
+./prism/src/explicit/MDPModelChecker.java:					m = operator.step(it, gamma, reward, s);
+./prism/src/explicit/MDPModelChecker.java:					m = operator.step(it, gamma, reward, s);
+./prism/src/explicit/DTMC.java:	public default boolean prob0step(int s, BitSet u)
+./prism/src/explicit/DTMC.java:	 * <i>Default implementation</i>: Iterate over {@code subset} and use {@code prob0step(s,u)}
+./prism/src/explicit/DTMC.java:	public default void prob0step(BitSet subset, BitSet u, BitSet result)
+./prism/src/explicit/DTMC.java:			result.set(s, prob0step(s,u));
+./prism/src/explicit/DTMC.java:	public default boolean prob1step(int s, BitSet u, BitSet v)
+./prism/src/explicit/DTMC.java:	public default void prob1step(BitSet subset, BitSet u, BitSet v, BitSet result)
+./prism/src/explicit/DTMC.java:			result.set(s, prob1step(s,u,v));
+./prism/src/explicit/MDPModelCheckerDistributional.java:							m = operator.step(mdp, joint_distr, jointSupp, s, choice, gamma, reward);
+./prism/src/explicit/MDPModelCheckerDistributional.java:							m = operator.step(mdp, transition_distr.get(0), jointSupp, s, choice, gamma, reward);
+./prism/src/explicit/MDPModelCheckerDistributional.java:						m = operator.step(iter2, gamma, reward, s);
+./prism/src/explicit/DistributionalBellman.java:    public abstract DiscreteDistribution step(Iterator<Map.Entry<Integer, Double>> trans_it,
+./prism/src/explicit/MDP.java:	public default void prob0step(final BitSet subset, final BitSet u, final boolean forall, final BitSet result)
+./prism/src/explicit/MDP.java:	public default void prob1Astep(BitSet subset, BitSet u, BitSet v, BitSet result)
+./prism/src/explicit/MDP.java:	public default void prob1Estep(BitSet subset, BitSet u, BitSet v, BitSet result, int strat[])
+./prism/src/explicit/MDP.java:	public default void prob1step(BitSet subset, BitSet u, BitSet v, boolean forall, BitSet result)
+./prism/src/explicit/DistributionalBellmanOperator.java:    public DiscreteDistribution step(Iterator<Map.Entry<Integer, Double>> trans_it, double gamma, double state_reward, int cur_state)
+./prism/src/explicit/DistributionalBellmanOperator.java:            return this.optimized_step(trans_it, gamma, state_reward, res);
+./prism/src/explicit/DistributionalBellmanOperator.java:    public DiscreteDistribution optimized_step(Iterator<Map.Entry<Integer, Double>> trans_it, double gamma, double state_reward, DiscreteDistribution res){
+./prism/src/explicit/DistributionalBellmanOperatorAugmented.java:    public DiscreteDistribution step(Iterator<Map.Entry<Integer, Double>> trans_it, double gamma, double state_reward, int cur_state)
+./prism/src/explicit/DistributionalBellmanOperatorAugmented.java:            return this.optimized_step(trans_it, gamma, state_reward, cur_state, res);
+./prism/src/explicit/DistributionalBellmanOperatorAugmented.java:    public DiscreteDistribution optimized_step(Iterator<Map.Entry<Integer, Double>> trans_it, double gamma, double state_reward, int cur_state, DiscreteDistribution res){
+./prism/src/explicit/STPGModelChecker.java:			stpg.prob0step(unknown, u, min1, min2, soln);
+./prism/src/explicit/STPGModelChecker.java:				stpg.prob1step(unknown, u, v, min1, min2, soln);
+./prism/src/explicit/MDPSparse.java:	public void prob0step(BitSet subset, BitSet u, boolean forall, BitSet result)
+./prism/src/explicit/MDPSparse.java:	public void prob1Astep(BitSet subset, BitSet u, BitSet v, BitSet result)
+./prism/src/explicit/MDPSparse.java:	public void prob1Estep(BitSet subset, BitSet u, BitSet v, BitSet result, int strat[])
+./prism/src/explicit/MDPSparse.java:	public void prob1step(BitSet subset, BitSet u, BitSet v, boolean forall, BitSet result)
+./prism/src/explicit/DTMCModelChecker.java:			dtmc.prob0step(unknown, u, soln);
+./prism/src/explicit/DTMCModelChecker.java:				dtmc.prob1step(unknown, u, v, soln);
+./prism/src/explicit/STPG.java:	public void prob0step(BitSet subset, BitSet u, boolean forall1, boolean forall2, BitSet result);
+./prism/src/explicit/STPG.java:	public void prob1step(BitSet subset, BitSet u, BitSet v, boolean forall1, boolean forall2, BitSet result);
+./prism/src/explicit/STPGAbstrSimple.java:	public void prob0step(BitSet subset, BitSet u, boolean forall1, boolean forall2, BitSet result)
+./prism/src/explicit/STPGAbstrSimple.java:	public void prob1step(BitSet subset, BitSet u, BitSet v, boolean forall1, boolean forall2, BitSet result)
+./prism/src/simulator/GenerateSimulationPath.java:				displayer.step(path.getTimeInPreviousState(), path.getTotalTime(), path.getPreviousActionString(), path.getPreviousProbability(),
+./prism/src/simulator/PathFull.java:			displayer.step(getTime(i - 1), getCumulativeTime(i), getActionString(i - 1), getProbability(i - 1), getTransitionRewards(i), i, getState(i),
+./prism/src/simulator/PathDisplayer.java:	public void step(double timeSpent, double timeCumul, String actionString, Object probability, double[] transitionRewards, long newStateIndex, State newState, double[] newStateRewards)
+./prism/src/symbolic/comp/SCCComputerLockstep.java:	public SCCComputerLockstep(PrismComponent parent, JDDNode reach, JDDNode trans01, JDDVars allDDRowVars, JDDVars allDDColVars) throws PrismException
+./prism/src/symbolic/comp/SCCComputerLockstep.java:			lockstep(tasks.pop());
+./prism/src/symbolic/comp/SCCComputerLockstep.java:			lockstep(tasks.pop(), filter);
+./prism/src/symbolic/comp/SCCComputerLockstep.java:	private void lockstep(DecompTask task)
+./prism/src/symbolic/comp/SCCComputerLockstep.java:	private void lockstep(DecompTask task, JDDNode filter)
+./prism/src/symbolic/comp/SCCComputer.java:			sccComputer = new SCCComputerLockstep(parent, reach, trans01, allDDRowVars, allDDColVars);
+./prism/src/symbolic/comp/SCCComputer.java:			sccComputer = new SCCComputerLockstep(parent, reach, trans01, allDDRowVars, allDDColVars);

@@ -1201,7 +1201,7 @@ public class ProbModelChecker extends NonProbModelChecker
 						res = ((MDPModelChecker) this).computeReachRewards((MDP<Double>) model, (MDPRewards<Double>) modelRewards, target, minMax.isMin());
 						break;
 					case EXACT: // wrong
-						res = ((MDPModelCheckerDistributional) this).computeReachRewards((MDP<Function>) model, (MDPRewards<Function>) modelRewards, target, minMax.isMin());
+						res = ((backup) this).computeReachRewards((MDP<Function>) model, (MDPRewards<Function>) modelRewards, target, minMax.isMin());
 						break;
 				}
 				break;

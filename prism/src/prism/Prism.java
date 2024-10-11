@@ -45,7 +45,7 @@ import explicit.Distribution;
 import explicit.ExplicitFiles2Model;
 import explicit.FastAdaptiveUniformisation;
 import explicit.FastAdaptiveUniformisationModelChecker;
-import explicit.MDPModelCheckerDistributional;
+import explicit.backup;
 import explicit.ModelModelGenerator;
 import explicit.PartiallyObservableModel;
 import hybrid.PrismHybrid;
@@ -3191,7 +3191,7 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 
 			// Create new model checker object and do model checking
 			if (getCurrentEngine() == PrismEngine.DISTRIBUTIONAL) {
-				explicit.StateModelChecker mc = new MDPModelCheckerDistributional(this);
+				explicit.StateModelChecker mc = new backup(this);
 				mc.setModelCheckingInfo(getModelInfo(), propertiesFile, getRewardGenerator());
 				mc.setGenStrat(genStrat);
 				res = mc.check(getBuiltModelExplicit(), prop.getExpression());
