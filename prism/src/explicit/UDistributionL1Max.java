@@ -26,8 +26,7 @@
 
 package explicit;
 
-import java.util.BitSet;
-import java.util.Set;
+import java.util.*;
 
 public class UDistributionL1Max<Value> implements UDistribution<Value>
 {
@@ -82,10 +81,75 @@ public class UDistributionL1Max<Value> implements UDistribution<Value>
 		return frequencies.size();
 	}
 
+	/**
+	 * Do a single row of matrix-vector multiplication followed by min/max,
+	 * i.e. return min/max_P { sum_j P(s,j)*vect[j] }
+	 * @param vect Vector to multiply by
+	 * @param minMax Min/max uncertainty (via isMinUnc/isMaxUnc)
+	 */
 	@Override
 	public double mvMultUnc(double[] vect, MinMax minMax)
 	{
-		throw new UnsupportedOperationException();
+		DoubleDistribution dd = extractDoubleDistribution();
+		if (frequencies.size() == 1) {
+			return vect[dd.index[0]];
+		}
+
+		// Get a list of indices for the transition, sorted according to the successor values
+		List<Integer> indices = new ArrayList<>();
+		for (int i = 0; i < dd.size; i++) {
+			indices.add(i);
+		}
+		if (minMax.isMaxUnc()) {
+			Collections.sort(indices, (o1, o2) -> -Double.compare(vect[dd.index[o1]], vect[dd.index[o2]]));
+		} else {
+			Collections.sort(indices, (o1, o2) -> Double.compare(vect[dd.index[o1]], vect[dd.index[o2]]));
+		}
+
+		// Maximum budget for positive and negative residuals
+		double radius = (double) l1max / 2.0;
+
+		// Distribute the positive budget to the best states
+		double budget = radius;
+		double total = 0.0;
+		for (int i = 0; i < dd.size; i++) {
+			int j = indices.get(i);
+			dd.probs[j] = Double.min(1.0, dd.probs[j] + budget);
+			total = dd.sum() - 1;
+			budget = radius - total;
+			if (budget <= 0) {
+				break;
+			}
+		}
+
+		// Distribute the negative budget to the worst states
+		budget = dd.sum() - 1;
+		for (int i = dd.size - 1; i >= 0; i--) {
+			int j = indices.get(i);
+			dd.probs[j] = Double.max(0.0, dd.probs[j] - budget);
+			budget = dd.sum() - 1;
+			if (budget <= 0) {
+				break;
+			}
+		}
+
+		double res = 0.0;
+		for (int i = 0; i < dd.size; i++) {
+			res += dd.probs[i] * vect[dd.index[i]];
+		}
+
+		return res;
+	}
+
+	private DoubleDistribution extractDoubleDistribution() {
+		DoubleDistribution dist = new DoubleDistribution(frequencies.size());
+		int i = 0;
+		for (Map.Entry<Integer, Value> entry : frequencies.map.entrySet()) {
+			dist.probs[i] = ((Map.Entry<Integer, Double>) entry).getValue();
+			dist.index[i] = entry.getKey();
+			i++;
+		}
+		return dist;
 	}
 
 	@Override
@@ -100,5 +164,14 @@ public class UDistributionL1Max<Value> implements UDistribution<Value>
 	{
 		Distribution<Value> frequenciesCopy = new Distribution<>(frequencies, permut);
 		return new UDistributionL1Max<>(frequenciesCopy, l1max);
+	}
+
+	@Override
+	public String toString()
+	{
+		String s = "";
+		s += frequencies.toString();
+		s += ", L1Max: " + l1max.toString();
+		return s;
 	}
 }

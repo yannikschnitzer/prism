@@ -213,6 +213,12 @@ public class UMDPSimple<Value> extends ModelExplicit<Value> implements NondetMod
 	}
 
 	@Override
+	public void checkLowerBoundsArePositive() throws PrismException
+	{
+		;
+	}
+
+	@Override
 	public void checkForDeadlocks(BitSet except) throws PrismException
 	{
 		for (int i = 0; i < numStates; i++) {
@@ -285,6 +291,35 @@ public class UMDPSimple<Value> extends ModelExplicit<Value> implements NondetMod
 		return trans.get(s).get(k).mvMultUnc(vect, minMax);
 	}
 
+	@Override
+	public String toString()
+	{
+		String s = "";
+		s = "[ ";
+
+		for (int i = 0; i < getNumStates(); i++) {
+			if (i > 0) {
+				s += ", ";
+			}
+			s += i + ": ";
+			s += "[";
+			int n = getNumChoices(i);
+			for (int j = 0; j < n; j++) {
+				if (j > 0) {
+					s += ",";
+				}
+				Object o = getAction(i, n);
+				if (o != null) {
+					s += o + ":";
+				}
+				s += getUncertainDistribution(i, j).toString();
+			}
+			s += "]";
+		}
+		s += " ]\n";
+		return s;
+	}
+
 	/**
 	 * Test code
 	 */
@@ -299,5 +334,6 @@ public class UMDPSimple<Value> extends ModelExplicit<Value> implements NondetMod
 		UDistribution<Double> udistr = new UDistributionL1Max<>(distr, 0.25);
 		umdp.addActionLabelledChoice(0, udistr, "a");
 		System.out.println(umdp);
+		System.out.println(umdp.getUncertainDistribution(0,0));
 	}
 }
