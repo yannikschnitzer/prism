@@ -107,20 +107,11 @@ public class UDistributionL1Max<Value> implements UDistribution<Value>
 		}
 
 		// Maximum budget for positive and negative residuals
-		double radius = (double) l1max / 2.0;
 
-		// Distribute the positive budget to the best states
-		double budget = radius;
-		double total = 0.0;
-		for (int i = 0; i < dd.size; i++) {
-			int j = indices.get(i);
-			dd.probs[j] = Double.min(1.0, dd.probs[j] + budget);
-			total = dd.sum() - 1;
-			budget = radius - total;
-			if (budget <= 0) {
-				break;
-			}
-		}
+        // Distribute the positive budget to the best states
+		double budget = (double) l1max / 2.0;
+		int k = indices.getFirst();
+		dd.probs[k] = Double.min(1.0, dd.probs[k] + budget);
 
 		// Distribute the negative budget to the worst states
 		budget = dd.sum() - 1;
