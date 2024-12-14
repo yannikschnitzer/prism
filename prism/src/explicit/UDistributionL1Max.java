@@ -106,8 +106,6 @@ public class UDistributionL1Max<Value> implements UDistribution<Value>
 			Collections.sort(indices, (o1, o2) -> Double.compare(vect[dd.index[o1]], vect[dd.index[o2]]));
 		}
 
-		// Maximum budget for positive and negative residuals
-
         // Distribute the positive budget to the best states
 		double budget = (double) l1max / 2.0;
 		int k = indices.getFirst();
