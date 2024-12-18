@@ -28,21 +28,21 @@ package explicit;
 
 import java.util.*;
 
-public class UDistributionL1Max<Value> implements UDistribution<Value>
+public class UDistributionLikelihoodRegion<Value> implements UDistribution<Value>
 {
 	// Transition frequencies
 	protected Distribution<Value> frequencies;
 
 	// L1 norm threshold
-	protected Value l1max;
+	protected Value beta;
 
 	/**
 	 * Constructor
 	 */
-	public UDistributionL1Max(Distribution<Value> frequencies, Value l1max)
+	public UDistributionLikelihoodRegion(Distribution<Value> frequencies, Value beta)
 	{
 		this.frequencies = frequencies;
-		this.l1max = l1max;
+		this.beta = beta;
 	}
 
 	@Override
@@ -107,7 +107,7 @@ public class UDistributionL1Max<Value> implements UDistribution<Value>
 		}
 
         // Distribute the positive budget to the best states
-		double budget = (double) l1max / 2.0;
+		double budget = (double) beta / 2.0;
 		int k = indices.getFirst();
 		dd.probs[k] = Double.min(1.0, dd.probs[k] + budget);
 
@@ -145,14 +145,14 @@ public class UDistributionL1Max<Value> implements UDistribution<Value>
 	public UDistribution<Value> copy()
 	{
 		Distribution<Value> frequenciesCopy = new Distribution<>(frequencies);
-		return new UDistributionL1Max<>(frequenciesCopy, l1max);
+		return new UDistributionLikelihoodRegion<>(frequenciesCopy, beta);
 	}
 
 	@Override
 	public UDistribution<Value> copy(int[] permut)
 	{
 		Distribution<Value> frequenciesCopy = new Distribution<>(frequencies, permut);
-		return new UDistributionL1Max<>(frequenciesCopy, l1max);
+		return new UDistributionLikelihoodRegion<>(frequenciesCopy, beta);
 	}
 
 	@Override
@@ -160,7 +160,7 @@ public class UDistributionL1Max<Value> implements UDistribution<Value>
 	{
 		String s = "";
 		s += frequencies.toString();
-		s += ", L1Max: " + l1max.toString();
+		s += ", Beta: " + beta.toString();
 		return s;
 	}
 }
