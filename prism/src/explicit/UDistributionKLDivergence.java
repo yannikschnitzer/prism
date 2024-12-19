@@ -150,7 +150,6 @@ public class UDistributionKLDivergence<Value> implements UDistribution<Value>
 
 		// Upper bound on valid beta, as per Section 6.3 in [Nilim et al. 2005]
 		if ((double) beta > -Math.log(getProbSumForValue(max_v, vect_minmax, dd))) {
-			System.out.println("here");
 			return max_v;
 		}
 

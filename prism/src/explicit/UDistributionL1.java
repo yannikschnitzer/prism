@@ -28,7 +28,7 @@ package explicit;
 
 import java.util.*;
 
-public class UDistributionL1Max<Value> implements UDistribution<Value>
+public class UDistributionL1<Value> implements UDistribution<Value>
 {
 	// Transition frequencies
 	protected Distribution<Value> frequencies;
@@ -39,7 +39,7 @@ public class UDistributionL1Max<Value> implements UDistribution<Value>
 	/**
 	 * Constructor
 	 */
-	public UDistributionL1Max(Distribution<Value> frequencies, Value l1max)
+	public UDistributionL1(Distribution<Value> frequencies, Value l1max)
 	{
 		this.frequencies = frequencies;
 		this.l1max = l1max;
@@ -145,14 +145,14 @@ public class UDistributionL1Max<Value> implements UDistribution<Value>
 	public UDistribution<Value> copy()
 	{
 		Distribution<Value> frequenciesCopy = new Distribution<>(frequencies);
-		return new UDistributionL1Max<>(frequenciesCopy, l1max);
+		return new UDistributionL1<>(frequenciesCopy, l1max);
 	}
 
 	@Override
 	public UDistribution<Value> copy(int[] permut)
 	{
 		Distribution<Value> frequenciesCopy = new Distribution<>(frequencies, permut);
-		return new UDistributionL1Max<>(frequenciesCopy, l1max);
+		return new UDistributionL1<>(frequenciesCopy, l1max);
 	}
 
 	@Override
