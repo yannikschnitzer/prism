@@ -134,15 +134,23 @@ public class UDistributionKLDivergence<Value> implements UDistribution<Value>
 	{
 		DoubleDistribution dd = extractDoubleDistribution();
 
-		double max_v = Arrays.stream(vect).max().getAsDouble();
+		// Invert values if minimising, as bisection algorithm maximises
+		double[] vect_minmax = vect.clone();
+		if (minMax.isMinUnc()) {
+			for (int i = 0; i < vect.length; i++) {
+				vect_minmax[i] = -vect[i];
+			}
+		}
 
+		double max_v = Arrays.stream(vect_minmax).max().getAsDouble();
 
 		if (frequencies.size() == 1) {
-			return vect[dd.index[0]];
+			return vect_minmax[dd.index[0]];
 		}
 
 		// Upper bound on valid beta, as per Section 6.3 in [Nilim et al. 2005]
-		if ((double) beta > getProbSumForValue(max_v, vect, dd)) {
+		if ((double) beta > -Math.log(getProbSumForValue(max_v, vect_minmax, dd))) {
+			System.out.println("here");
 			return max_v;
 		}
 
@@ -152,7 +160,7 @@ public class UDistributionKLDivergence<Value> implements UDistribution<Value>
 
 		double sum = 0.0;
 		for (int i = 0; i < dd.size; i++) {
-			sum += dd.probs[i] * vect[dd.index[i]];
+			sum += dd.probs[i] * vect_minmax[dd.index[i]];
 		}
 
 		high = (max_v - sum) / (double) beta;
@@ -168,7 +176,7 @@ public class UDistributionKLDivergence<Value> implements UDistribution<Value>
 		// Bisection
 		while (high - low > stop1) {
 			mu = (high + low) / 2.0;
-			grad = sigma_grad(mu, dd, vect);
+			grad = sigma_grad(mu, dd, vect_minmax);
 
 			if (grad > 0) {
 				high = mu;
@@ -177,7 +185,7 @@ public class UDistributionKLDivergence<Value> implements UDistribution<Value>
 			}
 		}
 
-		return sigma(mu, dd, vect);
+		return minMax.isMaxUnc() ? sigma(mu, dd, vect_minmax) : -sigma(mu, dd, vect_minmax);
 	}
 
 	public double getProbSumForValue(double val, double[] vect, DoubleDistribution dd) {
