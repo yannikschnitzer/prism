@@ -331,7 +331,7 @@ public class UMDPSimple<Value> extends ModelExplicit<Value> implements NondetMod
 		distr.add(1, 0.1);
 		distr.add(3, 0.5);
 		distr.add(4, 0.4);
-		UDistribution<Double> udistr = new UDistributionL1Max<>(distr, 0.25);
+		UDistribution<Double> udistr = new UDistributionL1<>(distr, 0.25);
 		umdp.addActionLabelledChoice(0, udistr, "a");
 		System.out.println(umdp);
 		System.out.println(umdp.getUncertainDistribution(0,0));

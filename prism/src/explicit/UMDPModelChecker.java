@@ -26,6 +26,8 @@
 
 package explicit;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.BitSet;
 import java.util.PrimitiveIterator;
 
@@ -36,12 +38,9 @@ import common.IterableStateSet;
 import explicit.rewards.MDPRewards;
 import explicit.rewards.Rewards;
 import parser.ast.Expression;
-import prism.AccuracyFactory;
-import prism.Evaluator;
-import prism.PrismComponent;
-import prism.PrismException;
+import parser.ast.ModulesFile;
+import prism.*;
 import strat.FMDStrategyStep;
-import prism.PrismFileLog;
 import strat.FMDStrategyProduct;
 import strat.MDStrategy;
 import strat.MDStrategyArray;
@@ -599,7 +598,7 @@ public class UMDPModelChecker extends ProbModelChecker
 	{
 		try {
 			UMDPModelChecker mc = new UMDPModelChecker(null);
-			mc.setPrecomp(false);
+			mc.setPrecomp(true);
 //			Evaluator<Interval<Double>> eval = Evaluator.forDoubleInterval();
 //			IMDPSimple<Double> imdp = new IMDPSimple<>();
 //			imdp.setIntervalEvaluator(eval);
@@ -632,51 +631,72 @@ public class UMDPModelChecker extends ProbModelChecker
 			UMDPSimple<Double> umdp = new UMDPSimple<>();
 			umdp.addStates(6);
 			Distribution<Double> distr = Distribution.ofDouble();
-			distr.add(1,0.9);
+			distr.add(1,0.0);
 			distr.add(2, 0.0);
-			distr.add(3, 0.0);
-			distr.add(4, 0.0);
-			distr.add(5, 0.1);
-			UDistribution<Double> udistr = new UDistributionL1Max<>(distr, 0.25);
+			distr.add(3, 0.9);
+			distr.add(4, 0.1);
+			distr.add(5, 0.0);
+			UDistribution<Double> udistr = new UDistributionLInf<>(distr, 0.2);
 			umdp.addActionLabelledChoice(0, udistr, "a");
 
 			distr = Distribution.ofDouble();
 			distr.add(1, 1.0);
-			udistr = new UDistributionL1Max<>(distr, 0.25);
+			udistr = new UDistributionLInf<>(distr, 0.25);
 			umdp.addActionLabelledChoice(1, udistr, "a");
 
 			distr = Distribution.ofDouble();
 			distr.add(2, 1.0);
-			udistr = new UDistributionL1Max<>(distr, 0.25);
+			udistr = new UDistributionLInf<>(distr, 0.25);
 			umdp.addActionLabelledChoice(2, udistr, "a");
 
 			distr = Distribution.ofDouble();
 			distr.add(3, 1.0);
-			udistr = new UDistributionL1Max<>(distr, 0.25);
+			udistr = new UDistributionLInf<>(distr, 0.25);
 			umdp.addActionLabelledChoice(3, udistr, "a");
 
 			distr = Distribution.ofDouble();
 			distr.add(4, 1.0);
-			udistr = new UDistributionL1Max<>(distr, 0.25);
+			udistr = new UDistributionLInf<>(distr, 0.25);
 			umdp.addActionLabelledChoice(4, udistr, "a");
 
 			distr = Distribution.ofDouble();
 			distr.add(5, 1.0);
-			udistr = new UDistributionL1Max<>(distr, 0.25);
+			udistr = new UDistributionLInf<>(distr, 0.25);
 			umdp.addActionLabelledChoice(5, udistr, "a");
 
 			System.out.println(umdp);
 			System.out.println(umdp.getUncertainDistribution(0,0));
 			BitSet target = new BitSet();
 			target.set(3);
-			target.set(5);
+			//target.set(5);
 			ModelCheckerResult res;
 			//umdp.findDeadlocks(true);
-			res = mc.computeReachProbs(umdp, target, MinMax.min().setMinUnc(false));
+			res = mc.computeReachProbs(umdp, target, MinMax.min().setMinUnc(true));
 			System.out.println("maxmax: " + res.soln[0]);
 
 		} catch (PrismException e) {
 			System.out.println(e);
 		}
 	}
+
+	public static void main2(String[] args) {
+		Prism prism = new Prism(new PrismDevNullLog());
+        try {
+            //prism.initialise();
+			prism.setEngine(Prism.EXPLICIT);
+			prism.setGenStrat(true);
+
+			ModulesFile modulesFile = prism.parseModelFile(new File("prism/models/phil-nofair_rewards.prism"));
+
+			prism.loadPRISMModel(modulesFile);
+
+			prism.buildModel();
+
+
+        } catch (PrismException | FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+
+    }
 }
