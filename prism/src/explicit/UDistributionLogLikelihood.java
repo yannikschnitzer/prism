@@ -48,7 +48,6 @@ public class UDistributionLogLikelihood<Value> implements UDistribution<Value>
 	{
 		this.frequencies = frequencies;
 		this.beta = beta;
-
 	}
 
 	@Override
@@ -197,7 +196,10 @@ public class UDistributionLogLikelihood<Value> implements UDistribution<Value>
 			sum += dd.probs[i] * vect_minmax[dd.index[i]];
 			beta_max += dd.probs[i] * Math.log(dd.probs[i]);
 		}
-		System.out.println("Beta max: "+ beta_max);
+
+		if (beta_max < (double) beta) {
+			System.out.println("Beta is too high, maximum feasible beta: " + beta_max);
+		}
 
 		high = (max_v - Math.exp((double) beta - beta_max) * sum) / ( 1 - Math.exp((double) beta - beta_max));
 
@@ -222,17 +224,6 @@ public class UDistributionLogLikelihood<Value> implements UDistribution<Value>
 		}
 
 		return minMax.isMaxUnc() ? sigma(mu, dd, vect_minmax) : -sigma(mu, dd, vect_minmax);
-	}
-
-	public double getProbSumForValue(double val, double[] vect, DoubleDistribution dd) {
-		double sum = 0.0;
-		for (int i = 0; i < dd.size; i++) {
-			if (vect[dd.index[i]] == val) {
-				sum += dd.probs[i];
-			}
-		}
-
-		return sum;
 	}
 
 	private DoubleDistribution extractDoubleDistribution() {
