@@ -37,14 +37,13 @@ public class ExpressionTranslator {
      * Translate linear expression as yielded when converting a Function into an Expression, into a OjAlgo expresion.
      * @param prismExpression The prism expression to translate
      * @param linearConstraint The OjAlgo expression to translate into
-     * @return 0
      * @throws PrismLangException Unsupported or non-linear constraint
      */
-    public double translateLinearExpression(parser.ast.Expression prismExpression, Expression linearConstraint) throws PrismException {
-        return doTranslate(prismExpression, linearConstraint, 1.0);
+    public void translateLinearExpression(parser.ast.Expression prismExpression, Expression linearConstraint) throws PrismException {
+        doTranslate(prismExpression, linearConstraint, 1.0);
     }
 
-    private double doTranslate(parser.ast.Expression prismExpression, Expression linearConstraint, double multiplier) throws PrismException {
+    private void doTranslate(parser.ast.Expression prismExpression, Expression linearConstraint, double multiplier) throws PrismException {
         if (prismExpression instanceof ExpressionBinaryOp op) {
             if (op.getOperator() == ExpressionBinaryOp.TIMES) {
                 if (op.getOperand1() instanceof ExpressionLiteral left && op.getOperand2() instanceof ExpressionConstant right) {
@@ -76,8 +75,30 @@ public class ExpressionTranslator {
             } else {
                 throw new PrismException("Unsupported operand type: " + op.getOperatorSymbol());
             }
+        } else if (prismExpression instanceof ExpressionUnaryOp op) {
+            if (op.getOperator() == ExpressionUnaryOp.MINUS) {
+                doTranslate(op.getOperand(), linearConstraint, -multiplier);
+            }
+        }  else if (prismExpression instanceof ExpressionConstant c) {
+            Variable variable = getOrCreateVariable(c.getName());
+            System.out.println("Coefficient: " + multiplier);
+            System.out.println("Variable: " + variable);
+            linearConstraint.add(variable, multiplier);
+        } else if (prismExpression instanceof ExpressionLiteral lit) {
+            double value = 0.0;
+            if (lit.getValue() instanceof BigRational val) {
+                value = val.doubleValue();
+            } else if (lit.getValue() instanceof BigInteger val) {
+                value = val.doubleValue();
+            } else {
+                throw new PrismException("Unsupported value type:" + lit.getType());
+            }
+            Variable constant = model.addVariable().level(value);
+
+            System.out.println("Coefficient: " + multiplier);
+            System.out.println("Constant:" + value);
+            linearConstraint.add(constant, multiplier);
         }
-        return 0.0;
     }
 }
 
