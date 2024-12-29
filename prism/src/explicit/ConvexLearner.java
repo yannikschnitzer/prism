@@ -20,7 +20,7 @@ public class ConvexLearner {
         FunctionFactory fact = FunctionFactory.create(new String[]{"p","q"}, new String[]{"0","0"}, new String[]{"1","1"}, settings);
 
         Function onemp = fact.getOne().subtract((fact.getVar("p").add(fact.getVar("q")).multiply(3)));
-        Function onemq = fact.getOne().subtract(fact.getVar("q"));
+        Function onemq = fact.getOne().multiply(-1).subtract(fact.getVar("q"));
 
         System.out.println("Expression: " + onemp.asExpression());
 
