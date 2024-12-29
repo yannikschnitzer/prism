@@ -19,7 +19,7 @@ public class ConvexLearner {
         PrismSettings settings = new PrismSettings();
         FunctionFactory fact = FunctionFactory.create(new String[]{"p","q"}, new String[]{"0","0"}, new String[]{"1","1"}, settings);
 
-        Function onemp = fact.getOne().subtract((fact.getVar("p").add(fact.getVar("q")).multiply(3)));
+        Function onemp = fact.getOne().multiply(1).subtract((fact.getVar("p").add(fact.getVar("q")).multiply(3)));
         Function onemq = fact.getOne().multiply(-1).subtract(fact.getVar("q"));
 
         System.out.println("Expression: " + onemp.asExpression());
@@ -30,6 +30,12 @@ public class ConvexLearner {
         ExpressionTranslator trans = new ExpressionTranslator(model);
 
         trans.translateLinearExpression(onemp.asExpression(), exp);
+
+        System.out.println("Model: " + exp);
+
+        exp.upper(0.2).lower(0.1);
+
+        System.out.println(ExpressionTranslator.getConstraintEquation(exp, model.getVariables()));
 
         Distribution<Function> dist = new Distribution<>(Evaluator.forRationalFunction(fact));
         dist.add(1, fact.getVar("p"));
