@@ -16,34 +16,67 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The ExpressionTranslator class translates PRISM-style linear expressions
+ * into ojAlgo Expressions, which can be used to define constraints and
+ * objectives in an ojAlgo optimization model.
+ */
 public class ExpressionTranslator {
 
-    private final ExpressionsBasedModel model;
-    private final Map<String, Variable> variableMap;
+    private final ExpressionsBasedModel model; // ojAlgo model to which constraints are added
+    private final Map<String, Variable> variableMap; // Map to store or retrieve variables by name
 
+    /**
+     * Constructor for ExpressionTranslator.
+     *
+     * @param model The ojAlgo model to which constraints and variables are added.
+     */
     public ExpressionTranslator(ExpressionsBasedModel model) {
         this.model = model;
         this.variableMap = new HashMap<>();
     }
 
+    /**
+     * Retrieves the ojAlgo optimization model being used.
+     *
+     * @return The ExpressionsBasedModel instance.
+     */
     public ExpressionsBasedModel getModel() {
         return model;
     }
 
+    /**
+     * Retrieves or creates a variable in the ojAlgo model.
+     * If the variable does not exist, it is created and stored in the variableMap.
+     *
+     * @param name The name of the variable to retrieve or create.
+     * @return The Variable instance corresponding to the given name.
+     */
     public Variable getOrCreateVariable(String name) {
-        return variableMap.computeIfAbsent(name, key -> model.addVariable(name)); // Default lower bound 0
+        return variableMap.computeIfAbsent(name, key -> model.addVariable(name)); // Default lower bound is 0
     }
 
     /**
-     * Translate linear expression as yielded when converting a Function into an Expression, into a OjAlgo expresion.
-     * @param prismExpression The prism expression to translate
-     * @param linearConstraint The OjAlgo expression to translate into
-     * @throws PrismLangException Unsupported or non-linear constraint
+     * Translates a PRISM-style linear expression into an ojAlgo Expression.
+     *
+     * @param prismExpression The PRISM expression to translate.
+     * @return The ojAlgo Expression object representing the constraint.
+     * @throws PrismLangException If unsupported or non-linear constructs are encountered.
      */
-    public void translateLinearExpression(parser.ast.Expression prismExpression, Expression linearConstraint) throws PrismException {
-        doTranslate(prismExpression, linearConstraint, 1.0);
+    public Expression translateLinearExpression(parser.ast.Expression prismExpression) throws PrismException {
+        Expression linearConstraint = model.addExpression(); // Create a new ojAlgo Expression
+        doTranslate(prismExpression, linearConstraint, 1.0); // Translate the PRISM expression recursively
+        return linearConstraint;
     }
 
+    /**
+     * Recursive helper method to translate a PRISM expression into an ojAlgo Expression.
+     *
+     * @param prismExpression The PRISM expression to process.
+     * @param linearConstraint The ojAlgo Expression being constructed.
+     * @param multiplier Multiplier for the coefficients (for handling negation).
+     * @throws PrismLangException If unsupported constructs are encountered.
+     */
     private void doTranslate(parser.ast.Expression prismExpression, Expression linearConstraint, double multiplier) throws PrismException {
         if (prismExpression instanceof ExpressionBinaryOp op) {
             if (op.getOperator() == ExpressionBinaryOp.TIMES) {
@@ -59,10 +92,6 @@ public class ExpressionTranslator {
                     }
 
                     Variable variable = getOrCreateVariable(right.getName());
-
-                    System.out.println("Coefficient: " + coefficient);
-                    System.out.println("Variable: " + variable);
-
                     linearConstraint.add(variable, coefficient);
                 } else {
                     throw new PrismException("Unsupported constraint type");
@@ -80,13 +109,14 @@ public class ExpressionTranslator {
             if (op.getOperator() == ExpressionUnaryOp.MINUS) {
                 doTranslate(op.getOperand(), linearConstraint, -multiplier);
             }
-        }  else if (prismExpression instanceof ExpressionConstant c) {
+        } else if (prismExpression instanceof ExpressionConstant c) {
+            // Handle constants, i.e. free variables
             Variable variable = getOrCreateVariable(c.getName());
-            System.out.println("Coefficient: " + multiplier);
-            System.out.println("Variable: " + variable);
             linearConstraint.add(variable, multiplier);
         } else if (prismExpression instanceof ExpressionLiteral lit) {
+            // Handle literal values, i.e., constants
             double value;
+
             if (lit.getValue() instanceof BigRational val) {
                 value = val.doubleValue();
             } else if (lit.getValue() instanceof BigInteger val) {
@@ -94,29 +124,34 @@ public class ExpressionTranslator {
             } else {
                 throw new PrismException("Unsupported value type:" + lit.getType());
             }
-            Variable constant = model.addVariable().level(value);
 
-            System.out.println("Coefficient: " + multiplier);
-            System.out.println("Constant:" + value);
+            // Create a fixed-value variable to represent the literal
+            Variable constant = model.addVariable().level(value);
             linearConstraint.add(constant, multiplier);
         }
     }
 
+    /**
+     * Constructs a human-readable string representation of an ojAlgo Expression.
+     * Includes variable coefficients and bounds.
+     *
+     * @param expression The ojAlgo Expression to represent.
+     * @param variables List of variables used in the model.
+     * @return A formatted string representing the constraint equation.
+     */
     public static String getConstraintEquation(Expression expression, List<Variable> variables) {
         StringBuilder equation = new StringBuilder();
 
-        // Iterate over variables to get their coefficients
         for (Variable variable : variables) {
             double coefficient = expression.get(variable).doubleValue();
             if (coefficient != 0) {
-                if (equation.length() > 0) {
+                if (!equation.isEmpty()) {
                     equation.append(" + ");
                 }
                 equation.append(coefficient).append(" * ").append(variable.getName());
             }
         }
 
-        // Append bounds
         if (expression.getLowerLimit() != null) {
             equation.insert(0, expression.getLowerLimit() + " <= ");
         }
@@ -127,4 +162,3 @@ public class ExpressionTranslator {
         return equation.toString();
     }
 }
-

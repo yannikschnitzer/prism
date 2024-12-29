@@ -109,4 +109,9 @@ public class UDistributionIntervals<Value> implements UDistribution<Value>
 	{
 		return intervals;
 	}
+
+	@Override
+	public String toString() {
+		return intervals.toString();
+	}
 }
