@@ -13,6 +13,7 @@ import prism.PrismLangException;
 
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ExpressionTranslator {
@@ -85,7 +86,7 @@ public class ExpressionTranslator {
             System.out.println("Variable: " + variable);
             linearConstraint.add(variable, multiplier);
         } else if (prismExpression instanceof ExpressionLiteral lit) {
-            double value = 0.0;
+            double value;
             if (lit.getValue() instanceof BigRational val) {
                 value = val.doubleValue();
             } else if (lit.getValue() instanceof BigInteger val) {
@@ -99,6 +100,31 @@ public class ExpressionTranslator {
             System.out.println("Constant:" + value);
             linearConstraint.add(constant, multiplier);
         }
+    }
+
+    public static String getConstraintEquation(Expression expression, List<Variable> variables) {
+        StringBuilder equation = new StringBuilder();
+
+        // Iterate over variables to get their coefficients
+        for (Variable variable : variables) {
+            double coefficient = expression.get(variable).doubleValue();
+            if (coefficient != 0) {
+                if (equation.length() > 0) {
+                    equation.append(" + ");
+                }
+                equation.append(coefficient).append(" * ").append(variable.getName());
+            }
+        }
+
+        // Append bounds
+        if (expression.getLowerLimit() != null) {
+            equation.insert(0, expression.getLowerLimit() + " <= ");
+        }
+        if (expression.getUpperLimit() != null) {
+            equation.append(" <= ").append(expression.getUpperLimit());
+        }
+
+        return equation.toString();
     }
 }
 
