@@ -25,6 +25,7 @@ public class ExpressionTranslator {
 
     private final ExpressionsBasedModel model; // ojAlgo model to which constraints are added
     private final Map<String, Variable> variableMap; // Map to store or retrieve variables by name
+    private final Map<Double, Variable> constantMap;
 
     /**
      * Constructor for ExpressionTranslator.
@@ -34,6 +35,7 @@ public class ExpressionTranslator {
     public ExpressionTranslator(ExpressionsBasedModel model) {
         this.model = model;
         this.variableMap = new HashMap<>();
+        this.constantMap = new HashMap<>();
     }
 
     /**
@@ -54,6 +56,10 @@ public class ExpressionTranslator {
      */
     public Variable getOrCreateVariable(String name) {
         return variableMap.computeIfAbsent(name, key -> model.addVariable(name)); // Default lower bound is 0
+    }
+
+    public Variable getOrCreateConstant(Double value) {
+        return constantMap.computeIfAbsent(value, key -> model.addVariable().level(value));
     }
 
     /**
@@ -126,8 +132,10 @@ public class ExpressionTranslator {
             }
 
             // Create a fixed-value variable to represent the literal
-            Variable constant = model.addVariable().level(value);
+            Variable constant = getOrCreateConstant(value);
             linearConstraint.add(constant, multiplier);
+        } else {
+            throw new PrismException("Unsupported prism expression type");
         }
     }
 

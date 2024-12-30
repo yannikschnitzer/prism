@@ -683,7 +683,7 @@ public class UMDPModelChecker extends ProbModelChecker
 			//target.set(5);
 			ModelCheckerResult res;
 			//umdp.findDeadlocks(true);
-			res = mc.computeReachProbs(umdp, target, MinMax.max().setMinUnc(true));
+			res = mc.computeReachProbs(umdp, target, MinMax.max().setMinUnc(false));
 			System.out.println("maxmax: " + res.soln[0]);
 
 		} catch (PrismException e) {

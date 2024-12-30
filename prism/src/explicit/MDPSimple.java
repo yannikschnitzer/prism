@@ -116,6 +116,10 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 		}
 	}
 
+	public Distribution<Value> getDistribution(int s, int i) {
+		return trans.get(s).get(i);
+	}
+
 	/**
 	 * Construct an MDP from an existing one and a state index permutation,
 	 * i.e. in which state index i becomes index permut[i].

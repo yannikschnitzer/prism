@@ -2,15 +2,19 @@ package explicit;
 
 import org.ojalgo.optimisation.Expression;
 import org.ojalgo.optimisation.ExpressionsBasedModel;
+import org.ojalgo.optimisation.Optimisation;
 import param.Function;
 import param.FunctionFactory;
-import parser.State;
 import prism.*;
 import common.Interval;
 
 public class ConvexLearner {
 
-    private Prism prism;
+    private ExpressionsBasedModel model;
+
+    private MDPSimple<Function> mdpParam;
+
+    private ExpressionTranslator trans;
 
     public static void main(String[] args) throws PrismException {
 
@@ -52,26 +56,90 @@ public class ConvexLearner {
         UMDPSimple<Double> umdp = new UMDPSimple<>();
         umdp.addStates(5);
 
-       Distribution<Interval<Double>> udist = new Distribution<>(Evaluator.forDoubleInterval());
-       udist.add(1, new Interval<>(0.5,0.9));
-       udist.add(2, new Interval<>(0.2,0.5));
-       umdp.addActionLabelledChoice(0, new UDistributionIntervals<>(udist), "a");
+        Distribution<Interval<Double>> udist = new Distribution<>(Evaluator.forDoubleInterval());
+        udist.add(1, new Interval<>(0.5,0.9));
+        udist.add(2, new Interval<>(0.2,0.5));
+        umdp.addActionLabelledChoice(0, new UDistributionIntervals<>(udist), "a");
 
+        udist = new Distribution<>(Evaluator.forDoubleInterval());
+        udist.add(1, new Interval<>(1.0,1.0));
+        umdp.addActionLabelledChoice(1, new UDistributionIntervals<>(udist), "b");
+
+        udist = new Distribution<>(Evaluator.forDoubleInterval());
+        udist.add(2, new Interval<>(1.0,1.0));
+        umdp.addActionLabelledChoice(2, new UDistributionIntervals<>(udist), "b");
+
+        udist = new Distribution<>(Evaluator.forDoubleInterval());
+        udist.add(1, new Interval<>(0.2,0.5));
+        udist.add(2, new Interval<>(0.5,0.9));
+        umdp.addActionLabelledChoice(3, new UDistributionIntervals<>(udist), "a");
+
+        udist = new Distribution<>(Evaluator.forDoubleInterval());
+        udist.add(1, new Interval<>(0.0,0.2));
+        udist.add(2, new Interval<>(0.8,1.0));
+        umdp.addActionLabelledChoice(4, new UDistributionIntervals<>(udist), "a");
 
         System.out.println("MDP: " + mdp);
         System.out.println("IMDP: " + umdp);
 
+
         ExpressionsBasedModel model = new ExpressionsBasedModel();
-        ExpressionTranslator trans = new ExpressionTranslator(model);
-        Expression exp = trans.translateLinearExpression(onemp.asExpression());
 
-        System.out.println("Expression: " + onemp.asExpression());
+        ConvexLearner cxl = new ConvexLearner(model);
+        cxl.setParamModel(mdp);
+        cxl.setConstraints(umdp);
 
-        exp.upper(0.2).lower(0.1);
-        System.out.println("Translated: "+ExpressionTranslator.getConstraintEquation(exp, model.getVariables()));
+        for (Expression expr : model.getExpressions()) {
+            System.out.println(ExpressionTranslator.getConstraintEquation(expr, model.getVariables()));
+        }
+
+        Expression obj = model.addExpression("Objective").add(model.getVariable(0),1.0).weight(1.0);
         System.out.println("Model: " + model);
-
+        Optimisation.Result res = model.maximise();
+        System.out.println("Res:" + res);
 
     }
 
+    public ConvexLearner(ExpressionsBasedModel model) {
+        this.model = model;
+        this.trans = new ExpressionTranslator(model);
+    }
+
+    public ExpressionsBasedModel getModel() {
+        return model;
+    }
+
+    public void setModel(ExpressionsBasedModel model) {
+        this.model = model;
+    }
+
+    public MDP<Function> getParamModel() {
+        return mdpParam;
+    }
+
+    public void setParamModel(MDPSimple<Function> mdpParam) {
+        this.mdpParam = mdpParam;
+    }
+
+    public void setConstraints(UMDP<Double> imdp) throws PrismException {
+        // Iterate over IMDP
+        for (int s = 0; s < imdp.getNumStates(); s++) {
+            for (int a = 0; a < imdp.getNumChoices(s); a++) {
+                UDistribution<Double> udist = imdp.getUncertainDistribution(s,a);
+                if (udist instanceof UDistributionIntervals<Double> dist) {
+                    Distribution<Interval<Double>> idist = dist.getIntervals();
+                    Distribution<Function> pdist = mdpParam.getDistribution(s, a);
+
+                    for (int i : idist.getSupport()) {
+                        Expression exp = trans.translateLinearExpression(pdist.get(i).asExpression());
+                        exp.lower(idist.get(i).getLower());
+                        exp.upper(idist.get(i).getUpper());
+                    }
+                } else {
+                    throw new PrismException("Only Interval MDPs supported.");
+                }
+            }
+        }
+
+    }
 }
