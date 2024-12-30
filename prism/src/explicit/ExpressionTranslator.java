@@ -89,6 +89,20 @@ public class ExpressionTranslator {
     }
 
     /**
+     * Translates a PRISM-style linear expression into an ojAlgo Expression with initial multiplier.
+     *
+     * @param prismExpression The PRISM expression to translate.
+     * @return The ojAlgo Expression object representing the constraint.
+     * @throws PrismLangException If unsupported or non-linear constructs are encountered.
+     */
+    public GRBLinExpr translateLinearExpression(parser.ast.Expression prismExpression, double multiplier) throws PrismException {
+        GRBLinExpr linearConstraint = new GRBLinExpr(); // Create a new ojAlgo Expression
+        doTranslate(prismExpression, linearConstraint, multiplier); // Translate the PRISM expression recursively
+        return linearConstraint;
+    }
+
+
+    /**
      * Recursive helper method to translate a PRISM expression into an ojAlgo Expression.
      *
      * @param prismExpression The PRISM expression to process.
@@ -185,7 +199,7 @@ public class ExpressionTranslator {
 
 
     /**
-     * Formats a GRBLinExpr into a human-readable string, e.g. "2.0*x + 3.0*y + 10.0".
+     * Formats a GRBLinExpr into a human-readable string.
      *
      * @param expr The linear expression to format.
      * @return A string representing the linear expression.
@@ -216,7 +230,7 @@ public class ExpressionTranslator {
         }
 
         // If there's nothing in the expression (empty), return "0" instead of empty
-        if (sb.length() == 0) {
+        if (sb.isEmpty()) {
             sb.append("0");
         }
 
