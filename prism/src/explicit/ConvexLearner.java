@@ -8,6 +8,8 @@ import param.FunctionFactory;
 import prism.*;
 import common.Interval;
 
+import com.gurobi.gurobi.*;
+
 public class ConvexLearner {
 
     private ExpressionsBasedModel model;
@@ -16,7 +18,7 @@ public class ConvexLearner {
 
     private ExpressionTranslator trans;
 
-    public static void main(String[] args) throws PrismException {
+    public static void main(String[] args) throws PrismException, GRBException {
 
         PrismSettings settings = new PrismSettings();
         FunctionFactory fact = FunctionFactory.create(new String[]{"p","q"}, new String[]{"0","0"}, new String[]{"1","1"}, settings);
@@ -70,6 +72,7 @@ public class ConvexLearner {
         umdp.addActionLabelledChoice(2, new UDistributionIntervals<>(udist), "b");
 
         udist = new Distribution<>(Evaluator.forDoubleInterval());
+
         udist.add(1, new Interval<>(0.2,0.5));
         udist.add(2, new Interval<>(0.5,0.9));
         umdp.addActionLabelledChoice(3, new UDistributionIntervals<>(udist), "a");
@@ -81,6 +84,33 @@ public class ConvexLearner {
 
         System.out.println("MDP: " + mdp);
         System.out.println("IMDP: " + umdp);
+
+        String username = System.getProperty("user.name");
+        System.out.println("User: " + username);
+
+        GRBEnv env = new GRBEnv(true);
+        env.set(GRB.IntParam.OutputFlag, 0);
+        env.start();
+
+        GRBModel grbmodel = new GRBModel(env);
+        GRBVar x = grbmodel.addVar(0.0, 1.0, 0.0, GRB.BINARY, "x");
+        GRBVar y = grbmodel.addVar(0.0, 1.0, 0.0, GRB.BINARY, "y");
+        GRBVar z = grbmodel.addVar(0.0, 1.0, 0.0, GRB.BINARY, "z");
+        GRBLinExpr gexpr = new GRBLinExpr();
+        gexpr.addTerm(1.0, x);
+        gexpr.addTerm(1.0, y);
+        gexpr.addTerm(2.0, z);
+        grbmodel.setObjective(gexpr, GRB.MAXIMIZE);
+        grbmodel.optimize();
+        System.out.println("Obj: " + grbmodel.get(GRB.DoubleAttr.ObjVal));
+
+        GRBLinExpr gexpr2 = new GRBLinExpr();
+        gexpr2.addTerm(2.0, x);
+        gexpr2.addTerm(2.0, y);
+        gexpr2.addTerm(2.0, z);
+        grbmodel.setObjective(gexpr2, GRB.MAXIMIZE);
+        grbmodel.optimize();
+        System.out.println("Obj: " + grbmodel.get(GRB.DoubleAttr.ObjVal));
 
 
         ExpressionsBasedModel model = new ExpressionsBasedModel();
