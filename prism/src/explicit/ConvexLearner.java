@@ -10,6 +10,9 @@ import common.Interval;
 
 import com.gurobi.gurobi.*;
 
+import java.util.Arrays;
+import java.util.BitSet;
+
 public class ConvexLearner {
 
     private final GRBEnv env;
@@ -79,8 +82,8 @@ public class ConvexLearner {
         umdp.addActionLabelledChoice(3, new UDistributionIntervals<>(udist), "a");
 
         udist = new Distribution<>(Evaluator.forDoubleInterval());
-        udist.add(1, new Interval<>(0.0,0.2));
-        udist.add(2, new Interval<>(0.8,1.0));
+        udist.add(1, new Interval<>(0.0,0.25));
+        udist.add(2, new Interval<>(0.7,1.0));
         umdp.addActionLabelledChoice(4, new UDistributionIntervals<>(udist), "a");
 
         System.out.println("MDP: " + mdp);
@@ -100,6 +103,34 @@ public class ConvexLearner {
         for (GRBConstr con : cxl.model.getConstrs()) {
             System.out.println(ExpressionTranslator.formatGBRConstraint(cxl.model,con));
         }
+
+        GRBLinExpr obj = cxl.trans.translateLinearExpression(fact.getVar("p").asExpression());
+        cxl.model.setObjective(obj, GRB.MAXIMIZE);
+        cxl.model.optimize();
+        System.out.println("Obj: " + cxl.model.get(GRB.DoubleAttr.ObjVal));
+
+        obj = cxl.trans.translateLinearExpression(fact.getVar("q").asExpression());
+        cxl.model.setObjective(obj, GRB.MAXIMIZE);
+        cxl.model.optimize();
+        System.out.println("Obj: " + cxl.model.get(GRB.DoubleAttr.ObjVal));
+
+        for (GRBVar var : cxl.model.getVars()) {
+            System.out.println(var.get(GRB.StringAttr.VarName) + " LB: " + var.get(GRB.DoubleAttr.LB) + " UB: "  + var.get(GRB.DoubleAttr.UB));
+        }
+
+        UMDPSimple<Double> convex_mdp = cxl.getUMDP();
+        System.out.println("UMDP: " + convex_mdp);
+
+        UMDPModelChecker mc = new UMDPModelChecker(null);
+        mc.setPrecomp(true);
+
+        BitSet target = new BitSet();
+        target.set(1);
+        //target.set(5);
+        ModelCheckerResult res;
+        //umdp.findDeadlocks(true);
+        res = mc.computeReachProbs(convex_mdp, target, MinMax.max().setMinUnc(false));
+        System.out.println("maxmax: " + res.soln[0]);
 
 
     }
@@ -126,6 +157,10 @@ public class ConvexLearner {
         return mdpParam;
     }
 
+    public void resetModel() throws GRBException {
+        this.model = new GRBModel(env);
+    }
+
     public void setParamModel(MDPSimple<Function> mdpParam) {
         this.mdpParam = mdpParam;
     }
@@ -149,5 +184,19 @@ public class ConvexLearner {
                 }
             }
         }
+    }
+
+    public UMDPSimple<Double> getUMDP() {
+        UMDPSimple<Double> convexUMDP = new UMDPSimple<>(mdpParam.getNumStates());
+        for (int s = 0; s < mdpParam.getNumStates(); s++) {
+            for (int a = 0; a < mdpParam.getNumChoices(s); a++) {
+                Distribution<Function> pdist = mdpParam.getDistribution(s, a);
+                Object action = mdpParam.getAction(s,a);
+
+                UDistributionLinearProgram<Double> convex_dist = new UDistributionLinearProgram<>(pdist, this.model, this.trans);
+                convexUMDP.addActionLabelledChoice(s, convex_dist, action);
+            }
+        }
+        return convexUMDP;
     }
 }
