@@ -1,5 +1,6 @@
 package explicit;
 
+import com.gurobi.gurobi.*;
 import org.ojalgo.optimisation.ExpressionsBasedModel;
 import org.ojalgo.optimisation.Variable;
 import org.ojalgo.optimisation.Expression;
@@ -23,16 +24,16 @@ import java.util.Map;
  */
 public class ExpressionTranslator {
 
-    private final ExpressionsBasedModel model; // ojAlgo model to which constraints are added
-    private final Map<String, Variable> variableMap; // Map to store or retrieve variables by name
-    private final Map<Double, Variable> constantMap;
+    private final GRBModel model; // ojAlgo model to which constraints are added
+    private final Map<String, GRBVar> variableMap; // Map to store or retrieve variables by name
+    private final Map<Double, GRBVar> constantMap;
 
     /**
      * Constructor for ExpressionTranslator.
      *
      * @param model The ojAlgo model to which constraints and variables are added.
      */
-    public ExpressionTranslator(ExpressionsBasedModel model) {
+    public ExpressionTranslator(GRBModel model) {
         this.model = model;
         this.variableMap = new HashMap<>();
         this.constantMap = new HashMap<>();
@@ -43,7 +44,7 @@ public class ExpressionTranslator {
      *
      * @return The ExpressionsBasedModel instance.
      */
-    public ExpressionsBasedModel getModel() {
+    public GRBModel getModel() {
         return model;
     }
 
@@ -54,12 +55,24 @@ public class ExpressionTranslator {
      * @param name The name of the variable to retrieve or create.
      * @return The Variable instance corresponding to the given name.
      */
-    public Variable getOrCreateVariable(String name) {
-        return variableMap.computeIfAbsent(name, key -> model.addVariable(name)); // Default lower bound is 0
+    public GRBVar getOrCreateVariable(String name) {
+        return variableMap.computeIfAbsent(name, key -> {
+            try {
+                return model.addVar(-GRB.INFINITY, GRB.INFINITY, 0.0, GRB.CONTINUOUS, name);
+            } catch (GRBException e) {
+                throw new RuntimeException(e);
+            }
+        }); // Default lower bound is 0
     }
 
-    public Variable getOrCreateConstant(Double value) {
-        return constantMap.computeIfAbsent(value, key -> model.addVariable().level(value));
+    public GRBVar getOrCreateConstant(Double value) {
+        return constantMap.computeIfAbsent(value, key -> {
+            try {
+                return model.addVar(value, value, 0.0, GRB.CONTINUOUS, null);
+            } catch (GRBException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     /**
@@ -69,8 +82,8 @@ public class ExpressionTranslator {
      * @return The ojAlgo Expression object representing the constraint.
      * @throws PrismLangException If unsupported or non-linear constructs are encountered.
      */
-    public Expression translateLinearExpression(parser.ast.Expression prismExpression) throws PrismException {
-        Expression linearConstraint = model.addExpression(); // Create a new ojAlgo Expression
+    public GRBLinExpr translateLinearExpression(parser.ast.Expression prismExpression) throws PrismException {
+        GRBLinExpr linearConstraint = new GRBLinExpr(); // Create a new ojAlgo Expression
         doTranslate(prismExpression, linearConstraint, 1.0); // Translate the PRISM expression recursively
         return linearConstraint;
     }
@@ -83,7 +96,7 @@ public class ExpressionTranslator {
      * @param multiplier Multiplier for the coefficients (for handling negation).
      * @throws PrismLangException If unsupported constructs are encountered.
      */
-    private void doTranslate(parser.ast.Expression prismExpression, Expression linearConstraint, double multiplier) throws PrismException {
+    private void doTranslate(parser.ast.Expression prismExpression, GRBLinExpr linearConstraint, double multiplier) throws PrismException {
         if (prismExpression instanceof ExpressionBinaryOp op) {
             if (op.getOperator() == ExpressionBinaryOp.TIMES) {
                 if (op.getOperand1() instanceof ExpressionLiteral left && op.getOperand2() instanceof ExpressionConstant right) {
@@ -97,8 +110,8 @@ public class ExpressionTranslator {
                         throw new PrismException("Unsupported value type:" + left.getType());
                     }
 
-                    Variable variable = getOrCreateVariable(right.getName());
-                    linearConstraint.add(variable, coefficient);
+                    GRBVar variable = getOrCreateVariable(right.getName());
+                    linearConstraint.addTerm(coefficient, variable);
                 } else {
                     throw new PrismException("Unsupported constraint type");
                 }
@@ -117,8 +130,8 @@ public class ExpressionTranslator {
             }
         } else if (prismExpression instanceof ExpressionConstant c) {
             // Handle constants, i.e. free variables
-            Variable variable = getOrCreateVariable(c.getName());
-            linearConstraint.add(variable, multiplier);
+            GRBVar variable = getOrCreateVariable(c.getName());
+            linearConstraint.addTerm(multiplier, variable);
         } else if (prismExpression instanceof ExpressionLiteral lit) {
             // Handle literal values, i.e., constants
             double value;
@@ -132,8 +145,8 @@ public class ExpressionTranslator {
             }
 
             // Create a fixed-value variable to represent the literal
-            Variable constant = getOrCreateConstant(value);
-            linearConstraint.add(constant, multiplier);
+            GRBVar constant = getOrCreateConstant(value);
+            linearConstraint.addTerm(multiplier, constant);
         } else {
             throw new PrismException("Unsupported prism expression type");
         }
@@ -168,5 +181,70 @@ public class ExpressionTranslator {
         }
 
         return equation.toString();
+    }
+
+
+    /**
+     * Formats a GRBLinExpr into a human-readable string, e.g. "2.0*x + 3.0*y + 10.0".
+     *
+     * @param expr The linear expression to format.
+     * @return A string representing the linear expression.
+     * @throws GRBException If there is an issue accessing variable info from Gurobi.
+     */
+    public static String formatGRBExpression(GRBLinExpr expr) throws GRBException {
+        StringBuilder sb = new StringBuilder();
+
+        int numTerms = expr.size(); // number of variable terms
+        for (int i = 0; i < numTerms; i++) {
+            double coef = expr.getCoeff(i);
+            GRBVar var = expr.getVar(i);
+
+            if (i > 0) {
+                sb.append(" + ");
+            }
+
+            sb.append(coef).append("*").append(var.get(GRB.StringAttr.VarName));
+        }
+
+        // Add constant term if nonzero
+        double constant = expr.getConstant();
+        if (constant != 0.0) {
+            if (numTerms > 0) {
+                sb.append(" + ");
+            }
+            sb.append(constant);
+        }
+
+        // If there's nothing in the expression (empty), return "0" instead of empty
+        if (sb.length() == 0) {
+            sb.append("0");
+        }
+
+        return sb.toString();
+    }
+
+    public static String formatGBRConstraint(GRBModel model, GRBConstr constr) throws GRBException {
+        // 1) Get the LHS as a GRBLinExpr
+        GRBLinExpr lhs = model.getRow(constr);
+
+        // 2) Get the sense character (<=, >=, =)
+        char sense = constr.get(GRB.CharAttr.Sense);
+
+        // 3) Get the RHS numeric value
+        double rhs = constr.get(GRB.DoubleAttr.RHS);
+
+        // 4) Format the LHS expression
+        String lhsString = formatGRBExpression(lhs);
+
+        // 5) Convert the sense character to a string
+        String senseString = switch (sense) {
+            case GRB.LESS_EQUAL -> "<=";
+            case GRB.GREATER_EQUAL -> ">=";
+            case GRB.EQUAL -> "=";
+            default -> "?";
+        };
+
+        // 6) Combine into a single string
+        return lhsString + " " + senseString + " " + rhs;
     }
 }

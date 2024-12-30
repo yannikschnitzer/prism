@@ -12,11 +12,12 @@ import com.gurobi.gurobi.*;
 
 public class ConvexLearner {
 
-    private ExpressionsBasedModel model;
+    private final GRBEnv env;
+    private GRBModel model;
 
     private MDPSimple<Function> mdpParam;
 
-    private ExpressionTranslator trans;
+    private final ExpressionTranslator trans;
 
     public static void main(String[] args) throws PrismException, GRBException {
 
@@ -85,61 +86,39 @@ public class ConvexLearner {
         System.out.println("MDP: " + mdp);
         System.out.println("IMDP: " + umdp);
 
-        String username = System.getProperty("user.name");
-        System.out.println("User: " + username);
 
         GRBEnv env = new GRBEnv(true);
         env.set(GRB.IntParam.OutputFlag, 0);
         env.start();
 
-        GRBModel grbmodel = new GRBModel(env);
-        GRBVar x = grbmodel.addVar(0.0, 1.0, 0.0, GRB.BINARY, "x");
-        GRBVar y = grbmodel.addVar(0.0, 1.0, 0.0, GRB.BINARY, "y");
-        GRBVar z = grbmodel.addVar(0.0, 1.0, 0.0, GRB.BINARY, "z");
-        GRBLinExpr gexpr = new GRBLinExpr();
-        gexpr.addTerm(1.0, x);
-        gexpr.addTerm(1.0, y);
-        gexpr.addTerm(2.0, z);
-        grbmodel.setObjective(gexpr, GRB.MAXIMIZE);
-        grbmodel.optimize();
-        System.out.println("Obj: " + grbmodel.get(GRB.DoubleAttr.ObjVal));
 
-        GRBLinExpr gexpr2 = new GRBLinExpr();
-        gexpr2.addTerm(2.0, x);
-        gexpr2.addTerm(2.0, y);
-        gexpr2.addTerm(2.0, z);
-        grbmodel.setObjective(gexpr2, GRB.MAXIMIZE);
-        grbmodel.optimize();
-        System.out.println("Obj: " + grbmodel.get(GRB.DoubleAttr.ObjVal));
-
-
-        ExpressionsBasedModel model = new ExpressionsBasedModel();
-
-        ConvexLearner cxl = new ConvexLearner(model);
+        ConvexLearner cxl = new ConvexLearner(env);
         cxl.setParamModel(mdp);
         cxl.setConstraints(umdp);
+        cxl.model.update();
 
-        for (Expression expr : model.getExpressions()) {
-            System.out.println(ExpressionTranslator.getConstraintEquation(expr, model.getVariables()));
+        for (GRBConstr con : cxl.model.getConstrs()) {
+            System.out.println(ExpressionTranslator.formatGBRConstraint(cxl.model,con));
         }
 
-        Expression obj = model.addExpression("Objective").add(model.getVariable(0),1.0).weight(1.0);
-        System.out.println("Model: " + model);
-        Optimisation.Result res = model.maximise();
-        System.out.println("Res:" + res);
 
     }
 
-    public ConvexLearner(ExpressionsBasedModel model) {
-        this.model = model;
-        this.trans = new ExpressionTranslator(model);
+    public ConvexLearner(GRBEnv env) {
+        try {
+            this.env = env;
+            this.model = new GRBModel(env);
+            this.trans = new ExpressionTranslator(model);
+        } catch (GRBException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public ExpressionsBasedModel getModel() {
+    public GRBModel getModel() {
         return model;
     }
 
-    public void setModel(ExpressionsBasedModel model) {
+    public void setModel(GRBModel model) {
         this.model = model;
     }
 
@@ -151,7 +130,7 @@ public class ConvexLearner {
         this.mdpParam = mdpParam;
     }
 
-    public void setConstraints(UMDP<Double> imdp) throws PrismException {
+    public void setConstraints(UMDP<Double> imdp) throws PrismException, GRBException {
         // Iterate over IMDP
         for (int s = 0; s < imdp.getNumStates(); s++) {
             for (int a = 0; a < imdp.getNumChoices(s); a++) {
@@ -161,15 +140,14 @@ public class ConvexLearner {
                     Distribution<Function> pdist = mdpParam.getDistribution(s, a);
 
                     for (int i : idist.getSupport()) {
-                        Expression exp = trans.translateLinearExpression(pdist.get(i).asExpression());
-                        exp.lower(idist.get(i).getLower());
-                        exp.upper(idist.get(i).getUpper());
+                        GRBLinExpr exp = trans.translateLinearExpression(pdist.get(i).asExpression());
+                        model.addConstr(exp, GRB.GREATER_EQUAL, idist.get(i).getLower(), null);
+                        model.addConstr(exp, GRB.LESS_EQUAL, idist.get(i).getUpper(), null);
                     }
                 } else {
                     throw new PrismException("Only Interval MDPs supported.");
                 }
             }
         }
-
     }
 }
