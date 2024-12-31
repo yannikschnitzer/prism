@@ -1,29 +1,21 @@
-package explicit;
+package learning;
 
-import org.ojalgo.optimisation.Expression;
-import org.ojalgo.optimisation.ExpressionsBasedModel;
-import org.ojalgo.optimisation.Optimisation;
+import com.gurobi.gurobi.GRB;
+import com.gurobi.gurobi.GRBConstr;
+import com.gurobi.gurobi.GRBEnv;
+import com.gurobi.gurobi.GRBException;
+import common.Interval;
+import explicit.*;
 import param.Function;
 import param.FunctionFactory;
-import prism.*;
-import common.Interval;
+import prism.Evaluator;
+import prism.PrismException;
+import prism.PrismSettings;
 
-import com.gurobi.gurobi.*;
-
-import java.util.Arrays;
 import java.util.BitSet;
 
-public class ConvexLearner {
-
-    private final GRBEnv env;
-    private GRBModel model;
-
-    private MDPSimple<Function> mdpParam;
-
-    private final ExpressionTranslator trans;
-
-    public static void main(String[] args) throws PrismException, GRBException {
-
+public class Learner {
+    public static void main(String[] args) throws GRBException, PrismException {
         PrismSettings settings = new PrismSettings();
         FunctionFactory fact = FunctionFactory.create(new String[]{"p","q"}, new String[]{"0","0"}, new String[]{"1","1"}, settings);
 
@@ -96,10 +88,10 @@ public class ConvexLearner {
         ConvexLearner cxl = new ConvexLearner(env);
         cxl.setParamModel(mdp);
         cxl.setConstraints(umdp);
-        cxl.model.update();
+        cxl.getModel().update();
 
-        for (GRBConstr con : cxl.model.getConstrs()) {
-            System.out.println(ExpressionTranslator.formatGBRConstraint(cxl.model,con));
+        for (GRBConstr con : cxl.getModel().getConstrs()) {
+            System.out.println(ExpressionTranslator.formatGBRConstraint(cxl.getModel(),con));
         }
 
         UMDPSimple<Double> convex_mdp = cxl.getUMDP();
@@ -115,71 +107,5 @@ public class ConvexLearner {
         res = mc.computeReachProbs(convex_mdp, target, MinMax.max().setMinUnc(false));
         System.out.println("maxmax: " + res.soln[0]);
 
-
-    }
-
-    public ConvexLearner(GRBEnv env) {
-        try {
-            this.env = env;
-            this.model = new GRBModel(env);
-            this.trans = new ExpressionTranslator(model);
-        } catch (GRBException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public GRBModel getModel() {
-        return model;
-    }
-
-    public void setModel(GRBModel model) {
-        this.model = model;
-    }
-
-    public MDP<Function> getParamModel() {
-        return mdpParam;
-    }
-
-    public void resetModel() throws GRBException {
-        this.model = new GRBModel(env);
-    }
-
-    public void setParamModel(MDPSimple<Function> mdpParam) {
-        this.mdpParam = mdpParam;
-    }
-
-    public void setConstraints(UMDP<Double> imdp) throws PrismException, GRBException {
-        // Iterate over IMDP
-        for (int s = 0; s < imdp.getNumStates(); s++) {
-            for (int a = 0; a < imdp.getNumChoices(s); a++) {
-                UDistribution<Double> udist = imdp.getUncertainDistribution(s,a);
-                if (udist instanceof UDistributionIntervals<Double> dist) {
-                    Distribution<Interval<Double>> idist = dist.getIntervals();
-                    Distribution<Function> pdist = mdpParam.getDistribution(s, a);
-
-                    for (int i : idist.getSupport()) {
-                        GRBLinExpr exp = trans.translateLinearExpression(pdist.get(i).asExpression());
-                        model.addConstr(exp, GRB.GREATER_EQUAL, idist.get(i).getLower(), null);
-                        model.addConstr(exp, GRB.LESS_EQUAL, idist.get(i).getUpper(), null);
-                    }
-                } else {
-                    throw new PrismException("Only Interval MDPs supported.");
-                }
-            }
-        }
-    }
-
-    public UMDPSimple<Double> getUMDP() {
-        UMDPSimple<Double> convexUMDP = new UMDPSimple<>(mdpParam.getNumStates());
-        for (int s = 0; s < mdpParam.getNumStates(); s++) {
-            for (int a = 0; a < mdpParam.getNumChoices(s); a++) {
-                Distribution<Function> pdist = mdpParam.getDistribution(s, a);
-                Object action = mdpParam.getAction(s,a);
-
-                UDistributionLinearProgram<Double> convex_dist = new UDistributionLinearProgram<>(pdist, this.model, this.trans);
-                convexUMDP.addActionLabelledChoice(s, convex_dist, action);
-            }
-        }
-        return convexUMDP;
     }
 }
