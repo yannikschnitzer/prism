@@ -37,7 +37,7 @@ public class ConvexLearner {
 
         Distribution<Function> dist = new Distribution<>(Evaluator.forRationalFunction(fact));
         dist.add(1, fact.getVar("p"));
-        dist.add(2, onemp);
+        dist.add(4, onemp);
         mdp.addActionLabelledChoice(0,dist,"a");
 
         dist = new Distribution<>(Evaluator.forRationalFunction(fact));
@@ -64,7 +64,7 @@ public class ConvexLearner {
 
         Distribution<Interval<Double>> udist = new Distribution<>(Evaluator.forDoubleInterval());
         udist.add(1, new Interval<>(0.5,0.9));
-        udist.add(2, new Interval<>(0.2,0.5));
+        udist.add(4, new Interval<>(0.2,0.5));
         umdp.addActionLabelledChoice(0, new UDistributionIntervals<>(udist), "a");
 
         udist = new Distribution<>(Evaluator.forDoubleInterval());
@@ -89,11 +89,9 @@ public class ConvexLearner {
         System.out.println("MDP: " + mdp);
         System.out.println("IMDP: " + umdp);
 
-
         GRBEnv env = new GRBEnv(true);
         env.set(GRB.IntParam.OutputFlag, 0);
         env.start();
-
 
         ConvexLearner cxl = new ConvexLearner(env);
         cxl.setParamModel(mdp);
@@ -104,22 +102,7 @@ public class ConvexLearner {
             System.out.println(ExpressionTranslator.formatGBRConstraint(cxl.model,con));
         }
 
-        GRBLinExpr obj = cxl.trans.translateLinearExpression(fact.getVar("p").asExpression());
-        cxl.model.setObjective(obj, GRB.MAXIMIZE);
-        cxl.model.optimize();
-        System.out.println("Obj: " + cxl.model.get(GRB.DoubleAttr.ObjVal));
-
-        obj = cxl.trans.translateLinearExpression(fact.getVar("q").asExpression());
-        cxl.model.setObjective(obj, GRB.MAXIMIZE);
-        cxl.model.optimize();
-        System.out.println("Obj: " + cxl.model.get(GRB.DoubleAttr.ObjVal));
-
-        for (GRBVar var : cxl.model.getVars()) {
-            System.out.println(var.get(GRB.StringAttr.VarName) + " LB: " + var.get(GRB.DoubleAttr.LB) + " UB: "  + var.get(GRB.DoubleAttr.UB));
-        }
-
         UMDPSimple<Double> convex_mdp = cxl.getUMDP();
-        System.out.println("UMDP: " + convex_mdp);
 
         UMDPModelChecker mc = new UMDPModelChecker(null);
         mc.setPrecomp(true);
@@ -128,11 +111,9 @@ public class ConvexLearner {
         target.set(1);
         //target.set(5);
         ModelCheckerResult res;
-        //umdp.findDeadlocks(true);
+        //convex_mdp.findDeadlocks(true);
         res = mc.computeReachProbs(convex_mdp, target, MinMax.max().setMinUnc(false));
         System.out.println("maxmax: " + res.soln[0]);
-
-
     }
 
     public ConvexLearner(GRBEnv env) {
