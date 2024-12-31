@@ -115,6 +115,8 @@ public class UDistributionLinearProgram<Value> implements UDistribution<Value>
 			model.optimize();
 			return model.get(GRB.DoubleAttr.ObjVal);
 
+
+
 		} catch (GRBException | PrismException e) {
 			throw new RuntimeException(e);
 		}
