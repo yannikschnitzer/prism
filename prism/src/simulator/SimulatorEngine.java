@@ -30,6 +30,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 import parser.State;
 import parser.Values;
@@ -117,6 +118,9 @@ public class SimulatorEngine extends PrismComponent
 	private int numVars;
 	// Constant definitions from model file
 	private Values mfConstants;
+
+	// Terminating states
+	private Predicate<State> terminating;
 
 	// Loaded strategy
 	private StrategyGenerator<Double> stratGen;
@@ -303,6 +307,14 @@ public class SimulatorEngine extends PrismComponent
 	}
 
 	/**
+	 * Set some initial states to be terminating, where simulation will stop.
+	 */
+	public void setTerminatingStates(Predicate<State> terminating)
+	{
+		this.terminating = terminating;
+	}
+
+	/**
 	 * Get the strategy currently loaded into the simulator, if present.
 	 * Returns null if none loaded.
 	 */
@@ -347,6 +359,7 @@ public class SimulatorEngine extends PrismComponent
 		path = new PathOnTheFly(modelGen, rewardGen);
 		onTheFly = true;
 	}
+
 
 	/**
 	 * Initialise (or re-initialise) the simulation path, starting with a specific (or random) initial state.
@@ -424,6 +437,11 @@ public class SimulatorEngine extends PrismComponent
 		if (modelGen.getNumChoices() == 0)
 			return false;
 		//throw new PrismException("Deadlock found at state " + path.getCurrentState().toString(modelGen));
+
+		// Check for terminating state; if so, stop and return false
+		if (terminating != null && terminating.test(currentState))
+			return false;
+
 
 		Ref ref;
 		double d, r;
