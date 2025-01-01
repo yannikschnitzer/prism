@@ -106,6 +106,7 @@ public class UDistributionLinearProgram<Value> implements UDistribution<Value>
 				return vect[pd.index[0]];
 			}
 
+			// Add the objective w.r.t. probability expressions and values of successors
 			GRBLinExpr expr = new GRBLinExpr();
 			for (int i = 0; i < pd.size; i++) {
 				expr.add(trans.translateLinearExpression(pd.probs[i].asExpression(), vect[pd.index[i]]));
@@ -114,8 +115,6 @@ public class UDistributionLinearProgram<Value> implements UDistribution<Value>
 			model.setObjective(expr, minMax.isMinUnc() ? GRB.MINIMIZE : GRB.MAXIMIZE);
 			model.optimize();
 			return model.get(GRB.DoubleAttr.ObjVal);
-
-
 
 		} catch (GRBException | PrismException e) {
 			throw new RuntimeException(e);

@@ -1,9 +1,7 @@
 package learning;
 
 import common.Interval;
-import explicit.IMDP;
-import explicit.MDP;
-import explicit.UMDPModelChecker;
+import explicit.*;
 import param.Function;
 import parser.Values;
 import parser.ast.Expression;
@@ -150,50 +148,6 @@ public class Estimator {
             this.buildSUL();
         } catch (PrismException e) {
             System.out.println("Error: " + e.getMessage());
-            System.exit(1);
-        }
-    }
-
-    private void tryBuildSUUncertain(Values values) {
-        try {
-            this.buildSULUncertain(values);
-        } catch (PrismException e) {
-            System.out.println("Error: " + e.getMessage());
-            System.exit(1);
-        }
-    }
-
-    public void buildSULUncertain(Values values) throws PrismException {
-        this.prism.loadPRISMModel(modulesFile);
-        //this.prism.currentModelInfo.getConstantValues().setValues(values);
-        this.prism.getPRISMModel().getConstantValues().setValues(values); // Set constant values to sampled parameters
-        this.prism.setStoreVector(true);
-        Result result = this.prism.modelCheck(ex.spec);
-        //System.out.println(result);
-        MDP<Double> mdp = (MDP<Double>) this.prism.getBuiltModelExplicit();
-        //System.out.println("Model checking SUL:\n" + this.spec + " : " + result.getResultAndAccuracy());
-        this.SULoptimum = result.getResultAndAccuracy();
-        this.sulOpt = (Double) result.getResult();
-        this.ex.setTrueOpt(this.sulOpt);
-        this.mdp = mdp;
-        ArrayList<Integer> initialStates = (ArrayList<Integer>) this.mdp.getInitialStates();
-        if (ex.type == Experiment.Type.REACH)
-        {
-            computeProb01States(result);
-            for (int s : initialStates) {
-                if (this.prob01States.contains(s)) {
-                    System.out.println("Initial state " + s + " is a 01 prob state. Exiting.");
-                    System.exit(0);
-                }
-            }
-        }
-        else if (ex.type == Experiment.Type.REWARD)
-        {
-            computeRew0InfStates(result);
-        }
-        else
-        {
-            System.out.println("ERROR: unsupported type unknown " + ex.type);
             System.exit(1);
         }
     }
@@ -474,50 +428,6 @@ public class Estimator {
 
     public double[] getInitialResults() throws PrismException {
         throw new UnsupportedOperationException("can't get results from estimator");
-    }
-
-
-    public List<Double> getLowerBounds() {
-        // TODO: get bounds
-        List<Double> lbs = new ArrayList<>();
-        int numStates = this.mdp.getNumStates();
-        for (int s = 0; s < numStates; s++) {
-            int numChoices = this.mdp.getNumChoices(s);
-            for (int i = 0; i < numChoices; i++) {
-                StateActionPair sa = new StateActionPair(s, getActionString(this.mdp, s, i));
-                for (int successor = 0; successor < this.mdp.getNumStates(); successor++) {
-                    TransitionTriple t = new TransitionTriple(sa.getState(), sa.getAction(), successor);
-                    if (this.trueProbabilitiesMap.containsKey(t)) {
-                        if (this.trueProbabilitiesMap.get(t) == 1.0) {
-                            break;
-                        }
-                        lbs.add(this.intervalsMap.get(t).getLower());
-                    }
-                }
-            }
-        }
-        return lbs;
-    }
-
-    public List<Double> getUpperBounds() {
-        List<Double> ubs = new ArrayList<>();
-        int numStates = this.mdp.getNumStates();
-        for (int s = 0; s < numStates; s++) {
-            int numChoices = this.mdp.getNumChoices(s);
-            for (int i = 0; i < numChoices; i++) {
-                StateActionPair sa = new StateActionPair(s, getActionString(this.mdp, s, i));
-                for (int successor = 0; successor < this.mdp.getNumStates(); successor++) {
-                    TransitionTriple t = new TransitionTriple(sa.getState(), sa.getAction(), successor);
-                    if (this.trueProbabilitiesMap.containsKey(t)) {
-                        if (this.trueProbabilitiesMap.get(t) == 1.0) {
-                            break;
-                        }
-                        ubs.add(this.intervalsMap.get(t).getUpper());
-                    }
-                }
-            }
-        }
-        return ubs;
     }
 
     public String getName() {
