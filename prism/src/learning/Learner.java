@@ -8,13 +8,22 @@ import common.Interval;
 import explicit.*;
 import param.Function;
 import param.FunctionFactory;
-import prism.Evaluator;
-import prism.PrismException;
-import prism.PrismSettings;
+import parser.Values;
+import parser.ast.ModulesFile;
+import prism.*;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.BitSet;
 
 public class Learner {
+
+    Prism prism;
+
+    public Learner(Prism prism) {
+        this.prism = prism;
+    }
+
     public static void main(String[] args) throws GRBException, PrismException {
         PrismSettings settings = new PrismSettings();
         FunctionFactory fact = FunctionFactory.create(new String[]{"p","q"}, new String[]{"0","0"}, new String[]{"1","1"}, settings);
@@ -107,5 +116,50 @@ public class Learner {
         res = mc.computeReachProbs(convex_mdp, target, MinMax.max().setMinUnc(false));
         System.out.println("maxmax: " + res.soln[0]);
 
+
+        Learner learner = new Learner(new Prism(new PrismDevNullLog()));
+        learner.initializePrism();
+        MDP<Function> pmdp = learner.buildParamModel(new Experiment(Experiment.Model.CHAIN2).config(30, 1_000_000, 1, true, true, 1, 1, 4));
+        System.out.println(pmdp);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void initializePrism() throws PrismException {
+        this.prism = new Prism(new PrismDevNullLog());
+        this.prism.initialise();
+        this.prism.setEngine(Prism.EXPLICIT);
+        this.prism.setGenStrat(true);
+    }
+
+    public MDP<Function> buildParamModel(Experiment ex) {
+        try {
+            ModulesFile modulesFile = this.prism.parseModelFile(new File(ex.modelFile));
+            prism.loadPRISMModel(modulesFile);
+
+            // Temporarily get parametric model
+            /*
+             * SAV2: pL, pH
+             * Aircraft: r, p
+             * Drone Single: p
+             * Betting Game: p
+             * Chain Large: p, q
+             */
+            String[] paramNames = new String[]{"p"};
+            String[] paramLowerBounds = new String[]{"0"};
+            String[] paramUpperBounds = new String[]{"1"};
+//            this.prism.setPRISMModelConstants(new Values(), true);
+//            this.prism.setParametric(paramNames, paramLowerBounds, paramUpperBounds);
+            this.prism.buildModel();
+            MDP<Function> model = (MDP<Function>) this.prism.getBuiltModelExplicit();
+//            System.out.println("Model states values" + model.getStatesList().getFirst());
+//            System.out.println("Action 0:" + model.getAction(0,0));
+//            System.out.println("Action 1:" + model.getAction(0,1));
+//            System.out.println("Action 2:" + model.getAction(0,2));
+
+            return model;
+
+        } catch (PrismException | FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
