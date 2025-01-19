@@ -1,9 +1,14 @@
 package strat;
 
-import explicit.*;
+import explicit.ConstructInducedModel;
+import explicit.Distribution;
+import explicit.DistributionOver;
+import explicit.Model;
+import explicit.NondetModel;
 import parser.State;
 import prism.PrismException;
 import prism.PrismLog;
+import prism.PrismNotSupportedException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,36 +19,42 @@ import java.util.stream.IntStream;
  * Class to store a memoryless randomised (MR) strategy
  * associated with an explicit engine model.
  */
-public class MRStrategy extends StrategyExplicit<Double>
+public class MRStrategy<Value> extends StrategyExplicit<Value>
 {
 	// Probability of selecting choice indices in each state
-	protected List<Distribution<Double>> choiceProbs;
+	protected List<Distribution<Value>> choiceProbs;
 
 	/**
 	 * Create a blank MRStrategy for a specified model.
 	 */
-	public MRStrategy(NondetModel<Double> model)
+	public MRStrategy(NondetModel<Value> model)
 	{
 		super(model);
 		int numStates = model.getNumStates();
 		choiceProbs = new ArrayList<>(numStates);
 		for (int i = 0; i < numStates; i++) {
-			choiceProbs.add(Distribution.ofDouble());
+			choiceProbs.add(new Distribution<>(model.getEvaluator()));
 		}
 	}
 
 	/**
 	 * Set the probability of selecting choice index i in state s to p
 	 */
-	public void setChoiceProbability(int s, int i, double p)
+	public void setChoiceProbability(int s, int i, Value p)
 	{
 		choiceProbs.get(s).set(i, p);
 	}
 
 	@Override
+	public boolean isRandomised()
+	{
+		return true;
+	}
+
+	@Override
 	public Object getChoiceAction(int s, int m)
 	{
-		Distribution<Double> probs = choiceProbs.get(s);
+		Distribution<Value> probs = choiceProbs.get(s);
 		return probs.isEmpty() ? Strategy.UNDEFINED : DistributionOver.create(probs, i -> model.getAction(s, i));
 	}
 
@@ -52,6 +63,15 @@ public class MRStrategy extends StrategyExplicit<Double>
 	{
 		// N/A for randomised strategy
 		return -1;
+	}
+
+	@Override
+	public explicit.Model<Value> constructInducedModel(StrategyExportOptions options) throws PrismException
+	{
+		ConstructInducedModel cim = new ConstructInducedModel();
+		cim.setMode(options.getMode()).setReachOnly(options.getReachOnly());
+		Model<Value> inducedModel = cim.constructInducedModel(model, this);
+		return inducedModel;
 	}
 
 	@Override
@@ -75,7 +95,7 @@ public class MRStrategy extends StrategyExplicit<Double>
 		boolean showStates = options.getShowStates() && states != null;
 		int n = getNumStates();
 		for (int s = 0; s < n; s++) {
-			Distribution<Double> probs = choiceProbs.get(s);
+			Distribution<Value> probs = choiceProbs.get(s);
 			if (!probs.isEmpty()) {
 				out.println((showStates ? states.get(s) : s) + "=" + probs);
 			}
@@ -85,13 +105,15 @@ public class MRStrategy extends StrategyExplicit<Double>
 	@Override
 	public void exportInducedModel(PrismLog out, StrategyExportOptions options) throws PrismException
 	{
-		;
+		Model<Value> inducedModel = constructInducedModel(options);
+		inducedModel.exportToPrismExplicitTra(out, options.getModelPrecision());
 	}
 
 	@Override
 	public void exportDotFile(PrismLog out, StrategyExportOptions options) throws PrismException
 	{
-		;
+		Model<Value> inducedModel = constructInducedModel(options);
+		inducedModel.exportToDotFile(out, null, options.getShowStates(), options.getModelPrecision());
 	}
 
 	@Override
@@ -106,10 +128,5 @@ public class MRStrategy extends StrategyExplicit<Double>
 		return "[" + IntStream.range(0, getNumStates())
 				.mapToObj(s -> s + "=" + getChoiceActionString(s, -1))
 				.collect(Collectors.joining(",")) + "]";
-	}
-
-	@Override
-	public boolean isRandomised() {
-		return true;
 	}
 }

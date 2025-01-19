@@ -273,7 +273,15 @@ public class SimulatorEngine extends PrismComponent
 	{
 		return rewardGen;
 	}
-	
+
+	/**
+	 * Set some initial states to be terminating, where simulation will stop.
+	 */
+	public void setTerminatingStates(Predicate<State> terminating)
+	{
+		this.terminating = terminating;
+	}
+
 	// ------------------------------------------------------------------------------
 	// Attaching strategies
 	// ------------------------------------------------------------------------------
@@ -304,14 +312,6 @@ public class SimulatorEngine extends PrismComponent
 	public boolean hasStrategyInfo()
 	{
 		return stratGen != null;
-	}
-
-	/**
-	 * Set some initial states to be terminating, where simulation will stop.
-	 */
-	public void setTerminatingStates(Predicate<State> terminating)
-	{
-		this.terminating = terminating;
 	}
 
 	/**
@@ -359,7 +359,6 @@ public class SimulatorEngine extends PrismComponent
 		path = new PathOnTheFly(modelGen, rewardGen);
 		onTheFly = true;
 	}
-
 
 	/**
 	 * Initialise (or re-initialise) the simulation path, starting with a specific (or random) initial state.
@@ -441,7 +440,6 @@ public class SimulatorEngine extends PrismComponent
 		// Check for terminating state; if so, stop and return false
 		if (terminating != null && terminating.test(currentState))
 			return false;
-
 
 		Ref ref;
 		double d, r;
