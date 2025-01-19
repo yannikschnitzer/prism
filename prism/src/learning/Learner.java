@@ -6,19 +6,27 @@ import com.gurobi.gurobi.GRBEnv;
 import com.gurobi.gurobi.GRBException;
 import common.Interval;
 import explicit.*;
+import learning.Estimators.Estimator;
+import learning.Estimators.EstimatorConstructor;
+import learning.Estimators.PACIntervalEstimatorOptimistic;
 import param.Function;
 import param.FunctionFactory;
 import parser.Values;
 import parser.ast.ModulesFile;
 import prism.*;
+import strat.Strategy;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
 
 public class Learner {
 
     Prism prism;
+
+    private final boolean verbose = true;
 
     public Learner(Prism prism) {
         this.prism = prism;
@@ -119,8 +127,15 @@ public class Learner {
 
         Learner learner = new Learner(new Prism(new PrismDevNullLog()));
         learner.initializePrism();
-        MDP<Function> pmdp = learner.buildParamModel(new Experiment(Experiment.Model.CHAIN2).config(30, 1_000_000, 1, true, true, 1, 1, 4));
+        Experiment ex = new Experiment(Experiment.Model.CHAIN_CONVEX).config(30, 1_000_000, 1, false, false, 1, 1, 4);
+        MDP<Function> pmdp = learner.buildParamModel(ex);
         System.out.println(pmdp);
+
+        Values values = new Values();
+        values.addValue("p", 0.15);
+        values.addValue("q", 0.1);
+
+        learner.learnIMDP("test", ex, PACIntervalEstimatorOptimistic::new, pmdp, values, true);
     }
 
     @SuppressWarnings("unchecked")
@@ -136,30 +151,124 @@ public class Learner {
             ModulesFile modulesFile = this.prism.parseModelFile(new File(ex.modelFile));
             prism.loadPRISMModel(modulesFile);
 
-            // Temporarily get parametric model
-            /*
-             * SAV2: pL, pH
-             * Aircraft: r, p
-             * Drone Single: p
-             * Betting Game: p
-             * Chain Large: p, q
-             */
-            String[] paramNames = new String[]{"p"};
-            String[] paramLowerBounds = new String[]{"0"};
-            String[] paramUpperBounds = new String[]{"1"};
-//            this.prism.setPRISMModelConstants(new Values(), true);
-//            this.prism.setParametric(paramNames, paramLowerBounds, paramUpperBounds);
+            // Get parametric model
+            String[] paramNames = new String[]{"p","q"};
+            String[] paramLowerBounds = new String[]{"0","0"};
+            String[] paramUpperBounds = new String[]{"1","1"};
+            this.prism.setPRISMModelConstants(new Values(), true);
+            this.prism.setParametric(paramNames, paramLowerBounds, paramUpperBounds);
             this.prism.buildModel();
             MDP<Function> model = (MDP<Function>) this.prism.getBuiltModelExplicit();
-//            System.out.println("Model states values" + model.getStatesList().getFirst());
-//            System.out.println("Action 0:" + model.getAction(0,0));
-//            System.out.println("Action 1:" + model.getAction(0,1));
-//            System.out.println("Action 2:" + model.getAction(0,2));
 
             return model;
 
         } catch (PrismException | FileNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void resetAll(int seed) {
+        try {
+            initializePrism();
+            this.prism.setSimulatorSeed(seed);
+        } catch (PrismException e) {
+            System.out.println("PrismException in resetAll(): " + e.getMessage());
+            System.exit(1);
+        }
+    }
+
+    public Pair<List<List<IMDP<Double>>>, List<MDP<Double>>> learnIMDP(String label, Experiment ex, EstimatorConstructor estimatorConstructor, MDP<Function> mdpParam, Values parameterValuation, boolean verification) {
+        resetAll(ex.seed);
+
+        System.out.println("\n\n\n\n%------\n%Learning IMDP\n%  Model: " + ex.model + "\n%  max_episode_length: "
+                + ex.max_episode_length + "\n%  iterations: " + ex.iterations + "\n%------");
+        if (verbose)
+            System.out.printf("%s, seed %d\n", label, ex.seed);
+
+        try {
+            ModulesFile modulesFile = prism.parseModelFile(new File(ex.modelFile));
+            prism.loadPRISMModel(modulesFile);
+
+            ex.values = parameterValuation;
+            Estimator estimator = estimatorConstructor.get(this.prism, ex);
+            System.out.println("Constant Values:" + estimator.getSUL().getConstantValues());
+            estimator.set_experiment(ex);
+
+            // Iterate and run experiments for each of the sampled parameter vectors
+            //ex.setTieParamters(verification);
+            Pair<ArrayList<DataPoint>, ArrayList<IMDP<Double>>> resIMDP = runSampling(ex, estimator, verification);
+
+        } catch (PrismException | FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        return null;
+    }
+
+    public Pair<ArrayList<DataPoint>, ArrayList<IMDP<Double>>> runSampling(Experiment ex, Estimator estimator, boolean verifcation) {
+        return runSampling(ex, estimator, 0, verifcation);
+    }
+
+    public Pair<ArrayList<DataPoint>, ArrayList<IMDP<Double>>> runSampling(Experiment ex, Estimator estimator, int past_iterations, boolean verficiation) {
+        try {
+            MDP<Double> SUL = estimator.getSUL();
+
+            if (true/*this.modelStats == null*/) {
+                //this.modelStats = estimator.getModelStats();
+                System.out.println("======");
+                System.out.println(ex.model);
+                System.out.println("======");
+            }
+
+            ObservationSampler observationSampler = new ObservationSampler(this.prism, SUL, estimator.getTerminatingStates());
+            observationSampler.setTransitionsOfInterest(estimator.getTransitionsOfInterest());
+            observationSampler.setTiedParameters(ex.tieParameters);
+            observationSampler.setMultiplier(ex.multiplier);
+
+            double[] currentResults = estimator.getInitialResults();
+
+            ArrayList<DataPoint> results = new ArrayList<>();
+            ArrayList<IMDP<Double>> estimates = new ArrayList<>();
+            if (past_iterations == 0) {
+                results.add(new DataPoint(0, past_iterations, currentResults));
+                estimates.add(estimator.getEstimate());
+            }
+            int samples = 0;
+            Strategy samplingStrategy = estimator.buildStrategy();
+            for (int i = past_iterations; i < ex.iterations + past_iterations; i++) {
+                int sampled = observationSampler.simulateEpisode(ex.max_episode_length, samplingStrategy);
+                samples += sampled;
+
+                boolean last_iteration = i == ex.iterations + past_iterations - 1;
+                if (observationSampler.collectedEnoughSamples() || last_iteration || ex.resultIteration(i)) {
+                    estimator.setObservationMaps(observationSampler.getSamplesMap(), observationSampler.getSampleSizeMap());
+                    samplingStrategy = estimator.buildStrategy();
+                    currentResults = estimator.getCurrentResults();
+
+                    if (!ex.tieParameters || (!verficiation && ex.isBayesian())) {
+                        observationSampler.resetObservationSequence();
+                    } else {
+                        observationSampler.incrementAccumulatedSamples();
+                    }
+
+                    if (this.verbose) System.out.println("Episode " + i + ".");
+                    if (this.verbose) System.out.println("Performance on MDPs (J): " + currentResults[1]);
+                    if (this.verbose) System.out.println("Performance Guarantee on IMDPs (J̃): " + currentResults[0]);
+                    if (this.verbose) System.out.println();
+
+                    if (last_iteration || ex.resultIteration(i)) {
+                        results.add(new DataPoint(samples, i + 1, currentResults));
+                        estimates.add(estimator.getEstimate());
+                    }
+                }
+            }
+
+            return new Pair(results, estimates);
+        } catch (PrismException e) {
+            System.out.println("Error: " + e.getMessage());
+            System.exit(1);
+        }
+        prism.closeDown();
+        return null;
     }
 }

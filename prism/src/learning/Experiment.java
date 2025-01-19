@@ -58,7 +58,8 @@ public class Experiment {
         DRONE,
         CROWD,
         DRONE_SINGLE,
-        FIREWIRE
+        FIREWIRE,
+        CHAIN_CONVEX
     }
 
 
@@ -159,6 +160,17 @@ public class Experiment {
             this.optimisticSpec = "Rminmin=? [F \"goal\"]";
             this.dtmcSpec = "R=? [F \"goal\"]";
             this.modelFile = "models/chain_large.prism";
+            this.type = Type.REWARD;
+            this.optimizations = true;
+            break;
+            case CHAIN_CONVEX:
+            this.goal = "\"goal\"";
+            this.spec = "Rmin=? [F \"goal\"]";
+            this.idtmcRobustSpec = "Rmax=? [F \"goal\"]";
+            this.robustSpec = "Rminmax=? [F \"goal\"]";
+            this.optimisticSpec = "Rminmin=? [F \"goal\"]";
+            this.dtmcSpec = "R=? [F \"goal\"]";
+            this.modelFile = "models/chain_convex.prism";
             this.type = Type.REWARD;
             this.optimizations = true;
             break;

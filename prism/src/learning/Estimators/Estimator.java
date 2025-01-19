@@ -1,9 +1,11 @@
-package learning;
+package learning.Estimators;
 
 import common.Interval;
 import explicit.*;
+import learning.Experiment;
+import learning.StateActionPair;
+import learning.TransitionTriple;
 import param.Function;
-import parser.Values;
 import parser.ast.Expression;
 import parser.ast.ModulesFile;
 import parser.ast.PropertiesFile;
@@ -166,7 +168,7 @@ public class Estimator {
         }
         this.prism.setStoreVector(true);
         Result result = this.prism.modelCheck(ex.spec);
-        //System.out.println(result);
+        System.out.println("result : " + result);
         MDP<Double> mdp = (MDP<Double>) this.prism.getBuiltModelExplicit();
         //System.out.println("Model checking SUL:\n" + this.spec + " : " + result.getResultAndAccuracy());
         this.SULoptimum = result.getResultAndAccuracy();
@@ -449,9 +451,5 @@ public class Estimator {
     public void setSimilarTransitions(List<List<TransitionTriple>> similarTransitions) {
         this.similarTransitions = similarTransitions;
     }
-}
-
-interface EstimatorConstructor {
-    Estimator get(Prism prism, Experiment ex);
 }
 
