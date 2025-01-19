@@ -20,7 +20,7 @@ public class ConvexLearner {
 
     private MDPSimple<Function> mdpParam;
 
-    private final ExpressionTranslator trans;
+    private ExpressionTranslator trans;
 
     public static void main(String[] args) throws PrismException, GRBException {
 
@@ -142,6 +142,7 @@ public class ConvexLearner {
 
     public void resetModel() throws GRBException {
         this.model = new GRBModel(env);
+        this.trans = new ExpressionTranslator(model);
     }
 
     public void setParamModel(MDPSimple<Function> mdpParam) {
@@ -150,6 +151,7 @@ public class ConvexLearner {
 
     public void setConstraints(UMDP<Double> imdp) throws PrismException, GRBException {
         // Iterate over IMDP
+        this.resetModel();
         for (int s = 0; s < imdp.getNumStates(); s++) {
             for (int a = 0; a < imdp.getNumChoices(s); a++) {
                 UDistribution<Double> udist = imdp.getUncertainDistribution(s,a);
@@ -159,8 +161,9 @@ public class ConvexLearner {
 
                     for (int i : idist.getSupport()) {
                         GRBLinExpr exp = trans.translateLinearExpression(pdist.get(i).asExpression());
-                        model.addConstr(exp, GRB.GREATER_EQUAL, idist.get(i).getLower(), null);
-                        model.addConstr(exp, GRB.LESS_EQUAL, idist.get(i).getUpper(), null);
+                        model.addRange(exp, idist.get(i).getLower(), idist.get(i).getUpper(), null);
+//                        model.addConstr(exp, GRB.GREATER_EQUAL, idist.get(i).getLower(), null);
+//                        model.addConstr(exp, GRB.LESS_EQUAL, idist.get(i).getUpper(), null);
                     }
                 } else {
                     throw new PrismException("Only Interval MDPs supported.");

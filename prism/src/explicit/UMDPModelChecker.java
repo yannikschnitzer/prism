@@ -631,8 +631,8 @@ public class UMDPModelChecker extends ProbModelChecker
 			umdp.addStates(6);
 			Distribution<Double> distr = Distribution.ofDouble();
 			distr.add(1,0.1);
-			distr.add(2, 0.0);
-			distr.add(3, 0.9);
+			distr.add(2, 0.1);
+			distr.add(3, 0.8);
 			distr.add(5, 0.0);
 
 			double[][] eqMatrix = {};
@@ -646,34 +646,34 @@ public class UMDPModelChecker extends ProbModelChecker
 			double[] ineqVector = {0.9, -0.5, 0.5,-0.2,0.2};
 
 			int[] support = DoubleDistribution.extractDoubleDistribution(distr).index;
-			UDistribution<Double> udistr = new UDistributionPolytope<>(support, eqMatrix, eqVector,ineqMatrix,ineqVector);
-
+			//UDistribution<Double> udistr = new UDistributionPolytope<>(support, eqMatrix, eqVector,ineqMatrix,ineqVector);
+			UDistributionL1<Double> udistr = new UDistributionL1<>(distr, 0.4);
 			//UDistribution<Double> udistr = new UDistributionPolytope<>(distr.getSupport(), -0.5);
 			umdp.addActionLabelledChoice(0, udistr, "a");
 
 			distr = Distribution.ofDouble();
 			distr.add(1, 1.0);
-			udistr = new UDistributionLogLikelihood<>(distr, 0.25);
+			udistr = new UDistributionL1<>(distr, 0.25);
 			umdp.addActionLabelledChoice(1, udistr, "a");
 
 			distr = Distribution.ofDouble();
 			distr.add(2, 1.0);
-			udistr = new UDistributionLogLikelihood<>(distr, 0.25);
+			udistr = new UDistributionL1<>(distr, 0.25);
 			umdp.addActionLabelledChoice(2, udistr, "a");
 
 			distr = Distribution.ofDouble();
 			distr.add(3, 1.0);
-			udistr = new UDistributionLogLikelihood<>(distr, 0.25);
+			udistr = new UDistributionL1<>(distr, 0.25);
 			umdp.addActionLabelledChoice(3, udistr, "a");
 
 			distr = Distribution.ofDouble();
 			distr.add(4, 1.0);
-			udistr = new UDistributionLogLikelihood<>(distr, 0.25);
+			udistr = new UDistributionL1<>(distr, 0.25);
 			umdp.addActionLabelledChoice(4, udistr, "a");
 
 			distr = Distribution.ofDouble();
 			distr.add(5, 1.0);
-			udistr = new UDistributionLogLikelihood<>(distr, 0.25);
+			udistr = new UDistributionL1<>(distr, 0.25);
 			umdp.addActionLabelledChoice(5, udistr, "a");
 
 			System.out.println(umdp);
