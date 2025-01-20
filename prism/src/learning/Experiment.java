@@ -104,7 +104,7 @@ public class Experiment {
     public int iterations = 10;
     public int max_episode_length = 100;
     public int alpha = 10;
-    public double error_tolerance = 0.01; // 99% correctness guarantee
+    public double error_tolerance = 0.001; // 99% correctness guarantee
     public double strategyWeight = 1.0;
 
     private boolean bayesian;

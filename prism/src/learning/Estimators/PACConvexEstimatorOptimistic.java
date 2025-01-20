@@ -11,7 +11,7 @@ public class PACConvexEstimatorOptimistic extends PACConvexEstimator {
     }
 
     public Strategy buildStrategy() throws PrismException {
-        return this.buildWeightedOptimisticStrategy(this.getEstimate(), this.ex.strategyWeight);
+        return this.buildWeightedOptimisticStrategy(this.convex_estimate, this.ex.strategyWeight);
     }
 }
 

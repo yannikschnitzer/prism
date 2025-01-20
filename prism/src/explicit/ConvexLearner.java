@@ -161,9 +161,9 @@ public class ConvexLearner {
 
                     for (int i : idist.getSupport()) {
                         GRBLinExpr exp = trans.translateLinearExpression(pdist.get(i).asExpression());
-                        model.addRange(exp, idist.get(i).getLower(), idist.get(i).getUpper(), null);
-//                        model.addConstr(exp, GRB.GREATER_EQUAL, idist.get(i).getLower(), null);
-//                        model.addConstr(exp, GRB.LESS_EQUAL, idist.get(i).getUpper(), null);
+                        //model.addRange(exp, idist.get(i).getLower(), idist.get(i).getUpper(), null);
+                        model.addConstr(exp, GRB.GREATER_EQUAL, idist.get(i).getLower(), null);
+                        model.addConstr(exp, GRB.LESS_EQUAL, idist.get(i).getUpper(), null);
                     }
                 } else {
                     throw new PrismException("Only Interval MDPs supported.");

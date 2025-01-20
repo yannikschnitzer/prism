@@ -1,17 +1,24 @@
 package learning.Estimators;
 
+import com.gurobi.gurobi.GRB;
+import com.gurobi.gurobi.GRBConstr;
+import com.gurobi.gurobi.GRBEnv;
+import com.gurobi.gurobi.GRBException;
 import common.Interval;
-import explicit.Distribution;
-import explicit.IMDP;
-import explicit.IMDPSimple;
-import explicit.MDP;
+import explicit.*;
 import learning.Experiment;
 import learning.StateActionPair;
 import learning.TransitionTriple;
 import org.apache.commons.statistics.distribution.NormalDistribution;
 import param.Function;
+import parser.ast.Expression;
+import parser.ast.PropertiesFile;
 import prism.Evaluator;
 import prism.Prism;
+import prism.PrismException;
+import prism.Result;
+import simulator.ModulesFileModelGenerator;
+import strat.MDStrategy;
 
 import java.util.*;
 
@@ -113,14 +120,60 @@ public class PACConvexEstimator extends MAPEstimator {
     }
 
     @Override
-    public IMDP<Double> buildPointIMDP(MDP<Double> mdp) {
+    public double[] getCurrentResults() throws PrismException {
+        updatePriors();
+        UMDP<Double> imdp = buildPointIMDP(mdp);
+
+        try {
+            //System.out.printf("PMDP: " + this.pmdp);
+            //System.out.println("IMDP: " + imdp);
+            //System.out.println("Convex MDP constraints:");
+            UMDP<Double> convex_mdp = buildConvexUMDP(imdp, this.pmdp);
+
+
+            Result resconvex = modelCheckPointEstimate(convex_mdp,true,false);
+            double res = round((Double) resconvex.getResult());
+            MDStrategy robustStrat = (MDStrategy) resconvex.getStrategy();
+            double resultRobustDTMC = round((Double) checkDTMC(robustStrat).getResult());
+            //MDStrategy optimisticStrat = computeStrategyFromEstimate(convex_mdp, false);
+            System.out.println("Performance Convex MDP: " + res);
+            System.out.println("Performanec on MDP with convex policy " + resultRobustDTMC);
+        } catch (GRBException e) {
+            throw new RuntimeException(e);
+        }
+
+        double resultRobustMDP = round((Double) modelCheckPointEstimate(imdp,true, false).getResult());
+        double resultOptimisticMDP = round((Double) modelCheckPointEstimate(imdp,false, false).getResult());
+
+        MDStrategy robustStrat = computeStrategyFromEstimate(this.estimate, true);
+        MDStrategy optimisticStrat = computeStrategyFromEstimate(this.estimate, false);
+        double resultRobustDTMC = round((Double) checkDTMC(robustStrat).getResult());
+        double resultOptimisticDTMC = round((Double) checkDTMC(optimisticStrat).getResult());
+        double dist = round(this.averageDistanceToSUL());
+        List<Double> lbs = List.of(0.0);//this.getLowerBounds();
+        List<Double> ubs = List.of(1.0);//this.getUpperBounds();
+        return new double[]{resultRobustMDP, resultRobustDTMC, dist, lbs.get(0), ubs.get(0), resultOptimisticMDP, resultOptimisticDTMC};
+    }
+
+    @Override
+    public double[] getInitialResults() throws PrismException {
+        double[] res = super.getInitialResults();
+        try {
+            buildConvexUMDP(this.estimate, this.pmdp);
+        } catch (GRBException e) {
+            throw new RuntimeException(e);
+        }
+        return res;
+    }
+
+    @Override
+    public UMDPSimple<Double> buildPointIMDP(MDP<Double> mdp) {
         //System.out.println("Building IMDP");
         int numStates = mdp.getNumStates();
-        IMDPSimple<Double> imdp = new IMDPSimple<>(numStates);
+        UMDPSimple<Double> imdp = new UMDPSimple<>(numStates);
         imdp.addInitialState(mdp.getFirstInitialState());
         imdp.setStatesList(mdp.getStatesList());
         imdp.setConstantValues(mdp.getConstantValues());
-        imdp.setIntervalEvaluator(Evaluator.forDoubleInterval());
 
         //tieParameters();
         Map<TransitionTriple, Interval<Double>> minIntervals = Collections.emptyMap(); //computeMinIntervals();
@@ -159,7 +212,8 @@ public class PACConvexEstimator extends MAPEstimator {
                         this.intervalsMap.put(t, interval);
                     }
                 });
-                imdp.addActionLabelledChoice(s, distrNew, getActionString(mdp, s, i));
+                UDistributionIntervals<Double> udist = new UDistributionIntervals<>(distrNew);
+                imdp.addActionLabelledChoice(s, udist, getActionString(mdp, s, i));
             }
         }
         Map<String, BitSet> labels = mdp.getLabelToStatesMap();
@@ -171,6 +225,55 @@ public class PACConvexEstimator extends MAPEstimator {
         this.estimate = imdp;
 
         return imdp;
+    }
+
+
+    public UMDP<Double> buildConvexUMDP(UMDP<Double> imdp, MDPSimple<Function> pmdp) throws GRBException, PrismException {
+        GRBEnv env = new GRBEnv(true);
+        env.set(GRB.IntParam.OutputFlag, 0);
+        env.start();
+        ConvexLearner cxl = new ConvexLearner(env);
+        cxl.setParamModel(pmdp);
+        cxl.setConstraints(imdp);
+        cxl.getModel().update();
+
+//        for (GRBConstr con : cxl.getModel().getConstrs()) {
+//            System.out.println(ExpressionTranslator.formatGBRConstraint(cxl.getModel(),con));
+//        }
+
+        UMDPSimple<Double> convex_mdp = cxl.getUMDP();
+        convex_mdp.addInitialState(pmdp.getFirstInitialState());
+        convex_mdp.setStatesList(pmdp.getStatesList());
+        convex_mdp.setConstantValues(pmdp.getConstantValues());
+
+        Map<String, BitSet> labels = pmdp.getLabelToStatesMap();
+        for (Map.Entry<String, BitSet> entry : labels.entrySet()) {
+            convex_mdp.addLabel(entry.getKey(), entry.getValue());
+        }
+
+        this.convex_estimate = convex_mdp;
+
+        return convex_mdp;
+    }
+
+    public MDStrategy computeStrategyFromConvexEstimate(UMDP<Double> estimate, boolean robust) throws PrismException {
+        UMDPModelChecker mc = new UMDPModelChecker(this.prism);
+        mc.setGenStrat(true);
+        mc.setPrecomp(false);
+        mc.setErrorOnNonConverge(true);
+        //mc.setMaxIters(100000);
+
+        PropertiesFile pf = robust
+                ? prism.parsePropertiesString(ex.robustSpec)
+                : prism.parsePropertiesString(ex.optimisticSpec);
+        ModulesFileModelGenerator<?> modelGen = ModulesFileModelGenerator.create(modulesFileIMDP, this.prism);
+        modelGen.setSomeUndefinedConstants(estimate.getConstantValues());
+        mc.setModelCheckingInfo(modelGen, pf, modelGen);
+        Expression exprTarget = pf.getProperty(0);
+        Result result = mc.check(estimate, exprTarget);
+        MDStrategy strat = (MDStrategy) result.getStrategy();
+
+        return strat;
     }
 
     @Override

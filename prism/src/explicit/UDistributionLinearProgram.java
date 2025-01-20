@@ -114,6 +114,7 @@ public class UDistributionLinearProgram<Value> implements UDistribution<Value>
 
 			model.setObjective(expr, minMax.isMinUnc() ? GRB.MINIMIZE : GRB.MAXIMIZE);
 			model.optimize();
+			//System.out.println("Feasbile: " + model.get(GRB.IntAttr.Status));
 			return model.get(GRB.DoubleAttr.ObjVal);
 
 		} catch (GRBException | PrismException e) {

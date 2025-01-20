@@ -42,12 +42,14 @@ public class Estimator {
     protected ModulesFile modulesFileMDP;
 
     protected MDP<Double> mdp;
+    protected MDPSimple<Function> pmdp;
     protected String SULoptimum;
     protected double sulOpt;
     protected HashSet<Integer> prob01States;
     protected HashSet<Integer> rew0InfStates;
 
-    protected IMDP<Double> estimate;
+    protected UMDP<Double> estimate;
+    protected UMDP<Double> convex_estimate;
 
     private HashSet<TransitionTriple> transitionsOfInterest;
     protected HashMap<TransitionTriple, Double> trueProbabilitiesMap;
@@ -154,7 +156,7 @@ public class Estimator {
         }
     }
 
-    public IMDP<Double> getEstimate() {
+    public UMDP<Double> getEstimate() {
         return this.estimate;
     }
 
@@ -368,16 +370,16 @@ public class Estimator {
     }
 
 
-    public MDStrategy computeStrategyFromEstimate(IMDP<Double> estimate) throws PrismException {
+    public MDStrategy computeStrategyFromEstimate(UMDP<Double> estimate) throws PrismException {
 		return this.computeStrategyFromEstimate(estimate, true);
 	}
 
-	public MDStrategy computeOptimisticStrategyFromEstimate(IMDP<Double> estimate) throws PrismException {
+	public MDStrategy computeOptimisticStrategyFromEstimate(UMDP<Double> estimate) throws PrismException {
 		return this.computeStrategyFromEstimate(estimate, false);
 	}
 
 
-    public Strategy buildWeightedOptimisticStrategy(IMDP<Double> estimate, double weight) throws PrismException {
+    public Strategy buildWeightedOptimisticStrategy(UMDP<Double> estimate, double weight) throws PrismException {
         MDStrategy optStrat = computeOptimisticStrategyFromEstimate(estimate);
         Strategy uniformStrat = buildUniformStrat();
         MRStrategy strat = new MRStrategy(this.mdp);
@@ -404,7 +406,7 @@ public class Estimator {
 
 
 
-	public MDStrategy computeStrategyFromEstimate(IMDP<Double> estimate, boolean robust) throws PrismException {
+	public MDStrategy computeStrategyFromEstimate(UMDP<Double> estimate, boolean robust) throws PrismException {
         UMDPModelChecker mc = new UMDPModelChecker(this.prism);
 		mc.setGenStrat(true);
         mc.setPrecomp(false);
@@ -450,6 +452,14 @@ public class Estimator {
 
     public void setSimilarTransitions(List<List<TransitionTriple>> similarTransitions) {
         this.similarTransitions = similarTransitions;
+    }
+
+    public MDPSimple<Function> getPmdp() {
+        return pmdp;
+    }
+
+    public void setPmdp(MDPSimple<Function> pmdp) {
+        this.pmdp = pmdp;
     }
 }
 

@@ -1,10 +1,16 @@
 package learning.Estimators;
 
+import com.gurobi.gurobi.GRB;
+import com.gurobi.gurobi.GRBConstr;
+import com.gurobi.gurobi.GRBEnv;
+import com.gurobi.gurobi.GRBException;
 import common.Interval;
 import explicit.*;
+import explicit.rewards.MDPRewards;
 import learning.Experiment;
 import learning.StateActionPair;
 import learning.TransitionTriple;
+import param.Function;
 import parser.ast.Expression;
 import parser.ast.ModulesFile;
 import parser.ast.PropertiesFile;
@@ -167,8 +173,17 @@ public class MAPEstimator extends Estimator {
     public double[] getCurrentResults() throws PrismException {
         updatePriors();
         buildPointIMDP(mdp);
+
+//        try {
+//            double resconvex = round((Double) modelCheckPointEstimateConvex(true,false).getResult());
+//            System.out.println("Performance Convex MDP: " + resconvex);
+//        } catch (GRBException e) {
+//            throw new RuntimeException(e);
+//        }
+
         double resultRobustMDP = round((Double) modelCheckPointEstimate(true, false).getResult());
         double resultOptimisticMDP = round((Double) modelCheckPointEstimate(false, false).getResult());
+
         MDStrategy robustStrat = computeStrategyFromEstimate(this.estimate, true);
         MDStrategy optimisticStrat = computeStrategyFromEstimate(this.estimate, false);
         double resultRobustDTMC = round((Double) checkDTMC(robustStrat).getResult());
@@ -261,7 +276,7 @@ public class MAPEstimator extends Estimator {
      * @param mdp MDP for the underlying state space
      * @return IMDP of point intervals
      */
-    public IMDP<Double> buildPointIMDP(MDP<Double> mdp) {
+    public UMDP<Double> buildPointIMDP(MDP<Double> mdp) {
         //System.out.println("Building IMDP");
         int numStates = mdp.getNumStates();
         IMDPSimple<Double> imdp = new IMDPSimple<>(numStates);
@@ -336,6 +351,38 @@ public class MAPEstimator extends Estimator {
         }
         return result;
     }
+
+    /**
+     * Model check the point estimate stored in the class
+     *
+     * @return Result
+     * @throws PrismException
+     */
+    public Result modelCheckPointEstimate(UMDP<Double> estimate, boolean robust, boolean verbose) throws PrismException {
+        UMDPModelChecker mc = new UMDPModelChecker(this.prism);
+        mc.setGenStrat(true);
+        mc.setMaxIters(20000);
+        mc.setErrorOnNonConverge(true);
+
+        PropertiesFile pf;
+        if (robust)
+            pf = prism.parsePropertiesString(ex.robustSpec);
+        else
+            pf = prism.parsePropertiesString(ex.optimisticSpec);
+
+        ModulesFileModelGenerator<?> modelGen = ModulesFileModelGenerator.create(modulesFileIMDP, this.prism);
+        modelGen.setSomeUndefinedConstants(estimate.getConstantValues());
+        mc.setModelCheckingInfo(modelGen, pf, modelGen);
+        Result result = mc.check(estimate, pf.getProperty(0));
+
+        if (verbose) {
+            System.out.println("\nModel checking point estimate MDP:");
+            System.out.println(ex.robustSpec + " : " + result.getResultAndAccuracy());
+        }
+
+        return result;
+    }
+
 
     /**
      * Model check a given point estimate IMDP

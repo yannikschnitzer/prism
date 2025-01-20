@@ -8,7 +8,7 @@ import common.Interval;
 import explicit.*;
 import learning.Estimators.Estimator;
 import learning.Estimators.EstimatorConstructor;
-import learning.Estimators.PACIntervalEstimatorOptimistic;
+import learning.Estimators.PACConvexEstimatorOptimistic;
 import param.Function;
 import param.FunctionFactory;
 import parser.Values;
@@ -127,15 +127,15 @@ public class Learner {
 
         Learner learner = new Learner(new Prism(new PrismDevNullLog()));
         learner.initializePrism();
-        Experiment ex = new Experiment(Experiment.Model.CHAIN_CONVEX).config(30, 1_000_000, 1, false, false, 1, 1, 4);
-        MDP<Function> pmdp = learner.buildParamModel(ex);
+        Experiment ex = new Experiment(Experiment.Model.CHAIN_CONVEX).config(100, 1_000_000, 1, false, false, 1, 1, 4);
+        MDPSimple<Function> pmdp = learner.buildParamModel(ex);
         System.out.println(pmdp);
 
         Values values = new Values();
-        values.addValue("p", 0.15);
-        values.addValue("q", 0.1);
+        values.addValue("p", 0.1);
+        values.addValue("q", 0.12);
 
-        learner.learnIMDP("test", ex, PACIntervalEstimatorOptimistic::new, pmdp, values, true);
+        learner.learnIMDP("test", ex, PACConvexEstimatorOptimistic::new, pmdp, values, true);
     }
 
     @SuppressWarnings("unchecked")
@@ -146,7 +146,7 @@ public class Learner {
         this.prism.setGenStrat(true);
     }
 
-    public MDP<Function> buildParamModel(Experiment ex) {
+    public MDPSimple<Function> buildParamModel(Experiment ex) {
         try {
             ModulesFile modulesFile = this.prism.parseModelFile(new File(ex.modelFile));
             prism.loadPRISMModel(modulesFile);
@@ -158,7 +158,7 @@ public class Learner {
             this.prism.setPRISMModelConstants(new Values(), true);
             this.prism.setParametric(paramNames, paramLowerBounds, paramUpperBounds);
             this.prism.buildModel();
-            MDP<Function> model = (MDP<Function>) this.prism.getBuiltModelExplicit();
+            MDPSimple<Function> model = (MDPSimple<Function>) this.prism.getBuiltModelExplicit();
 
             return model;
 
@@ -177,7 +177,7 @@ public class Learner {
         }
     }
 
-    public Pair<List<List<IMDP<Double>>>, List<MDP<Double>>> learnIMDP(String label, Experiment ex, EstimatorConstructor estimatorConstructor, MDP<Function> mdpParam, Values parameterValuation, boolean verification) {
+    public Pair<List<List<IMDP<Double>>>, List<MDP<Double>>> learnIMDP(String label, Experiment ex, EstimatorConstructor estimatorConstructor, MDPSimple<Function> mdpParam, Values parameterValuation, boolean verification) {
         resetAll(ex.seed);
 
         System.out.println("\n\n\n\n%------\n%Learning IMDP\n%  Model: " + ex.model + "\n%  max_episode_length: "
@@ -193,6 +193,7 @@ public class Learner {
             Estimator estimator = estimatorConstructor.get(this.prism, ex);
             System.out.println("Constant Values:" + estimator.getSUL().getConstantValues());
             estimator.set_experiment(ex);
+            estimator.setPmdp(mdpParam);
 
             // Iterate and run experiments for each of the sampled parameter vectors
             //ex.setTieParamters(verification);
@@ -228,7 +229,7 @@ public class Learner {
             double[] currentResults = estimator.getInitialResults();
 
             ArrayList<DataPoint> results = new ArrayList<>();
-            ArrayList<IMDP<Double>> estimates = new ArrayList<>();
+            ArrayList<UMDP<Double>> estimates = new ArrayList<>();
             if (past_iterations == 0) {
                 results.add(new DataPoint(0, past_iterations, currentResults));
                 estimates.add(estimator.getEstimate());
