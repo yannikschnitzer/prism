@@ -6,9 +6,12 @@ import com.gurobi.gurobi.GRBEnv;
 import com.gurobi.gurobi.GRBException;
 import common.Interval;
 import explicit.*;
+import learning.Data.DataPoint;
+import learning.Data.DataProcessor;
 import learning.Estimators.Estimator;
 import learning.Estimators.EstimatorConstructor;
 import learning.Estimators.PACConvexEstimatorOptimistic;
+import learning.Simulation.ObservationSampler;
 import param.Function;
 import param.FunctionFactory;
 import parser.Values;
@@ -18,6 +21,9 @@ import strat.Strategy;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -199,6 +205,9 @@ public class Learner {
             //ex.setTieParamters(verification);
             Pair<ArrayList<DataPoint>, ArrayList<IMDP<Double>>> resIMDP = runSampling(ex, estimator, verification);
 
+            DataProcessor dp = new DataProcessor();
+            dp.dumpDataRobustPolicies(makeOutputDirectory(ex), label, resIMDP.first);
+
         } catch (PrismException | FileNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -257,7 +266,8 @@ public class Learner {
                     if (this.verbose) System.out.println("Performance Guarantee on IMDPs (J̃): " + currentResults[0]);
                     if (this.verbose) System.out.println();
 
-                    if (last_iteration || ex.resultIteration(i)) {
+                    //if (last_iteration || ex.resultIteration(i)) {
+                    if(true) {
                         results.add(new DataPoint(samples, i + 1, currentResults));
                         estimates.add(estimator.getEstimate());
                     }
@@ -271,5 +281,15 @@ public class Learner {
         }
         prism.closeDown();
         return null;
+    }
+
+    public String makeOutputDirectory(Experiment ex) {
+        String outputPath = String.format("plotting/results/%s/%s/Robust_Policies_WCC/%s/", ex.experimentInfo, ex.model.toString(), ex.seed);
+        try {
+            Files.createDirectories(Paths.get(outputPath));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return outputPath;
     }
 }

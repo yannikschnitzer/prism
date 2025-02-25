@@ -1,16 +1,10 @@
 package learning.Estimators;
 
-import com.gurobi.gurobi.GRB;
-import com.gurobi.gurobi.GRBConstr;
-import com.gurobi.gurobi.GRBEnv;
-import com.gurobi.gurobi.GRBException;
 import common.Interval;
 import explicit.*;
-import explicit.rewards.MDPRewards;
 import learning.Experiment;
-import learning.StateActionPair;
-import learning.TransitionTriple;
-import param.Function;
+import learning.Simulation.StateActionPair;
+import learning.Simulation.TransitionTriple;
 import parser.ast.Expression;
 import parser.ast.ModulesFile;
 import parser.ast.PropertiesFile;

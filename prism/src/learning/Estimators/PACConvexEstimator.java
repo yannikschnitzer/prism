@@ -1,14 +1,13 @@
 package learning.Estimators;
 
 import com.gurobi.gurobi.GRB;
-import com.gurobi.gurobi.GRBConstr;
 import com.gurobi.gurobi.GRBEnv;
 import com.gurobi.gurobi.GRBException;
 import common.Interval;
 import explicit.*;
 import learning.Experiment;
-import learning.StateActionPair;
-import learning.TransitionTriple;
+import learning.Simulation.StateActionPair;
+import learning.Simulation.TransitionTriple;
 import org.apache.commons.statistics.distribution.NormalDistribution;
 import param.Function;
 import parser.ast.Expression;
@@ -124,20 +123,21 @@ public class PACConvexEstimator extends MAPEstimator {
         updatePriors();
         UMDP<Double> imdp = buildPointIMDP(mdp);
 
+        double resconvexMDP = 0.0;
+        double resconvexDTMC = 0.0;
         try {
             //System.out.printf("PMDP: " + this.pmdp);
             //System.out.println("IMDP: " + imdp);
             //System.out.println("Convex MDP constraints:");
             UMDP<Double> convex_mdp = buildConvexUMDP(imdp, this.pmdp);
-
-
             Result resconvex = modelCheckPointEstimate(convex_mdp,true,false);
-            double res = round((Double) resconvex.getResult());
+            resconvexMDP = round((Double) resconvex.getResult());
             MDStrategy robustStrat = (MDStrategy) resconvex.getStrategy();
-            double resultRobustDTMC = round((Double) checkDTMC(robustStrat).getResult());
+            resconvexDTMC = round((Double) checkDTMC(robustStrat).getResult());
+
             //MDStrategy optimisticStrat = computeStrategyFromEstimate(convex_mdp, false);
-            System.out.println("Performance Convex MDP: " + res);
-            System.out.println("Performanec on MDP with convex policy " + resultRobustDTMC);
+            System.out.println("Performanec on MDP with convex policy " + resconvexDTMC);
+            System.out.println("Performance Guarantee Convex MDP: " + resconvexMDP);
         } catch (GRBException e) {
             throw new RuntimeException(e);
         }
@@ -150,9 +150,8 @@ public class PACConvexEstimator extends MAPEstimator {
         double resultRobustDTMC = round((Double) checkDTMC(robustStrat).getResult());
         double resultOptimisticDTMC = round((Double) checkDTMC(optimisticStrat).getResult());
         double dist = round(this.averageDistanceToSUL());
-        List<Double> lbs = List.of(0.0);//this.getLowerBounds();
-        List<Double> ubs = List.of(1.0);//this.getUpperBounds();
-        return new double[]{resultRobustMDP, resultRobustDTMC, dist, lbs.get(0), ubs.get(0), resultOptimisticMDP, resultOptimisticDTMC};
+
+        return new double[]{resultRobustMDP, resultRobustDTMC, resconvexMDP, resconvexDTMC};
     }
 
     @Override

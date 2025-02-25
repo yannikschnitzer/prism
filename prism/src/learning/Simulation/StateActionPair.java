@@ -1,4 +1,4 @@
-package learning;
+package learning.Simulation;
 
 /**
  * Small class for state-action pairs (s,a)
