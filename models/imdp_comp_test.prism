@@ -1,0 +1,15 @@
+mdp
+
+module imdp1
+    s : [0..3] init 0;
+
+    [go] s = 0 -> [0.2, 0.4] : (s' = 1) + [0.1, 0.3] : (s' = 2) + [0.3, 0.5] : (s' = 3);
+    [go] s > 0 -> 1 : (s' = s);
+
+endmodule
+
+module imdp2
+	t : [0..2] init 0;
+	[go] t = 0 -> [0.3, 0.6] : (t' = 1) + [0.3, 0.6] : (t' = 2);
+	[go] t > 0 -> 1 : (t' = t);
+endmodule

@@ -26,6 +26,7 @@
 
 package explicit;
 
+import prism.Evaluator;
 import prism.PrismException;
 import prism.PrismNotSupportedException;
 import strat.MDStrategy;
@@ -143,6 +144,10 @@ public class UMDPSimple<Value> extends ModelExplicit<Value> implements NondetMod
 			trans.add(new ArrayList<>());
 			numStates++;
 		}
+	}
+
+	public void delimit(int s, int i) {
+		IntervalUtils.delimit(((UDistributionIntervals) trans.get(s).get(i)).intervals, getEvaluator());
 	}
 
 	// Mutators (other)

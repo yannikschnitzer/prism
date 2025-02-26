@@ -593,7 +593,7 @@ public class UMDPModelChecker extends ProbModelChecker
 	/**
 	 * Simple test program.
 	 */
-	public static void main(String args[])
+	public static void main2(String args[])
 	{
 		try {
 			UMDPModelChecker mc = new UMDPModelChecker(null);
@@ -643,37 +643,37 @@ public class UMDPModelChecker extends ProbModelChecker
 							{0.0, 1.0},
 							{0.0, -1.0},
 							{1.0,-1.0}};
-			double[] ineqVector = {0.9, -0.5, 0.5,-0.2,0.2};
+			double[] ineqVector = {0.9, -0.5, 0.5,-0.2,0.5};
 
 			int[] support = DoubleDistribution.extractDoubleDistribution(distr).index;
-			UDistribution<Double> udistr = new UDistributionPolytope<>(support, eqMatrix, eqVector,ineqMatrix,ineqVector);
-
+			//UDistribution<Double> udistr = new UDistributionPolytope<>(support, eqMatrix, eqVector,ineqMatrix,ineqVector);
+			UDistribution<Double> udistr = new UDistributionLInf<>(distr, 0.1);
 			//UDistribution<Double> udistr = new UDistributionPolytope<>(distr.getSupport(), -0.5);
 			umdp.addActionLabelledChoice(0, udistr, "a");
 
 			distr = Distribution.ofDouble();
 			distr.add(1, 1.0);
-			udistr = new UDistributionLogLikelihood<>(distr, 0.25);
+			udistr = new UDistributionLInf<>(distr, 0.25);
 			umdp.addActionLabelledChoice(1, udistr, "a");
 
 			distr = Distribution.ofDouble();
 			distr.add(2, 1.0);
-			udistr = new UDistributionLogLikelihood<>(distr, 0.25);
+			udistr = new UDistributionLInf<>(distr, 0.25);
 			umdp.addActionLabelledChoice(2, udistr, "a");
 
 			distr = Distribution.ofDouble();
 			distr.add(3, 1.0);
-			udistr = new UDistributionLogLikelihood<>(distr, 0.25);
+			udistr = new UDistributionLInf<>(distr, 0.25);
 			umdp.addActionLabelledChoice(3, udistr, "a");
 
 			distr = Distribution.ofDouble();
 			distr.add(4, 1.0);
-			udistr = new UDistributionLogLikelihood<>(distr, 0.25);
+			udistr = new UDistributionLInf<>(distr, 0.25);
 			umdp.addActionLabelledChoice(4, udistr, "a");
 
 			distr = Distribution.ofDouble();
 			distr.add(5, 1.0);
-			udistr = new UDistributionLogLikelihood<>(distr, 0.25);
+			udistr = new UDistributionLInf<>(distr, 0.25);
 			umdp.addActionLabelledChoice(5, udistr, "a");
 
 			System.out.println(umdp);
@@ -691,19 +691,23 @@ public class UMDPModelChecker extends ProbModelChecker
 		}
 	}
 
-	public static void main2(String[] args) {
-		Prism prism = new Prism(new PrismDevNullLog());
+	public static void main(String[] args) {
+		Prism prism = new Prism(new PrismPrintStreamLog(System.out));
         try {
-            //prism.initialise();
+			prism.setVerbose(true);
+            prism.initialise();
 			prism.setEngine(Prism.EXPLICIT);
 			prism.setGenStrat(true);
 
-			ModulesFile modulesFile = prism.parseModelFile(new File("prism/models/phil-nofair_rewards.prism"));
+			ModulesFile modulesFile = prism.parseModelFile(new File("../models/imdp_comp_test.prism"));
 
 			prism.loadPRISMModel(modulesFile);
 
 			prism.buildModel();
 
+			UMDPSimple<Double> umdp = (UMDPSimple<Double>) prism.getBuiltModelExplicit();
+
+			System.out.println(umdp.trans.get(0).get(0).getSupport());
 
         } catch (PrismException | FileNotFoundException e) {
             throw new RuntimeException(e);

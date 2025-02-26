@@ -1216,7 +1216,7 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	 */
 	public void initialise() throws PrismException
 	{
-		boolean verbose = this.getSettings().getBoolean("PRISM_VERBOSE");
+		boolean verbose = true; //this.getSettings().getBoolean("PRISM_VERBOSE");
 		mainLog.setVerbosityLevel(verbose ? PrismLog.VL_ALL : PrismLog.VL_DEFAULT);
 		mainLog.print(getToolName() + "\n");
 		mainLog.print(new String(new char[getToolName().length()]).replace("\0", "=") + "\n");

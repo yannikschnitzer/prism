@@ -42,6 +42,8 @@ import prism.Evaluator;
 import prism.ModelType;
 import prism.PrismException;
 
+import static it.unimi.dsi.fastutil.doubles.DoubleArrays.quickSortIndirect;
+
 /**
  * Interface for classes that provide (read) access to an explicit-state interval DTMC.
  */
@@ -232,7 +234,7 @@ public interface IDTMC<Value> extends DTMC<Interval<Value>>
 	 * @param vect Vector to multiply by
 	 * @param minMax Min/max uncertainty (via isMinUnc/isMaxUnc)
 	 */
-	public static double mvMultUncSingle(DoubleIntervalDistribution did, double vect[], MinMax minMax)
+	public static double mvMultUncSingleOld(DoubleIntervalDistribution did, double vect[], MinMax minMax)
 	{
 		// Trivial case: singleton interval (which must be [1.0,1.0])
 		if (did.size == 1) {
@@ -265,6 +267,63 @@ public interface IDTMC<Value> extends DTMC<Interval<Value>>
 		// Then add remaining ones in descending order
 		for (int i = 0; i < did.size; i++) {
 			int j = indices.get(i);
+			double delta = did.upper[j] - did.lower[j];
+			if (delta < totP) {
+				res += delta * vect[did.index[j]];
+				totP -= delta;
+			} else {
+				res += totP * vect[did.index[j]];
+				break;
+			}
+		}
+		return res;
+	}
+
+	/**
+	 * Do a single row of matrix-vector multiplication followed by min/max,
+	 * i.e. return min/max_P { sum_j P(s,j)*vect[j] }
+	 * @param did The transition probability intervals
+	 * @param vect Vector to multiply by
+	 * @param minMax Min/max uncertainty (via isMinUnc/isMaxUnc)
+	 */
+	public static double mvMultUncSingle(DoubleIntervalDistribution did, double vect[], MinMax minMax)
+	{
+		// Trivial case: singleton interval (which must be [1.0,1.0])
+		if (did.size == 1) {
+			return vect[did.index[0]];
+		}
+
+		// Avoid enumeration of all extreme distributions using optimisation from:
+		// Three-valued abstraction for probabilistic systems,
+		// Joost-Pieter Katoen, Daniel Klink, Martin Leucker and Verena Wolf
+		// (Defn 17, p.372, and p.380)
+
+		// Get a list of indices for the transitions,
+		// sorted according to the successor values
+		int[] indices = new int[did.size];
+		double[] values = new double[did.size];
+		for (int i = 0; i < did.size; i++) {
+			indices[i] = i;
+			if (minMax.isMaxUnc()) {
+				values[i] = -vect[did.index[i]];
+			}
+			else {
+				values[i] = vect[did.index[i]];
+			}
+		}
+
+		quickSortIndirect(indices, values);
+
+		// First add products of probability lower bounds and successor values
+		double res = 0.0;
+		double totP = 1.0;
+		for (int i = 0; i < did.size; i++) {
+			res += vect[did.index[i]] * did.lower[i];
+			totP -= did.lower[i];
+		}
+		// Then add remaining ones in descending order
+		for (int i = 0; i < did.size; i++) {
+			int j = indices[i];
 			double delta = did.upper[j] - did.lower[j];
 			if (delta < totP) {
 				res += delta * vect[did.index[j]];

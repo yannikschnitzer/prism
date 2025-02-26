@@ -174,10 +174,10 @@ public class ConstructModel extends PrismComponent
 		POMDPSimple<Value> pomdp = null;
 		CTMDPSimple<Value> ctmdp = null;
 		IDTMCSimple<Value> idtmc = null;
-		IMDPSimple<Value> imdp = null;
+		UMDPSimple<Value> imdp = null;
 		LTSSimple<Value> lts = null;
 		Distribution<Value> distr = null;
-		Distribution<Interval<Value>> distrUnc = null;
+		UDistributionIntervals<Value> distrUnc = null;
 		// Misc
 		int i, j, nc, nt, src, dest;
 		long timer;
@@ -220,7 +220,7 @@ public class ConstructModel extends PrismComponent
 				modelSimple = idtmc = new IDTMCSimple<>();
 				break;
 			case IMDP:
-				modelSimple = imdp = new IMDPSimple<>();
+				modelSimple = imdp = new UMDPSimple<>();
 				break;
 			case LTS:
 				modelSimple = lts = new LTSSimple<>();
@@ -234,7 +234,7 @@ public class ConstructModel extends PrismComponent
 			// Attach evaluator and variable info
 			((ModelExplicit<Value>) modelSimple).setEvaluator(modelGen.getEvaluator());
 			if (modelType == ModelType.IMDP) {
-				imdp.setIntervalEvaluator(modelGen.getIntervalEvaluator());
+				//imdp.setIntervalEvaluator(modelGen.getIntervalEvaluator());
 			}
 			if (modelType == ModelType.IDTMC) {
 				((ModelExplicit<Interval<Value>>) modelSimple).setEvaluator(modelGen.getIntervalEvaluator());
@@ -280,7 +280,7 @@ public class ConstructModel extends PrismComponent
 					if (!modelType.uncertain()) {
 						distr = new Distribution<>(modelGen.getEvaluator());
 					} else {
-						distrUnc = new Distribution<>(modelGen.getIntervalEvaluator());
+						distrUnc = new UDistributionIntervals<>(new Distribution<>(modelGen.getIntervalEvaluator()));
 					}
 				}
 				// Look at each transition in the choice
@@ -321,7 +321,7 @@ public class ConstructModel extends PrismComponent
 							distr.add(dest, modelGen.getTransitionProbability(i, j));
 							break;
 						case IMDP:
-							distrUnc.add(dest, modelGen.getTransitionProbabilityInterval(i, j));
+							distrUnc.intervals.add(dest, modelGen.getTransitionProbabilityInterval(i, j));
 							break;
 						case LTS:
 							if (distinguishActions) {
@@ -444,7 +444,7 @@ public class ConstructModel extends PrismComponent
 				model = (ModelExplicit<Value>) (sortStates ? new IDTMCSimple<>(idtmc, permut) : idtmc);
 				break;
 			case IMDP:
-				model = (ModelExplicit<Value>) (sortStates ? new IMDPSimple<>(imdp, permut) : imdp);
+				model = (ModelExplicit<Value>) (sortStates ? new UMDPSimple<>(imdp, permut) : imdp);
 				break;
 			case LTS:
 				model = sortStates ? new LTSSimple<>(lts, permut) : lts;
