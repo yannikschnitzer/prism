@@ -62,7 +62,7 @@ public class ConstructModel extends PrismComponent
 	/** Automatically fix deadlocks? */
 	protected boolean fixDeadlocks = true;
 	/** Sort the reachable states before constructing the model? */
-	protected boolean sortStates = true;
+	protected boolean sortStates = false;
 	/** Build a sparse representation, if possible?
 	 *  (e.g. MDPSparse rather than MDPSimple data structure) */
 	protected boolean buildSparse = true;
@@ -70,6 +70,14 @@ public class ConstructModel extends PrismComponent
 	protected boolean distinguishActions = true;
 	/** Should labels be processed and attached to the model? */
 	protected boolean attachLabels = true;
+
+	/** How to resolve interval parallel composition */
+	protected enum CompositionType {
+		INTERVAL_PRODUCT,
+		MCCORMICK,
+		VERTEX
+	};
+	protected CompositionType compositionType = CompositionType.VERTEX;
 
 	// Details of built model:
 
@@ -369,9 +377,18 @@ public class ConstructModel extends PrismComponent
 						}
 					} else if (modelType == ModelType.IMDP) {
 						if (distinguishActions) {
-							ch = imdp.addActionLabelledChoice(src, distrUnc, modelGen.getChoiceAction(i));
-							System.out.println("Marginals: " + modelGen.getIntervalDistribution(i));
-							distrUncVert = new UDistributionVertices<>(modelGen.getIntervalDistribution(i), supp);
+							switch (compositionType) {
+								case VERTEX -> {
+									distrUncVert = new UDistributionVertices<>(modelGen.getIntervalDistribution(i), supp);
+									ch = imdp.addActionLabelledChoice(src, distrUncVert, modelGen.getChoiceAction(i));
+								}
+								case INTERVAL_PRODUCT -> {
+									ch = imdp.addActionLabelledChoice(src, distrUnc, modelGen.getChoiceAction(i));
+								}
+								case MCCORMICK -> {
+									throw new PrismException("Not implemented yet.");
+								}
+							}
 						} else {
 							ch = imdp.addChoice(src, distrUnc);
 						}
@@ -381,7 +398,9 @@ public class ConstructModel extends PrismComponent
 				if (modelType == ModelType.IDTMC) {
 					((IDTMCSimple<Value>) idtmc).delimit(src, modelGen.getEvaluator());
 				} else if (modelType == ModelType.IMDP) {
-					imdp.delimit(src, ch);
+					if (compositionType == CompositionType.INTERVAL_PRODUCT) {
+						imdp.delimit(src, ch);
+					}
 				}
 			}
 			// For partially observable models, add observation info to state

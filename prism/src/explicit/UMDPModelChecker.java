@@ -718,14 +718,22 @@ public class UMDPModelChecker extends ProbModelChecker
 			prism.setGenStrat(true);
 
 			ModulesFile modulesFile = prism.parseModelFile(new File("../models/imdp_comp_test.prism"));
-
 			prism.loadPRISMModel(modulesFile);
-
 			prism.buildModel();
 
 			UMDPSimple<Double> umdp = (UMDPSimple<Double>) prism.getBuiltModelExplicit();
-
 			System.out.println(umdp);
+
+			UMDPModelChecker mc = new UMDPModelChecker(null);
+			mc.setPrecomp(true);
+
+			BitSet target = new BitSet();
+			target.set(3);
+			//target.set(5);
+			ModelCheckerResult res;
+			//umdp.findDeadlocks(true);
+			res = mc.computeReachProbs(umdp, target, MinMax.max().setMinUnc(false));
+			System.out.println("maxmax: " + res.soln[0]);
 
         } catch (PrismException | FileNotFoundException e) {
             throw new RuntimeException(e);
