@@ -260,8 +260,8 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
         int len2 = v2.length;
         double[] result = new double[len1 * len2];
         int index = 0;
-        for (double v : v1) {
-            for (double value : v2) {
+        for (double v : v2) {
+            for (double value : v1) {
                 result[index++] = v * value;
             }
         }
