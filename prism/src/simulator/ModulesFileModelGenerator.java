@@ -625,6 +625,16 @@ public class ModulesFileModelGenerator<Value> implements ModelGenerator<Value>, 
 	}
 
 	@Override
+	public List<List<Interval<Value>>> getIntervalDistribution(int i) throws PrismException {
+		TransitionList<Interval<Value>> transitions = getTransitionListIntervals();
+		if (transitions != null) {
+			return ((ChoiceListFlexi<Interval<Value>>) transitions.getChoice(i)).dists;
+		} else {
+			throw new PrismException("Cannot get transition probability interval for " + getModelType());
+		}
+	}
+
+	@Override
 	public String getTransitionUpdateString(int i, int offset) throws PrismException
 	{
 		TransitionList<?> transitions = getTransitionList();

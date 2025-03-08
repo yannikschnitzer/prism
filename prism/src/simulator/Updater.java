@@ -49,6 +49,7 @@ import prism.PrismComponent;
 import prism.PrismException;
 import prism.PrismLangException;
 import prism.PrismSettings;
+import settings.SettingOwner;
 
 public class Updater<Value> extends PrismComponent
 {
@@ -170,6 +171,8 @@ public class Updater<Value> extends PrismComponent
 		List<ChoiceListFlexi<Value>> chs;
 		int i, j, k, l, n, count;
 
+		System.out.println("");
+
 		// Clear lists/bitsets
 		transitionList.clear();
 		for (i = 0; i < numModules; i++) {
@@ -211,6 +214,7 @@ public class Updater<Value> extends PrismComponent
 				// Case where there is only 1 Updates for this module
 				if (count == 1) {
 					Updates ups = updateLists.get(j).get(i).get(0);
+					System.out.println("i:" + i + " j:" + j + " ups:" + ups);
 					// Case where this is the first Choice created
 					if (chs.size() == 0) {
 						ChoiceListFlexi<Value> ch = processUpdatesAndCreateNewChoice(i, ups, state);
@@ -251,6 +255,7 @@ public class Updater<Value> extends PrismComponent
 						}
 					}
 				}
+				System.out.println("i = " + i + ", j = " + j + ", choice = " + chs);
 			}
 			// Add all new choices to transition list
 			for (ChoiceListFlexi<Value> ch : chs) {
@@ -274,6 +279,8 @@ public class Updater<Value> extends PrismComponent
 		//transitionList.checkForErrors(state, varList);
 		
 		//System.out.println(transitionList);
+
+		System.out.println("Choices:" + chs);
 	}
 	
 	// Private helpers
@@ -378,6 +385,7 @@ public class Updater<Value> extends PrismComponent
 			list = new ArrayList<Update>();
 			list.add(ups.getUpdate(i));
 			ch.add(p, list);
+			ch.dists.getFirst().add(p);
 		}
 		// For now, PRISM treats empty (all zero probs/rates) distributions as an error.
 		// Later, when errors in symbolic model construction are improved, this might be relaxed.
@@ -416,5 +424,6 @@ public class Updater<Value> extends PrismComponent
 		ChoiceListFlexi<Value> chNew = processUpdatesAndCreateNewChoice(0, ups, state);
 		// Build product with existing
 		ch.productWith(chNew);
+		ch.dists.add(chNew.dists.getFirst());
 	}
 }

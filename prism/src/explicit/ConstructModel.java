@@ -29,6 +29,7 @@ package explicit;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,7 +57,6 @@ import prism.UndefinedConstants;
 public class ConstructModel extends PrismComponent
 {
 	// Options:
-
 	/** Find deadlocks during model construction? */
 	protected boolean findDeadlocks = true;
 	/** Automatically fix deadlocks? */
@@ -178,6 +178,8 @@ public class ConstructModel extends PrismComponent
 		LTSSimple<Value> lts = null;
 		Distribution<Value> distr = null;
 		UDistributionIntervals<Value> distrUnc = null;
+		UDistributionVertices<Value> distrUncVert = null;
+
 		// Misc
 		int i, j, nc, nt, src, dest;
 		long timer;
@@ -281,10 +283,14 @@ public class ConstructModel extends PrismComponent
 						distr = new Distribution<>(modelGen.getEvaluator());
 					} else {
 						distrUnc = new UDistributionIntervals<>(new Distribution<>(modelGen.getIntervalEvaluator()));
+
 					}
 				}
+
 				// Look at each transition in the choice
 				nt = modelGen.getNumTransitions(i);
+				List<Integer> supp = new ArrayList<>();
+
 				for (j = 0; j < nt; j++) {
 					stateNew = modelGen.computeTransitionTarget(i, j);
 					// Is this a new state?
@@ -298,6 +304,8 @@ public class ConstructModel extends PrismComponent
 					}
 					// Get index of state in state set
 					dest = states.getIndexOfLastAdd();
+					supp.add(dest);
+
 					// Get transition action
 					Object action = null;
 					if (distinguishActions && !modelType.nondeterministic()) {
@@ -362,6 +370,8 @@ public class ConstructModel extends PrismComponent
 					} else if (modelType == ModelType.IMDP) {
 						if (distinguishActions) {
 							ch = imdp.addActionLabelledChoice(src, distrUnc, modelGen.getChoiceAction(i));
+							System.out.println("Marginals: " + modelGen.getIntervalDistribution(i));
+							distrUncVert = new UDistributionVertices<>(modelGen.getIntervalDistribution(i), supp);
 						} else {
 							ch = imdp.addChoice(src, distrUnc);
 						}

@@ -60,6 +60,8 @@ public class ChoiceListFlexi<Value> implements Choice<Value>
 	// target states are just stored as lists of updates (for efficiency)
 	protected List<List<Update>> updates;
 	protected List<Value> probability;
+
+	protected List<List<Value>> dists;
 	
 	// For real-time models, the clock guard,
 	// i.e., an expression over clock variables
@@ -77,6 +79,8 @@ public class ChoiceListFlexi<Value> implements Choice<Value>
 		updates = new ArrayList<List<Update>>();
 		probability = new ArrayList<Value>();
 		clockGuard = null;
+		dists = new ArrayList<>();
+		dists.add(new ArrayList<>());
 	}
 
 	/**
@@ -332,4 +336,5 @@ public class ChoiceListFlexi<Value> implements Choice<Value>
 		}
 		return s;
 	}
+
 }

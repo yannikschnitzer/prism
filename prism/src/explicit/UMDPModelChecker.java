@@ -28,10 +28,12 @@ package explicit;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.PrimitiveIterator;
 
 import acceptance.AcceptanceReach;
+import com.gurobi.gurobi.*;
 import common.IntSet;
 import common.IterableStateSet;
 import explicit.rewards.MDPRewards;
@@ -646,9 +648,25 @@ public class UMDPModelChecker extends ProbModelChecker
 			double[] ineqVector = {0.9, -0.5, 0.5,-0.2,0.5};
 
 			int[] support = DoubleDistribution.extractDoubleDistribution(distr).index;
-			//UDistribution<Double> udistr = new UDistributionPolytope<>(support, eqMatrix, eqVector,ineqMatrix,ineqVector);
-			UDistribution<Double> udistr = new UDistributionLInf<>(distr, 0.1);
+			UDistribution<Double> udistr = new UDistributionPolytope<>(support, eqMatrix, eqVector,ineqMatrix,ineqVector);
+			//UDistribution<Double> udistr = new UDistributionLInf<>(distr, 0.1);
 			//UDistribution<Double> udistr = new UDistributionPolytope<>(distr.getSupport(), -0.5);
+
+
+			GRBEnv env = new GRBEnv(true);
+			env.set(GRB.IntParam.OutputFlag, 0);
+			env.start();
+
+			GRBModel model = new GRBModel(env);
+
+			// Create two continuous variables x and y with bounds [0.3, 0.8]
+			GRBVar x = model.addVar(0.3, 0.8, 0.0, GRB.CONTINUOUS, "x");
+			GRBVar y = model.addVar(0.3, 0.5, 0.0, GRB.CONTINUOUS, "y");
+
+			// Integrate new variables into the model
+			model.update();
+
+			udistr = new UDistributionLinearProgram<>(support, model);
 			umdp.addActionLabelledChoice(0, udistr, "a");
 
 			distr = Distribution.ofDouble();
@@ -683,10 +701,10 @@ public class UMDPModelChecker extends ProbModelChecker
 			//target.set(5);
 			ModelCheckerResult res;
 			//umdp.findDeadlocks(true);
-			res = mc.computeReachProbs(umdp, target, MinMax.max().setMinUnc(true));
+			res = mc.computeReachProbs(umdp, target, MinMax.max().setMinUnc(false));
 			System.out.println("maxmax: " + res.soln[0]);
 
-		} catch (PrismException e) {
+		} catch (PrismException | GRBException e) {
 			System.out.println(e);
 		}
 	}
@@ -707,7 +725,7 @@ public class UMDPModelChecker extends ProbModelChecker
 
 			UMDPSimple<Double> umdp = (UMDPSimple<Double>) prism.getBuiltModelExplicit();
 
-			System.out.println(umdp.trans.get(0).get(0).getSupport());
+			System.out.println(umdp);
 
         } catch (PrismException | FileNotFoundException e) {
             throw new RuntimeException(e);

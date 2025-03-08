@@ -283,6 +283,10 @@ public interface ModelGenerator<Value> extends ModelInfo
 		// Absent by default
 		return null;
 	}
+
+	public default List<List<Interval<Value>>> getIntervalDistribution(int i) throws PrismException{
+		return null;
+	}
 	
 	/**
 	 * Get the probability/rate of a transition within a choice, specified by its index/offset.
