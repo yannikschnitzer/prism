@@ -730,10 +730,12 @@ public class UMDPModelChecker extends ProbModelChecker
 			BitSet target = new BitSet();
 			target.set(1);
 			target.set(2);
-			target.set(3);
+//			target.set(3);
+//			target.set(4);
+//			target.set(5);
 			ModelCheckerResult res;
 			//umdp.findDeadlocks(true);
-			res = mc.computeReachProbs(umdp, target, MinMax.max().setMinUnc(false));
+			res = mc.computeReachProbs(umdp, target, MinMax.max().setMinUnc(true));
 			System.out.println("maxmax: " + res.soln[0]);
 
         } catch (PrismException | FileNotFoundException e) {

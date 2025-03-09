@@ -34,6 +34,9 @@ import java.util.BitSet;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.gurobi.gurobi.GRB;
+import com.gurobi.gurobi.GRBEnv;
+import com.gurobi.gurobi.GRBException;
 import common.Interval;
 import parser.State;
 import parser.Values;
@@ -71,13 +74,25 @@ public class ConstructModel extends PrismComponent
 	/** Should labels be processed and attached to the model? */
 	protected boolean attachLabels = true;
 
+	GRBEnv env;
+    {
+        try {
+            env = new GRBEnv(true);
+			env.set(GRB.IntParam.OutputFlag, 0);
+			env.start();
+        } catch (GRBException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
 	/** How to resolve interval parallel composition */
 	protected enum CompositionType {
 		INTERVAL_PRODUCT,
 		MCCORMICK,
 		VERTEX
 	};
-	protected CompositionType compositionType = CompositionType.VERTEX;
+	protected CompositionType compositionType = CompositionType.MCCORMICK;
 
 	// Details of built model:
 
@@ -187,6 +202,7 @@ public class ConstructModel extends PrismComponent
 		Distribution<Value> distr = null;
 		UDistributionIntervals<Value> distrUnc = null;
 		UDistributionVertices<Value> distrUncVert = null;
+		UDistributionLinearProgram<Value> distUncMcCormick = null;
 
 		// Misc
 		int i, j, nc, nt, src, dest;
@@ -386,7 +402,9 @@ public class ConstructModel extends PrismComponent
 									ch = imdp.addActionLabelledChoice(src, distrUnc, modelGen.getChoiceAction(i));
 								}
 								case MCCORMICK -> {
-									throw new PrismException("Not implemented yet.");
+									//ch = imdp.addActionLabelledChoice(src, distrUnc, modelGen.getChoiceAction(i));
+									distUncMcCormick = new UDistributionLinearProgram<>(modelGen.getIntervalDistribution(i), supp, env);
+									ch = imdp.addActionLabelledChoice(src, distUncMcCormick, modelGen.getChoiceAction(i));
 								}
 							}
 						} else {
