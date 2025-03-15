@@ -93,8 +93,7 @@ public class ConstructModel extends PrismComponent
 		VERTEX,
 		SMART
 	};
-	protected CompositionType compositionType = CompositionType.MCCORMICK;
-	protected int smartMarginalThreshold = 7;
+	protected CompositionType compositionType = CompositionType.INTERVAL_PRODUCT;
 
 	// Details of built model:
 
@@ -410,14 +409,13 @@ public class ConstructModel extends PrismComponent
 								}
 								case SMART -> {
 									List<List<Interval<Value>>> marginals = modelGen.getIntervalDistribution(i);
-									if (marginals.stream().allMatch(x -> x.size() <= smartMarginalThreshold)) {
-										System.out.println("Generating Vertex Dist");
-										distrUncVert = new UDistributionVertices<>(modelGen.getIntervalDistribution(i), supp);
-										ch = imdp.addActionLabelledChoice(src, distrUncVert, modelGen.getChoiceAction(i));
-									} else {
-										System.out.println("Generating McCormick Dist");
-										distUncMcCormick = new UDistributionLinearProgram<>(modelGen.getIntervalDistribution(i), supp, env);
+									distrUncVert = new UDistributionVertices<>(marginals, supp, true);
+
+									if (!distrUncVert.smartSuccess) {
+										distUncMcCormick = new UDistributionLinearProgram<>(marginals, supp, env);
 										ch = imdp.addActionLabelledChoice(src, distUncMcCormick, modelGen.getChoiceAction(i));
+									} else {
+										ch = imdp.addActionLabelledChoice(src, distrUncVert, modelGen.getChoiceAction(i));
 									}
 								}
 							}

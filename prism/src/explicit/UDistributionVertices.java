@@ -15,14 +15,28 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
     double [][] vertices;
     List<List<Interval<Value>>> marginals;
 
+    protected int smartThreshholdMarginal = 1000;
+    protected int smartThreshholdProduct = 1000;
+    protected boolean smartSuccess = true;
+
     public UDistributionVertices (List<List<Interval<Value>>> marginals, List<Integer> support) {
         this.support = support.stream().mapToInt(Integer::intValue).toArray();
         this.supportSet = new HashSet<>(support);
         this.marginals = marginals;
         //System.out.println("Support: " + Arrays.toString(this.support) + " Marginals: " + marginals);
 
-        buildVertices();
-        System.out.println("Num Vertices: " + vertices.length);
+        buildVertices(false);
+        //System.out.println("Num Vertices: " + vertices.length);
+    }
+
+    public UDistributionVertices (List<List<Interval<Value>>> marginals, List<Integer> support, boolean smart) {
+        this.support = support.stream().mapToInt(Integer::intValue).toArray();
+        this.supportSet = new HashSet<>(support);
+        this.marginals = marginals;
+        //System.out.println("Support: " + Arrays.toString(this.support) + " Marginals: " + marginals);
+
+        buildVertices(smart);
+        //System.out.println("Num Vertices: " + vertices.length);
     }
 
     public UDistributionVertices(int[] support, double[][] vertices) {
@@ -36,8 +50,8 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
         }
     }
 
-    protected void buildVertices(){
-        double[][][] marginalVertices = enumerateVerticesFromMarginals(this.marginals);
+    protected void buildVertices(boolean smart){
+        double[][][] marginalVertices = enumerateVerticesFromMarginals(this.marginals, smart);
 //        System.out.println("Vertices:");
 //        for (double[][] v : marginalVertices) {
 //            System.out.print("[");
@@ -96,9 +110,10 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
      * and computes the remaining coordinate so that the sum equals 1.
      *
      * @param intervals A list of Interval objects defining the bounds for each coordinate.
+     * @param smart Whether to stop at exceeding given smart threshold
      * @return A two-dimensional array of doubles where each row is a vertex.
      */
-    public double[][] enumerateVertices(List<Interval<Value>> intervals) {
+    public double[][] enumerateVertices(List<Interval<Value>> intervals, boolean smart) {
         int d = intervals.size();
         double tol = 1e-9;  // Tolerance for floating point comparisons
         List<double[]> vertices = new ArrayList<>();
@@ -151,6 +166,10 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
                     }
                     if (unique) {
                         vertices.add(vertex);
+                        if (vertices.size() > smartThreshholdMarginal && smart) {
+                            smartSuccess = false;
+                            return vertices.toArray(new double[vertices.size()][]);
+                        }
                     }
                 }
             }
@@ -165,11 +184,17 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
      * @param marginals A list of boxes, where each box is defined by a list of Interval objects.
      * @return A two-dimensional array containing all vertices from all boxes.
      */
-    public double[][][] enumerateVerticesFromMarginals(List<List<Interval<Value>>> marginals) {
+    public double[][][] enumerateVerticesFromMarginals(List<List<Interval<Value>>> marginals, boolean smart) {
         List<double[][]> allVertices = new ArrayList<>();
+        int prod = 1;
         for (List<Interval<Value>> box : marginals) {
-            double[][] vertices = enumerateVertices(box);
+            double[][] vertices = enumerateVertices(box, smart);
             allVertices.add(vertices);
+            prod *= vertices.length;
+            if (prod > smartThreshholdProduct && smart) {
+                this.smartSuccess = false;
+                break;
+            }
         }
         return allVertices.toArray(new double[allVertices.size()][][]);
     }

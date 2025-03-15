@@ -730,6 +730,7 @@ public class UMDPModelChecker extends ProbModelChecker
 
 			UMDPModelChecker mc = new UMDPModelChecker(null);
 			mc.setPrecomp(true);
+			mc.setGenStrat(true);
 
 			BitSet target = new BitSet();
 			target.set(1);
@@ -752,6 +753,7 @@ public class UMDPModelChecker extends ProbModelChecker
 			mc.setModelCheckingInfo(modelGen, pf, modelGen);
 			Result result = mc.check(umdp, pf.getProperty(0));
 			System.out.println((min ? "maxmin: " : "maxmax: ") + result.getResultString());
+			System.out.println("Strategy:" + result.getStrategy());
 
         } catch (PrismException | FileNotFoundException e) {
             throw new RuntimeException(e);
