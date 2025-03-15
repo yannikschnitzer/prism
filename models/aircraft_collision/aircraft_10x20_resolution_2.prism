@@ -1,0 +1,121 @@
+mdp
+
+// Increase grid resolution (twice as large)
+const int maxX = 20;
+const int maxY = 10;
+
+// Pilot response factor and adversary move probability
+const double r = 0.70795462532; // pilot response factor for intended one–unit move
+const double p = 0.19;          // probability for intended one–unit adversary moves
+const double eps = 0.05;        // uncertainty interval
+
+// New constants for overshooting and drift
+const double d  = 0.06;   // overshoot probability (for a two–unit change in [up]/[down])
+// For the [stay] action, allow small drift errors:
+const double d1 = 0.06;   // one–unit drift probability (up or down)
+const double d2 = 0.06;   // two–unit drift probability (up or down)
+
+// Update collision conditions (doubling the thresholds)
+formula xclose = ((x-ax >= 0 & x-ax < 6) | (ax-x >= 0 & ax-x < 6));
+formula yclose = ((y-ay >= 0 & y-ay < 4) | (ay-y >= 0 & ay-y < 4));
+
+//////////////////////////////////
+// Aircraft module (pilot-controlled)
+//////////////////////////////////
+module aircraft
+    x : [0..maxX] init 0;
+    y : [0..maxY] init 1;
+
+    // [up] action: pilot intends to climb
+    [up] x < maxX ->
+         // Intended move: increase altitude by 1 (with response factor r)
+         [r-eps, r+eps] : (y' = min(y+1, maxY)) & (x' = x+1) +
+         // Overshoot: climb by 2 (with lower probability d)
+         [d-eps, d+eps] : (y' = min(y+2, maxY)) & (x' = x+1) +
+         // Otherwise: no altitude change (with probability 1 - r - d)
+         [1-r-d-eps, 1-r-d+eps] : (y' = y) & (x' = x+1);
+
+    // [down] action: pilot intends to descend
+    [down] x < maxX ->
+         // Intended move: decrease altitude by 1 (with probability r)
+         [r-eps, r+eps] : (y' = max(y-1, 0)) & (x' = x+1) +
+         // Overshoot: descend by 2 (with probability d)
+         [d-eps, d+eps] : (y' = max(y-2, 0)) & (x' = x+1) +
+         // Otherwise: no altitude change (with probability 1 - r - d)
+         [1-r-d-eps, 1-r-d+eps] : (y' = y) & (x' = x+1);
+
+    // [stay] action: pilot intends to maintain altitude but may drift
+    [stay] x < maxX ->
+         // Drift upward by 2
+         [d2-eps, d2+eps] : (y' = min(y+2, maxY)) & (x' = x+1) +
+         // Drift upward by 1
+         [d1-eps, d1+eps] : (y' = min(y+1, maxY)) & (x' = x+1) +
+         // No drift (most likely)
+         [1-2*d1-2*d2-eps, 1-2*d1-2*d2+eps] : (y' = y) & (x' = x+1) +
+         // Drift downward by 1
+         [d1-eps, d1+eps] : (y' = max(y-1, 0)) & (x' = x+1) +
+         // Drift downward by 2
+         [d2-eps, d2+eps] : (y' = max(y-2, 0)) & (x' = x+1);
+
+    // Terminal state when the aircraft reaches the right edge
+    [up] x = maxX -> true;
+    [down] x = maxX -> true;
+    [stay] x = maxX -> true;
+endmodule
+
+//////////////////////////////////
+// Adversary module
+//////////////////////////////////
+module adversary
+    ax : [0..maxX] init maxX;
+    ay : [0..maxY] init 1;
+
+    // For the adversary, we use a structure analogous to the aircraft,
+    // preserving p as the main move probability and adding a small overshoot d.
+    // Note: The original model has two outcomes (up and down) each with probability p.
+    // Here each is augmented with an overshoot (two–unit change) with probability d.
+
+    [up] ax > 0 ->
+         // Intended upward move: decrease altitude by 1
+         [p-eps, p+eps] : (ay' = max(ay-1, 0)) & (ax' = ax-1) +
+         // Overshoot upward: decrease altitude by 2
+         [d-eps, d+eps] : (ay' = max(ay-2, 0)) & (ax' = ax-1) +
+         // Intended downward move: increase altitude by 1
+         [p-eps, p+eps] : (ay' = min(ay+1, maxY)) & (ax' = ax-1) +
+         // Overshoot downward: increase altitude by 2
+         [d-eps, d+eps] : (ay' = min(ay+2, maxY)) & (ax' = ax-1) +
+         // Otherwise: no altitude change
+         [1-2*p-2*d-eps, 1-2*p-2*d+eps] : (ay' = ay) & (ax' = ax-1);
+
+    [down] ax > 0 ->
+         // Same structure as [up]
+         [p-eps, p+eps] : (ay' = max(ay-1, 0)) & (ax' = ax-1) +
+         [d-eps, d+eps] : (ay' = max(ay-2, 0)) & (ax' = ax-1) +
+         [p-eps, p+eps] : (ay' = min(ay+1, maxY)) & (ax' = ax-1) +
+         [d-eps, d+eps] : (ay' = min(ay+2, maxY)) & (ax' = ax-1) +
+         [1-2*p-2*d-eps, 1-2*p-2*d+eps] : (ay' = ay) & (ax' = ax-1);
+
+    [stay] ax > 0 ->
+         // Same structure as above, allowing for small drift in the adversary's altitude
+         [p-eps, p+eps] : (ay' = max(ay-1, 0)) & (ax' = ax-1) +
+         [d-eps, d+eps] : (ay' = max(ay-2, 0)) & (ax' = ax-1) +
+         [p-eps, p+eps] : (ay' = min(ay+1, maxY)) & (ax' = ax-1) +
+         [d-eps, d+eps] : (ay' = min(ay+2, maxY)) & (ax' = ax-1) +
+         [1-2*p-2*d-eps, 1-2*p-2*d+eps] : (ay' = ay) & (ax' = ax-1);
+
+    [up] ax = 0 -> true;
+    [down] ax = 0 -> true;
+    [stay] ax = 0 -> true;
+endmodule
+
+//////////////////////////////////
+// Rewards and Labels
+//////////////////////////////////
+rewards
+    [up] true : 1;
+    [down] true : 1;
+    [stay] true : 1;
+endrewards
+
+label "goal" = (x = maxX);
+label "collision" = xclose & yclose;

@@ -2,7 +2,7 @@ mdp
 
 
 const int n = 8;
-const double p;
+const double p = 0.6;
 module bet
 
 	money : [0..(n+1)*10] init 10;

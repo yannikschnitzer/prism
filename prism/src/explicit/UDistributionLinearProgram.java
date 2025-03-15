@@ -28,8 +28,7 @@ package explicit;
 
 import com.gurobi.gurobi.*;
 import common.Interval;
-import param.Function;
-import prism.PrismException;
+import common.iterable.Reducible;
 
 import java.util.*;
 
@@ -38,6 +37,7 @@ public class UDistributionLinearProgram<Value> implements UDistribution<Value>
     // Transition frequencies
     protected GRBModel model;
     protected int[] support;
+    protected HashSet<Integer> supportSet;
     protected GRBVar[] vars;
 
     // Store marginals when generated from interval product
@@ -51,26 +51,40 @@ public class UDistributionLinearProgram<Value> implements UDistribution<Value>
         this.model = model;
         this.support = support;
         this.vars = model.getVars();
+
+        // Store support also as HashSet for efficient look up
+        this.supportSet = new HashSet<>();
+        for (int j : support) {
+            supportSet.add(j);
+        }
     }
 
     public UDistributionLinearProgram(List<List<Interval<Value>>> marginals, List<Integer> support, GRBEnv env) {
         this.support = support.stream().mapToInt(Integer::intValue).toArray();
+        this.supportSet = new HashSet<>(support);
         this.marginals = marginals;
 
-        System.out.println("Support: " + Arrays.toString(this.support) + " Marginals: " + marginals);
+        //System.out.println("Support: " + Arrays.toString(this.support) + " Marginals: " + marginals);
 
         // Build McCormick LP from marginals
         try {
             this.model = new GRBModel(env);
             buildMcCormickLP();
-            printModel();
+
+            model.set(GRB.IntParam.Method, 1);         // Use simplex (Method=1)
+            model.set(GRB.IntParam.Threads, 4);        // Parallelise solving
+            model.update();
+
+            //printModel();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+
+
     public void buildMcCormickLP() throws GRBException {
-        generateConvexHullRelaxationLP(this.marginals);
+        buildMcCormickRelaxation(this.marginals);
         this.model.update();
     }
 
@@ -97,7 +111,7 @@ public class UDistributionLinearProgram<Value> implements UDistribution<Value>
      * @param marginals the list of marginal distributions (each as a list of intervals)
      * @throws GRBException if a Gurobi error occurs
      */
-    public void generateConvexHullRelaxationLP(List<List<Interval<Value>>> marginals) throws GRBException {
+    public void buildMcCormickRelaxation(List<List<Interval<Value>>> marginals) throws GRBException {
         // Determine the number of distributions and their sizes.
         int numDists = marginals.size();
         int[] sizes = new int[numDists];
@@ -139,22 +153,9 @@ public class UDistributionLinearProgram<Value> implements UDistribution<Value>
         // Update the model to register all the x variables and constraints.
         model.update();
 
-        // --- Single marginal case: Create new z variables that are linked to x variables.
+        // --- Single marginal case
         if (numDists == 1) {
-            GRBVar[] zVars = new GRBVar[sizes[0]];
-            GRBVar[] xVars = xList.get(0);
-            for (int i = 0; i < sizes[0]; i++) {
-                // Create a new z variable.
-                zVars[i] = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "z_1_" + i);
-                // Link z variable to the corresponding x variable: z_i == x_i.
-                GRBLinExpr linkExpr = new GRBLinExpr();
-                linkExpr.addTerm(1.0, zVars[i]);
-                linkExpr.addTerm(-1.0, xVars[i]);
-                model.addConstr(linkExpr, GRB.EQUAL, 0.0, "link_z1_" + i);
-            }
-            // Update model to register new z variables and linking constraints.
-            model.update();
-            this.vars = zVars;
+            this.vars = xList.getFirst();
             return;
         }
 
@@ -363,7 +364,7 @@ public class UDistributionLinearProgram<Value> implements UDistribution<Value>
             }
         });
 
-// Build the final sorted list of variables.
+        // Build the final sorted list of variables.
         List<GRBVar> finalVars = new ArrayList<>();
         for (Map.Entry<String, ProductVar> entry : entries) {
             finalVars.add(entry.getValue().var);
@@ -417,28 +418,24 @@ public class UDistributionLinearProgram<Value> implements UDistribution<Value>
     @Override
     public boolean contains(int j)
     {
-        return Arrays.stream(support).anyMatch(o -> o == j);
+        return supportSet.contains(j);
     }
 
     @Override
     public boolean isSubsetOf(BitSet set) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return Reducible.extend(getSupport()).allMatch(set::get);
     }
 
     @Override
     public boolean containsOneOf(BitSet set)
     {
-        return set.stream().anyMatch(this::contains);
+        return Reducible.extend(getSupport()).anyMatch(set::get);
     }
 
     @Override
     public Set<Integer> getSupport()
     {
-        HashSet<Integer> set = new HashSet<>();
-        for (int j : support) {
-            set.add(j);
-        }
-        return set;
+        return supportSet;
     }
 
     @Override
@@ -460,24 +457,27 @@ public class UDistributionLinearProgram<Value> implements UDistribution<Value>
      * @param minMax Min/max uncertainty (via isMinUnc/isMaxUnc)
      */
     @Override
-    public double mvMultUnc(double[] vect, MinMax minMax)
-    {
+    public double mvMultUnc(double[] vect, MinMax minMax) {
         try {
             if (support.length == 1) {
                 return vect[support[0]];
             }
 
-            GRBLinExpr expr = new GRBLinExpr();
-            System.out.println("Support: " + Arrays.toString(support));
-            System.out.println("Vars:" + Arrays.toString(vars));
+            // Update each variable's objective coefficient to preserve the current basis.
             for (int i = 0; i < support.length; i++) {
-                expr.addTerm(vect[support[i]], vars[i]);
+                vars[i].set(GRB.DoubleAttr.Obj, vect[support[i]]);
             }
 
-            model.setObjective(expr, minMax.isMinUnc() ? GRB.MINIMIZE : GRB.MAXIMIZE);
-            model.optimize();
-            return model.get(GRB.DoubleAttr.ObjVal);
+            // Set the objective sense using the correct attribute.
+            model.set(GRB.IntAttr.ModelSense, minMax.isMinUnc() ? GRB.MINIMIZE : GRB.MAXIMIZE);
 
+            // Update the model to register changes.
+            model.update();
+
+            // Reoptimize; since only the objective has changed, the previous basis is reused.
+            model.optimize();
+
+            return model.get(GRB.DoubleAttr.ObjVal);
         } catch (GRBException e) {
             throw new RuntimeException(e);
         }
@@ -499,7 +499,7 @@ public class UDistributionLinearProgram<Value> implements UDistribution<Value>
     public String toString()
     {
         String s = "Polytopic, ";
-        s += "Support: " + support;
+        s += "Support: " + Arrays.toString(support);
         return s;
     }
 }

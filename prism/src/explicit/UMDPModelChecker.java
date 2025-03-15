@@ -40,7 +40,9 @@ import explicit.rewards.MDPRewards;
 import explicit.rewards.Rewards;
 import parser.ast.Expression;
 import parser.ast.ModulesFile;
+import parser.ast.PropertiesFile;
 import prism.*;
+import simulator.ModulesFileModelGenerator;
 import strat.FMDStrategyStep;
 import strat.FMDStrategyProduct;
 import strat.MDStrategy;
@@ -717,12 +719,14 @@ public class UMDPModelChecker extends ProbModelChecker
 			prism.setEngine(Prism.EXPLICIT);
 			prism.setGenStrat(true);
 
-			ModulesFile modulesFile = prism.parseModelFile(new File("../models/imdp_comp_test.prism"));
+			ModulesFile modulesFile = prism.parseModelFile(new File("../models/aircraft_collision/aircraft_10x20_resolution_3.prism"));
+			//ModulesFile modulesFile = prism.parseModelFile(new File("../models/imdp_comp_test.prism"));
 			prism.loadPRISMModel(modulesFile);
 			prism.buildModel();
 
+
 			UMDPSimple<Double> umdp = (UMDPSimple<Double>) prism.getBuiltModelExplicit();
-			System.out.println(umdp);
+			//System.out.println(umdp);
 
 			UMDPModelChecker mc = new UMDPModelChecker(null);
 			mc.setPrecomp(true);
@@ -730,13 +734,24 @@ public class UMDPModelChecker extends ProbModelChecker
 			BitSet target = new BitSet();
 			target.set(1);
 			target.set(2);
-//			target.set(3);
-//			target.set(4);
-//			target.set(5);
+			target.set(3);
+			target.set(4);
+			target.set(5);
+			target.set(12);
 			ModelCheckerResult res;
 			//umdp.findDeadlocks(true);
-			res = mc.computeReachProbs(umdp, target, MinMax.max().setMinUnc(true));
-			System.out.println("maxmax: " + res.soln[0]);
+
+			boolean min = true;
+
+//			res = mc.computeReachProbs(umdp, target, MinMax.max().setMinUnc(min));
+//			System.out.println((min ? "maxmin: " : "maxmax: ") + res.soln[0]);
+
+			String robustSpec = "Pmaxmin=? [!\"collision\" U \"goal\"]";
+			PropertiesFile pf = prism.parsePropertiesString(robustSpec);
+			ModulesFileModelGenerator<?> modelGen = ModulesFileModelGenerator.create(modulesFile, prism);
+			mc.setModelCheckingInfo(modelGen, pf, modelGen);
+			Result result = mc.check(umdp, pf.getProperty(0));
+			System.out.println((min ? "maxmin: " : "maxmax: ") + result.getResultString());
 
         } catch (PrismException | FileNotFoundException e) {
             throw new RuntimeException(e);

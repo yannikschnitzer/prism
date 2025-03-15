@@ -653,12 +653,14 @@ public class ProbModelChecker extends NonProbModelChecker
 		// and whether we want to use the corresponding algorithms
 		boolean useSimplePathAlgo = expr.isSimplePathFormula();
 
-		if (useSimplePathAlgo &&
-		    settings.getBoolean(PrismSettings.PRISM_PATH_VIA_AUTOMATA) &&
-		    LTLModelChecker.isSupportedLTLFormula(model.getModelType(), expr)) {
-			// If PRISM_PATH_VIA_AUTOMATA is true, we want to use the LTL engine
-			// whenever possible
-			useSimplePathAlgo = false;
+		if (settings != null) {
+			if (useSimplePathAlgo &&
+					settings.getBoolean(PrismSettings.PRISM_PATH_VIA_AUTOMATA) &&
+					LTLModelChecker.isSupportedLTLFormula(model.getModelType(), expr)) {
+				// If PRISM_PATH_VIA_AUTOMATA is true, we want to use the LTL engine
+				// whenever possible
+				useSimplePathAlgo = false;
+			}
 		}
 
 		if (useSimplePathAlgo) {

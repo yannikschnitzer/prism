@@ -171,7 +171,7 @@ public class Updater<Value> extends PrismComponent
 		List<ChoiceListFlexi<Value>> chs;
 		int i, j, k, l, n, count;
 
-		System.out.println("");
+		//System.out.println("");
 
 		// Clear lists/bitsets
 		transitionList.clear();
@@ -214,7 +214,7 @@ public class Updater<Value> extends PrismComponent
 				// Case where there is only 1 Updates for this module
 				if (count == 1) {
 					Updates ups = updateLists.get(j).get(i).get(0);
-					System.out.println("i:" + i + " j:" + j + " ups:" + ups);
+					//System.out.println("i:" + i + " j:" + j + " ups:" + ups);
 					// Case where this is the first Choice created
 					if (chs.size() == 0) {
 						ChoiceListFlexi<Value> ch = processUpdatesAndCreateNewChoice(i, ups, state);
@@ -255,7 +255,7 @@ public class Updater<Value> extends PrismComponent
 						}
 					}
 				}
-				System.out.println("i = " + i + ", j = " + j + ", choice = " + chs);
+				//System.out.println("i = " + i + ", j = " + j + ", choice = " + chs);
 			}
 			// Add all new choices to transition list
 			for (ChoiceListFlexi<Value> ch : chs) {
@@ -280,7 +280,8 @@ public class Updater<Value> extends PrismComponent
 		
 		//System.out.println(transitionList);
 
-		System.out.println("Choices:" + chs);
+		//
+		// System.out.println("Choices:" + chs);
 	}
 	
 	// Private helpers

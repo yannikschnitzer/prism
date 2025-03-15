@@ -68,7 +68,7 @@ public class ConstructModel extends PrismComponent
 	protected boolean sortStates = false;
 	/** Build a sparse representation, if possible?
 	 *  (e.g. MDPSparse rather than MDPSimple data structure) */
-	protected boolean buildSparse = true;
+	protected boolean buildSparse = false;
 	/** Should actions be attached to distributions (and used to distinguish them)? */
 	protected boolean distinguishActions = true;
 	/** Should labels be processed and attached to the model? */
@@ -90,9 +90,11 @@ public class ConstructModel extends PrismComponent
 	protected enum CompositionType {
 		INTERVAL_PRODUCT,
 		MCCORMICK,
-		VERTEX
+		VERTEX,
+		SMART
 	};
 	protected CompositionType compositionType = CompositionType.MCCORMICK;
+	protected int smartMarginalThreshold = 7;
 
 	// Details of built model:
 
@@ -405,6 +407,18 @@ public class ConstructModel extends PrismComponent
 									//ch = imdp.addActionLabelledChoice(src, distrUnc, modelGen.getChoiceAction(i));
 									distUncMcCormick = new UDistributionLinearProgram<>(modelGen.getIntervalDistribution(i), supp, env);
 									ch = imdp.addActionLabelledChoice(src, distUncMcCormick, modelGen.getChoiceAction(i));
+								}
+								case SMART -> {
+									List<List<Interval<Value>>> marginals = modelGen.getIntervalDistribution(i);
+									if (marginals.stream().allMatch(x -> x.size() <= smartMarginalThreshold)) {
+										System.out.println("Generating Vertex Dist");
+										distrUncVert = new UDistributionVertices<>(modelGen.getIntervalDistribution(i), supp);
+										ch = imdp.addActionLabelledChoice(src, distrUncVert, modelGen.getChoiceAction(i));
+									} else {
+										System.out.println("Generating McCormick Dist");
+										distUncMcCormick = new UDistributionLinearProgram<>(modelGen.getIntervalDistribution(i), supp, env);
+										ch = imdp.addActionLabelledChoice(src, distUncMcCormick, modelGen.getChoiceAction(i));
+									}
 								}
 							}
 						} else {

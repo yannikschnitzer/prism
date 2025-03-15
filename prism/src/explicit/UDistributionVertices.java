@@ -1,6 +1,7 @@
 package explicit;
 
 import common.Interval;
+import common.iterable.Reducible;
 import org.apache.commons.lang3.NotImplementedException;
 import prism.PrismException;
 
@@ -10,40 +11,49 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
 
 
     int[] support;
+    HashSet<Integer> supportSet;
     double [][] vertices;
     List<List<Interval<Value>>> marginals;
 
     public UDistributionVertices (List<List<Interval<Value>>> marginals, List<Integer> support) {
         this.support = support.stream().mapToInt(Integer::intValue).toArray();
+        this.supportSet = new HashSet<>(support);
         this.marginals = marginals;
-        System.out.println("Support: " + Arrays.toString(this.support) + " Marginals: " + marginals);
+        //System.out.println("Support: " + Arrays.toString(this.support) + " Marginals: " + marginals);
 
         buildVertices();
+        System.out.println("Num Vertices: " + vertices.length);
     }
 
     public UDistributionVertices(int[] support, double[][] vertices) {
         this.support = support;
         this.vertices = vertices;
+
+        // Build support hashset for efficient lookup
+        supportSet = new HashSet<>();
+        for (int i : support) {
+            supportSet.add(i);
+        }
     }
 
     protected void buildVertices(){
         double[][][] marginalVertices = enumerateVerticesFromMarginals(this.marginals);
-        System.out.println("Vertices:");
-        for (double[][] v : marginalVertices) {
-            System.out.print("[");
-            for(double[] row : v){
-                System.out.print(Arrays.toString(row));
-            }
-            System.out.print("]");
-            System.out.println("");
-        }
-        System.out.println("");
-
-        System.out.println("Product Vertices:");
+//        System.out.println("Vertices:");
+//        for (double[][] v : marginalVertices) {
+//            System.out.print("[");
+//            for(double[] row : v){
+//                System.out.print(Arrays.toString(row));
+//            }
+//            System.out.print("]");
+//            System.out.println("");
+//        }
+//        System.out.println("");
+//
+//        System.out.println("Product Vertices:");
         this.vertices = multiplyMarginalVertices(marginalVertices);
-        for (double[] row : this.vertices) {
-            System.out.println("Row: " + Arrays.toString(row));
-        }
+//        for (double[] row : this.vertices) {
+//            System.out.println("Row: " + Arrays.toString(row));
+//        }
     }
 
     /**
@@ -188,28 +198,24 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
     @Override
     public boolean contains(int j)
     {
-        return Arrays.stream(support).anyMatch(o -> o == j);
+        return supportSet.contains(j);
     }
 
     @Override
     public boolean isSubsetOf(BitSet set) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return Reducible.extend(getSupport()).allMatch(set::get);
     }
 
     @Override
     public boolean containsOneOf(BitSet set)
     {
-        return set.stream().anyMatch(this::contains);
+        return Reducible.extend(getSupport()).anyMatch(set::get);
     }
 
     @Override
     public Set<Integer> getSupport()
     {
-        HashSet<Integer> set = new HashSet<>();
-        for (int j : support) {
-            set.add(j);
-        }
-        return set;
+        return supportSet;
     }
 
     @Override
@@ -323,7 +329,7 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
                 .boxed()
                 .toList();
         s += " ";
-        s += "Vertices: " + Arrays.deepToString(vertices);
+        s += "Vertices: " + vertices.length;//Arrays.deepToString(vertices);
         return s;
     }
 
