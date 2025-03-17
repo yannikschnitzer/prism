@@ -61,7 +61,7 @@ public class ChoiceListFlexi<Value> implements Choice<Value>
 	protected List<List<Update>> updates;
 	protected List<Value> probability;
 
-	protected List<List<Value>> dists;
+	protected List<List<Value>> dists = new ArrayList<>();
 	
 	// For real-time models, the clock guard,
 	// i.e., an expression over clock variables

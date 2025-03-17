@@ -471,9 +471,6 @@ public class UDistributionLinearProgram<Value> implements UDistribution<Value>
             // Set the objective sense using the correct attribute.
             model.set(GRB.IntAttr.ModelSense, minMax.isMinUnc() ? GRB.MINIMIZE : GRB.MAXIMIZE);
 
-            // Update the model to register changes.
-            model.update();
-
             // Reoptimize; since only the objective has changed, the previous basis is reused.
             model.optimize();
 
@@ -498,8 +495,8 @@ public class UDistributionLinearProgram<Value> implements UDistribution<Value>
     @Override
     public String toString()
     {
-        String s = "Polytopic, ";
-        s += "Support: " + Arrays.toString(support);
+        String s = "[Polytopic, ";
+        s += "Support: " + Arrays.toString(support) + "]";
         return s;
     }
 }

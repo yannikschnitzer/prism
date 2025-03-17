@@ -1,0 +1,162 @@
+mdp
+
+// Grid dimensions (10x10 grid)
+const int M = 8;
+const int N = 8;
+
+// New probabilities chosen so that:
+// r_fail + a + (sum of 9 slip outcomes) = 0.01 + 0.40 + 0.59 = 1.0.
+const double r_fail = 0.01;   // Unavoidable failure probability per move
+const double a      = 0.40;   // Intended move probability
+
+// Slip outcomes for a given direction (for upward moves, as an example)
+const double up_left          = 0.09; // e.g., move up-left by 1 cell
+const double up_right         = 0.08; // move up-right by 1 cell
+const double up_left_drift    = 0.07; // move left (no vertical change)
+const double up_right_drift   = 0.07; // move right (no vertical change)
+const double up_overshoot     = 0.06; // overshoot: move up 2 cells
+const double up_diag_left2    = 0.06; // overshoot diagonally: up 2 and left 1
+const double up_diag_right2   = 0.06; // overshoot diagonally: up 2 and right 1
+const double up_lateral_left  = 0.05; // overshoot lateral: left 2 and up 1
+const double up_lateral_right = 0.05; // overshoot lateral: right 2 and up 1
+
+// For other directions the same numbers are re–used with appropriate coordinate changes.
+
+// Epistemic uncertainty interval (smaller than before)
+const double eps = 0.02;
+
+// --- Global definitions for pits, goals, and collisions ---
+// For Robot1: pit positions and goal
+formula pit1  = (x1 = 3 & y1 = 2) | (x1 = 5 & y1 = 1);
+formula goal1 = (x1 = M & y1 = 0);
+
+// For Robot2: pit positions and goal
+formula pit2  = (x2 = 2 & y2 = 4) | (x2 = 4 & y2 = 3);
+formula goal2 = (x2 = 0 & y2 = N);
+
+// A collision occurs if both robots occupy the same cell.
+formula collision = (x1 = x2 & y1 = y2);
+
+// "Bad" is reached if a robot falls into a pit, a collision occurs, or it takes a failure branch.
+formula bad = pit1 | pit2 | collision | f1 | f2;
+
+// Overall goal: Robot1 must reach its target and Robot2 its target.
+formula goal = goal1 & goal2;
+
+/////////////////////////////////////////
+// Module for Robot 1
+/////////////////////////////////////////
+module robot1
+  // Robot1’s state: position (x1,y1) and failure flag f1.
+  x1 : [0..M] init 0;
+  y1 : [0..N] init 0;
+  f1 : bool init false;
+
+  // UPWARD move:
+  [] !pit1 & !goal1 & !f1 ->
+       // Failure branch
+       [r_fail, r_fail] : (f1' = true) & (x1' = x1) & (y1' = y1) +
+       // Intended upward move: (x1, y1-1)
+       [a-eps, a+eps]   : (x1' = x1) & (y1' = max(y1-1, 0)) & (f1' = f1) +
+       // Slip outcomes:
+       [up_left-eps, up_left+eps]         : (x1' = max(x1-1,0)) & (y1' = max(y1-1,0)) & (f1' = f1) +
+       [up_right-eps, up_right+eps]       : (x1' = min(x1+1,M)) & (y1' = max(y1-1,0)) & (f1' = f1) +
+       [up_left_drift-eps, up_left_drift+eps]   : (x1' = max(x1-1,0)) & (y1' = y1) & (f1' = f1) +
+       [up_right_drift-eps, up_right_drift+eps] : (x1' = min(x1+1,M)) & (y1' = y1) & (f1' = f1) +
+       [up_overshoot-eps, up_overshoot+eps]     : (x1' = x1) & (y1' = max(y1-2,0)) & (f1' = f1) +
+       [up_diag_left2-eps, up_diag_left2+eps]   : (x1' = max(x1-1,0)) & (y1' = max(y1-2,0)) & (f1' = f1) +
+       [up_diag_right2-eps, up_diag_right2+eps] : (x1' = min(x1+1,M)) & (y1' = max(y1-2,0)) & (f1' = f1) +
+       [up_lateral_left-eps, up_lateral_left+eps]   : (x1' = max(x1-2,0)) & (y1' = max(y1-1,0)) & (f1' = f1) +
+       [up_lateral_right-eps, up_lateral_right+eps] : (x1' = min(x1+2,M)) & (y1' = max(y1-1,0)) & (f1' = f1);
+
+  // LEFTWARD move:
+  [] !pit1 & !goal1 & !f1 ->
+       [r_fail, r_fail] : (f1' = true) & (x1' = x1) & (y1' = y1) +
+       [a-eps, a+eps]   : (x1' = max(x1-1,0)) & (y1' = y1) & (f1' = f1) +
+       // For leftward moves, “rotate” outcomes appropriately:
+       [up_left-eps, up_left+eps]         : (x1' = max(x1-1,0)) & (y1' = max(y1-1,0)) & (f1' = f1) +
+       [up_right-eps, up_right+eps]       : (x1' = max(x1-1,0)) & (y1' = min(y1+1,N)) & (f1' = f1) +
+       [up_left_drift-eps, up_left_drift+eps]   : (x1' = x1) & (y1' = max(y1-1,0)) & (f1' = f1) +
+       [up_right_drift-eps, up_right_drift+eps] : (x1' = x1) & (y1' = min(y1+1,N)) & (f1' = f1) +
+       [up_overshoot-eps, up_overshoot+eps]     : (x1' = max(x1-2,0)) & (y1' = y1) & (f1' = f1) +
+       [up_diag_left2-eps, up_diag_left2+eps]   : (x1' = max(x1-1,0)) & (y1' = max(y1-2,0)) & (f1' = f1) +
+       [up_diag_right2-eps, up_diag_right2+eps] : (x1' = max(x1-1,0)) & (y1' = min(y1+2,N)) & (f1' = f1) +
+       [up_lateral_left-eps, up_lateral_left+eps]   : (x1' = max(x1-2,0)) & (y1' = max(y1-1,0)) & (f1' = f1) +
+       [up_lateral_right-eps, up_lateral_right+eps] : (x1' = max(x1-2,0)) & (y1' = min(y1+1,N)) & (f1' = f1);
+
+  // RIGHTWARD move:
+  [] !pit1 & !goal1 & !f1 ->
+       [r_fail, r_fail] : (f1' = true) & (x1' = x1) & (y1' = y1) +
+       [a-eps, a+eps]   : (x1' = min(x1+1,M)) & (y1' = y1) & (f1' = f1) +
+       [up_left-eps, up_left+eps]         : (x1' = min(x1+1,M)) & (y1' = max(y1-1,0)) & (f1' = f1) +
+       [up_right-eps, up_right+eps]       : (x1' = min(x1+1,M)) & (y1' = min(y1+1,N)) & (f1' = f1) +
+       [up_left_drift-eps, up_left_drift+eps]   : (x1' = x1) & (y1' = max(y1-1,0)) & (f1' = f1) +
+       [up_right_drift-eps, up_right_drift+eps] : (x1' = x1) & (y1' = min(y1+1,N)) & (f1' = f1) +
+       [up_overshoot-eps, up_overshoot+eps]     : (x1' = min(x1+2,M)) & (y1' = y1) & (f1' = f1) +
+       [up_diag_left2-eps, up_diag_left2+eps]   : (x1' = min(x1+1,M)) & (y1' = max(y1-2,0)) & (f1' = f1) +
+       [up_diag_right2-eps, up_diag_right2+eps] : (x1' = min(x1+1,M)) & (y1' = min(y1+2,N)) & (f1' = f1) +
+       [up_lateral_left-eps, up_lateral_left+eps]   : (x1' = min(x1+2,M)) & (y1' = max(y1-1,0)) & (f1' = f1) +
+       [up_lateral_right-eps, up_lateral_right+eps] : (x1' = min(x1+2,M)) & (y1' = min(y1+1,N)) & (f1' = f1);
+
+  // Absorbing self-loop for Robot1 if it is in a pit, has reached its goal, or has failed.
+  [] (pit1 | goal1 | f1) -> 1: (x1' = x1) & (y1' = y1) & (f1' = f1);
+endmodule
+
+/////////////////////////////////////////
+// Module for Robot 2
+/////////////////////////////////////////
+module robot2
+  x2 : [0..M] init M;
+  y2 : [0..N] init N;
+  f2 : bool init false;
+
+  // The moves for Robot2 are defined analogously.
+
+  // DOWNWARD move:
+  [] !pit2 & !goal2 & !f2 ->
+       [r_fail, r_fail] : (f2' = true) & (x2' = x2) & (y2' = y2) +
+       [a-eps, a+eps]   : (x2' = x2) & (y2' = min(y2+1, N)) & (f2' = f2) +
+       [up_left-eps, up_left+eps]         : (x2' = max(x2-1,0)) & (y2' = min(y2+1,N)) & (f2' = f2) +
+       [up_right-eps, up_right+eps]       : (x2' = min(x2+1,M)) & (y2' = min(y2+1,N)) & (f2' = f2) +
+       [up_left_drift-eps, up_left_drift+eps]   : (x2' = max(x2-1,0)) & (y2' = y2) & (f2' = f2) +
+       [up_right_drift-eps, up_right_drift+eps] : (x2' = min(x2+1,M)) & (y2' = y2) & (f2' = f2) +
+       [up_overshoot-eps, up_overshoot+eps]     : (x2' = x2) & (y2' = min(y2+2,N)) & (f2' = f2) +
+       [up_diag_left2-eps, up_diag_left2+eps]   : (x2' = max(x2-1,0)) & (y2' = min(y2+2,N)) & (f2' = f2) +
+       [up_diag_right2-eps, up_diag_right2+eps] : (x2' = min(x2+1,M)) & (y2' = min(y2+2,N)) & (f2' = f2) +
+       [up_lateral_left-eps, up_lateral_left+eps]   : (x2' = max(x2-2,0)) & (y2' = min(y2+1,N)) & (f2' = f2) +
+       [up_lateral_right-eps, up_lateral_right+eps] : (x2' = min(x2+2,M)) & (y2' = min(y2+1,N)) & (f2' = f2);
+
+  // LEFTWARD move:
+  [] !pit2 & !goal2 & !f2 ->
+       [r_fail, r_fail] : (f2' = true) & (x2' = x2) & (y2' = y2) +
+       [a-eps, a+eps]   : (x2' = max(x2-1,0)) & (y2' = y2) & (f2' = f2) +
+       [up_left-eps, up_left+eps]         : (x2' = max(x2-1,0)) & (y2' = max(y2-1,0)) & (f2' = f2) +
+       [up_right-eps, up_right+eps]       : (x2' = max(x2-1,0)) & (y2' = min(y2+1,N)) & (f2' = f2) +
+       [up_left_drift-eps, up_left_drift+eps]   : (x2' = x2) & (y2' = max(y2-1,0)) & (f2' = f2) +
+       [up_right_drift-eps, up_right_drift+eps] : (x2' = x2) & (y2' = min(y2+1,N)) & (f2' = f2) +
+       [up_overshoot-eps, up_overshoot+eps]     : (x2' = max(x2-2,0)) & (y2' = y2) & (f2' = f2) +
+       [up_diag_left2-eps, up_diag_left2+eps]   : (x2' = max(x2-1,0)) & (y2' = max(y2-2,0)) & (f2' = f2) +
+       [up_diag_right2-eps, up_diag_right2+eps] : (x2' = max(x2-1,0)) & (y2' = min(y2+2,N)) & (f2' = f2) +
+       [up_lateral_left-eps, up_lateral_left+eps]   : (x2' = max(x2-2,0)) & (y2' = max(y2-1,0)) & (f2' = f2) +
+       [up_lateral_right-eps, up_lateral_right+eps] : (x2' = max(x2-2,0)) & (y2' = min(y2+1,N)) & (f2' = f2);
+
+  // RIGHTWARD move:
+  [] !pit2 & !goal2 & !f2 ->
+       [r_fail, r_fail] : (f2' = true) & (x2' = x2) & (y2' = y2) +
+       [a-eps, a+eps]   : (x2' = min(x2+1,M)) & (y2' = y2) & (f2' = f2) +
+       [up_left-eps, up_left+eps]         : (x2' = min(x2+1,M)) & (y2' = max(y2-1,0)) & (f2' = f2) +
+       [up_right-eps, up_right+eps]       : (x2' = min(x2+1,M)) & (y2' = min(y2+1,N)) & (f2' = f2) +
+       [up_left_drift-eps, up_left_drift+eps]   : (x2' = x2) & (y2' = max(y2-1,0)) & (f2' = f2) +
+       [up_right_drift-eps, up_right_drift+eps] : (x2' = x2) & (y2' = min(y2+1,N)) & (f2' = f2) +
+       [up_overshoot-eps, up_overshoot+eps]     : (x2' = min(x2+2,M)) & (y2' = y2) & (f2' = f2) +
+       [up_diag_left2-eps, up_diag_left2+eps]   : (x2' = min(x2+1,M)) & (y2' = max(y2-2,0)) & (f2' = f2) +
+       [up_diag_right2-eps, up_diag_right2+eps] : (x2' = min(x2+1,M)) & (y2' = min(y2+2,N)) & (f2' = f2) +
+       [up_lateral_left-eps, up_lateral_left+eps]   : (x2' = min(x2+2,M)) & (y2' = max(y2-1,0)) & (f2' = f2) +
+       [up_lateral_right-eps, up_lateral_right+eps] : (x2' = min(x2+2,M)) & (y2' = min(y2+1,N)) & (f2' = f2);
+
+  // Absorbing self-loop for Robot2:
+  [] (pit2 | goal2 | f2) -> 1: (x2' = x2) & (y2' = y2) & (f2' = f2);
+endmodule
+
+label "bad" = bad;
+label "goal" = goal;

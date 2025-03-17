@@ -29,10 +29,7 @@ package explicit;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import com.gurobi.gurobi.GRB;
 import com.gurobi.gurobi.GRBEnv;
@@ -74,6 +71,9 @@ public class ConstructModel extends PrismComponent
 	/** Should labels be processed and attached to the model? */
 	protected boolean attachLabels = true;
 
+	protected final Map<String, double[][]> verticesCache = new HashMap<>();
+	protected final Map<String, Boolean> successCache = new HashMap<>();
+
 	GRBEnv env;
     {
         try {
@@ -93,7 +93,7 @@ public class ConstructModel extends PrismComponent
 		VERTEX,
 		SMART
 	};
-	protected CompositionType compositionType = CompositionType.INTERVAL_PRODUCT;
+	protected CompositionType compositionType = CompositionType.SMART;
 
 	// Details of built model:
 
@@ -409,13 +409,25 @@ public class ConstructModel extends PrismComponent
 								}
 								case SMART -> {
 									List<List<Interval<Value>>> marginals = modelGen.getIntervalDistribution(i);
-									distrUncVert = new UDistributionVertices<>(marginals, supp, true);
+									String key = marginals.toString();
 
-									if (!distrUncVert.smartSuccess) {
+									if (verticesCache.containsKey(key)) {
+										distrUncVert = new UDistributionVertices<>(supp.stream().mapToInt(Integer::intValue).toArray(), verticesCache.get(key));
+										ch = imdp.addActionLabelledChoice(src, distrUncVert, modelGen.getChoiceAction(i));
+									} else if (!successCache.getOrDefault(key, true)) {
 										distUncMcCormick = new UDistributionLinearProgram<>(marginals, supp, env);
 										ch = imdp.addActionLabelledChoice(src, distUncMcCormick, modelGen.getChoiceAction(i));
 									} else {
-										ch = imdp.addActionLabelledChoice(src, distrUncVert, modelGen.getChoiceAction(i));
+										distrUncVert = new UDistributionVertices<>(marginals, supp, true);
+
+										if (!distrUncVert.smartSuccess) {
+											distUncMcCormick = new UDistributionLinearProgram<>(marginals, supp, env);
+											ch = imdp.addActionLabelledChoice(src, distUncMcCormick, modelGen.getChoiceAction(i));
+											successCache.put(key, false);
+										} else {
+											ch = imdp.addActionLabelledChoice(src, distrUncVert, modelGen.getChoiceAction(i));
+											verticesCache.put(key, distrUncVert.vertices);
+										}
 									}
 								}
 							}

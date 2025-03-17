@@ -26,7 +26,7 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
         //System.out.println("Support: " + Arrays.toString(this.support) + " Marginals: " + marginals);
 
         buildVertices(false);
-        //System.out.println("Num Vertices: " + vertices.length);
+        //System.out.println("Num Vertices: " + vertices.length + "early stop: " + !smartSuccess);
     }
 
     public UDistributionVertices (List<List<Interval<Value>>> marginals, List<Integer> support, boolean smart) {
@@ -36,7 +36,7 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
         //System.out.println("Support: " + Arrays.toString(this.support) + " Marginals: " + marginals);
 
         buildVertices(smart);
-        //System.out.println("Num Vertices: " + vertices.length);
+        //System.out.println("Num Vertices: " + vertices.length + " early stop: " + !smartSuccess);
     }
 
     public UDistributionVertices(int[] support, double[][] vertices) {
@@ -290,10 +290,11 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
         int len1 = v1.length;
         int len2 = v2.length;
         double[] result = new double[len1 * len2];
-        int index = 0;
-        for (double v : v2) {
-            for (double value : v1) {
-                result[index++] = v * value;
+        for (int i = 0; i < len2; i++) {
+            double multiplier = v2[i];
+            int offset = i * len1;
+            for (int j = 0; j < len1; j++) {
+                result[offset + j] = multiplier * v1[j];
             }
         }
         return result;
@@ -310,6 +311,7 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
         int len = v1.length;
         double result = 0.0;
 
+        //System.out.println("V1: " + Arrays.toString(v1) + " V2: " + Arrays.toString(v2));
         for (int i = 0; i < len; i++) {
             result += v1[i] * v2[i];
         }
@@ -354,7 +356,7 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
                 .boxed()
                 .toList();
         s += " ";
-        s += "Vertices: " + vertices.length;//Arrays.deepToString(vertices);
+        s += "Vertices: " + vertices.length + "]";//Arrays.deepToString(vertices);
         return s;
     }
 

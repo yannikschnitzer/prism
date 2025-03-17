@@ -720,6 +720,8 @@ public class UMDPModelChecker extends ProbModelChecker
 			prism.setGenStrat(true);
 
 			ModulesFile modulesFile = prism.parseModelFile(new File("../models/aircraft_collision/aircraft_10x20_resolution_3.prism"));
+			//ModulesFile modulesFile = prism.parseModelFile(new File("../models/grid_world_robot/grid_robot_1.prism"));
+			//ModulesFile modulesFile = prism.parseModelFile(new File("../models/blocks_world/block_epistemic.prism"));
 			//ModulesFile modulesFile = prism.parseModelFile(new File("../models/imdp_comp_test.prism"));
 			prism.loadPRISMModel(modulesFile);
 			prism.buildModel();
@@ -747,7 +749,9 @@ public class UMDPModelChecker extends ProbModelChecker
 //			res = mc.computeReachProbs(umdp, target, MinMax.max().setMinUnc(min));
 //			System.out.println((min ? "maxmin: " : "maxmax: ") + res.soln[0]);
 
+			//String robustSpec = "Pmaxmin=? [!\"collision\" U \"goal\"]";
 			String robustSpec = "Pmaxmin=? [!\"collision\" U \"goal\"]";
+			//String robustSpec = "Rminmax=?[F \"goal\"];";
 			PropertiesFile pf = prism.parsePropertiesString(robustSpec);
 			ModulesFileModelGenerator<?> modelGen = ModulesFileModelGenerator.create(modulesFile, prism);
 			mc.setModelCheckingInfo(modelGen, pf, modelGen);
