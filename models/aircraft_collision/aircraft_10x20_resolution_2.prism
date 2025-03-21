@@ -1,7 +1,7 @@
 mdp
 
 // Increase grid resolution (twice as large)
-const int maxX = 20;
+const int maxX = 10;
 const int maxY = 10;
 
 // Pilot response factor and adversary move probability

@@ -2126,12 +2126,20 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	 * depending on the engine currently selected.
 	 * Only call this to explicitly force a built; normally it is done automatically.
 	 */
+	public void buildModel(ConstructModel.CompositionType compositionType) throws PrismException
+	{
+		mainLog.printSeparator();
+		chooseEngineForModelBuild();
+		doBuildModel(compositionType);
+	}
+
 	public void buildModel() throws PrismException
 	{
 		mainLog.printSeparator();
 		chooseEngineForModelBuild();
-		doBuildModel();
+		doBuildModel(ConstructModel.CompositionType.INTERVAL_PRODUCT);
 	}
+
 
 	/**
 	 * Build the currently loaded PRISM model, if it needs to be done,
@@ -2141,7 +2149,7 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	{
 		chooseEngineForModelBuild();
 		if (!modelIsBuilt())
-			doBuildModel();
+			doBuildModel(ConstructModel.CompositionType.INTERVAL_PRODUCT);
 	}
 
 	/**
@@ -2185,7 +2193,7 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	 * {@link #getBuiltModel()} or {@link #getBuiltModelExplicit()},
 	 * depending on the engine currently selected.
 	 */
-	private void doBuildModel() throws PrismException
+	private void doBuildModel(ConstructModel.CompositionType compositionType) throws PrismException
 	{
 		long l; // timer
 
@@ -2244,6 +2252,8 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 					}
 					ConstructModel constructModel = new ConstructModel(this);
 					constructModel.setFixDeadlocks(getFixDeadlocks());
+					constructModel.setCompositionType(compositionType);
+					System.out.println("Compostion Type:" + compositionType);
 					newModelExpl = constructModel.constructModel(getModelGenerator());
 					setBuiltModel(getModelBuildTypeForEngine(getCurrentEngine()), newModelExpl);
 					break;

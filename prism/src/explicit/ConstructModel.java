@@ -34,6 +34,7 @@ import java.util.*;
 import com.gurobi.gurobi.GRB;
 import com.gurobi.gurobi.GRBEnv;
 import com.gurobi.gurobi.GRBException;
+import com.gurobi.gurobi.GRBModel;
 import common.Interval;
 import parser.State;
 import parser.Values;
@@ -73,6 +74,7 @@ public class ConstructModel extends PrismComponent
 
 	protected final Map<String, double[][]> verticesCache = new HashMap<>();
 	protected final Map<String, Boolean> successCache = new HashMap<>();
+	protected final Map<String, GRBModel> modelChache = new HashMap<>();
 
 	GRBEnv env;
     {
@@ -87,13 +89,14 @@ public class ConstructModel extends PrismComponent
 
 
 	/** How to resolve interval parallel composition */
-	protected enum CompositionType {
+	public enum CompositionType {
 		INTERVAL_PRODUCT,
 		MCCORMICK,
 		VERTEX,
 		SMART
 	};
 	protected CompositionType compositionType = CompositionType.SMART;
+	protected boolean cacheGRBModels = false;
 
 	// Details of built model:
 
@@ -111,6 +114,10 @@ public class ConstructModel extends PrismComponent
 	public List<State> getStatesList()
 	{
 		return statesList;
+	}
+
+	public void setCompositionType(CompositionType type) {
+		compositionType = type;
 	}
 
 	/**
@@ -372,6 +379,7 @@ public class ConstructModel extends PrismComponent
 					}
 				}
 				// For nondet models, add collated transition to model
+				int[] suppArray = supp.stream().mapToInt(Integer::intValue).toArray();
 				int ch = -1;
 				if (!justReach) {
 					if (modelType == ModelType.MDP) {
@@ -396,15 +404,36 @@ public class ConstructModel extends PrismComponent
 						if (distinguishActions) {
 							switch (compositionType) {
 								case VERTEX -> {
-									distrUncVert = new UDistributionVertices<>(modelGen.getIntervalDistribution(i), supp);
+									List<List<Interval<Value>>> marginals = modelGen.getIntervalDistribution(i);
+									String key = marginals.toString();
+
+									if (verticesCache.containsKey(key)) {
+										distrUncVert = new UDistributionVertices<>(suppArray, verticesCache.get(key));
+									} else {
+										distrUncVert = new UDistributionVertices<>(marginals, supp);
+										verticesCache.put(key, distrUncVert.vertices);
+									}
+
 									ch = imdp.addActionLabelledChoice(src, distrUncVert, modelGen.getChoiceAction(i));
 								}
 								case INTERVAL_PRODUCT -> {
 									ch = imdp.addActionLabelledChoice(src, distrUnc, modelGen.getChoiceAction(i));
 								}
 								case MCCORMICK -> {
-									//ch = imdp.addActionLabelledChoice(src, distrUnc, modelGen.getChoiceAction(i));
-									distUncMcCormick = new UDistributionLinearProgram<>(modelGen.getIntervalDistribution(i), supp, env);
+									List<List<Interval<Value>>> marginals = modelGen.getIntervalDistribution(i);
+									String key = marginals.toString();
+
+									if (cacheGRBModels) {
+										if (modelChache.containsKey(key)) {
+											distUncMcCormick = new UDistributionLinearProgram<>(suppArray, modelChache.get(key));
+										} else {
+											distUncMcCormick = new UDistributionLinearProgram<>(modelGen.getIntervalDistribution(i), supp, env);
+											modelChache.put(key, distUncMcCormick.model);
+										}
+									} else {
+										distUncMcCormick = new UDistributionLinearProgram<>(modelGen.getIntervalDistribution(i), supp, env);
+									}
+
 									ch = imdp.addActionLabelledChoice(src, distUncMcCormick, modelGen.getChoiceAction(i));
 								}
 								case SMART -> {
@@ -412,7 +441,7 @@ public class ConstructModel extends PrismComponent
 									String key = marginals.toString();
 
 									if (verticesCache.containsKey(key)) {
-										distrUncVert = new UDistributionVertices<>(supp.stream().mapToInt(Integer::intValue).toArray(), verticesCache.get(key));
+										distrUncVert = new UDistributionVertices<>(suppArray, verticesCache.get(key));
 										ch = imdp.addActionLabelledChoice(src, distrUncVert, modelGen.getChoiceAction(i));
 									} else if (!successCache.getOrDefault(key, true)) {
 										distUncMcCormick = new UDistributionLinearProgram<>(marginals, supp, env);
