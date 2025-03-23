@@ -208,10 +208,12 @@ public class UMDPSimple<Value> extends ModelExplicit<Value> implements NondetMod
 			if (trans.get(i).isEmpty()) {
 				addDeadlockState(i);
 				if (fix) {
-					throw new PrismNotSupportedException("Deadlock fixing not yet implemented");
-//					Distribution<Value> distr = new Distribution<>(getEvaluator());
-//					distr.add(i, getEvaluator().one());
-//					addChoice(i, distr);
+					//throw new PrismNotSupportedException("Deadlock fixing not yet implemented");
+					Distribution<Double> distr = new Distribution<Double>((Evaluator.EvaluatorDouble) getEvaluator());
+					distr.add(i, ((Evaluator.EvaluatorDouble) getEvaluator()).one());
+
+					UDistribution<Double> udist = new UDistributionLInf<>(distr, 0.0);
+					((UMDPSimple<Double>) this).addChoice(i, udist);
 				}
 			}
 		}

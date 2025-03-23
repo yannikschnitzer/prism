@@ -1,8 +1,8 @@
 mdp
 
 // Increased grid resolution (twice as large)
-const int maxX = 30;
-const int maxY = 10;
+const int maxX = 20;
+const int maxY = 20;
 
 // Main parameters: pilot response factor and adversary probability
 const double r   = 0.80795462532; // pilot response factor for intended one-cell move
@@ -23,14 +23,14 @@ const double drift3 = 0.05;
 
 // Update collision conditions (doubling the thresholds)
 formula xclose = ((x - ax >= 0 & x - ax < 6) | (ax - x >= 0 & ax - x < 6));
-formula yclose = ((y - ay >= 0 & y - ay < 4) | (ay - y >= 0 & ay - y < 4));
+formula yclose = ((y - ay >= 0 & y - ay < 3) | (ay - y >= 0 & ay - y < 3));
 
 //////////////////////////////////
 // Aircraft module (pilot-controlled)
 //////////////////////////////////
 module aircraft
     x : [0..maxX] init 0;
-    y : [0..maxY] init 5;
+    y : [0..maxY] init 10;
 
     // [up] action: pilot intends to climb (increase altitude)
     [up] x < maxX ->
@@ -82,7 +82,7 @@ endmodule
 //////////////////////////////////
 module adversary
     ax : [0..maxX] init maxX;
-    ay : [0..maxY] init 5;
+    ay : [0..maxY] init 10;
 
     // [up] action: adversary moves left (decreasing ax) and changes altitude
     [up] ax > 0 ->

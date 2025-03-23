@@ -1,0 +1,2 @@
+// Min expected time to reach a goal (worst-case)
+Rminmax=? [ F goal0|goal1|goal2 ];

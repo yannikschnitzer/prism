@@ -2,6 +2,7 @@ package imdpcomp;
 
 import explicit.*;
 import explicit.ConstructModel.CompositionType;
+import explicit.Model;
 import parser.Values;
 import parser.ast.ModulesFile;
 import parser.ast.PropertiesFile;
@@ -16,7 +17,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.BitSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static explicit.ConstructModel.CompositionType.*;
 
@@ -30,6 +33,7 @@ public class ExperimentRunner {
             prism.initialise();
             prism.setEngine(Prism.EXPLICIT);
             prism.setGenStrat(true);
+
         } catch (PrismException e) {
             throw new RuntimeException(e);
         }
@@ -92,9 +96,7 @@ public class ExperimentRunner {
 
     public static void main(String[] args) {
         ExperimentRunner experimentRunner = new ExperimentRunner();
-        Experiment experiment = new Experiment(Experiment.Model.AIRCRAFT);
-        experiment.parameterValues = new Values();
-        experiment.parameterValues.addValue("eps", 0.0);
+        Experiment experiment = new Experiment(Experiment.Model.RABIN);
 
         try {
             experimentRunner.runExperimentAllTypes(experiment);
@@ -129,24 +131,27 @@ public class ExperimentRunner {
         UMDPModelChecker mc = new UMDPModelChecker(null);
         mc.setPrecomp(true);
         mc.setGenStrat(true);
+        mc.setErrorOnNonConverge(true);
 
         // Set Objective
         PropertiesFile pf = prism.parsePropertiesString(experiment.robustSpec);
         ModulesFileModelGenerator<?> modelGen = ModulesFileModelGenerator.create(modulesFile, prism);
+        mc.setModelCheckingInfo(modelGen, pf, modelGen);
+        double timer = System.currentTimeMillis();
         Result resultUMDP = mc.check(umdp, pf.getProperty(0));
-
+        timer = System.currentTimeMillis() - timer;
         //System.out.println("Strategy:" + result.getStrategy());
 
-        Result resultDTMC = checkInducedDTMC(experiment, (MDStrategy<Double>) resultUMDP.getStrategy());
-        dumpExperiment(experiment, resultUMDP, resultDTMC);
+        Result resultDTMC = null;//checkInducedDTMC(experiment, (MDStrategy<Double>) resultUMDP.getStrategy());
+        dumpExperiment(experiment, umdp, resultUMDP, resultDTMC, timer);
     }
 
     public Result checkInducedDTMC(Experiment experiment, MDStrategy<Double> strat) throws PrismException, FileNotFoundException {
         // Build model
         ModulesFile modulesFile = prism.parseModelFile(new File(experiment.certainModelFile));
         prism.loadPRISMModel(modulesFile);
-        if (experiment.exactValues != null) {
-            prism.setPRISMModelConstants(experiment.exactValues);
+        if (experiment.parameterValues != null) {
+            prism.setPRISMModelConstants(experiment.parameterValues);
         }
 
         // Build induced DTMC
@@ -163,15 +168,15 @@ public class ExperimentRunner {
         ModulesFile modulesFileDTMC = (ModulesFile) modulesFile.deepCopy();
         modulesFileDTMC.setModelType(ModelType.DTMC);
         ModulesFileModelGenerator<?> modelGen = ModulesFileModelGenerator.create(modulesFileDTMC, this.prism);
-        mc.setModelCheckingInfo(modelGen, pf, null);
+        mc.setModelCheckingInfo(modelGen, pf, modelGen);
 
         Result result = mc.check(dtmc, pf.getProperty(0));
 
         return result;
     }
 
-    public void dumpExperiment(Experiment experiment, Result resultUMDP, Result resultDTMC) {
-        String outputPath = String.format("results/%s/", experiment.model);
+    public void dumpExperiment(Experiment experiment, Model<Double> model, Result resultUMDP, Result resultDTMC, double timer) {
+        String outputPath = String.format("results/%s/%s/", experiment.model, experiment.parameterValues);
         try {
             Files.createDirectories(Paths.get(outputPath));
 
@@ -180,12 +185,15 @@ public class ExperimentRunner {
             FileWriter writer = new FileWriter(outputPath + file_name + ".yaml");
             writer.write("Model: " + experiment.model + "\n");
             writer.write("Model File: " + experiment.modelFile + "\n");
+            writer.write("State Space: " + model.getNumStates() + "\n");
+            writer.write("Transitions: " + model.getNumTransitions() + "\n");
             writer.write("Constant Values: " + experiment.parameterValues + "\n");
             writer.write("Composition Type: " + experiment.compositionType + "\n");
             writer.write("Robust Goal: " + experiment.robustSpec + "\n");
             writer.write("Robust Result: " + resultUMDP.getResult() + "\n");
             writer.write("DTMC Goal: " + experiment.dtmcSpec + "\n");
-            writer.write("DTMC Result: " + resultDTMC.getResult() + "\n");
+            if (resultDTMC != null) writer.write("DTMC Result: " + resultDTMC.getResult() + "\n");
+            writer.write("Runtime: " + timer/1000 + "s \n");
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();
