@@ -29,7 +29,9 @@ public class Experiment {
         LAKE_SWARM,
         COIN,
         CSMA,
-        RABIN
+        RABIN,
+        CHAIN,
+        CHAIN_MULTI,
     }
 
     public enum Type {
@@ -73,8 +75,8 @@ public class Experiment {
 
                 // Set Parameter Values
                 this.parameterValues.addValue("eps", 0.05);
-                this.parameterValues.addValue("N", 12);
-                this.parameterValues.addValue("M", 12);
+                this.parameterValues.addValue("N", 7);
+                this.parameterValues.addValue("M", 7);
                 this.parameterValues.addValue("p", 0.35);
             }
 
@@ -110,6 +112,34 @@ public class Experiment {
 
                 // Set Parameter Values
                 this.parameterValues.addValue("eps", 0.02); // 0 <= eps <= 0.03125
+            }
+
+            case CHAIN -> {
+                this.modelFile = "../models/chain/chain_2.prism";
+                this.certainModelFile = "../models/chain/chain_2_certain.prism";
+                this.robustSpec = "Rminmax=? [F \"goal\"]";
+                this.dtmcSpec = "R=? [F \"goal\"]";
+
+                // Set Parameter Values
+                this.parameterValues.addValue("H", 8);
+                this.parameterValues.addValue("p", 0.4);
+                this.parameterValues.addValue("q", 0.6);
+                this.parameterValues.addValue("r", 0.5);
+                this.parameterValues.addValue("eps", 0.02);
+            }
+
+            case CHAIN_MULTI -> {
+                this.modelFile = "../models/chain/chain_multi_succ.prism";
+                this.certainModelFile = "../models/chain/chain_multi_succ_certain.prism";
+                this.robustSpec = "Rminmax=? [F \"goal\"]";
+                this.dtmcSpec = "R=? [F \"goal\"]";
+
+                // Set Parameter Values
+                this.parameterValues.addValue("H", 8);
+                this.parameterValues.addValue("p", 0.4);
+                this.parameterValues.addValue("q", 0.6);
+                this.parameterValues.addValue("r", 0.5);
+                this.parameterValues.addValue("eps", 0.02);
             }
 
         }

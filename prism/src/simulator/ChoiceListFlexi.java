@@ -103,6 +103,10 @@ public class ChoiceListFlexi<Value> implements Choice<Value>
 		for (Value p : ch.probability) {
 			probability.add(p);
 		}
+		dists = new ArrayList<>();
+		for (List<Value> dist : ch.dists) {
+			dists.add(dist);
+		}
 		clockGuard = ch.clockGuard;
 	}
 

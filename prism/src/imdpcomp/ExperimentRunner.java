@@ -96,7 +96,7 @@ public class ExperimentRunner {
 
     public static void main(String[] args) {
         ExperimentRunner experimentRunner = new ExperimentRunner();
-        Experiment experiment = new Experiment(Experiment.Model.RABIN);
+        Experiment experiment = new Experiment(Experiment.Model.CHAIN_MULTI);
 
         try {
             experimentRunner.runExperimentAllTypes(experiment);
@@ -142,7 +142,7 @@ public class ExperimentRunner {
         timer = System.currentTimeMillis() - timer;
         //System.out.println("Strategy:" + result.getStrategy());
 
-        Result resultDTMC = null;//checkInducedDTMC(experiment, (MDStrategy<Double>) resultUMDP.getStrategy());
+        Result resultDTMC = checkInducedDTMC(experiment, (MDStrategy<Double>) resultUMDP.getStrategy());
         dumpExperiment(experiment, umdp, resultUMDP, resultDTMC, timer);
     }
 

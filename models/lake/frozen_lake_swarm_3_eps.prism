@@ -5,7 +5,9 @@ const int N;
 const double eps;
 const double p = 0.35;
 
-formula goal = 1<=r1 & r1<=2 & 2<=c1 & c1<=3 & 1<=r2 & r2<=4 & 3<=c2 & c2<=4;
+formula goal = 1<=r1 & r1<=2 & 2<=c1 & c1<=3
+                & 2<=r2 & r2<=4 & 3<=c2 & c2<=4
+                & 3<=r3 & r2<=5 & 2<=c3 & c3<=3;
 
 module grid1
   r1 : [0..M-1] init M-1;
@@ -57,6 +59,7 @@ module grid1
 endmodule
 
 module grid2=grid1[r1=r2,c1=c2] endmodule
+module grid3=grid1[r1=r3,c1=c3] endmodule
 
 rewards
   [n] true : 1;

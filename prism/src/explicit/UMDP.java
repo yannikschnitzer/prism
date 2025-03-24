@@ -233,6 +233,7 @@ public interface UMDP<Value> extends NondetModel<Value>
 		boolean first = true;
 		boolean min = minMax.isMin();
 
+		//System.out.println("State: " + s + " Num choices: " + getNumChoices(s));
 		for (int choice = 0, numChoices = getNumChoices(s); choice < numChoices; choice++) {
 			double d = mvMultRewUncSingle(s, choice, vect, mdpRewards, minMax);
 			// Check whether we have exceeded min/max so far

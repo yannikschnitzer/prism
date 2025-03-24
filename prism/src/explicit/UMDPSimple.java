@@ -295,6 +295,7 @@ public class UMDPSimple<Value> extends ModelExplicit<Value> implements NondetMod
 	@Override
 	public double mvMultUncSingle(int s, int k, double[] vect, MinMax minMax)
 	{
+		//System.out.println("Multiplying state:" + s + " " + k);
 		return trans.get(s).get(k).mvMultUnc(vect, minMax);
 	}
 
