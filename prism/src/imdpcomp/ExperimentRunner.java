@@ -96,7 +96,7 @@ public class ExperimentRunner {
 
     public static void main(String[] args) {
         ExperimentRunner experimentRunner = new ExperimentRunner();
-        Experiment experiment = new Experiment(Experiment.Model.CHAIN_MULTI);
+        Experiment experiment = new Experiment(Experiment.Model.LAKE_SWARM);
 
         try {
             experimentRunner.runExperimentAllTypes(experiment);

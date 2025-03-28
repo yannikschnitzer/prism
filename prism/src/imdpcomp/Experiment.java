@@ -32,6 +32,7 @@ public class Experiment {
         RABIN,
         CHAIN,
         CHAIN_MULTI,
+        CHAIN_MULTI_SINGLE
     }
 
     public enum Type {
@@ -135,7 +136,21 @@ public class Experiment {
                 this.dtmcSpec = "R=? [F \"goal\"]";
 
                 // Set Parameter Values
-                this.parameterValues.addValue("H", 8);
+                this.parameterValues.addValue("H", 7);
+                this.parameterValues.addValue("p", 0.4);
+                this.parameterValues.addValue("q", 0.6);
+                this.parameterValues.addValue("r", 0.5);
+                this.parameterValues.addValue("eps", 0.02);
+            }
+
+            case CHAIN_MULTI_SINGLE -> {
+                this.modelFile = "../models/chain/chain_multi_succ_single.prism";
+                this.certainModelFile = "../models/chain/chain_multi_succ_single_certain.prism";
+                this.robustSpec = "Rminmax=? [F \"goal\"]";
+                this.dtmcSpec = "R=? [F \"goal\"]";
+
+                // Set Parameter Values
+                this.parameterValues.addValue("H", 9);
                 this.parameterValues.addValue("p", 0.4);
                 this.parameterValues.addValue("q", 0.6);
                 this.parameterValues.addValue("r", 0.5);

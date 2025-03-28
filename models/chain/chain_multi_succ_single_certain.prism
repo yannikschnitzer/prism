@@ -6,14 +6,19 @@ const double q;
 const double r; //= 1/2
 const double eps;
 
-const double pdiv = (1/8) * (1 - p);
-const double qdiv = (1/8) * (1 - q);
+const double pdiv = (1/9) * (1 - p);
+const double qdiv = (1/9) * (1 - q);
 
 module chain
 	s1 : [0..H] init 0;
 
+	[a] s1 != H-1 -> p : (s1'=min(s1+1,H)) +
+    	            1-p : (s1'=0);
+    [a] s1 != H-1 -> q : (s1'=min(s1+1,H)) +
+                    1-q : (s1'=0);
+
     //[a] true -> 1-r : (s1'=min(s1+1,H)) + r : (s1'=0);
-	[a] true -> p : (s1'=min(s1+1,H)) +
+	[a] s1 = H-1 -> p : (s1'=min(s1+1,H)) +
 	            pdiv : (s1'=max(0, s1-1)) +
 	            pdiv : (s1'=max(0, s1-2)) +
 	            pdiv : (s1'=max(0, s1-3)) +
@@ -21,8 +26,9 @@ module chain
 	            pdiv : (s1'=max(0, s1-5)) +
 	            pdiv : (s1'=max(0, s1-6)) +
 	            pdiv : (s1'=max(0, s1-7)) +
+	            pdiv : (s1'=max(0, s1-8)) +
 	            pdiv : (s1'=0);
-    [a] true -> q : (s1'=min(s1+1,H)) +
+    [a] s1 = H-1 -> q : (s1'=min(s1+1,H)) +
                 qdiv : (s1'=max(0, s1-1)) +
                 qdiv : (s1'=max(0, s1-2)) +
                 qdiv : (s1'=max(0, s1-3))  +
@@ -30,6 +36,7 @@ module chain
                 qdiv : (s1'=max(0, s1-5))  +
                 qdiv : (s1'=max(0, s1-6))  +
                 qdiv : (s1'=max(0, s1-7))  +
+                qdiv : (s1'=max(0, s1-8))  +
                 qdiv : (s1'=0);
 endmodule
 

@@ -6,15 +6,31 @@ const double q;
 const double r; //= 1/2
 const double eps;
 
-const double pdiv = (1/2) * (1 - p);
-const double qdiv = (1/2) * (1 - q);
+const double pdiv = (1/8) * (1 - p);
+const double qdiv = (1/8) * (1 - q);
 
 module chain
 	s1 : [0..H] init 0;
 
-    [a] true -> [1-r - eps, 1-r + eps] : (s1'=min(s1+1,H)) + [r - eps, r + eps] : (s1'=0);
-	[a] true -> [p - eps, p + eps] : (s1'=min(s1+1,H)) + [pdiv- eps, pdiv + eps] : (s1'=max(0, s1-1)) + [pdiv - eps, pdiv + eps] : (s1'=0);
-    [a] true -> [q - eps, q + eps] : (s1'=min(s1+1,H)) + [qdiv- eps, pdiv + eps] : (s1'=max(0, s1-1)) + [qdiv - eps, pdiv + eps] : (s1'=0);
+    //[a] true -> [1-r - eps, 1-r + eps] : (s1'=min(s1+1,H)) + [r - eps, r + eps] : (s1'=0);
+	[a] true -> [p - eps, p + eps] : (s1'=min(s1+1,H)) +
+	            [pdiv- eps, pdiv + eps] : (s1'=max(0, s1-1)) +
+	            [pdiv- eps, pdiv + eps] : (s1'=max(0, s1-2)) +
+	            [pdiv- eps, pdiv + eps] : (s1'=max(0, s1-3)) +
+	            [pdiv- eps, pdiv + eps] : (s1'=max(0, s1-4)) +
+	            [pdiv- eps, pdiv + eps] : (s1'=max(0, s1-5)) +
+	            [pdiv- eps, pdiv + eps] : (s1'=max(0, s1-6)) +
+	            [pdiv- eps, pdiv + eps] : (s1'=max(0, s1-7)) +
+	            [pdiv - eps, pdiv + eps] : (s1'=0);
+    [a] true -> [q - eps, q + eps] : (s1'=min(s1+1,H)) +
+                [qdiv- eps, pdiv + eps] : (s1'=max(0, s1-1)) +
+                [qdiv- eps, pdiv + eps] : (s1'=max(0, s1-2)) +
+                [qdiv- eps, pdiv + eps] : (s1'=max(0, s1-3)) +
+                [qdiv- eps, pdiv + eps] : (s1'=max(0, s1-4)) +
+                [qdiv- eps, pdiv + eps] : (s1'=max(0, s1-5)) +
+                [qdiv- eps, pdiv + eps] : (s1'=max(0, s1-6)) +
+                [qdiv- eps, pdiv + eps] : (s1'=max(0, s1-7)) +
+                [qdiv - eps, pdiv + eps] : (s1'=0);
 endmodule
 
 module chain2 = chain[s1 = s2] endmodule
