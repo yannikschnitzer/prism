@@ -27,6 +27,7 @@ public class Experiment {
     public enum Model {
         AIRCRAFT,
         LAKE_SWARM,
+        LAKE_SWARM_MULTI_SLIP,
         COIN,
         CSMA,
         RABIN,
@@ -79,6 +80,19 @@ public class Experiment {
                 this.parameterValues.addValue("N", 7);
                 this.parameterValues.addValue("M", 7);
                 this.parameterValues.addValue("p", 0.35);
+            }
+
+            case LAKE_SWARM_MULTI_SLIP -> {
+                this.modelFile = "../models/lake_multislip/frozen_lake_swarm_eps.prism";
+                this.certainModelFile = "../models/lake_multislip/frozen_lake_swarm_eps_certain.prism";
+                this.robustSpec = "Rminmax=? [ F goal ]";
+                this.dtmcSpec = "R=? [ F goal ]";
+
+                // Set Parameter Values
+                this.parameterValues.addValue("eps", 0.03);
+                this.parameterValues.addValue("N", 8);
+                this.parameterValues.addValue("M", 8);
+                this.parameterValues.addValue("p", 0.4);
             }
 
             case COIN -> {

@@ -26,7 +26,7 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
         //System.out.println("Support: " + Arrays.toString(this.support) + " Marginals: " + marginals);
 
         buildVertices(false);
-        System.out.println("Num Vertices: " + vertices.length + "early stop: " + !smartSuccess);
+        System.out.println("Num Vertices: " + vertices.length + " - Early stop: " + !smartSuccess);
     }
 
     public UDistributionVertices (List<List<Interval<Value>>> marginals, List<Integer> support, boolean smart) {
@@ -36,7 +36,7 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
         //System.out.println("Support: " + Arrays.toString(this.support) + " Marginals: " + marginals);
 
         buildVertices(smart);
-        System.out.println("Num Vertices: " + vertices.length + " early stop: " + !smartSuccess);
+        System.out.println("Num Vertices: " + vertices.length + " - Early stop: " + !smartSuccess);
     }
 
     public UDistributionVertices(int[] support, double[][] vertices) {

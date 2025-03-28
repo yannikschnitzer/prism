@@ -285,10 +285,10 @@ public class ProbModelChecker extends NonProbModelChecker
 			throw new PrismException("Unrecognised operator in R operator");
 
 		// Print out rewards
-		if (prism.getVerbose()) {
-			mainLog.print("\nRewards (non-zero only) for all states:\n");
-			rewards.print(mainLog);
-		}
+//		if (prism.getVerbose()) {
+//			mainLog.print("\nRewards (non-zero only) for all states:\n");
+//			rewards.print(mainLog);
+//		}
 
 		// For =? properties, just return values
 		if (opInfo.isNumeric()) {

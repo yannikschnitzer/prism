@@ -967,10 +967,10 @@ public class ProbModelChecker extends NonProbModelChecker
 		StateValues rews = checkRewardFormula(model, rewards, expr.getExpression(), minMax, statesOfInterest);
 
 		// Print out rewards
-		if (getVerbosity() > 5) {
-			mainLog.print("\nRewards (non-zero only) for all states:\n");
-			rews.print(mainLog);
-		}
+//		if (getVerbosity() > 5) {
+//			mainLog.print("\nRewards (non-zero only) for all states:\n");
+//			rews.print(mainLog);
+//		}
 
 		// For =? properties, just return values; otherwise compare against bound
 		if (!opInfo.isNumeric()) {
