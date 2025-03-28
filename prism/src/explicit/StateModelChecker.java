@@ -1270,6 +1270,7 @@ public class StateModelChecker extends PrismComponent
 		// Store result
 		result.setResult(resObj);
 		result.setAccuracy(resAcc);
+		result.setNumIters(vals.numIters);
 		// Set result explanation (if none or disabled, clear)
 		if (expr.getExplanationEnabled() && resultExpl != null) {
 			result.setExplanation(resultExpl.toLowerCase());

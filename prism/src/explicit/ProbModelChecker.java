@@ -553,7 +553,6 @@ public class ProbModelChecker extends NonProbModelChecker
 		else {
 			res = super.checkExpression(model, expr, statesOfInterest);
 		}
-
 		return res;
 	}
 
@@ -1212,7 +1211,9 @@ public class ProbModelChecker extends NonProbModelChecker
 					+ "s");
 		}
 		result.setStrategy(res.strat);
-		return StateValues.createFromArrayResult(res, model);
+		StateValues resval = StateValues.createFromArrayResult(res, model);
+		resval.numIters = res.numIters;
+		return resval;
 	}
 
 	/**

@@ -50,6 +50,8 @@ public class Result
 	private Strategy<?> strat;
 	// Solution vector (optional)
 	private StateVector vect;
+	// Num iterations
+	private int numIters;
 	
 	/**
 	 * Construct an empty Result object.
@@ -209,5 +211,13 @@ public class Result
 	public String toString()
 	{
 		return result == null ? "null" : result.toString();
+	}
+
+	public int getNumIters() {
+		return numIters;
+	}
+
+	public void setNumIters(int numIters) {
+		this.numIters = numIters;
 	}
 }

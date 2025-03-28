@@ -191,6 +191,7 @@ public class ExperimentRunner {
             writer.write("Composition Type: " + experiment.compositionType + "\n");
             writer.write("Robust Goal: " + experiment.robustSpec + "\n");
             writer.write("Robust Result: " + resultUMDP.getResult() + "\n");
+            writer.write("VI Iterations: " + resultUMDP.getNumIters() + "\n");
             writer.write("DTMC Goal: " + experiment.dtmcSpec + "\n");
             if (resultDTMC != null) writer.write("DTMC Result: " + resultDTMC.getResult() + "\n");
             writer.write("Runtime: " + timer/1000 + "s \n");

@@ -69,9 +69,11 @@ public class StateValues implements StateVector, Iterable<Object>
 	protected int size;
 	/** Computed accuracy of stored values (optional) */
 	public Accuracy accuracy = null;
+
+	public int numIters;
 	
 	// Model info
-	
+
 	/** Corresponding list of State objects */
 	protected List<State> statesList;
 
