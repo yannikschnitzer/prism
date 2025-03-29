@@ -5,7 +5,7 @@ const int N;
 const double eps;
 const double p;
 
-const int div_factor = 8;
+const int div_factor = 10;
 const double p_div = p / div_factor;
 
 formula goal = 1<=r1 & r1<=2 & 2<=c1 & c1<=3 & 1<=r2 & r2<=4 & 3<=c2 & c2<=4;
@@ -24,13 +24,14 @@ module grid1
                              [p-eps,p+eps] : (r1'=r1) & (c1'=c1-1) + [1-2*p-eps,1-2*p+eps] : (r1'=r1) & (c1'=c1+1);
 
   // Multi-Slippery cells
-  [n] (r1 = 5 & c1 = 4) | (r1 = 4 & c1 = 5) | (r1 = 4 & c1 = 4) | (r1 = 5 & c1 = 5) ->
-                                               [p_div-eps,p_div+eps] : (r1'=r1) & (c1'=c1) +
+  [n] (r1 = 5 & c1 = 4)  | (r1 = 4 & c1 = 5) | (r1 = 4 & c1 = 4) | (r1 = 5 & c1 = 5) -> [p_div-eps,p_div+eps] : (r1'=r1) & (c1'=c1) +
                                                [p_div-eps,p_div+eps] : (r1'=r1 - 1) & (c1'=c1-1) +
                                                [p_div-eps,p_div+eps] : (r1'=r1 - 1) & (c1'=c1) +
                                                [p_div-eps,p_div+eps] : (r1'=r1 + 1) & (c1'=c1-1) +
                                                [p_div-eps,p_div+eps] : (r1'=r1 + 2) & (c1'=c1-1) +
                                                [p_div-eps,p_div+eps] : (r1'=r1 + 2) & (c1'=c1-2) +
+                                               [p_div-eps,p_div+eps] : (r1'=r1 + 1) & (c1'=c1-2) +
+                                               [p_div-eps,p_div+eps] : (r1'=r1 + 3) & (c1'=c1-2) +
                                                [p_div-eps,p_div+eps] : (r1'=r1 + 2) & (c1'=c1+2) +
                                                [p_div-eps,p_div+eps] : (r1'=r1) & (c1'=c1-1) +
                                                [1-div_factor*p_div-eps,1-div_factor*p_div+eps] : (r1'=r1) & (c1'=c1+1);
@@ -44,18 +45,6 @@ module grid1
                              [p-eps,p+eps] : (r1'=r1+1) & (c1'=c1) + [1-2*p-eps,1-2*p+eps] : (r1'=r1) & (c1'=c1);
   [e] r1=M-1 & c1<N-1       -> [p-eps,p+eps] : (r1'=r1) & (c1'=c1+1) +
                              [p-eps,p+eps] : (r1'=r1) & (c1'=c1) + [1-2*p-eps,1-2*p+eps] : (r1'=r1-1) & (c1'=c1);
-
-  // Multi-Slippery cells
-  [e] (r1 = 5 & c1 = 4) ->                     [p_div-eps,p_div+eps] : (r1'=r1) & (c1'=c1) +
-                                               [p_div-eps,p_div+eps] : (r1'=r1 - 1) & (c1'=c1-1) +
-                                               [p_div-eps,p_div+eps] : (r1'=r1 - 1) & (c1'=c1) +
-                                               [p_div-eps,p_div+eps] : (r1'=r1 + 1) & (c1'=c1-1) +
-                                               [p_div-eps,p_div+eps] : (r1'=r1 + 2) & (c1'=c1-1) +
-                                               [p_div-eps,p_div+eps] : (r1'=r1 + 2) & (c1'=c1-2) +
-                                               [p_div-eps,p_div+eps] : (r1'=r1 + 2) & (c1'=c1+2) +
-                                               [p_div-eps,p_div+eps] : (r1'=r1) & (c1'=c1-1) +
-                                               [1-div_factor*p_div-eps,1-div_factor*p_div+eps] : (r1'=r1) & (c1'=c1+1);
-
   [e] r1>0 & r1<M-1 & c1=N-1 -> [p-eps,p+eps] : (r1'=r1) & (c1'=c1) +
                              [p-eps,p+eps] : (r1'=r1+1) & (c1'=c1) + [1-2*p-eps,1-2*p+eps] : (r1'=r1-1) & (c1'=c1);
   [e] r1=0 & c1=N-1         -> [1-p-eps,1-p+eps] : (r1'=r1) & (c1'=c1) + [p-eps,p+eps] : (r1'=r1+1) & (c1'=c1);

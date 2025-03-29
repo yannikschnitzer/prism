@@ -83,8 +83,8 @@ public class Experiment {
             }
 
             case LAKE_SWARM_MULTI_SLIP -> {
-                this.modelFile = "../models/lake_multislip/frozen_lake_swarm_eps.prism";
-                this.certainModelFile = "../models/lake_multislip/frozen_lake_swarm_eps_certain.prism";
+                this.modelFile = "../models/lake_multislip_large9/frozen_lake_swarm_eps.prism";
+                this.certainModelFile = "../models/lake_multislip_large9/frozen_lake_swarm_eps_certain.prism";
                 this.robustSpec = "Rminmax=? [ F goal ]";
                 this.dtmcSpec = "R=? [ F goal ]";
 

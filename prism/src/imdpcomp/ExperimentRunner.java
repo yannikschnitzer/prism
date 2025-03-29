@@ -1,8 +1,7 @@
 package imdpcomp;
 
-import explicit.*;
-import explicit.ConstructModel.CompositionType;
 import explicit.Model;
+import explicit.*;
 import parser.Values;
 import parser.ast.ModulesFile;
 import parser.ast.PropertiesFile;
@@ -17,9 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.BitSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static explicit.ConstructModel.CompositionType.*;
 
@@ -194,7 +191,7 @@ public class ExperimentRunner {
             writer.write("VI Iterations: " + resultUMDP.getNumIters() + "\n");
             writer.write("DTMC Goal: " + experiment.dtmcSpec + "\n");
             if (resultDTMC != null) writer.write("DTMC Result: " + resultDTMC.getResult() + "\n");
-            writer.write("Runtime: " + timer/1000 + "s \n");
+            writer.write("Runtime: " + timer / 1000 + "s \n");
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();
