@@ -64,10 +64,10 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
 //        System.out.println("");
 ////
 //        System.out.println("Product Vertices:");
-//        if (smart && !smartSuccess) {
-//            this.vertices = new double[0][0];
-//            return;
-//        }
+        if (smart && !smartSuccess) {
+            this.vertices = new double[0][0];
+            return;
+        }
         this.vertices = multiplyMarginalVertices(marginalVertices);
 //        for (double[] row : this.vertices) {
 //            System.out.println("Row: " + Arrays.toString(row));

@@ -24,7 +24,7 @@ module grid1
                              [p-eps,p+eps] : (r1'=r1) & (c1'=c1-1) + [1-2*p-eps,1-2*p+eps] : (r1'=r1) & (c1'=c1+1);
 
   // Multi-Slippery cells
-  [n] (r1 = 5 & c1 = 4) | (r1 = 4 & c1 = 5)  ->
+  [n] (r1 = 5 & c1 = 4) | (r1 = 4 & c1 = 5) | (r1 = 4 & c1 = 4) ->
                                                [p_div-eps,p_div+eps] : (r1'=r1) & (c1'=c1) +
                                                [p_div-eps,p_div+eps] : (r1'=r1 - 1) & (c1'=c1-1) +
                                                [p_div-eps,p_div+eps] : (r1'=r1 - 1) & (c1'=c1) +

@@ -630,10 +630,10 @@ public class ProbModelChecker extends NonProbModelChecker
 		StateValues probs = checkProbPathFormula(model, expr.getExpression(), minMax, statesOfInterest);
 
 		// Print out probabilities
-		if (getVerbosity() > 5) {
-			mainLog.print("\nProbabilities (non-zero only) for all states:\n");
-			probs.print(mainLog);
-		}
+//		if (getVerbosity() > 5) {
+//			mainLog.print("\nProbabilities (non-zero only) for all states:\n");
+//			probs.print(mainLog);
+//		}
 
 		// For =? properties, just return values; otherwise compare against bound
 		if (!opInfo.isNumeric()) {
@@ -917,7 +917,9 @@ public class ProbModelChecker extends NonProbModelChecker
 			throw new PrismNotSupportedException("Cannot model check " + expr + " for " + model.getModelType() + "s");
 		}
 		result.setStrategy(res.strat);
-		return StateValues.createFromArrayResult(res, model);
+		StateValues resval = StateValues.createFromArrayResult(res, model);
+		resval.numIters = res.numIters;
+		return resval;
 	}
 
 	/**

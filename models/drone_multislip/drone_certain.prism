@@ -1,0 +1,85 @@
+mdp
+
+// Environment Dimensions
+const int MAXX = 8;
+const int MAXY = 8;
+const int MAXZ = 8;
+
+// Disturbance Probability Parameter
+const double p; // must be less than 1/3
+
+// Multi-Slip Constants
+const int div = 9;
+const double p_div = p / div;
+
+// Regions
+
+// Target Region
+formula target = x > MAXX - 2 & y < 2 & z > MAXZ - 2 & x2 > MAXX - 2 & y2 < 2 & z2 > MAXZ - 2;
+
+// Obstacle Regions
+formula crash = obstacle1 | obstacle2 | obstacle3 | obstacle4;
+formula obstacle1 = x >= 3 & x <= 4 & z >= 1 & z <= 2;
+formula obstacle2 = x >= 3 & x <= 4 & y >= 1 & y <= 2;
+formula obstacle3 = x >= 3 & x <= 4 & y >= 3 & y <= 5;
+formula obstacle4 = x >= 3 & x <= 4 & z >= 7 & z <= 8;
+
+formula multi_slip = x >= 1 & x <= 2 & y = 4 & (z = 3 | z = 4);
+
+module drone
+	x : [1..MAXX] init 1;
+	y : [1..MAXY] init 1;
+	z : [1..MAXZ] init 1;
+
+	[front] !multi_slip -> 1 - 3 * p: (x' = min(x + 1, MAXX))
+				+ p : (x' = min(x + 1, MAXX)) & (y' = max(y - 1,1))
+				+ p : (x' = min(x + 1, MAXX)) & (y' = min(y + 1, MAXY))
+				+ p : (x' = x) & (y' = max(y - 2, 1));
+    
+    [front] multi_slip -> 1 - div * p_div: (x' = min(x + 1, MAXX))
+        				+ p_div :(x' = min(x + 1, MAXX)) & (y' = max(y - 1,1))
+        				+ p_div :(x' = min(x + 2, MAXX)) & (y' = max(y - 1,1))
+        				+ p_div :(x' = min(x + 3, MAXX)) & (y' = max(y - 1,1))
+        				+ p_div :(x' = min(x + 1, MAXX)) & (y' = max(y - 2,1))
+        				+ p_div :(x' = min(x + 2, MAXX)) & (y' = max(y - 3,1))
+        				+ p_div :(x' = min(x + 2, MAXX)) & (y' = max(y - 2,1))
+        				+ p_div :(x' = min(x + 3, MAXX)) & (y' = max(y + 2 ,1))
+        				+ p_div :(x' = min(x + 1, MAXX)) & (y' = min(y + 1, MAXY))
+        				+ p_div :(x' = x) & (y' = max(y - 2, 1));
+        				
+	[back] true -> 1 - 3 * p: (x' = max(x - 1, 1))
+				+ p : (x' = max(x - 1, 1)) & (y' = max(y - 1,1))
+				+ p : (x' = max(x - 1, 1)) & (y' = min(y + 1, MAXY))
+				+ p : (x' = x) & (y' = max(y - 2, 1));
+
+	[right] true -> 1 - 2 * p: (y' = min(y + 1, MAXY))
+				+ p: (y' = min(y + 2, MAXY))
+				+ p: (y' = max(y - 1, 1));
+
+	[left] true -> 1 - 2 * p: (y' = max(y - 1, 1))
+				+ p: (y' = max(y - 2, 1))
+				+ p: (y' = min(y + 1, MAXY));
+
+	[up] true -> 1 - 3 * p: (z' = min(z + 1, MAXZ))
+				+ p : (z' = min(z + 1, MAXZ)) & (y' = max(y - 1,1))
+				+ p : (z' = min(z + 1, MAXZ)) & (y' = min(y + 1, MAXY))
+				+ p : (z' = z) & (y' = max(y - 2, 1));
+
+	[down] true -> 1 - 3 * p: (z' = max(z - 1,1))
+				+ p : (z' = max(z - 1,1)) & (y' = max(y - 1,1))
+				+ p : (z' = max(z - 1,1)) & (y' = min(y + 1, MAXY))
+				+ p : (z' = z) & (y' = max(y - 2, 1));
+
+endmodule 
+
+module drone2 = drone [ x=x2, y=y2, z=z2 ] endmodule
+
+
+
+
+
+
+
+
+
+

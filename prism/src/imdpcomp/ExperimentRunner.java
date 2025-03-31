@@ -93,7 +93,7 @@ public class ExperimentRunner {
 
     public static void main(String[] args) {
         ExperimentRunner experimentRunner = new ExperimentRunner();
-        Experiment experiment = new Experiment(Experiment.Model.LAKE_SWARM_MULTI_SLIP);
+        Experiment experiment = new Experiment(Experiment.Model.DRONE_MULTI);
 
         try {
             experimentRunner.runExperimentAllTypes(experiment);
@@ -139,7 +139,7 @@ public class ExperimentRunner {
         timer = System.currentTimeMillis() - timer;
         //System.out.println("Strategy:" + result.getStrategy());
 
-        Result resultDTMC = checkInducedDTMC(experiment, (MDStrategy<Double>) resultUMDP.getStrategy());
+        Result resultDTMC = null;//checkInducedDTMC(experiment, (MDStrategy<Double>) resultUMDP.getStrategy());
         dumpExperiment(experiment, umdp, resultUMDP, resultDTMC, timer);
     }
 
@@ -190,7 +190,7 @@ public class ExperimentRunner {
             writer.write("Robust Result: " + resultUMDP.getResult() + "\n");
             writer.write("VI Iterations: " + resultUMDP.getNumIters() + "\n");
             writer.write("DTMC Goal: " + experiment.dtmcSpec + "\n");
-            if (resultDTMC != null) writer.write("DTMC Result: " + resultDTMC.getResult() + "\n");
+            writer.write("DTMC Result: " + ((resultDTMC != null) ?  resultDTMC.getResult() : "n/a") + "\n");
             writer.write("Runtime: " + timer / 1000 + "s \n");
             writer.close();
         } catch (IOException e) {

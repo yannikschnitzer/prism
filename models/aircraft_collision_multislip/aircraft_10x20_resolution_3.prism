@@ -23,6 +23,10 @@ const double drift2 = 0.05;
 const double drift3 = 0.05;
 // The remaining probability for no drift is: 1 - 2*(drift1+drift2+drift3) = 0.70.
 
+const int multislip_x_adv = 3;
+const int div = 11;
+const double p_div = (1.0 / div);
+
 // Update collision conditions (doubling the thresholds)
 formula xclose = ((x - ax >= 0 & x - ax < 6) | (ax - x >= 0 & ax - x < 6));
 formula yclose = ((y - ay >= 0 & y - ay < 3) | (ay - y >= 0 & ay - y < 3));
@@ -32,7 +36,7 @@ formula yclose = ((y - ay >= 0 & y - ay < 3) | (ay - y >= 0 & ay - y < 3));
 //////////////////////////////////
 module aircraft
     x : [0..maxX] init 0;
-    y : [0..maxY] init 10;
+    y : [0..maxY] init 7;
 
     // [up] action: pilot intends to climb (increase altitude)
     [up] x < maxX ->
@@ -84,7 +88,7 @@ endmodule
 //////////////////////////////////
 module adversary
     ax : [0..maxX] init maxX;
-    ay : [0..maxY] init 10;
+    ay : [0..maxY] init 7;
 
     // [up] action: adversary moves left (decreasing ax) and changes altitude
     [up] ax > 0 ->
@@ -114,14 +118,27 @@ module adversary
          [1 - 2*p - 2*d2 - 2*d3 - eps, 1 - 2*p - 2*d2 - 2*d3 + eps] : (ay' = ay) & (ax' = ax-1);
 
     // [stay] action: adversary stays in the same column but may drift in altitude
-    [stay] ax > 0 ->
-         [drift3-eps, drift3+eps] : (ay' = max(ay-3, 0)) & (ax' = ax-1) +
-         [drift2-eps, drift2+eps] : (ay' = max(ay-2, 0)) & (ax' = ax-1) +
-         [drift1-eps, drift1+eps] : (ay' = max(ay-1, 0)) & (ax' = ax-1) +
-         [0.70-eps, 0.70+eps] : (ay' = ay) & (ax' = ax-1) +
-         [drift1-eps, drift1+eps] : (ay' = min(ay+1, maxY)) & (ax' = ax-1) +
-         [drift2-eps, drift2+eps] : (ay' = min(ay+2, maxY)) & (ax' = ax-1) +
-         [drift3-eps, drift3+eps] : (ay' = min(ay+3, maxY)) & (ax' = ax-1);
+    [stay] ax > 0 & (ax < 3 | ax > 10) ->
+         [p_div-eps, p_div+eps] : (ay' = max(ay-3, 0)) & (ax' = ax-1) +
+         [p_div-eps, p_div+eps] : (ay' = max(ay-2, 0)) & (ax' = ax-1) +
+         [p_div-eps, p_div+eps] : (ay' = max(ay-1, 0)) & (ax' = ax-1) +
+         [p_div-eps, p_div+eps] : (ay' = max(ay-4, 0)) & (ax' = ax-1) +
+         [p_div-eps, p_div+eps] : (ay' = max(ay-5, 0)) & (ax' = ax-1) +
+         [p_div-eps, p_div+eps] : (ay' = ay) & (ax' = ax-1) +
+         [p_div-eps, p_div+eps] : (ay' = min(ay+1, maxY)) & (ax' = ax-1) +
+         [p_div-eps, p_div+eps] : (ay' = min(ay+2, maxY)) & (ax' = ax-1) +
+         [p_div-eps, p_div+eps] : (ay' = min(ay+3, maxY)) & (ax' = ax-1) +
+         [p_div-eps, p_div+eps] : (ay' = min(ay+5, maxY)) & (ax' = ax-1) +
+         [p_div-eps, p_div+eps] : (ay' = min(ay+4, maxY)) & (ax' = ax-1);
+
+    [stay] ax > 0 & ax >= 3 & ax <= 10  ->
+             [drift3-eps, drift3+eps] : (ay' = max(ay-3, 0)) & (ax' = ax-1) +
+             [drift2-eps, drift2+eps] : (ay' = max(ay-2, 0)) & (ax' = ax-1) +
+             [drift1-eps, drift1+eps] : (ay' = max(ay-1, 0)) & (ax' = ax-1) +
+             [0.70-eps, 0.70+eps] : (ay' = ay) & (ax' = ax-1) +
+             [drift1-eps, drift1+eps] : (ay' = min(ay+1, maxY)) & (ax' = ax-1) +
+             [drift2-eps, drift2+eps] : (ay' = min(ay+2, maxY)) & (ax' = ax-1) +
+             [drift3-eps, drift3+eps] : (ay' = min(ay+3, maxY)) & (ax' = ax-1);
 
     [up] ax = 0 -> true;
     [down] ax = 0 -> true;

@@ -26,6 +26,7 @@ public class Experiment {
 
     public enum Model {
         AIRCRAFT,
+        AIRCRAFT_MULTI_SLIP,
         LAKE_SWARM,
         LAKE_SWARM_MULTI_SLIP,
         COIN,
@@ -33,7 +34,13 @@ public class Experiment {
         RABIN,
         CHAIN,
         CHAIN_MULTI,
-        CHAIN_MULTI_SINGLE
+        CHAIN_MULTI_SINGLE,
+        DICE_2,
+        DICE_3,
+        HERMAN_3,
+        DRONE,
+        DRONE_MULTI,
+        DRONE_MULTI_2,
     }
 
     public enum Type {
@@ -62,6 +69,16 @@ public class Experiment {
             case AIRCRAFT -> {
                 this.modelFile = "../models/aircraft_collision/aircraft_10x20_resolution_3.prism";
                 this.certainModelFile = "../models/aircraft_collision/aircraft_10x20_resolution_3_certain.prism";
+                this.robustSpec = "Pmaxmin=? [!\"collision\" U \"goal\"]";
+                this.dtmcSpec = "P=? [!\"collision\" U \"goal\"]";
+
+                // Set Parameter Values
+                this.parameterValues.addValue("eps", 0.02);
+            }
+
+            case AIRCRAFT_MULTI_SLIP -> {
+                this.modelFile = "../models/aircraft_collision_multislip/aircraft_10x20_resolution_3.prism";
+                this.certainModelFile = "../models/aircraft_collision_multislip/aircraft_10x20_resolution_3_certain.prism";
                 this.robustSpec = "Pmaxmin=? [!\"collision\" U \"goal\"]";
                 this.dtmcSpec = "P=? [!\"collision\" U \"goal\"]";
 
@@ -170,6 +187,73 @@ public class Experiment {
                 this.parameterValues.addValue("r", 0.5);
                 this.parameterValues.addValue("eps", 0.02);
             }
+
+            case DICE_2 -> {
+                this.modelFile = "../models/dice/dice2.prism";
+                this.certainModelFile = "../models/dice/dice2_certain.prism";
+                this.robustSpec = "Rminmax=? [ F (s1=7 & s2 = 7) ]";
+                this.dtmcSpec = "R=? [ F (s1=7 & s2 = 7) ]";
+
+                // Set Parameter Values
+                this.parameterValues.addValue("p", 0.4);
+                this.parameterValues.addValue("eps", 0.1);
+            }
+
+            case DICE_3 -> {
+                this.modelFile = "../models/dice/dice3.prism";
+                this.certainModelFile = "../models/dice/dice3_certain.prism";
+                this.robustSpec = "Rminmax=? [ F (s1=7 & s2 = 7 & s3 = 7) ]";
+                this.dtmcSpec = "R=? [ F (s1=7 & s2 = 7 & s3 = 7) ]";
+
+                // Set Parameter Values
+                this.parameterValues.addValue("p", 0.22);
+                this.parameterValues.addValue("eps", 0.1);
+            }
+
+            case HERMAN_3 -> {
+                this.modelFile = "../models/herman/herman7.prism";
+                this.certainModelFile = "../models/herman/herman7_certain.prism";
+                this.robustSpec = "Rminmax=? [ F \"stable\"]";
+                this.dtmcSpec = "R=? [ F \"stable\" ]";
+
+                // Set Parameter Values
+                this.parameterValues.addValue("p", 0.3333333);
+                this.parameterValues.addValue("eps", 0.1);
+            }
+
+            case DRONE -> {
+                this.modelFile = "../models/drone/drone.prism";
+                this.certainModelFile = "../models/drone/drone_certain.prism";
+                this.robustSpec = "Pmaxmin=? [!crash U target]";
+                this.dtmcSpec = "P=? [!crash U target]";
+
+                // Set Parameter Values
+                this.parameterValues.addValue("p", 0.2);
+                this.parameterValues.addValue("eps", 0.1);
+            }
+
+            case DRONE_MULTI -> {
+                this.modelFile = "../models/drone_multislip/drone.prism";
+                this.certainModelFile = "../models/drone_multislip/drone_certain.prism";
+                this.robustSpec = "Pmaxmin=? [!crash U target]";
+                this.dtmcSpec = "P=? [!crash U target]";
+
+                // Set Parameter Values
+                this.parameterValues.addValue("p", 0.3);
+                this.parameterValues.addValue("eps", 0.029);
+            }
+
+            case DRONE_MULTI_2 -> {
+                this.modelFile = "../models/drone_multislip/drone_2.prism";
+                this.certainModelFile = "../models/drone_multislip/drone_certain.prism";
+                this.robustSpec = "Pmaxmin=? [!crash U target]";
+                this.dtmcSpec = "P=? [!crash U target]";
+
+                // Set Parameter Values
+                this.parameterValues.addValue("p", 0.3);
+                this.parameterValues.addValue("eps", 0.03);
+            }
+
 
         }
         return this;
