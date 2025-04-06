@@ -9,9 +9,15 @@ public class Experiment {
     public String modelFile;
     public String certainModelFile; //TODO: replace this with UMDP
     public String dtmcSpec;
+    public String spec;
     public String robustSpec;
+    public String optimisticSpec;
     public Values parameterValues = new Values();
     public Values exactValues = new Values();
+    public boolean optimizations = false;
+    public boolean tieParameters = false;
+    public double error_tolerance = 0.99;
+    public double strategyWeight = 0.9;
 
     public ConstructModel.CompositionType compositionType = ConstructModel.CompositionType.INTERVAL_PRODUCT;
 
@@ -70,6 +76,7 @@ public class Experiment {
                 this.modelFile = "../models/aircraft_collision/aircraft_10x20_resolution_3.prism";
                 this.certainModelFile = "../models/aircraft_collision/aircraft_10x20_resolution_3_certain.prism";
                 this.robustSpec = "Pmaxmin=? [!\"collision\" U \"goal\"]";
+                this.optimisticSpec = "Pmaxmax=? [!\"collision\" U \"goal\"]";
                 this.dtmcSpec = "P=? [!\"collision\" U \"goal\"]";
 
                 // Set Parameter Values
@@ -150,10 +157,13 @@ public class Experiment {
                 this.modelFile = "../models/chain/chain_2.prism";
                 this.certainModelFile = "../models/chain/chain_2_certain.prism";
                 this.robustSpec = "Rminmax=? [F \"goal\"]";
+                this.optimisticSpec = "Rminmin=? [F \"goal\"]";
                 this.dtmcSpec = "R=? [F \"goal\"]";
+                this.spec = "Rmin=? [F \"goal\"]";
+                this.type = Type.REWARD;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("H", 8);
+                this.parameterValues.addValue("H", 3);
                 this.parameterValues.addValue("p", 0.4);
                 this.parameterValues.addValue("q", 0.6);
                 this.parameterValues.addValue("r", 0.5);

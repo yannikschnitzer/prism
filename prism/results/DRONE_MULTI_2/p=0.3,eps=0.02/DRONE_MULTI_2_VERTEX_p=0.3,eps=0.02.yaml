@@ -1,0 +1,12 @@
+Model: DRONE_MULTI_2
+Model File: ../models/drone_multislip/drone_2.prism
+State Space: 262144
+Transitions: 21524529
+Constant Values: p=0.3,eps=0.02
+Composition Type: VERTEX
+Robust Goal: Pmaxmin=? [!crash U target]
+Robust Result: MEMOUT
+VI Iterations: n/a
+DTMC Goal: P=? [!crash U target]
+DTMC Result: n/a
+Runtime: n/a
