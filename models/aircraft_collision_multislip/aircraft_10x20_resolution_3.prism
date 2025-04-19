@@ -1,5 +1,3 @@
-mdp
-
 // Increased grid resolution (twice as large)
 const int maxX = 20;
 const int maxY = 15;

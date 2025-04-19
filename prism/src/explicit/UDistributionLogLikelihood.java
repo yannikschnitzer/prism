@@ -31,7 +31,7 @@ import java.util.BitSet;
 import java.util.Map;
 import java.util.Set;
 
-public class UDistributionLogLikelihood<Value> implements UDistribution<Value>
+public class   UDistributionLogLikelihood<Value> implements UDistribution<Value>
 {
 	// Transition frequencies
 	protected Distribution<Value> frequencies;

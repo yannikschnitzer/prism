@@ -26,6 +26,7 @@ public class PACIntervalEstimator extends MAPEstimator {
     public PACIntervalEstimator(Prism prism, Experiment ex) {
         super(prism, ex);
         error_tolerance = ex.error_tolerance;
+
         this.name = "PAC";
     }
 
@@ -73,9 +74,9 @@ public class PACIntervalEstimator extends MAPEstimator {
             n = tiedStateActionCounts.get(t);
         }
 
-        double confidence_interval = confidenceInterval(t);
-        double lower_bound = Math.max(point - confidence_interval, precision);
-        double upper_bound = Math.min(point + confidence_interval, 1 - precision);
+//        double confidence_interval = confidenceInterval(t);
+//        double lower_bound = Math.max(point - confidence_interval, precision);
+//        double upper_bound = Math.min(point + confidence_interval, 1 - precision);
 
         int m = this.getNumLearnableTransitions();
         Interval<Double> wcc_interval = computeWilsonCC(n, point, error_tolerance / (double) m);
@@ -138,8 +139,6 @@ public class PACIntervalEstimator extends MAPEstimator {
                     if (!this.ex.optimizations) {
                         if (0 < p && p < 1.0) {
                             interval = getTransitionInterval(t);
-                            //System.out.println("Transition:" + t + " Naive Interval: " + interval + " New Interval: " + minIntervals.get(t));
-                            //System.out.println("Triple: " + t + " Interval: " + interval);
                             distrNew.add(sTo, interval);
                             this.intervalsMap.put(t, interval);
                         } else if (p == 1.0) {

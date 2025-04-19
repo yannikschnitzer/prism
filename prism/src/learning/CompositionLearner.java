@@ -28,6 +28,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Orchestrates sampling-based learning of IMDPs.
+ * Builds the parametric MDP, samples execution traces, and dumps robust policy data.
+ */
 public class CompositionLearner {
     Prism prism;
 
@@ -35,8 +39,8 @@ public class CompositionLearner {
 
     int seed = 5;
     int iterations = 1_000_000;
-    int max_episode_length = 100;
-    int multiplier = 2;
+    int max_episode_length = 25;
+    int multiplier = 5;
 
     public CompositionLearner(Prism prism) {
         this.prism = prism;
@@ -46,15 +50,16 @@ public class CompositionLearner {
         CompositionLearner learner = new CompositionLearner(new Prism(new PrismDevNullLog()));
         learner.initializePrism();
 
-        Experiment ex = new Experiment(Experiment.Model.CHAIN);
+        Experiment ex = new Experiment(Experiment.Model.AIRCRAFT);
         MDPSimple<Function> pmdp = learner.buildParamModel(ex);
-        System.out.println(pmdp);
+        //System.out.println(pmdp);
 
         learner.learnIMDP("test", ex, PACIntervalEstimatorOptimistic::new, pmdp, ex.parameterValues, true);
 
         System.out.println("Done");
     }
 
+    // Builds the parametric MDP model from the PRISM definition
     public MDPSimple<Function> buildParamModel(Experiment experiment) {
         try {
             ModulesFile modulesFile = this.prism.parseModelFile(new File(experiment.certainModelFile));
@@ -63,12 +68,6 @@ public class CompositionLearner {
                 prism.setPRISMModelConstants(experiment.parameterValues);
             }
 
-            //Get parametric model
-//            String[] paramNames = new String[]{"p","q"};
-//            String[] paramLowerBounds = new String[]{"0","0"};
-//            String[] paramUpperBounds = new String[]{"1","1"};
-//            //this.prism.setPRISMModelConstants(new Values(), true);
-//            this.prism.setParametric(paramNames, paramLowerBounds, paramUpperBounds);
             this.prism.buildModel();
             MDPSimple<Function> model = (MDPSimple<Function>) this.prism.getBuiltModelExplicit();
 
@@ -79,6 +78,7 @@ public class CompositionLearner {
         }
     }
 
+    // Learns an IMDP by running sampling-based experiments with the specified estimator
     public Pair<List<List<IMDP<Double>>>, List<MDP<Double>>> learnIMDP(String label, Experiment ex, EstimatorConstructor estimatorConstructor, MDPSimple<Function> mdpParam, Values parameterValuation, boolean verification) {
         resetAll(seed);
 
@@ -98,7 +98,6 @@ public class CompositionLearner {
             estimator.setPmdp(mdpParam);
 
             // Iterate and run experiments for each of the sampled parameter vectors
-            //ex.setTieParamters(verification);
             Pair<ArrayList<DataPoint>, ArrayList<IMDP<Double>>> resIMDP = runSampling(ex, estimator, verification);
 
             DataProcessor dp = new DataProcessor();
@@ -111,19 +110,21 @@ public class CompositionLearner {
         return null;
     }
 
-    public Pair<ArrayList<DataPoint>, ArrayList<IMDP<Double>>> runSampling(Experiment ex, Estimator estimator, boolean verifcation) {
-        return runSampling(ex, estimator, 0, verifcation);
+    // Samples episodes until enough data is collected or max iterations reached
+    public Pair<ArrayList<DataPoint>, ArrayList<IMDP<Double>>> runSampling(Experiment ex, Estimator estimator, boolean verification) {
+        return runSampling(ex, estimator, 0, verification);
     }
 
-    public Pair<ArrayList<DataPoint>, ArrayList<IMDP<Double>>> runSampling(Experiment ex, Estimator estimator, int past_iterations, boolean verficiation) {
+    // Samples episodes until enough data is collected or max iterations reached
+    public Pair<ArrayList<DataPoint>, ArrayList<IMDP<Double>>> runSampling(Experiment ex, Estimator estimator, int past_iterations, boolean verification) {
         try {
             MDP<Double> SUL = estimator.getSUL();
 
             if (true/*this.modelStats == null*/) {
-                //this.modelStats = estimator.getModelStats();
                 System.out.println("======");
                 System.out.println(ex.model);
                 System.out.println("======");
+                System.out.println(estimator.getModelStats());
             }
 
             ObservationSampler observationSampler = new ObservationSampler(this.prism, SUL, estimator.getTerminatingStates());
@@ -143,16 +144,19 @@ public class CompositionLearner {
             int samples = 0;
             Strategy samplingStrategy = estimator.buildStrategy();
             for (int i = past_iterations; i < iterations + past_iterations; i++) {
+                // Simulate one episode and collect samples
                 int sampled = observationSampler.simulateEpisode(max_episode_length, samplingStrategy);
                 samples += sampled;
 
+                // Check if enough samples have been collected or if this is the last iteration
                 boolean last_iteration = i == iterations + past_iterations - 1;
                 if (observationSampler.collectedEnoughSamples() || last_iteration) { // || resultIteration(i)
                     estimator.setObservationMaps(observationSampler.getSamplesMap(), observationSampler.getSampleSizeMap());
-                    samplingStrategy = estimator.buildStrategy();
-                    currentResults = estimator.getCurrentResults();
 
-                    if (!ex.tieParameters) { // || (!verficiation && ex.isBayesian())
+                    currentResults = estimator.getCurrentResults();
+                    samplingStrategy = estimator.buildStrategy();
+
+                    if (!ex.tieParameters) { // || (!verification && ex.isBayesian())
                         observationSampler.resetObservationSequence();
                     } else {
                         observationSampler.incrementAccumulatedSamples();
@@ -180,6 +184,7 @@ public class CompositionLearner {
         return null;
     }
 
+    // Initializes the PRISM engine for explicit model checking and strategy generation
     @SuppressWarnings("unchecked")
     public void initializePrism() throws PrismException {
         this.prism = new Prism(new PrismDevNullLog());
@@ -188,6 +193,7 @@ public class CompositionLearner {
         this.prism.setGenStrat(true);
     }
 
+    // Resets the PRISM engine and sets the simulator seed
     public void resetAll(int seed) {
         try {
             initializePrism();
@@ -198,6 +204,7 @@ public class CompositionLearner {
         }
     }
 
+    // Creates the directory path for dumping experimental results
     public String makeOutputDirectory(Experiment ex) {
         String outputPath = String.format("plotting/results/%s/%s/Robust_Policies_WCC/%s/", ex.parameterValues, ex.model.toString(), seed);
         try {

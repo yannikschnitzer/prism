@@ -65,10 +65,8 @@ public class MAPEstimator extends Estimator {
         StateActionPair sa = t.getStateAction();
         HashSet<Integer> successors = successorStatesMap.get(sa);
         for (int successor : successors) {
-            TransitionTriple sas = new TransitionTriple(sa.getState(), sa.getAction(), successor);
-            int alpha = dirichletPriorsMap.get(sas);
             //System.out.println(alpha);
-            denum += alpha;
+            denum += dirichletPriorsMap.get(new TransitionTriple(sa.getState(), sa.getAction(), successor));
             count += 1;
         }
         denum -= count;
@@ -115,33 +113,9 @@ public class MAPEstimator extends Estimator {
         for (TransitionTriple t : this.dirichletPriorsMap.keySet()) {
             if (this.samplesMap.containsKey(t)) {
                 this.dirichletPriorsMap.put(t, this.dirichletPriorsMap.get(t) + this.samplesMap.get(t));
-//                if (this.dirichletPriorsMap.get(t) + this.samplesMap.get(t) > ex.maxMAPStrength) {
-//                    needsNormalization = true;
-//                }
             }
         }
-        if (needsNormalization)
-            normalizePriors();
     }
-
-    public void normalizePriors() {
-        //System.out.println(this.dirichletPriorsMap);
-        int maximum = 0;
-        double scale = 1.0;
-        for (TransitionTriple t : this.dirichletPriorsMap.keySet()) {
-            maximum = Integer.max(maximum, this.dirichletPriorsMap.get(t));
-            //scale = (double) ex.maxMAPStrength / (double) maximum;
-        }
-        for (TransitionTriple t : this.dirichletPriorsMap.keySet()) {
-            double scaledValue = scale * (double) this.dirichletPriorsMap.get(t);
-            int intValue = (int) Math.ceil(scaledValue);
-            if (intValue < 2)
-                intValue = 2;
-            this.dirichletPriorsMap.put(t, intValue);
-        }
-        //System.out.println(this.dirichletPriorsMap);
-    }
-
 
     public Result iterateMDP(boolean robust) throws PrismException {
         return iterateMDP(robust, false);
@@ -156,54 +130,35 @@ public class MAPEstimator extends Estimator {
     }
 
 
-    public Result iterateDTMC() throws PrismException {
-        updatePriors();
-        buildPointIMDP(mdp);
-        MDStrategy strat = computeStrategyFromEstimate(this.estimate);
-        Result resultDTMC = checkDTMC(strat);
-        return resultDTMC;
-    }
+//    public Result iterateDTMC() throws PrismException {
+//        updatePriors();
+//        buildPointIMDP(mdp);
+//        MDStrategy strat = computeStrategyFromEstimate(this.estimate);
+//        Result resultDTMC = checkDTMC(strat);
+//        return resultDTMC;
+//    }
 
     public double[] getCurrentResults() throws PrismException {
         updatePriors();
         buildPointIMDP(mdp);
 
-//        try {
-//            double resconvex = round((Double) modelCheckPointEstimateConvex(true,false).getResult());
-//            System.out.println("Performance Convex MDP: " + resconvex);
-//        } catch (GRBException e) {
-//            throw new RuntimeException(e);
-//        }
-        double resultRobustMDP = round((Double) modelCheckPointEstimate(true, true).getResult());
-        double resultOptimisticMDP = round((Double) modelCheckPointEstimate(false, true).getResult());
+        Result resultRobust = modelCheckPointEstimate(true, true);
+        Result resultOptimistic = modelCheckPointEstimate(false, true);
+        double resultRobustMDP = round((Double) resultRobust.getResult());
+        double resultOptimisticMDP = round((Double) resultOptimistic.getResult());
 
-        MDStrategy robustStrat = computeStrategyFromEstimate(this.estimate, true);
-        MDStrategy optimisticStrat = computeStrategyFromEstimate(this.estimate, false);
+        MDStrategy<Double> robustStrat = (MDStrategy<Double>) resultRobust.getStrategy();
+        MDStrategy<Double> optimisticStrat = (MDStrategy<Double>) resultOptimistic.getStrategy();
+        this.currentStrat = optimisticStrat;
         double resultRobustDTMC = round((Double) checkDTMC(robustStrat).getResult());
         double resultOptimisticDTMC = round((Double) checkDTMC(optimisticStrat).getResult());
+
         double dist = round(this.averageDistanceToSUL());
         List<Double> lbs = List.of(0.0);//this.getLowerBounds();
         List<Double> ubs = List.of(1.0);//this.getUpperBounds();
+
         return new double[]{resultRobustMDP, resultRobustDTMC, dist, lbs.get(0), ubs.get(0), resultOptimisticMDP, resultOptimisticDTMC};
     }
-
-    public MDStrategy computeStrategyFromEstimate(IMDP<Double> estimate) throws PrismException {
-        UMDPModelChecker mc = new UMDPModelChecker(this.prism);
-        mc.setPrecomp(false); //TODO: here
-        mc.setGenStrat(true);
-        mc.setErrorOnNonConverge(false);
-        mc.setMaxIters(100000);
-        PropertiesFile pf = prism.parsePropertiesString(ex.robustSpec);
-        ModulesFileModelGenerator<?> modelGen = ModulesFileModelGenerator.create(modulesFileIMDP, this.prism);
-        modelGen.setSomeUndefinedConstants(estimate.getConstantValues());
-        mc.setModelCheckingInfo(modelGen, pf, modelGen);
-        Expression exprTarget = this.prism.parsePropertiesString(ex.robustSpec).getProperty(0);
-        Result result = mc.check(estimate, exprTarget);
-        MDStrategy strat = (MDStrategy) result.getStrategy();
-        //System.out.println("Strategy = " + strat);    // strat is null
-        return strat;
-    }
-
 
     @Override
     public double averageDistanceToSUL() {
@@ -328,8 +283,11 @@ public class MAPEstimator extends Estimator {
      */
     public Result modelCheckPointEstimate(boolean robust, boolean verbose) throws PrismException {
         UMDPModelChecker mc = new UMDPModelChecker(this.prism);
-        mc.setErrorOnNonConverge(false);
-        PropertiesFile pf = prism.parsePropertiesString(ex.robustSpec);
+        mc.setGenStrat(true);
+        mc.setPrecomp(true);
+        mc.setErrorOnNonConverge(true);
+
+        PropertiesFile pf;
         if (robust)
             pf = prism.parsePropertiesString(ex.robustSpec);
         else

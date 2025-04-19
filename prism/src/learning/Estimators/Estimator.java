@@ -59,6 +59,7 @@ public class Estimator {
     private int numLearnableTransitions = 0;
 
     private MRStrategy uniformStrat;
+    protected MDStrategy currentStrat;
 
     Estimator(Prism prism, Experiment ex)  {
         this.prism = prism;
@@ -385,7 +386,7 @@ public class Estimator {
 
 
     public Strategy buildWeightedOptimisticStrategy(UMDP<Double> estimate, double weight) throws PrismException {
-        MDStrategy optStrat = computeOptimisticStrategyFromEstimate(estimate);
+        MDStrategy optStrat = this.currentStrat != null ? this.currentStrat : computeOptimisticStrategyFromEstimate(this.estimate);
         Strategy uniformStrat = buildUniformStrat();
         MRStrategy strat = new MRStrategy(this.mdp);
         int numStates = this.mdp.getNumStates();
@@ -414,8 +415,8 @@ public class Estimator {
 	public MDStrategy computeStrategyFromEstimate(UMDP<Double> estimate, boolean robust) throws PrismException {
         UMDPModelChecker mc = new UMDPModelChecker(this.prism);
 		mc.setGenStrat(true);
-        mc.setPrecomp(false);
-		mc.setErrorOnNonConverge(false);
+        mc.setPrecomp(true);
+		mc.setErrorOnNonConverge(true);
         //mc.setMaxIters(100000);
 
 		PropertiesFile pf = robust

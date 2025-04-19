@@ -1,8 +1,8 @@
 mdp
 
 // Increased grid resolution (twice as large)
-const int maxX = 20;
-const int maxY = 15;
+const int maxX = 10;
+const int maxY = 10;
 
 // Main parameters: pilot response factor and adversary probability
 const double r   = 0.80795462532; // pilot response factor for intended one-cell move

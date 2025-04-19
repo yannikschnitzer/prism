@@ -78,6 +78,8 @@ public class Experiment {
                 this.robustSpec = "Pmaxmin=? [!\"collision\" U \"goal\"]";
                 this.optimisticSpec = "Pmaxmax=? [!\"collision\" U \"goal\"]";
                 this.dtmcSpec = "P=? [!\"collision\" U \"goal\"]";
+                this.spec = "Pmax=? [!\"collision\" U \"goal\"]";
+                this.type = Type.REACH;
 
                 // Set Parameter Values
                 this.parameterValues.addValue("eps", 0.02);
@@ -163,7 +165,7 @@ public class Experiment {
                 this.type = Type.REWARD;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("H", 3);
+                this.parameterValues.addValue("H", 5);
                 this.parameterValues.addValue("p", 0.4);
                 this.parameterValues.addValue("q", 0.6);
                 this.parameterValues.addValue("r", 0.5);
