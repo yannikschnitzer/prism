@@ -21,7 +21,8 @@ public class MAPEstimator extends Estimator {
     protected HashMap<TransitionTriple, Integer> dirichletPriorsMap;
     protected HashMap<StateActionPair, HashSet<Integer>> successorStatesMap;
 
-    private int distance;
+    // Cache for MAP mode denominator: sum of Dirichlet priors minus one per transition
+    private final TransitionTriple keyTriple = new TransitionTriple(0,"",0);
 
 
     public MAPEstimator(Prism prism, Experiment ex) {
@@ -45,7 +46,6 @@ public class MAPEstimator extends Estimator {
                 final String action = getActionString(mdp, s, i);
                 final StateActionPair sa = new StateActionPair(state, action);
                 HashSet<Integer> successors = new HashSet<>();
-                Distribution<Interval<Double>> distrNew = new Distribution<>(Evaluator.forDoubleInterval());
                 mdp.forEachDoubleTransition(s, i, (int sFrom, int sTo, double p) -> {
                     if (p != 0.0) {
                         final TransitionTriple t = new TransitionTriple(state, action, sTo);
@@ -66,7 +66,8 @@ public class MAPEstimator extends Estimator {
         HashSet<Integer> successors = successorStatesMap.get(sa);
         for (int successor : successors) {
             //System.out.println(alpha);
-            denum += dirichletPriorsMap.get(new TransitionTriple(sa.getState(), sa.getAction(), successor));
+            keyTriple.setAll(sa.getState(), sa.getAction(), successor);
+            denum += dirichletPriorsMap.get(keyTriple);
             count += 1;
         }
         denum -= count;
@@ -98,8 +99,8 @@ public class MAPEstimator extends Estimator {
         int count = 0;
         HashSet<Integer> successors = successorStatesMap.get(sa);
         for (int successor : successors) {
-            TransitionTriple sas = new TransitionTriple(sa.getState(), sa.getAction(), successor);
-            count += dirichletPriorsMap.get(sas);
+            keyTriple.setAll(sa.getState(), sa.getAction(), successor);
+            count += dirichletPriorsMap.get(keyTriple);
         }
         return count;
     }

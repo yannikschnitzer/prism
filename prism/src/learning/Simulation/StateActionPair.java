@@ -23,8 +23,11 @@ public class StateActionPair
 
     @Override
     public int hashCode() {
-        //return Objects.hash(this.s, this.action);
-        return this.toString().hashCode();
+        // start with the state’s own hash…
+        int h = Integer.hashCode(s);
+        // mix in the action’s hash
+        h = 31 * h + action.hashCode();
+        return h;
     }
 
     @Override

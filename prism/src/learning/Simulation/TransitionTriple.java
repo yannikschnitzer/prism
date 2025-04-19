@@ -1,5 +1,7 @@
 package learning.Simulation;
 
+import java.util.Objects;
+
 /**
  * Small class for transition triples (s,a,s')
  */
@@ -12,6 +14,13 @@ public class TransitionTriple {
         this.s = s;
         this.action = action;
         this.successor = successor;
+    }
+
+    public TransitionTriple setAll(int s, String action, int successor) {
+        this.s = s;
+        this.action = action;
+        this.successor = successor;
+        return this;
     }
 
     public int getState() {
@@ -32,21 +41,23 @@ public class TransitionTriple {
 
     @Override
     public int hashCode() {
-        //return Objects.hash(this.s, this.action, this.successor);
-        return this.toString().hashCode();
+        int h = s;
+        h = 31*h + action.hashCode();
+        h = 31*h + successor;
+        return h;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;
-        
+
         if (o == null)
             return false;
 
         if (this.getClass() != o.getClass())
             return false;
-        
+
         TransitionTriple other = (TransitionTriple) o;
         return (this.s == other.getState() && this.action.equals(other.getAction()) && this.successor == other.getSuccessor());
     }

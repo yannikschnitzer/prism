@@ -307,11 +307,7 @@ public class ObservationSampler {
 				this.sampleSizeMap.put(sa, 1);
 			}
 		}
-
 	}
-
-	
-
     
 	/**
 	 * Reset observation sequence
