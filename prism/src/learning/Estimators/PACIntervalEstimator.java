@@ -123,8 +123,8 @@ public class PACIntervalEstimator extends MAPEstimator {
         imdp.setConstantValues(mdp.getConstantValues());
         imdp.setIntervalEvaluator(Evaluator.forDoubleInterval());
 
-        //tieParameters();
-        Map<TransitionTriple, Interval<Double>> minIntervals = Collections.emptyMap(); //computeMinIntervals();
+        tieParameters();
+        Map<TransitionTriple, Interval<Double>> minIntervals = computeMinIntervals();
 
         for (int s = 0; s < numStates; s++) {
             int numChoices = mdp.getNumChoices(s);

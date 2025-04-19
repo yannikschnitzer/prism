@@ -15,7 +15,7 @@ public class Experiment {
     public Values parameterValues = new Values();
     public Values exactValues = new Values();
     public boolean optimizations = false;
-    public boolean tieParameters = false;
+    public boolean tieParameters = true;
     public double error_tolerance = 0.99;
     public double strategyWeight = 0.9;
 

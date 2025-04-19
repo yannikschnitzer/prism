@@ -193,6 +193,7 @@ public class ObservationSampler {
 		}
 		return false;
 	}
+
 	public int getTotalSamples() {
 		int total = 0;
 		for (Map.Entry<StateActionPair, Integer> entry: this.accumulatedSamples.entrySet()){

@@ -11,6 +11,7 @@ import learning.Estimators.Estimator;
 import learning.Estimators.EstimatorConstructor;
 import learning.Estimators.PACIntervalEstimatorOptimistic;
 import learning.Simulation.ObservationSampler;
+import learning.Simulation.TransitionTriple;
 import param.Function;
 import parser.Values;
 import parser.ast.ModulesFile;
@@ -28,6 +29,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Orchestrates sampling-based learning of IMDPs.
@@ -55,7 +57,6 @@ public class CompositionLearner {
 
         // Build the parametric MDP to infer parametric structure
         MDPSimple<Function> pmdp = learner.buildParamModel(ex);
-        System.out.println(pmdp);
 
         learner.learnIMDP("test", ex, PACIntervalEstimatorOptimistic::new, pmdp, ex.parameterValues, true);
 
@@ -104,7 +105,7 @@ public class CompositionLearner {
     }
 
     // Learns an IMDP by running sampling-based experiments with the specified estimator
-    public Pair<List<List<IMDP<Double>>>, List<MDP<Double>>> learnIMDP(String label, Experiment ex, EstimatorConstructor estimatorConstructor, MDPSimple<Function> mdpParam, Values parameterValuation, boolean verification) {
+    public Pair<List<List<IMDP<Double>>>, List<MDP<Double>>> learnIMDP(String label, Experiment ex, EstimatorConstructor estimatorConstructor, MDPSimple<Function> pmdp, Values parameterValuation, boolean verification) {
         resetAll(seed);
 
         System.out.println("\n\n\n\n%------\n% Learning IMDP\n%  Model: " + ex.model + "\n%  max_episode_length: "
@@ -117,10 +118,14 @@ public class CompositionLearner {
             prism.loadPRISMModel(modulesFile);
 
             ex.parameterValues = parameterValuation;
+
+            List<List<TransitionTriple>> similarTransitions = ParameterTyer.getSimilarTransitions(pmdp);
+            Map<Function, List<TransitionTriple>> functionMap = ParameterTyer.getFunctionMap(pmdp);
+
             Estimator estimator = estimatorConstructor.get(this.prism, ex);
-            System.out.println("Constant Values:" + estimator.getSUL().getConstantValues());
+            estimator.setFunctionMap(functionMap);
+            estimator.setSimilarTransitions(similarTransitions);;
             estimator.set_experiment(ex);
-            estimator.setPmdp(mdpParam);
 
             // Iterate and run experiments for each of the sampled parameter vectors
             Pair<ArrayList<DataPoint>, ArrayList<IMDP<Double>>> resIMDP = runSampling(ex, estimator, verification);
@@ -193,7 +198,7 @@ public class CompositionLearner {
                     if (this.verbose) System.out.println();
 
                     //if (last_iteration || ex.resultIteration(i)) {
-                    if(true) {
+                    if(false) {
                         results.add(new DataPoint(samples, i + 1, currentResults));
                         estimates.add(estimator.getEstimate());
                     }

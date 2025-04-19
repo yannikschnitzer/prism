@@ -88,8 +88,7 @@ public class Estimator {
         this.buildModulesFiles();
         this.tryBuildSUL();
 
-        //if (this.ex.optimizations) {
-        if (false) {
+        if (this.ex.optimizations) {
             this.processTransitions();
         } else {
             this.processTransitionsNaive();

@@ -32,17 +32,18 @@ public class StateActionPair
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        
-        if (o == null)
-            return false;
+        // 1) same object?
+        if (this == o) return true;
 
-        if (this.getClass() != o.getClass())
-            return false;
-        
-        StateActionPair other = (StateActionPair) o;
-        return (this.s == other.getState()) && this.action.equals(other.getAction());
+        // 2) instanceof is null‑safe and avoids getClass()
+        if (!(o instanceof StateActionPair other)) return false;
+
+        // 3) quick reject if we’ve cached a different hash
+        if (this.hashCode() != other.hashCode()) return false;
+
+        // 4) direct field comparisons (no getters)
+        return this.s == other.s
+                && this.action.equals(other.action);
     }
 
     @Override
