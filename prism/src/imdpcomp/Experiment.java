@@ -83,6 +83,8 @@ public class Experiment {
 
                 // Set Parameter Values
                 this.parameterValues.addValue("eps", 0.02);
+                this.parameterValues.addValue("r", 0.807);
+                this.parameterValues.addValue("p",0.2);
             }
 
             case AIRCRAFT_MULTI_SLIP -> {

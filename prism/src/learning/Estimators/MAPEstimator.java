@@ -130,15 +130,6 @@ public class MAPEstimator extends Estimator {
         return result;
     }
 
-
-//    public Result iterateDTMC() throws PrismException {
-//        updatePriors();
-//        buildPointIMDP(mdp);
-//        MDStrategy strat = computeStrategyFromEstimate(this.estimate);
-//        Result resultDTMC = checkDTMC(strat);
-//        return resultDTMC;
-//    }
-
     public double[] getCurrentResults() throws PrismException {
         updatePriors();
         buildPointIMDP(mdp);

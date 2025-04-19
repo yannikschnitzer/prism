@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -39,7 +40,7 @@ public class CompositionLearner {
 
     int seed = 5;
     int iterations = 1_000_000;
-    int max_episode_length = 25;
+    int max_episode_length = 10;
     int multiplier = 5;
 
     public CompositionLearner(Prism prism) {
@@ -51,8 +52,10 @@ public class CompositionLearner {
         learner.initializePrism();
 
         Experiment ex = new Experiment(Experiment.Model.AIRCRAFT);
+
+        // Build the parametric MDP to infer parametric structure
         MDPSimple<Function> pmdp = learner.buildParamModel(ex);
-        //System.out.println(pmdp);
+        System.out.println(pmdp);
 
         learner.learnIMDP("test", ex, PACIntervalEstimatorOptimistic::new, pmdp, ex.parameterValues, true);
 
@@ -64,14 +67,36 @@ public class CompositionLearner {
         try {
             ModulesFile modulesFile = this.prism.parseModelFile(new File(experiment.certainModelFile));
             prism.loadPRISMModel(modulesFile);
-            if (experiment.parameterValues != null) {
-                prism.setPRISMModelConstants(experiment.parameterValues);
-            }
 
+            List<String> namesList = experiment.parameterValues.getNames();
+            String[] paramNames = namesList.toArray(new String[0]);
+
+            int n = paramNames.length;
+            String[] paramLowerBounds = new String[n];
+            String[] paramUpperBounds = new String[n];
+            Arrays.fill(paramLowerBounds, "0");
+            Arrays.fill(paramUpperBounds, "1");
+
+            this.prism.setPRISMModelConstants(new Values(), true);
+            this.prism.setParametric(paramNames, paramLowerBounds, paramUpperBounds);
             this.prism.buildModel();
-            MDPSimple<Function> model = (MDPSimple<Function>) this.prism.getBuiltModelExplicit();
+            return (MDPSimple<Function>) this.prism.getBuiltModelExplicit();
 
-            return model;
+        } catch (PrismException | FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Builds the hidden true MDP from which sample trajectories are generated
+    public MDPSimple<Double> buildSamplingModel(Experiment experiment) {
+        try {
+            ModulesFile modulesFile = this.prism.parseModelFile(new File(experiment.certainModelFile));
+            prism.loadPRISMModel(modulesFile);
+            if (experiment.parameterValues != null) {
+                prism.setPRISMModelConstants(experiment.parameterValues, true);
+            }
+            this.prism.buildModel();
+            return (MDPSimple<Double>) this.prism.getBuiltModelExplicit();
 
         } catch (PrismException | FileNotFoundException e) {
             throw new RuntimeException(e);

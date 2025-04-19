@@ -54,7 +54,7 @@ public class Estimator {
     protected UMDP<Double> estimate;
     protected UMDP<Double> convex_estimate;
 
-    private HashSet<TransitionTriple> transitionsOfInterest;
+    private final HashSet<TransitionTriple> transitionsOfInterest;
     protected HashMap<TransitionTriple, Double> trueProbabilitiesMap;
     private int numLearnableTransitions = 0;
 
@@ -304,8 +304,8 @@ public class Estimator {
 
 
     public double maxIntervalPointDistance(Interval<Double> interval, double p) {
-		double lower = (Double) interval.getLower();
-		double upper = (Double) interval.getUpper();
+		double lower = interval.getLower();
+		double upper = interval.getUpper();
 		double d1 = Math.abs(p-lower);
 		double d2 = Math.abs(p-upper);
 		double maxDist = Double.max(d1, d2);
@@ -410,13 +410,11 @@ public class Estimator {
         return strat;
     }
 
-
-
 	public MDStrategy computeStrategyFromEstimate(UMDP<Double> estimate, boolean robust) throws PrismException {
         UMDPModelChecker mc = new UMDPModelChecker(this.prism);
 		mc.setGenStrat(true);
         mc.setPrecomp(true);
-		mc.setErrorOnNonConverge(true);
+		mc.setErrorOnNonConverge(false);
         //mc.setMaxIters(100000);
 
 		PropertiesFile pf = robust
