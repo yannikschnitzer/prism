@@ -292,7 +292,7 @@ public class ModulesFileModelGenerator<Value> implements ModelGenerator<Value>, 
 		varList = modulesFile.createVarList();
 		labelList = modulesFile.getLabelList();
 		labelNames = labelList.getLabelNames();
-		
+
 		// Create data structures for exploring model
 		if (!modelType.uncertain()) {
 			updater = new Updater<Value>(modulesFile, varList, eval, parent);
@@ -588,6 +588,16 @@ public class ModulesFileModelGenerator<Value> implements ModelGenerator<Value>, 
 			return transitions.getChoice(i).getProbability(offset);
 		} else {
 			throw new PrismException("Cannot get scalar transition probability for " + getModelType());
+		}
+	}
+
+	@Override
+	public List<List<Value>> getDistributions(int i) throws PrismException {
+		TransitionList<Value> transitions = getTransitionListScalars();
+		if (transitions != null) {
+			return ((ChoiceListFlexi<Value>) transitions.getChoice(i)).dists;
+		} else {
+			throw new PrismException("Cannot get transition probability interval for " + getModelType());
 		}
 	}
 

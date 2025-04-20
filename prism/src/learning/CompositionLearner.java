@@ -57,7 +57,7 @@ public class CompositionLearner {
 
         // Build the parametric MDP to infer parametric structure
         MDPSimple<Function> pmdp = learner.buildParamModel(ex);
-
+        System.out.println(pmdp);
         learner.learnIMDP("test", ex, PACIntervalEstimatorOptimistic::new, pmdp, ex.parameterValues, true);
 
         System.out.println("Done");

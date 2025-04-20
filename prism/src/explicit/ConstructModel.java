@@ -384,6 +384,8 @@ public class ConstructModel extends PrismComponent
 				if (!justReach) {
 					if (modelType == ModelType.MDP) {
 						if (distinguishActions) {
+							System.out.println(modelGen.getDistributions(i));
+							System.out.println(distr);
 							mdp.addActionLabelledChoice(src, distr, modelGen.getChoiceAction(i));
 						} else {
 							mdp.addChoice(src, distr);

@@ -14,7 +14,7 @@ public class Experiment {
     public String optimisticSpec;
     public Values parameterValues = new Values();
     public Values exactValues = new Values();
-    public boolean tieParameters = false;
+    public boolean tieParameters = true;
     public double error_tolerance = 0.99;
     public double strategyWeight = 0.9;
 
