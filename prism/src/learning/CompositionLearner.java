@@ -42,7 +42,7 @@ public class CompositionLearner {
 
     int seed = 5;
     int iterations = 1_000_000;
-    int max_episode_length = 10;
+    int max_episode_length = 20;
     int multiplier = 5;
 
     public CompositionLearner(Prism prism) {

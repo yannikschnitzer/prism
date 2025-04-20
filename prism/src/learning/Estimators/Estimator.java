@@ -87,18 +87,6 @@ public class Estimator {
         this.ex = ex;
         this.buildModulesFiles();
         this.tryBuildSUL();
-
-        if (this.ex.optimizations) {
-            this.processTransitions();
-        } else {
-            this.processTransitionsNaive();
-        }
-    }
-
-    public void set_experiment_naive(Experiment ex) {
-        this.ex = ex;
-        this.buildModulesFiles();
-        this.tryBuildSUL();
         this.processTransitionsNaive();
     }
 
@@ -151,6 +139,10 @@ public class Estimator {
         return action;
     }
 
+    public UMDP<Double> getEstimate() {
+        return this.estimate;
+    }
+
     private void tryBuildSUL() {
         try {
             this.buildSUL();
@@ -158,10 +150,6 @@ public class Estimator {
             System.out.println("Error: " + e.getMessage());
             System.exit(1);
         }
-    }
-
-    public UMDP<Double> getEstimate() {
-        return this.estimate;
     }
 
     /**
@@ -172,15 +160,17 @@ public class Estimator {
         if (ex.parameterValues != null) {
             this.prism.setPRISMModelConstants(ex.parameterValues);
         }
+
         this.prism.setStoreVector(true);
         Result result = this.prism.modelCheck(ex.spec);
         System.out.println("result : " + result);
+
         MDP<Double> mdp = (MDP<Double>) this.prism.getBuiltModelExplicit();
-        //System.out.println("Model checking SUL:\n" + this.spec + " : " + result.getResultAndAccuracy());
+
         this.SULoptimum = result.getResultAndAccuracy();
         this.sulOpt = (Double) result.getResult();
-        //this.ex.setTrueOpt(this.sulOpt);
         this.mdp = mdp;
+
         ArrayList<Integer> initialStates = (ArrayList<Integer>) this.mdp.getInitialStates();
         if (ex.type == Experiment.Type.REACH)
         {
@@ -237,17 +227,13 @@ public class Estimator {
         this.numLearnableTransitions = 0;
         this.transitionsOfInterest.clear();
         int numStates = this.mdp.getNumStates();
-        //System.out.println("Processing Transitions");
+
         for (int s = 0; s < numStates; s++) {
-            //System.out.println("State:" + s);
             int numChoices = this.mdp.getNumChoices(s);
             final int state = s;
             for (int i = 0 ; i < numChoices; i++) {
-                //System.out.println("Choice:" + i);
                 final String action = getActionString(this.mdp, s, i);
-                //System.out.println("Action String:" + action);
                 this.mdp.forEachDoubleTransition(s, i, (int sFrom, int sTo, double p)->{
-                    //System.out.println("State to:" + sTo + " with Prob: " + p);
                     if (0 < p && p < 1.0) {
                         this.numLearnableTransitions += 1;
                         this.transitionsOfInterest.add(new TransitionTriple(state, action, sTo));
@@ -256,50 +242,51 @@ public class Estimator {
                 });
             }
         }
+        if (ex.tieParameters) this.numLearnableTransitions = this.functionMap.keySet().size();
     }
 
-    public void processTrueTransitions() {
-        //this.numLearnableTransitions = 0;
-        //this.transitionsOfInterest.clear();
-        int numStates = this.mdp.getNumStates();
-        //System.out.println("Processing Transitions");
-        for (int s = 0; s < numStates; s++) {
-            //System.out.println("State:" + s);
-            int numChoices = this.mdp.getNumChoices(s);
-            final int state = s;
-            for (int i = 0 ; i < numChoices; i++) {
-                //System.out.println("Choice:" + i);
-                final String action = getActionString(this.mdp, s, i);
-                //System.out.println("Action String:" + action);
-                this.mdp.forEachDoubleTransition(s, i, (int sFrom, int sTo, double p)->{
-                    //System.out.println("State to:" + sTo + " with Prob: " + p);
-                    if (0 < p && p < 1.0) {
-                        //this.numLearnableTransitions += 1;
-                        //this.transitionsOfInterest.add(new TransitionTriple(state, action, sTo));
-                        this.trueProbabilitiesMap.put(new TransitionTriple(state, action, sTo), p);
-                    }
-                });
-            }
-        }
-    }
-
-    public void processTransitions() {
-        this.numLearnableTransitions = 0;
-        this.transitionsOfInterest.clear();
-
-        for (Function function : this.functionMap.keySet()) {
-            List<TransitionTriple> transitions = this.functionMap.get(function);
-            if (function.isConstant()) {
-                for (TransitionTriple transition : transitions) {
-                    this.constantMap.put(transition, function.asBigRational().doubleValue());
-                }
-            } else {
-                this.numLearnableTransitions += transitions.size();
-                this.transitionsOfInterest.addAll(transitions);
-            }
-        }
-        processTrueTransitions();
-    }
+//    public void processTrueTransitions() {
+//        //this.numLearnableTransitions = 0;
+//        //this.transitionsOfInterest.clear();
+//        int numStates = this.mdp.getNumStates();
+//        //System.out.println("Processing Transitions");
+//        for (int s = 0; s < numStates; s++) {
+//            //System.out.println("State:" + s);
+//            int numChoices = this.mdp.getNumChoices(s);
+//            final int state = s;
+//            for (int i = 0 ; i < numChoices; i++) {
+//                //System.out.println("Choice:" + i);
+//                final String action = getActionString(this.mdp, s, i);
+//                //System.out.println("Action String:" + action);
+//                this.mdp.forEachDoubleTransition(s, i, (int sFrom, int sTo, double p)->{
+//                    //System.out.println("State to:" + sTo + " with Prob: " + p);
+//                    if (0 < p && p < 1.0) {
+//                        //this.numLearnableTransitions += 1;
+//                        //this.transitionsOfInterest.add(new TransitionTriple(state, action, sTo));
+//                        this.trueProbabilitiesMap.put(new TransitionTriple(state, action, sTo), p);
+//                    }
+//                });
+//            }
+//        }
+//    }
+//
+//    public void processTransitions() {
+//        this.numLearnableTransitions = 0;
+//        this.transitionsOfInterest.clear();
+//        System.out.println("Here");
+//        for (Function function : this.functionMap.keySet()) {
+//            List<TransitionTriple> transitions = this.functionMap.get(function);
+//            if (function.isConstant()) {
+//                for (TransitionTriple transition : transitions) {
+//                    this.constantMap.put(transition, function.asBigRational().doubleValue());
+//                }
+//            } else {
+//                this.numLearnableTransitions += transitions.size();
+//                this.transitionsOfInterest.addAll(transitions);
+//            }
+//        }
+//        processTrueTransitions();
+//    }
 
 
     public double maxIntervalPointDistance(Interval<Double> interval, double p) {

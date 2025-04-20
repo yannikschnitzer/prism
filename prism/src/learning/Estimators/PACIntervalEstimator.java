@@ -9,7 +9,6 @@ import imdpcomp.Experiment;
 import learning.Simulation.StateActionPair;
 import learning.Simulation.TransitionTriple;
 import org.apache.commons.statistics.distribution.NormalDistribution;
-import param.Function;
 import prism.Evaluator;
 import prism.Prism;
 
@@ -62,7 +61,6 @@ public class PACIntervalEstimator extends MAPEstimator {
         double point;
         int n;
 
-
         if (!this.ex.tieParameters) {
             point = mode(t);
             n = getStateActionCount(t.getStateAction());
@@ -74,43 +72,9 @@ public class PACIntervalEstimator extends MAPEstimator {
             n = tiedStateActionCounts.get(t);
         }
 
-//        double confidence_interval = confidenceInterval(t);
-//        double lower_bound = Math.max(point - confidence_interval, precision);
-//        double upper_bound = Math.min(point + confidence_interval, 1 - precision);
-
         int m = this.getNumLearnableTransitions();
-        Interval<Double> wcc_interval = computeWilsonCC(n, point, error_tolerance / (double) m);
 
-        return wcc_interval;
-
-        //return new Interval<>(lower_bound, upper_bound);
-    }
-
-    /**
-     * Get minimum (width) interval for each transition.
-     *
-     * @return Map from transition to minimal interval
-     */
-    public Map<TransitionTriple, Interval<Double>> computeMinIntervals() {
-        Map<Function, List<TransitionTriple>> functionMap = this.getFunctionMap();
-        Map<TransitionTriple, Interval<Double>> minIntervalMap = new HashMap<>();
-
-        for (Function func : functionMap.keySet()) {
-            List<TransitionTriple> transitions = functionMap.get(func);
-            List<Interval<Double>> intervals = new ArrayList<>();
-
-            for (TransitionTriple transition : transitions) {
-                intervals.add(getTransitionInterval(transition));
-            }
-
-            Interval<Double> minInterval = Collections.min(intervals, Comparator.comparingDouble(interval -> interval.getUpper() - interval.getLower()));
-
-            for (TransitionTriple transition : transitions) {
-                minIntervalMap.put(transition, minInterval);
-            }
-        }
-
-        return minIntervalMap;
+        return computeWilsonCC(n, point, error_tolerance / (double) m);
     }
 
     @Override
@@ -123,8 +87,7 @@ public class PACIntervalEstimator extends MAPEstimator {
         imdp.setConstantValues(mdp.getConstantValues());
         imdp.setIntervalEvaluator(Evaluator.forDoubleInterval());
 
-        tieParameters();
-        Map<TransitionTriple, Interval<Double>> minIntervals = computeMinIntervals();
+        if (ex.tieParameters) tieParameters();
 
         for (int s = 0; s < numStates; s++) {
             int numChoices = mdp.getNumChoices(s);
@@ -136,24 +99,12 @@ public class PACIntervalEstimator extends MAPEstimator {
                 mdp.forEachDoubleTransition(s, i, (int sFrom, int sTo, double p) -> {
                     TransitionTriple t = new TransitionTriple(state, action, sTo);
                     Interval<Double> interval;
-                    if (!this.ex.optimizations) {
-                        if (0 < p && p < 1.0) {
-                            interval = getTransitionInterval(t);
-                            distrNew.add(sTo, interval);
-                            this.intervalsMap.put(t, interval);
-                        } else if (p == 1.0) {
-                            interval = new Interval<Double>(p, p);
-                            distrNew.add(sTo, interval);
-                            this.intervalsMap.put(t, interval);
-                        }
-                    } else {
-                        if (!this.constantMap.containsKey(t)) {
-                            interval = minIntervals.get(t);
-                        } else {
-                            p = this.constantMap.get(t);
-                            interval = new Interval<Double>(p, p);
-                        }
-
+                    if (0 < p && p < 1.0) {
+                        interval = getTransitionInterval(t);
+                        distrNew.add(sTo, interval);
+                        this.intervalsMap.put(t, interval);
+                    } else if (p == 1.0) {
+                        interval = new Interval<Double>(p, p);
                         distrNew.add(sTo, interval);
                         this.intervalsMap.put(t, interval);
                     }
@@ -186,34 +137,6 @@ public class PACIntervalEstimator extends MAPEstimator {
         double averageDist = totalDist / super.trueProbabilitiesMap.keySet().size();
         return averageDist;
 
-    }
-
-    protected Double confidenceInterval(TransitionTriple t) {
-        return computePACBound(t);
-    }
-
-    private Double computePACBound(TransitionTriple t) {
-        double alpha = error_tolerance; // probability of error (i.e. 1-alpha is probability of correctly specifying the interval)
-        int m = this.getNumLearnableTransitions();
-
-        int n;
-        if (!this.ex.tieParameters) {
-            n = getStateActionCount(t.getStateAction());
-        } else {
-            n = tiedStateActionCounts.get(t);
-        }
-        alpha = (error_tolerance * (1.0 / (double) m));///((double) this.mdp.getNumChoices(t.getStateAction().getState())); // distribute error over all transitions
-
-        double delta = Math.sqrt((Math.log(2 / alpha)) / (2 * n));
-
-        Interval<Double> wccinterval = computeWilsonCC(n, mode(t), alpha);
-        if (n < -10000) {
-            System.out.println("Transition:" + t + " n : " + n);
-            System.out.println("Hoeffdings-Interval: " + new Interval<Double>(mode(t) - delta, mode(t) + delta));
-            System.out.println("Wilson-Interval: " + wccinterval);
-        }
-
-        return delta;
     }
 
     private Interval<Double> computeWilsonCC(double n, double p, double delta) {

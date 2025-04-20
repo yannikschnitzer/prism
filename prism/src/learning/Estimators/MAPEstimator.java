@@ -5,7 +5,6 @@ import explicit.*;
 import imdpcomp.Experiment;
 import learning.Simulation.StateActionPair;
 import learning.Simulation.TransitionTriple;
-import parser.ast.Expression;
 import parser.ast.ModulesFile;
 import parser.ast.PropertiesFile;
 import prism.*;
@@ -162,8 +161,7 @@ public class MAPEstimator extends Estimator {
             double dist = Math.abs(value - p);
             totalDist += dist;
         }
-        double averageDist = totalDist / super.trueProbabilitiesMap.keySet().size();
-        return averageDist;
+        return totalDist / super.trueProbabilitiesMap.keySet().size();
     }
 
 
@@ -191,8 +189,7 @@ public class MAPEstimator extends Estimator {
 
     public Result getInitialResult(boolean verbose) throws PrismException {
         buildPointIMDP(mdp);
-        Result result = modelCheckPointEstimate(true, false);
-        return result;
+        return modelCheckPointEstimate(true, false);
     }
 
     public double[] getInitialResults() throws PrismException {
@@ -209,7 +206,6 @@ public class MAPEstimator extends Estimator {
         List<Double> ubs = List.of(1.0);//this.getUpperBounds();
         return new double[]{resultRobustMDP, resultRobustDTMC, dist, lbs.get(0), ubs.get(0), resultOptimisticMDP, resultOptimisticDTMC};
     }
-
 
     /**
      * Builds a point estimate IMDP of point intervals with laplace smoothing for the parameter epsilon
@@ -233,7 +229,6 @@ public class MAPEstimator extends Estimator {
                 final String action = getActionString(mdp, s, i);
 
                 Distribution<Interval<Double>> distrNew = new Distribution<>(Evaluator.forDoubleInterval());
-
                 mdp.forEachDoubleTransition(s, i, (int sFrom, int sTo, double p) -> {
                     TransitionTriple t = new TransitionTriple(state, action, sTo);
                     Interval<Double> interval;
