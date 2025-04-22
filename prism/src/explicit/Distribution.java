@@ -26,12 +26,8 @@
 
 package explicit;
 
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import common.iterable.FunctionalIterable;
 import common.iterable.FunctionalIterator;
@@ -51,6 +47,12 @@ public class Distribution<Value> implements FunctionalIterable<Entry<Integer, Va
 	
 	/** Evaluator for manipulating probability values in the distribution (of type {@code Value}) */
 	protected final Evaluator<Value> eval;
+
+	/** Marginals */
+	private List<List<Value>> marginals = new ArrayList<>();
+	public int[] supportArray;
+	public int[] supportArrayUnique;
+	public Map<Integer, List<Integer>> supportMarginalsMap;
 
 	/**
 	 * Create an empty distribution
@@ -354,5 +356,80 @@ public class Distribution<Value> implements FunctionalIterable<Entry<Integer, Va
 		}
 		s += "\n";
 		return s;
+	}
+
+	public List<List<Value>> getMarginals() {
+		return marginals;
+	}
+
+	public void setMarginals(List<List<Value>> marginals) {
+		this.marginals = marginals;
+	}
+
+	public List<Value> multiplyMarginals() {
+		List<Value> mutliplies;
+		mutliplies = marginals.getFirst();
+		for (int i = 1; i < marginals.size(); i++) {
+			mutliplies = multiply2marginals(mutliplies, marginals.get(i));
+		}
+		return mutliplies;
+	}
+
+	public List<Value> multiply2marginals(List<Value> a, List<Value> b) {
+		List<Value> prod = new ArrayList<>();
+		for(Value f : b) {
+			for(Value g : a) {
+				Value fnew = eval.multiply(f, g);
+				prod.add(fnew);
+			}
+		}
+		return prod;
+	}
+
+
+	/**
+	 * Returns a map from 0..(N–1) → the corresponding
+	 * “index tuple” (1‑based) of each combination.
+	 */
+	public void calculateSupportMarginalMap() {
+		int dims = marginals.size();
+
+		// 1) record lengths and compute total combinations
+		int[] sizes = new int[dims];
+		int total = 1;
+		for (int i = 0; i < dims; i++) {
+			sizes[i] = marginals.get(i).size();
+			total = Math.multiplyExact(total, sizes[i]);
+		}
+
+		// 2) prepare result map with exact capacity
+		Map<Integer, List<Integer>> result = new LinkedHashMap<>(total);
+
+		// 3) for each linear index, decode into a dims‑length tuple
+		for (int idx = 0; idx < total; idx++) {
+			int remainder = idx;
+			// build the 1‑based combination
+			List<Integer> combo = new ArrayList<>(dims);
+
+			for (int dim = 0; dim < dims; dim++) {
+				int size = sizes[dim];
+				int value = (remainder % size);  // 0..size-1
+				combo.add(value);
+				remainder /= size;
+			}
+			result.put(supportArrayUnique[idx], combo);
+		}
+
+		System.out.println("Map: " + result);
+		this.supportMarginalsMap = result;
+	}
+
+	public int[] getSupportArray() {
+		return supportArray;
+	}
+
+	public void setSupportArray(int[] supportArray) {
+		this.supportArray = supportArray;
+		this.supportArrayUnique = Arrays.stream(supportArray).distinct().toArray();
 	}
 }

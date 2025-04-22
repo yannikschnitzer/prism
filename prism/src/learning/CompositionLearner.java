@@ -1,9 +1,6 @@
 package learning;
 
-import explicit.IMDP;
-import explicit.MDP;
-import explicit.MDPSimple;
-import explicit.UMDP;
+import explicit.*;
 import imdpcomp.Experiment;
 import learning.Data.DataPoint;
 import learning.Data.DataProcessor;
@@ -13,12 +10,11 @@ import learning.Estimators.PACIntervalEstimatorOptimistic;
 import learning.Simulation.ObservationSampler;
 import learning.Simulation.TransitionTriple;
 import param.Function;
+import param.FunctionFactory;
+import param.FunctionFactory.*;
 import parser.Values;
 import parser.ast.ModulesFile;
-import prism.Pair;
-import prism.Prism;
-import prism.PrismDevNullLog;
-import prism.PrismException;
+import prism.*;
 import strat.Strategy;
 
 import java.io.File;
@@ -57,7 +53,23 @@ public class CompositionLearner {
 
         // Build the parametric MDP to infer parametric structure
         MDPSimple<Function> pmdp = learner.buildParamModel(ex);
-        System.out.println(pmdp);
+        //System.out.println(pmdp);
+        for (int i = 0; i < pmdp.getNumStates(); i++) {
+            System.out.println("State: " + i);
+            for (int j = 0; j < pmdp.getNumChoices(i); j++) {
+                System.out.println("Choice: " + pmdp.getAction(i,j));
+                Distribution<Function> c = pmdp.getChoice(i,j);
+                List<List<Function>> marginals = c.getMarginals();
+                System.out.println("Marginal:" + marginals);
+                System.out.println("Multiplied out:" + c.multiplyMarginals());
+                //System.out.println("Support: " + Arrays.toString(c.getSupportArray()) + " Size: " + c.getSupportArray().length);
+                System.out.println("Support (no dup): " + Arrays.toString(c.supportArrayUnique));
+                c.calculateSupportMarginalMap();
+                System.out.println("Distribution: " + c + " Size: " + c.getSupport().size());
+
+            }
+            System.out.println("");
+        }
         learner.learnIMDP("test", ex, PACIntervalEstimatorOptimistic::new, pmdp, ex.parameterValues, true);
 
         System.out.println("Done");
@@ -123,6 +135,7 @@ public class CompositionLearner {
             Map<Function, List<TransitionTriple>> functionMap = ParameterTyer.getFunctionMap(pmdp);
 
             Estimator estimator = estimatorConstructor.get(this.prism, ex);
+            estimator.setPmdp(pmdp);
             estimator.setFunctionMap(functionMap);
             estimator.setSimilarTransitions(similarTransitions);;
             estimator.set_experiment(ex);

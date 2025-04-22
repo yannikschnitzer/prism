@@ -592,7 +592,7 @@ public class ModulesFileModelGenerator<Value> implements ModelGenerator<Value>, 
 	}
 
 	@Override
-	public List<List<Value>> getDistributions(int i) throws PrismException {
+	public List<List<Value>> getMarginals(int i) throws PrismException {
 		TransitionList<Value> transitions = getTransitionListScalars();
 		if (transitions != null) {
 			return ((ChoiceListFlexi<Value>) transitions.getChoice(i)).dists;

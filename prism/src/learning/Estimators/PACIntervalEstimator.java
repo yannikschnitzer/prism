@@ -9,6 +9,7 @@ import imdpcomp.Experiment;
 import learning.Simulation.StateActionPair;
 import learning.Simulation.TransitionTriple;
 import org.apache.commons.statistics.distribution.NormalDistribution;
+import param.Function;
 import prism.Evaluator;
 import prism.Prism;
 
@@ -95,6 +96,13 @@ public class PACIntervalEstimator extends MAPEstimator {
             for (int i = 0; i < numChoices; i++) {
                 final String action = getActionString(mdp, s, i);
 
+                Distribution<Function> dist = pmdp.getChoice(s, i);
+
+                if (s == 1 || s == 0) {
+                    System.out.println("State: " + state + " Action: " + action);
+                    getMarginalIntervals(dist);
+                }
+
                 Distribution<Interval<Double>> distrNew = new Distribution<>(Evaluator.forDoubleInterval());
                 mdp.forEachDoubleTransition(s, i, (int sFrom, int sTo, double p) -> {
                     TransitionTriple t = new TransitionTriple(state, action, sTo);
@@ -121,6 +129,21 @@ public class PACIntervalEstimator extends MAPEstimator {
         this.estimate = imdp;
 
         return imdp;
+    }
+
+    public List<List<Interval<Double>>> getMarginalIntervals(Distribution<Function> pdist) {
+
+        List<List<Function>> marginals = pdist.getMarginals();
+        List<List<Integer>> marginalCounts = new ArrayList<>(marginals.size());
+
+        for (List<Function> marginal : marginals) {
+            marginalCounts.add(new ArrayList<>(Collections.nCopies(marginal.size(), 0)));
+        }
+
+        System.out.println("Marginals: " + marginals);
+        System.out.println("MarginalCounts: " + marginalCounts);
+
+        return null;
     }
 
     @Override

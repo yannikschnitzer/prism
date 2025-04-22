@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import parser.EvaluateContext;
 import parser.EvaluateContextState;
 import parser.State;
 import parser.VarList;
@@ -385,9 +386,27 @@ public class Updater<Value> extends PrismComponent
 			sum  = eval.add(sum, p);
 			list = new ArrayList<Update>();
 			list.add(ups.getUpdate(i));
+
 			ch.add(p, list);
 			ch.dists.getFirst().add(p);
+
+			// Merge
+			EvaluateContext ec = new EvaluateContextState(state);
+			//ec.setEvaluationMode(EvaluateContext.EvalMode.EXACT);
+			State newstate = new State(state);
+			Update up = ups.getUpdate(i);
+			up.update(state, newstate, true, varList);
+
+			if (ch.distMap.containsKey(newstate)) {
+				Value val = ch.distMap.get(newstate);
+				ch.distMap.put(newstate, eval.add(val, p));
+			} else {
+				ch.distMap.put(newstate, p);
+			}
 		}
+		ch.dists.clear();
+		ch.dists.add(ch.distMap.values().stream().toList());
+
 		// For now, PRISM treats empty (all zero probs/rates) distributions as an error.
 		// Later, when errors in symbolic model construction are improved, this might be relaxed.
 		if (ch.size() == 0) {

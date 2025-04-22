@@ -87,7 +87,6 @@ public class ConstructModel extends PrismComponent
         }
     }
 
-
 	/** How to resolve interval parallel composition */
 	public enum CompositionType {
 		INTERVAL_PRODUCT,
@@ -384,8 +383,10 @@ public class ConstructModel extends PrismComponent
 				if (!justReach) {
 					if (modelType == ModelType.MDP) {
 						if (distinguishActions) {
-							System.out.println(modelGen.getDistributions(i));
-							System.out.println(distr);
+                            assert distr != null;
+                            distr.setMarginals(modelGen.getMarginals(i));
+							distr.setSupportArray(suppArray);
+
 							mdp.addActionLabelledChoice(src, distr, modelGen.getChoiceAction(i));
 						} else {
 							mdp.addChoice(src, distr);

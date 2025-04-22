@@ -242,7 +242,8 @@ public class Estimator {
                 });
             }
         }
-        if (ex.tieParameters) this.numLearnableTransitions = this.functionMap.keySet().size();
+
+        if (ex.tieParameters) this.numLearnableTransitions = this.functionMap.keySet().stream().filter(f -> !f.isConstant()).toList().size();
     }
 
 //    public void processTrueTransitions() {

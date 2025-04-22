@@ -75,6 +75,8 @@ module aircraft
     [up] x = maxX -> true;
     [down] x = maxX -> true;
     [stay] x = maxX -> true;
+
+    [test] x = 0 -> p : (x' = 1) + (1-p) : (x'= 0);
 endmodule
 
 //////////////////////////////////
@@ -126,6 +128,14 @@ module adversary
     [down] ax = 0 -> true;
     [stay] ax = 0 -> true;
 endmodule
+
+//module test
+//    a : [0..1] init 0;
+//    [up] true -> p : (a' = 1) + (1-p) : (a' = 0);
+//    [down] true -> p : (a' = 1) + (1-p) : (a' = 0);
+//    [stay] true -> p : (a' = 1) + (1-p) : (a' = 0);
+//endmodule
+
 
 //////////////////////////////////
 // Rewards and Labels

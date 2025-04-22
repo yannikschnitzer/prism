@@ -26,8 +26,7 @@
 
 package simulator;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import parser.State;
 import parser.VarList;
@@ -62,6 +61,7 @@ public class ChoiceListFlexi<Value> implements Choice<Value>
 	protected List<Value> probability;
 
 	protected List<List<Value>> dists = new ArrayList<>();
+	protected Map<State, Value> distMap = new LinkedHashMap<>();
 	
 	// For real-time models, the clock guard,
 	// i.e., an expression over clock variables

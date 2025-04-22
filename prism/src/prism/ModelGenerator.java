@@ -284,9 +284,10 @@ public interface ModelGenerator<Value> extends ModelInfo
 		return null;
 	}
 
-	public default List<List<Value>> getDistributions(int i) throws PrismException {
+	public default List<List<Value>> getMarginals(int i) throws PrismException {
 		return null;
-}
+	}
+
 	public default List<List<Interval<Value>>> getIntervalDistribution(int i) throws PrismException{
 		return null;
 	}
