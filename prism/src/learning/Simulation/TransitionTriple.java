@@ -8,18 +8,24 @@ import java.util.Objects;
 public class TransitionTriple {
     private int s;
     private String action;
+    private int action_hash;
     private int successor;
+    private StateActionPair stateActionPair;
 
     public TransitionTriple(int s, String action, int successor) {
         this.s = s;
         this.action = action;
+        this.action_hash = action.hashCode();
         this.successor = successor;
+        this.stateActionPair = new StateActionPair(this.s, this.action);;
     }
 
     public TransitionTriple setAll(int s, String action, int successor) {
         this.s = s;
         this.action = action;
+        this.action_hash = action.hashCode();
         this.successor = successor;
+        this.stateActionPair = new StateActionPair(this.s, this.action);
         return this;
     }
 
@@ -32,7 +38,7 @@ public class TransitionTriple {
     }
 
     public StateActionPair getStateAction() {
-        return new StateActionPair(this.s, this.action);
+        return this.stateActionPair;
     }
 
     public int getSuccessor() {
@@ -42,7 +48,7 @@ public class TransitionTriple {
     @Override
     public int hashCode() {
         int h = s;
-        h = 31*h + action.hashCode();
+        h = 31*h + action_hash;
         h = 31*h + successor;
         return h;
     }

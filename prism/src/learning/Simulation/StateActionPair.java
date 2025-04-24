@@ -5,12 +5,14 @@ package learning.Simulation;
  */
 public class StateActionPair 
 {
-    private int s;
-    private String action;
+    private final int s;
+    private final String action;
+    private final int action_hash;
 
     public StateActionPair(int s, String action) {
         this.s = s;
         this.action = action;
+        this.action_hash = action.hashCode();
     }
 
     public int getState() {
@@ -26,7 +28,7 @@ public class StateActionPair
         // start with the state’s own hash…
         int h = Integer.hashCode(s);
         // mix in the action’s hash
-        h = 31 * h + action.hashCode();
+        h = 31 * h + action_hash;
         return h;
     }
 

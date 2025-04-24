@@ -5,6 +5,7 @@ import explicit.*;
 import imdpcomp.Experiment;
 import learning.Simulation.StateActionPair;
 import learning.Simulation.TransitionTriple;
+import org.apache.commons.lang3.NotImplementedException;
 import parser.ast.ModulesFile;
 import parser.ast.PropertiesFile;
 import prism.*;
@@ -28,7 +29,7 @@ public class MAPEstimator extends Estimator {
         super(prism, ex);
         this.dirichletPriorsMap = new HashMap<>();
         this.successorStatesMap = new HashMap<>();
-        this.setPriors(10);
+        this.setPriors(2);
         this.name = "MAP";
     }
 
@@ -57,7 +58,7 @@ public class MAPEstimator extends Estimator {
         }
     }
 
-    public Double mode(TransitionTriple t) {
+    public double mode(TransitionTriple t) {
         int num = dirichletPriorsMap.get(t) - 1;
         int denum = 0;
         int count = 0;
@@ -132,6 +133,7 @@ public class MAPEstimator extends Estimator {
     public double[] getCurrentResults() throws PrismException {
         updatePriors();
         buildPointIMDP(mdp);
+        //buildMarginalUMDP(mdp);
 
         Result resultRobust = modelCheckPointEstimate(true, true);
         Result resultOptimistic = modelCheckPointEstimate(false, true);
@@ -260,6 +262,10 @@ public class MAPEstimator extends Estimator {
     protected Interval<Double> getTransitionInterval(TransitionTriple t) {
         double point = mode(t);
         return new Interval<>(point, point);
+    }
+
+    public UMDP<Double> buildMarginalUMDP(MDP<Double> mdp) {
+        throw new NotImplementedException("Only implemented for PAC UMDP Learning");
     }
 
     /**

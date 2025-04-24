@@ -52,7 +52,7 @@ public class Estimator {
     protected HashSet<Integer> rew0InfStates;
 
     protected UMDP<Double> estimate;
-    protected UMDP<Double> convex_estimate;
+    protected UMDP<Double> marginalEstimate;
 
     private final HashSet<TransitionTriple> transitionsOfInterest;
     protected HashMap<TransitionTriple, Double> trueProbabilitiesMap;
@@ -243,7 +243,7 @@ public class Estimator {
             }
         }
 
-        if (ex.tieParameters) this.numLearnableTransitions = this.functionMap.keySet().stream().filter(f -> !f.isConstant()).toList().size();
+        if (ex.tieParameters) this.numLearnableTransitions = this.functionMap.keySet().size();
     }
 
 //    public void processTrueTransitions() {
