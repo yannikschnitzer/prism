@@ -62,6 +62,8 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 	protected int maxNumDistrs;
 	protected boolean maxNumDistrsOk;
 
+	private int numMarginals = -1;
+
 	// Constructors
 
 	/**
@@ -524,6 +526,23 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 		}
 		return -1;
 	}
+
+	public int getNumMarginals() {
+		int num_marginals = 0;
+		if (this.numMarginals == -1) {
+			for (int i = 0; i < this.getNumStates(); i++) {
+				for (int j = 0; j < this.getNumChoices(i); j++) {
+					Distribution<Value> c = this.getChoice(i, j);
+					for (List<Value> marginal : c.getMarginals()) {
+						num_marginals += marginal.size();
+					}
+				}
+			}
+			this.numMarginals = num_marginals;
+		}
+		return this.numMarginals;
+	}
+
 
 	// Standard methods
 

@@ -25,7 +25,7 @@ public class TransitionTriple {
         this.action = action;
         this.action_hash = action.hashCode();
         this.successor = successor;
-        this.stateActionPair = new StateActionPair(this.s, this.action);
+        //this.stateActionPair = new StateActionPair(this.s, this.action);
         return this;
     }
 

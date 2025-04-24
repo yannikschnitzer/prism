@@ -420,7 +420,7 @@ public class Distribution<Value> implements FunctionalIterable<Entry<Integer, Va
 			result.put(supportArrayUnique[idx], combo);
 		}
 
-		System.out.println("Map: " + result);
+		//System.out.println("Map: " + result);
 		this.supportMarginalsMap = result;
 	}
 

@@ -133,12 +133,17 @@ public class MAPEstimator extends Estimator {
     public double[] getCurrentResults() throws PrismException {
         updatePriors();
         buildPointIMDP(mdp);
-        //buildMarginalUMDP(mdp);
+        buildMarginalUMDP(mdp);
 
         Result resultRobust = modelCheckPointEstimate(true, true);
         Result resultOptimistic = modelCheckPointEstimate(false, true);
         double resultRobustMDP = round((Double) resultRobust.getResult());
         double resultOptimisticMDP = round((Double) resultOptimistic.getResult());
+
+        Result resultRobustMarginal = modelCheckMarginalEstimate(true, true);
+        Result resultOptimisticMarginal = modelCheckMarginalEstimate(false, true);
+        double resultRobustMDPMarginal = round((Double) resultRobustMarginal.getResult());
+        double resultOptimisticMDPMarginal = round((Double) resultOptimisticMarginal.getResult());
 
         MDStrategy<Double> robustStrat = (MDStrategy<Double>) resultRobust.getStrategy();
         MDStrategy<Double> optimisticStrat = (MDStrategy<Double>) resultOptimistic.getStrategy();
@@ -146,11 +151,12 @@ public class MAPEstimator extends Estimator {
         double resultRobustDTMC = round((Double) checkDTMC(robustStrat).getResult());
         double resultOptimisticDTMC = round((Double) checkDTMC(optimisticStrat).getResult());
 
-        double dist = round(this.averageDistanceToSUL());
-        List<Double> lbs = List.of(0.0);//this.getLowerBounds();
-        List<Double> ubs = List.of(1.0);//this.getUpperBounds();
+        MDStrategy<Double> robustStratMarginal = (MDStrategy<Double>) resultRobustMarginal.getStrategy();
+        double resultRobustDTMCMarginal = round((Double) checkDTMC(robustStratMarginal).getResult());
 
-        return new double[]{resultRobustMDP, resultRobustDTMC, dist, lbs.get(0), ubs.get(0), resultOptimisticMDP, resultOptimisticDTMC};
+        System.out.println("Performance on MDPs with marginal policy: " + resultRobustDTMCMarginal);
+
+        return new double[]{resultRobustMDP, resultRobustDTMC, resultRobustMDPMarginal, resultRobustDTMCMarginal};
     }
 
     @Override
@@ -196,17 +202,18 @@ public class MAPEstimator extends Estimator {
 
     public double[] getInitialResults() throws PrismException {
         buildPointIMDP(mdp);
-        double resultRobustMDP = round((Double) modelCheckPointEstimate(true, false).getResult());
-        double resultOptimisticMDP = round((Double) modelCheckPointEstimate(false, false).getResult());
-        MDStrategy robustStrat = computeStrategyFromEstimate(this.estimate, true);
-        MDStrategy optimisticStrat = computeStrategyFromEstimate(this.estimate, false);
+        buildMarginalUMDP(mdp);
 
+        double resultRobustMDP = round((Double) modelCheckPointEstimate(true, false).getResult());
+        MDStrategy robustStrat = computeStrategyFromEstimate(this.estimate, true);
         double resultRobustDTMC = round((Double) checkDTMC(robustStrat).getResult());
-        double resultOptimisticDTMC = round((Double) checkDTMC(optimisticStrat).getResult());
-        double dist = round(this.averageDistanceToSUL());
-        List<Double> lbs = List.of(0.0);//this.getLowerBounds();
-        List<Double> ubs = List.of(1.0);//this.getUpperBounds();
-        return new double[]{resultRobustMDP, resultRobustDTMC, dist, lbs.get(0), ubs.get(0), resultOptimisticMDP, resultOptimisticDTMC};
+
+        Result resultRobustMarginal = modelCheckMarginalEstimate(true, true);
+        double resultRobustMDPMarginal = round((Double) resultRobustMarginal.getResult());
+        MDStrategy<Double> robustStratMarginal = (MDStrategy<Double>) resultRobustMarginal.getStrategy();
+        double resultRobustDTMCMarginal = round((Double) checkDTMC(robustStratMarginal).getResult());
+
+        return new double[]{resultRobustMDP, resultRobustDTMC, resultRobustMDPMarginal, resultRobustDTMCMarginal};
     }
 
     /**
@@ -292,6 +299,32 @@ public class MAPEstimator extends Estimator {
         Result result = mc.check(this.estimate, pf.getProperty(0));
         if (verbose) {
             System.out.println("\nModel checking point estimate MDP:");
+            System.out.println((robust ? ex.robustSpec : ex.optimisticSpec) + " : " + result.getResultAndAccuracy());
+        }
+        return result;
+    }
+
+    /**
+     * Model check the marginal estimate stored in the class
+     */
+    public Result modelCheckMarginalEstimate(boolean robust, boolean verbose) throws PrismException {
+        UMDPModelChecker mc = new UMDPModelChecker(this.prism);
+        mc.setGenStrat(true);
+        mc.setPrecomp(true);
+        mc.setErrorOnNonConverge(true);
+
+        PropertiesFile pf;
+        if (robust)
+            pf = prism.parsePropertiesString(ex.robustSpec);
+        else
+            pf = prism.parsePropertiesString(ex.optimisticSpec);
+
+        ModulesFileModelGenerator<?> modelGen = ModulesFileModelGenerator.create(modulesFileIMDP, this.prism);
+        modelGen.setSomeUndefinedConstants(this.marginalEstimate.getConstantValues());
+        mc.setModelCheckingInfo(modelGen, pf, modelGen);
+        Result result = mc.check(this.marginalEstimate, pf.getProperty(0));
+        if (verbose) {
+            System.out.println("\nModel checking marginal estimate MDP:");
             System.out.println((robust ? ex.robustSpec : ex.optimisticSpec) + " : " + result.getResultAndAccuracy());
         }
         return result;

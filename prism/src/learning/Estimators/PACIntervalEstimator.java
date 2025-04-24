@@ -1,5 +1,6 @@
 package learning.Estimators;
 
+import com.gurobi.gurobi.GRBModel;
 import common.Interval;
 import explicit.*;
 import imdpcomp.Experiment;
@@ -18,6 +19,13 @@ public class PACIntervalEstimator extends MAPEstimator {
     protected HashMap<TransitionTriple, Double> tiedModes = new HashMap<>();
     protected HashMap<TransitionTriple, Integer> tiedTransitionCounts = new HashMap<>();
     protected HashMap<TransitionTriple, Integer> tiedStateActionCounts = new HashMap<>();
+
+    protected final Map<String, double[][]> verticesCache = new HashMap<>();
+    protected final Map<String, Boolean> successCache = new HashMap<>();
+    protected final Map<String, GRBModel> modelChache = new HashMap<>();
+
+    UDistributionVertices<Double> distrUncVert = null;
+    UDistributionLinearProgram<Double> distUncMcCormick = null;
 
     NormalDistribution distribution = NormalDistribution.of(0, 1);
 
@@ -64,6 +72,11 @@ public class PACIntervalEstimator extends MAPEstimator {
         umdp.setStatesList(mdp.getStatesList());
         umdp.setConstantValues(mdp.getConstantValues());
 
+        // Clear caches since new marginals have arrived
+        verticesCache.clear();
+        successCache.clear();
+        modelChache.clear();
+
         if (ex.tieParameters) tieParameters();
 
         for (int s = 0; s < numStates; s++) {
@@ -72,9 +85,9 @@ public class PACIntervalEstimator extends MAPEstimator {
             for (int i = 0; i < numChoices; i++) {
                 Distribution<Function> pdist = pmdp.getChoice(s, i);
                 List<List<Interval<Double>>> marginalIntervals = getMarginalIntervals(s, i);
-                UDistributionVertices<Double> vertexDist = new UDistributionVertices<>(marginalIntervals, pdist.supportArrayUnique, false);
+                UDistribution<Double> udist = constructMarginalDist(marginalIntervals, pdist.supportArrayUnique, false);
 
-                umdp.addActionLabelledChoice(s, vertexDist, getActionString(mdp, s, i));
+                umdp.addActionLabelledChoice(s, udist, getActionString(mdp, s, i));
             }
         }
 
@@ -85,6 +98,27 @@ public class PACIntervalEstimator extends MAPEstimator {
         this.marginalEstimate = umdp;
 
         return umdp;
+    }
+
+    public UDistribution<Double> constructMarginalDist(List<List<Interval<Double>>> marginals, int[] supportArray, boolean smart) {
+
+        switch (ex.compositionType) {
+            case VERTEX -> {
+                String key = marginals.toString();
+
+                if (verticesCache.containsKey(key)) {
+                    distrUncVert = new UDistributionVertices<>(supportArray, verticesCache.get(key));
+                } else {
+                    distrUncVert = new UDistributionVertices<>(marginals, supportArray, false);
+                    verticesCache.put(key, distrUncVert.vertices);
+                }
+
+                return distrUncVert;
+            }
+            default -> {
+                throw new IllegalArgumentException("Invalid composition type: " + ex.compositionType);
+            }
+        }
     }
 
     @Override
@@ -168,6 +202,7 @@ public class PACIntervalEstimator extends MAPEstimator {
             } else {
                 for (int j = 0; j < sz; j++) {
                     sub.add(getMarginalInterval(counts[k][j], sac));
+
                 }
             }
 
@@ -224,7 +259,7 @@ public class PACIntervalEstimator extends MAPEstimator {
     }
 
     protected Interval<Double> getMarginalInterval(int count, int sacount) {
-        int m = this.getNumLearnableTransitions();
+        int m = this.pmdp.getNumMarginals();
         double point = (double) count / (double) sacount;
         return computeWilsonCC(sacount, point, error_tolerance / (double) m);
     }

@@ -53,22 +53,22 @@ public class CompositionLearner {
 
         // Build the parametric MDP to infer parametric structure
         MDPSimple<Function> pmdp = learner.buildParamModel(ex);
-        //System.out.println(pmdp);
+
+       //System.out.println(pmdp);
         for (int i = 0; i < pmdp.getNumStates(); i++) {
-            System.out.println("State: " + i);
+            //System.out.println("State: " + i);
             for (int j = 0; j < pmdp.getNumChoices(i); j++) {
-                System.out.println("Choice: " + pmdp.getAction(i,j));
+                //System.out.println("Choice: " + pmdp.getAction(i,j));
                 Distribution<Function> c = pmdp.getChoice(i,j);
                 List<List<Function>> marginals = c.getMarginals();
-                System.out.println("Marginal:" + marginals);
-                System.out.println("Multiplied out:" + c.multiplyMarginals());
+                //System.out.println("Marginal:" + marginals);
+                //System.out.println("Multiplied out:" + c.multiplyMarginals());
                 //System.out.println("Support: " + Arrays.toString(c.getSupportArray()) + " Size: " + c.getSupportArray().length);
-                System.out.println("Support (no dup): " + Arrays.toString(c.supportArrayUnique));
+                //System.out.println("Support (no dup): " + Arrays.toString(c.supportArrayUnique));
                 c.calculateSupportMarginalMap();
-                System.out.println("Distribution: " + c + " Size: " + c.getSupport().size());
-
+                //System.out.println("Distribution: " + c + " Size: " + c.getSupport().size());
             }
-            System.out.println("");
+            //System.out.println("");
         }
         learner.learnIMDP("test", ex, PACIntervalEstimatorOptimistic::new, pmdp, ex.parameterValues, true);
 
@@ -182,7 +182,7 @@ public class CompositionLearner {
             ArrayList<UMDP<Double>> estimates = new ArrayList<>();
             if (past_iterations == 0) {
                 results.add(new DataPoint(0, past_iterations, currentResults));
-                estimates.add(estimator.getEstimate());
+                //estimates.add(estimator.getEstimate());
             }
             int samples = 0;
             Strategy samplingStrategy = estimator.buildStrategy();
@@ -209,6 +209,8 @@ public class CompositionLearner {
                     if (this.verbose) System.out.println("Performance on MDPs (J): " + currentResults[1]);
                     if (this.verbose) System.out.println("Performance Guarantee on IMDPs (J̃): " + currentResults[0]);
                     if (this.verbose) System.out.println();
+
+                    results.add(new DataPoint(samples, i + 1, currentResults));
 
                     //if (last_iteration || ex.resultIteration(i)) {
                     if(false) {
