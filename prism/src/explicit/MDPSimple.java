@@ -27,15 +27,12 @@
 
 package explicit;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
 
 import io.ExplicitModelImporter;
+import parser.State;
 import prism.Evaluator;
 import prism.PrismException;
 
@@ -63,6 +60,8 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 	protected boolean maxNumDistrsOk;
 
 	private int numMarginals = -1;
+
+	public List<HashMap<State, List<Integer>>> marginalStateTyingList = new ArrayList<>();
 
 	// Constructors
 

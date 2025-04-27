@@ -39,6 +39,7 @@ import common.Interval;
 import parser.State;
 import parser.Values;
 import parser.VarList;
+import parser.ast.ModulesFile;
 import prism.ModelGenerator;
 import prism.ModelType;
 import prism.Prism;
@@ -75,6 +76,8 @@ public class ConstructModel extends PrismComponent
 	protected final Map<String, double[][]> verticesCache = new HashMap<>();
 	protected final Map<String, Boolean> successCache = new HashMap<>();
 	protected final Map<String, GRBModel> modelChache = new HashMap<>();
+
+	protected final List<HashMap<State, List<Integer>>> marginalStateTyingList = new ArrayList<>();
 
 	GRBEnv env;
     {
@@ -275,6 +278,11 @@ public class ConstructModel extends PrismComponent
 	        ((ModelExplicit<Value>) modelSimple).setVarList(varList);
 		}
 
+		// Initialise maps for parameter-tying of marginal states
+		for (int k = 0; k < modelGen.getModulesFile().getNumModules(); k++) {
+			this.marginalStateTyingList.add(new HashMap<>());
+		}
+
 		// Initialise states storage
 		states = new IndexedSet<State>(true);
 		explore = new LinkedList<State>();
@@ -294,8 +302,11 @@ public class ConstructModel extends PrismComponent
 			// (they are stored in order found so know index is src+1)
 			state = explore.removeFirst();
 			src++;
+
 			// Explore all choices/transitions from this state
 			modelGen.exploreState(state);
+			tieMarginalStates(modelGen, state, src);
+
 			// Look at each outgoing choice in turn
 			nc = modelGen.getNumChoices();
 			for (i = 0; i < nc; i++) {
@@ -536,6 +547,8 @@ public class ConstructModel extends PrismComponent
 				} else {
 					model = sortStates ? new MDPSimple<>(mdp, permut) : mdp;
 				}
+                assert model instanceof MDPSimple<Value>;
+                ((MDPSimple<Value>) model).marginalStateTyingList = marginalStateTyingList;
 				break;
 			case POMDP:
 				model = sortStates ? new POMDPSimple<>(pomdp, permut) : pomdp;
@@ -619,6 +632,19 @@ public class ConstructModel extends PrismComponent
 		// Attach labels/bitsets
 		for (int j = 0; j < numLabels; j++) {
 			model.addLabel(modelGen.getLabelName(j), bitsets[j]);
+		}
+	}
+
+	private <Value> void tieMarginalStates(ModelGenerator<Value> modelGen, State state, int index) {
+		ModulesFile modulesFile = modelGen.getModulesFile();
+
+		int base = 0;
+		for (int i = 0; i < modulesFile.getNumModules(); i++) {
+			int D = modulesFile.getModule(i).getNumDeclarations();
+			State marginalState = state.subState(base, base + D);
+			if (!this.marginalStateTyingList.get(i).containsKey(marginalState)) this.marginalStateTyingList.get(i).put(marginalState, new ArrayList<>());
+			this.marginalStateTyingList.get(i).get(marginalState).add(index);
+			base += D;
 		}
 	}
 

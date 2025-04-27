@@ -712,6 +712,10 @@ public class ModulesFileModelGenerator<Value> implements ModelGenerator<Value>, 
 		}
 		return sObs;
 	}
+
+	public ModulesFile getModulesFile() {
+		return this.modulesFile;
+	}
 	
 	// Methods for RewardGenerator interface
 

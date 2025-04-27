@@ -13,7 +13,7 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
     int[] support;
     HashSet<Integer> supportSet;
     public double [][] vertices;
-    List<List<Interval<Value>>> marginals;
+    public List<List<Interval<Value>>> marginals;
 
     protected int smartThreshholdMarginal = 20000;
     protected int smartThreshholdProduct = 20000;
@@ -285,6 +285,10 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
         double[] vectProj = new double[support.length];
         for (int i = 0; i < vectProj.length; i++) {
             vectProj[i] = vect[support[i]];
+        }
+
+        if(vertices.length == 0) {
+            System.out.println("No vertices found: Marginals: "+ marginals);
         }
 
         double opt = innerMultiply(vectProj, vertices[0]);

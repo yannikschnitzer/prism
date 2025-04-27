@@ -10,6 +10,7 @@ import learning.Estimators.PACIntervalEstimatorOptimistic;
 import learning.Simulation.ObservationSampler;
 import learning.Simulation.TransitionTriple;
 import param.Function;
+import parser.State;
 import parser.Values;
 import parser.ast.ModulesFile;
 import prism.*;
@@ -20,10 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Orchestrates sampling-based learning of IMDPs.
@@ -51,6 +49,10 @@ public class CompositionLearner {
 
         // Build the parametric MDP to infer parametric structure
         MDPSimple<Function> pmdp = learner.buildParamModel(ex);
+
+        for (HashMap<State, List<Integer>> map : pmdp.marginalStateTyingList) {
+            System.out.println(map.keySet());
+        }
 
        //System.out.println(pmdp);
         for (int i = 0; i < pmdp.getNumStates(); i++) {

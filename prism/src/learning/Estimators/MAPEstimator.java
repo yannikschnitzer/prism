@@ -212,7 +212,6 @@ public class MAPEstimator extends Estimator {
         double resultRobustMDPMarginal = round((Double) resultRobustMarginal.getResult());
         MDStrategy<Double> robustStratMarginal = (MDStrategy<Double>) resultRobustMarginal.getStrategy();
         double resultRobustDTMCMarginal = round((Double) checkDTMC(robustStratMarginal).getResult());
-
         return new double[]{resultRobustMDP, resultRobustDTMC, resultRobustMDPMarginal, resultRobustDTMCMarginal};
     }
 

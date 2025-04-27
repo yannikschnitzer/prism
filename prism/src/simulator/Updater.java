@@ -278,11 +278,6 @@ public class Updater<Value> extends PrismComponent
 		
 		// Check for errors (e.g. overflows) in the computed transitions
 		//transitionList.checkForErrors(state, varList);
-		
-		//System.out.println(transitionList);
-
-		//
-		// System.out.println("Choices:" + chs);
 	}
 	
 	// Private helpers
@@ -391,8 +386,6 @@ public class Updater<Value> extends PrismComponent
 			ch.dists.getFirst().add(p);
 
 			// Merge
-			EvaluateContext ec = new EvaluateContextState(state);
-			//ec.setEvaluationMode(EvaluateContext.EvalMode.EXACT);
 			State newstate = new State(state);
 			Update up = ups.getUpdate(i);
 			up.update(state, newstate, true, varList);

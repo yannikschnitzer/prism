@@ -15,7 +15,7 @@ public class Experiment {
     public Values parameterValues = new Values();
     public Values exactValues = new Values();
     public boolean tieParameters = false;
-    public double error_tolerance = 0.99;
+    public double error_tolerance = 0.9999;
     public double strategyWeight = 0.9;
 
     public ConstructModel.CompositionType compositionType = ConstructModel.CompositionType.VERTEX;
@@ -82,7 +82,7 @@ public class Experiment {
 
                 // Set Parameter Values
                 this.parameterValues.addValue("eps", 0.02);
-                this.parameterValues.addValue("r", 0.807);
+                this.parameterValues.addValue("r", 0.80);
                 this.parameterValues.addValue("p",0.2);
             }
 

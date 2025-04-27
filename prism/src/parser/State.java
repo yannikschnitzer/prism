@@ -118,6 +118,12 @@ public class State implements Comparable<State>
 		}
 	}
 
+	public State subState(int i, int j) {
+		State substate = new State(j - i);
+		substate.varValues = Arrays.copyOfRange(varValues, i, j);
+		return substate;
+	}
+
 	/**
 	 * Clear: set all values to null
 	 */

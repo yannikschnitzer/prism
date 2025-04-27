@@ -33,6 +33,7 @@ import java.util.List;
 import common.Interval;
 import parser.State;
 import parser.ast.Expression;
+import parser.ast.ModulesFile;
 
 /**
  * Interface for classes that generate a probabilistic model:
@@ -289,6 +290,10 @@ public interface ModelGenerator<Value> extends ModelInfo
 	}
 
 	public default List<List<Interval<Value>>> getIntervalDistribution(int i) throws PrismException{
+		return null;
+	}
+
+	public default ModulesFile getModulesFile() {
 		return null;
 	}
 	
