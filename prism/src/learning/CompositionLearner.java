@@ -10,8 +10,6 @@ import learning.Estimators.PACIntervalEstimatorOptimistic;
 import learning.Simulation.ObservationSampler;
 import learning.Simulation.TransitionTriple;
 import param.Function;
-import param.FunctionFactory;
-import param.FunctionFactory.*;
 import parser.Values;
 import parser.ast.ModulesFile;
 import prism.*;
@@ -70,7 +68,7 @@ public class CompositionLearner {
             }
             //System.out.println("");
         }
-        learner.learnIMDP("test", ex, PACIntervalEstimatorOptimistic::new, pmdp, ex.parameterValues, true);
+        learner.learnIMDP("learning", ex, PACIntervalEstimatorOptimistic::new, pmdp, ex.parameterValues, true);
 
         System.out.println("Done");
     }
@@ -137,7 +135,7 @@ public class CompositionLearner {
             Estimator estimator = estimatorConstructor.get(this.prism, ex);
             estimator.setPmdp(pmdp);
             estimator.setFunctionMap(functionMap);
-            estimator.setSimilarTransitions(similarTransitions);;
+            estimator.setSimilarTransitions(similarTransitions);
             estimator.set_experiment(ex);
 
             // Iterate and run experiments for each of the sampled parameter vectors
@@ -251,7 +249,7 @@ public class CompositionLearner {
 
     // Creates the directory path for dumping experimental results
     public String makeOutputDirectory(Experiment ex) {
-        String outputPath = String.format("plotting/results/%s/%s/Robust_Policies_WCC/%s/", ex.parameterValues, ex.model.toString(), seed);
+        String outputPath = String.format("plotting/results/%s/%s/%s/", ex.model.toString(),ex.parameterValues, seed);
         try {
             Files.createDirectories(Paths.get(outputPath));
         } catch (IOException e) {

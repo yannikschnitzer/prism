@@ -10,14 +10,14 @@ public class TransitionTriple {
     private String action;
     private int action_hash;
     private int successor;
-    private StateActionPair stateActionPair;
+    private final StateActionPair stateActionPair;
 
     public TransitionTriple(int s, String action, int successor) {
         this.s = s;
         this.action = action;
         this.action_hash = action.hashCode();
         this.successor = successor;
-        this.stateActionPair = new StateActionPair(this.s, this.action);;
+        this.stateActionPair = new StateActionPair(this.s, this.action);
     }
 
     public TransitionTriple setAll(int s, String action, int successor) {

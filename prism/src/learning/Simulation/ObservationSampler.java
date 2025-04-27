@@ -25,15 +25,15 @@ import java.util.Map;
 
 public class ObservationSampler {
 
-    private Prism prism;
-	private MDP<Double> sul;
+    private final Prism prism;
+	private final MDP<Double> sul;
 
-	private HashMap<TransitionTriple, Integer> samplesMap;
-	private HashMap<StateActionPair, Integer> sampleSizeMap;
+	private final HashMap<TransitionTriple, Integer> samplesMap;
+	private final HashMap<StateActionPair, Integer> sampleSizeMap;
 	private HashMap<StateActionPair, Integer> accumulatedSamples;
 
 	private HashSet<Integer> terminatingStates;
-	private SimulatorEngine sim;
+	private final SimulatorEngine sim;
 
 	private HashSet<TransitionTriple> transitionsOfInterest;
 
@@ -95,31 +95,6 @@ public class ObservationSampler {
 	public HashMap<StateActionPair, Integer> getSampleSizeMap() {
 		return this.sampleSizeMap;
 	}
-
-
-	/*public void sampleAll(int k) throws PrismException {
-		resetObservationSequence();
-		List<State> states = sul.getStatesList();
-		for (State s : states) {
-			if (!this.terminatingStates.contains(getIndexFromState(s))) {
-				int numChoices = sul.getNumChoices(getIndexFromState(s));
-				for (int a = 0; a < numChoices; a++) {
-					sim.createNewOnTheFlyPath();
-					sim.initialisePath(s);
-					for (int i = 0; i < k; i++) {
-						boolean step = sim.automaticTransitionByChoice(i);
-						if (step) {
-							PathOnTheFly path = (PathOnTheFly) sim.getPath();
-							parseLastStep(path);
-							sim.backtrackTo(0);
-						}
-					}
-				}
-			}
-		}
-	}*/
-
-
 
 	public int simulate(long size, Strategy strat) throws PrismException
 	{
@@ -242,46 +217,6 @@ public class ObservationSampler {
 		return samples;
 	}
 
-
-	public int simulateWithPessimisticRobustStrategy(long size, String propertyString, IMDP<Double> estimate, String robustSpec) throws PrismException {
-		resetObservationSequence();
-		int samples = 0;
-
-		MinMax minMax = MinMax.max().setMinUnc(true);
-		UMDPModelChecker mc = new UMDPModelChecker(this.prism);
-		mc.setGenStrat(true);
-		mc.setErrorOnNonConverge(false);
-		PropertiesFile pf = prism.parsePropertiesString(robustSpec);
-		ModulesFileModelGenerator<?> modelGen = ModulesFileModelGenerator.create(modulesFileIMDP, this.prism);
-		modelGen.setSomeUndefinedConstants(estimate.getConstantValues());
-		mc.setModelCheckingInfo(modelGen, pf, modelGen);
-		Expression exprTarget = this.prism.parsePropertiesString(propertyString).getProperty(0);
-		//BitSet target = mc.check(estimate, exprTarget).getBitSet();
-		//ModelCheckerResult result = mc.computeReachRewards(estimate, rewards, target, minMax);
-		//ModelCheckerResult result = mc.computeReachProbs(estimate, target, minMax);
-		Result result = mc.check(estimate, exprTarget);
-
-		sim.loadStrategy((StrategyGenerator<Double>) result.getStrategy());
-		long i = size;
-		sim.createNewOnTheFlyPath();
-		sim.initialisePath(null);
-		while (i > 0) {
-			boolean step = sim.automaticTransition();
-			if (step) {
-				PathOnTheFly path = (PathOnTheFly) sim.getPath();
-				parseLastStep(path);
-				samples += 1;
-				i -= 1;
-			}
-			else {
-				sim.createNewOnTheFlyPath();
-				sim.initialisePath(null);
-			}
-		}
-		return samples;
-	}
-
-
 	public void parseStep(State s, String a, State sprime) {
 		int currentState = getIndexFromState(s);
 		int successorState = getIndexFromState(sprime);
@@ -350,7 +285,7 @@ public class ObservationSampler {
 					Interval<Double> interval = intervalsMap.get(new TransitionTriple(s, action, successor));
 					if (interval != null) {
 						count += 1;
-						double width = ((Double) interval.getUpper()) - ((Double) interval.getLower());
+						double width = interval.getUpper() - interval.getLower();
 						sum += width;
 					}
 				} 
@@ -409,152 +344,3 @@ public class ObservationSampler {
 		this.multiplier = multiplier;
 	}
 }
-
-
-
-
-/**
- *   OLD STUFF DELETE LATER
- * 
- * 
- * 
- * 
-	public int simulateWithUniformStrategy(long size) throws PrismException
-	{
-		int samples = 0;
-		resetObservationSequence();
-		//ArrayList<TransitionTriple> observations = new ArrayList<>();
-		// Load model into simulator
-		//this.prism.loadModelIntoSimulator();
-		//SimulatorEngine sim = prism.getSimulator();
-		int numStates = this.sul.getNumStates();
-		// Create a uniform strategy
-		if (this.uniformStrat == null) {
-			long startTime = System.currentTimeMillis();
-			MRStrategy strat = new MRStrategy(this.sul);
-			for (int s = 0; s < numStates; s++) {
-				int numChoices = this.sul.getNumChoices(s);
-				for (int i = 0; i < numChoices; i++) {
-					strat.setActionProbability(s, getActionString(this.sul, s, i), 1.0 / numChoices);
-				}
-			}
-			this.uniformStrat = strat;
-			long stopTime = System.currentTimeMillis();
-			//System.out.println("Uniform strategy computation time = " + (stopTime - startTime)/1000);
-		}
-		sim.loadStrategy(this.uniformStrat);
-		long i = size;
-		//int steps = 0;
-		sim.createNewOnTheFlyPath();
-		sim.initialisePath(null);
-		while (i > 0) {
-			//sim.createNewPath();
-			
-			//sim.automaticTransitions(100*numStates, true);
-			boolean step = sim.automaticTransition();
-			if (step) {
-				PathOnTheFly path = (PathOnTheFly) sim.getPath();
-				State s = path.getPreviousState();
-				String a = path.getPreviousActionString();
-				State successor = path.getCurrentState();
-
-				parseStep(s,a,successor);
-				samples += 1;
-				i -= 1;
-			}
-			else {
-				sim.createNewOnTheFlyPath();
-				sim.initialisePath(null);
-			}
-
-		}
-		return samples;
-	}
-
- 
-	public int simulateWithRankedStrategy(long size, HashMap<TransitionTriple, Interval<Double>> intervalsMap) throws PrismException
-	{
-		resetObservationSequence();
-		int samples = 0;
-		// Load model into simulator
-		//this.prism.loadModelIntoSimulator();
-		//SimulatorEngine sim = prism.getSimulator();
-
-		// Create a uniform strategy
-		long startTime = System.currentTimeMillis();
-		MRStrategy strat = new MRStrategy(this.sul);
-		int numStates = this.sul.getNumStates();
-		for (int s = 0; s < numStates; s++) {
-			int numChoices = this.sul.getNumChoices(s);
-			for (int i = 0; i < numChoices; i++) {
-				String action = getActionString(this.sul, s,i);
-				int count = 0;
-				double sum = 0;
-				for (int successor = 0; successor < numStates; successor++) {
-					Interval<Double> interval = intervalsMap.get(new TransitionTriple(s, action, successor));
-					if (interval != null) {
-						count += 1;
-						double width = ((Double) interval.getUpper()) - ((Double) interval.getLower());
-						sum += width;
-					}
-				} 
-				double rank = sum / count;
-				strat.setActionProbability(s, getActionString(this.sul, s, i), rank);
-			}
-		}
-		long stopTime = System.currentTimeMillis();
-		if (DEBUG) {System.out.println("Ranked strategy computation time = " + (stopTime - startTime)/1000);}
-
-		// Load strategy into simulator
-		if (DEBUG) {System.out.println("loading strat in sim");}
-		sim.loadStrategy(strat);
-		long i = size;
-		if (DEBUG) {System.out.println("create new path");}
-		sim.createNewOnTheFlyPath();
-		sim.initialisePath(null);
-		while (i > 0) {
-			boolean step = sim.automaticTransition();
-			if (step) {
-				
-				PathOnTheFly path = (PathOnTheFly) sim.getPath();
-				State s = path.getPreviousState();
-				String a = path.getPreviousActionString();
-				State successor = path.getCurrentState();
-
-				parseStep(s,a,successor);
-				samples += 1;
-				i -= 1;
-				if (DEBUG) { System.out.println("step");}
-			}
-			else {
-				sim.createNewOnTheFlyPath();
-				sim.initialisePath(null);
-			}
-		}
-		//this.observationSequence.addAll(observations);
-        //System.out.println(this.observationSequence);
-        //return observations;
-		return samples;
-	}
-	
-
-
-*/
-
-
-
-
-
-
-/*
-
-
-
-
-
- * 
- * 
- * 
- * 
- * 
- */

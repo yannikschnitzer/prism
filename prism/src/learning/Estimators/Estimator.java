@@ -243,7 +243,7 @@ public class Estimator {
             }
         }
 
-        if (ex.tieParameters) this.numLearnableTransitions = this.functionMap.keySet().size();
+        if (ex.tieParameters) this.numLearnableTransitions = this.functionMap.size();
     }
 
 //    public void processTrueTransitions() {

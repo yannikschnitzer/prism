@@ -138,12 +138,12 @@ public class MAPEstimator extends Estimator {
         Result resultRobust = modelCheckPointEstimate(true, true);
         Result resultOptimistic = modelCheckPointEstimate(false, true);
         double resultRobustMDP = round((Double) resultRobust.getResult());
-        double resultOptimisticMDP = round((Double) resultOptimistic.getResult());
+        //double resultOptimisticMDP = round((Double) resultOptimistic.getResult());
 
         Result resultRobustMarginal = modelCheckMarginalEstimate(true, true);
-        Result resultOptimisticMarginal = modelCheckMarginalEstimate(false, true);
+        //Result resultOptimisticMarginal = modelCheckMarginalEstimate(false, true);
         double resultRobustMDPMarginal = round((Double) resultRobustMarginal.getResult());
-        double resultOptimisticMDPMarginal = round((Double) resultOptimisticMarginal.getResult());
+        //double resultOptimisticMDPMarginal = round((Double) resultOptimisticMarginal.getResult());
 
         MDStrategy<Double> robustStrat = (MDStrategy<Double>) resultRobust.getStrategy();
         MDStrategy<Double> optimisticStrat = (MDStrategy<Double>) resultOptimistic.getStrategy();
@@ -169,7 +169,7 @@ public class MAPEstimator extends Estimator {
             double dist = Math.abs(value - p);
             totalDist += dist;
         }
-        return totalDist / super.trueProbabilitiesMap.keySet().size();
+        return totalDist / super.trueProbabilitiesMap.size();
     }
 
 

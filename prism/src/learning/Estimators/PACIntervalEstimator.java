@@ -6,12 +6,17 @@ import explicit.*;
 import imdpcomp.Experiment;
 import learning.Simulation.StateActionPair;
 import learning.Simulation.TransitionTriple;
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.solvers.BrentSolver;
+import org.apache.commons.math3.special.Beta;
+import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.statistics.distribution.NormalDistribution;
 import param.Function;
 import prism.Evaluator;
 import prism.Prism;
 
 import java.util.*;
+import java.util.concurrent.Executors;
 
 public class PACIntervalEstimator extends MAPEstimator {
 
@@ -72,11 +77,6 @@ public class PACIntervalEstimator extends MAPEstimator {
         umdp.setStatesList(mdp.getStatesList());
         umdp.setConstantValues(mdp.getConstantValues());
 
-        // Clear caches since new marginals have arrived
-        verticesCache.clear();
-        successCache.clear();
-        modelChache.clear();
-
         if (ex.tieParameters) tieParameters();
 
         for (int s = 0; s < numStates; s++) {
@@ -96,6 +96,16 @@ public class PACIntervalEstimator extends MAPEstimator {
             umdp.addLabel(entry.getKey(), entry.getValue());
         }
         this.marginalEstimate = umdp;
+//        System.out.println("Sizes:  " + verticesCache.size() + " " + successCache.size() + " " + modelChache.size());
+//        System.out.println("Vertices Cache: " + verticesCache);
+        // Clean up cache
+        verticesCache.clear();
+        successCache.clear();
+        modelChache.clear();
+
+        //System.out.println("Sizes:  " + verticesCache.size() + " " + successCache.size() + " " + modelChache.size());
+
+        //Executors.newSingleThreadExecutor().submit(System::gc);
 
         return umdp;
     }
@@ -201,8 +211,13 @@ public class PACIntervalEstimator extends MAPEstimator {
                 sub.add(new Interval<>(1.0, 1.0)); // Known graph structure
             } else {
                 for (int j = 0; j < sz; j++) {
-                    sub.add(getMarginalInterval(counts[k][j], sac));
-
+                    sub.add(getWCCnterval(counts[k][j], sac));
+                    //sub.add(getClopperPearsonInterval(counts[k][j], sac));
+//                    if (s == 0 && i == 0) {
+//                        System.out.println("Wilson Score Interval:" + getWCCnterval(counts[k][j], sac) + " Clopper Pearson OLD: "
+//                                + getClopperPearsonInterval(counts[k][j], sac)
+//                        +   " Clopper Pearson new: " + getClopperPearsonInterval(counts[k][j], sac));
+//                    }
                 }
             }
 
@@ -231,7 +246,7 @@ public class PACIntervalEstimator extends MAPEstimator {
             totalDist += dist;
         }
 
-        double averageDist = totalDist / super.trueProbabilitiesMap.keySet().size();
+        double averageDist = totalDist / super.trueProbabilitiesMap.size();
         return averageDist;
 
     }
@@ -255,15 +270,19 @@ public class PACIntervalEstimator extends MAPEstimator {
 
         int m = this.getNumLearnableTransitions();
 
+        //return computeClopperPearson(n, getTransitionCount(t), error_tolerance / (double) m);
+
         return computeWilsonCC(n, point, error_tolerance / (double) m);
     }
 
-    protected Interval<Double> getMarginalInterval(int count, int sacount) {
+
+    protected Interval<Double> getWCCnterval(int count, int sacount) {
         int m = this.pmdp.getNumMarginals();
         double point = (double) count / (double) sacount;
         return computeWilsonCC(sacount, point, error_tolerance / (double) m);
     }
 
+    // Wilson Score Interval with Continuity Correction
     private Interval<Double> computeWilsonCC(double n, double p, double delta) {
         double z = distribution.inverseCumulativeProbability(1 - delta / 2.0);
 
@@ -271,5 +290,39 @@ public class PACIntervalEstimator extends MAPEstimator {
         double pWCCUpper = Math.min(1, (2 * n * p + z * z + z * Math.sqrt(z * z - (1.0 / n) + 4 * n * p * (1 - p) - 4 * p + 2) + 1) / (2 * (n + z * z)));
 
         return new Interval<>(pWCCLower, pWCCUpper);
+    }
+
+    /**
+     * Returns the Clopper–Pearson exact (1–α) confidence interval
+     * for a binomial proportion based on k successes in n trials.
+     */
+    protected Interval<Double> getClopperPearsonInterval(int count, int sacount) {
+        int m = this.pmdp.getNumMarginals();
+        // α = error_tolerance/m
+        double alpha = error_tolerance / (double) m;
+        return computeClopperPearson(sacount, count, alpha);
+    }
+
+    private static final BrentSolver INV_BETA_SOLVER = new BrentSolver(1e-5);
+    private static final int    MAX_EVAL        = 50;
+
+    /**
+     * Invert the regularized incomplete Beta:
+     * find x in [0,1] so that Beta.regularizedBeta(x,a,b) = p
+     */
+    private static double invRegularizedBeta(double p, double a, double b) {
+        UnivariateFunction f = x -> Beta.regularizedBeta(x, a, b) - p;
+        // solve f(x)=0 on [0,1]
+        return INV_BETA_SOLVER.solve(MAX_EVAL, f, 0.0, 1.0);
+    }
+
+    private Interval<Double> computeClopperPearson(int n, int k, double alpha) {
+        double lower = (k == 0)
+                ? 0.0
+                : invRegularizedBeta(alpha/2.0, (double)k, (double)(n - k + 1));
+        double upper = (k == n)
+                ? 1.0
+                : invRegularizedBeta(1.0 - alpha/2.0, (double)(k + 1), (double)(n - k));
+        return new Interval<>(lower, upper);
     }
 }
