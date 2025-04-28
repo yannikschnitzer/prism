@@ -6,6 +6,7 @@ import explicit.*;
 import imdpcomp.Experiment;
 import learning.Simulation.StateActionPair;
 import learning.Simulation.TransitionTriple;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.solvers.BrentSolver;
 import org.apache.commons.math3.special.Beta;
@@ -30,6 +31,7 @@ public class PACIntervalEstimator extends MAPEstimator {
     // For marginal paramter-tying Level 2
     protected HashMap<Function, Integer> tiedMarginalTransitionCounts = new HashMap<>();
     protected HashMap<Function, Integer> tiedMarginalStateActionCounts = new HashMap<>();
+    protected HashMap<Function, Interval<Double>> tiedMarginalIntervals = new HashMap<>();
 
     // Caching for vertex UMDP construction
     protected final Map<String, double[][]> verticesCache = new HashMap<>();
@@ -80,6 +82,7 @@ public class PACIntervalEstimator extends MAPEstimator {
     public void tieMarginalParameters() {
         tiedMarginalStateActionCounts.clear();
         tiedMarginalTransitionCounts.clear();
+        tiedMarginalIntervals.clear();
 
         for (int s = 0; s < pmdp.getNumStates(); s++) {
             for (int i = 0; i < pmdp.getNumChoices(s); i++) {
@@ -112,6 +115,30 @@ public class PACIntervalEstimator extends MAPEstimator {
         }
     }
 
+    public int[][] getMarginalCountsTied(int s, int i) {
+        Distribution<Function> pdist = pmdp.getChoice(s, i);
+        String action = getActionString(mdp, s, i);
+
+        // 1) prepare marginal counts
+        List<List<Function>> marginals = pdist.getMarginals();
+        int m = marginals.size();
+        int[][] counts = new int[m][];
+        for (int k = 0; k < m; k++) {
+            counts[k] = new int[marginals.get(k).size()];
+        }
+
+        // 2) map product counts back to marginals
+        for (int succ : pdist.supportArrayUnique) {
+            List<Integer> mapping = pdist.supportMarginalsMap.get(succ);
+            int c = samplesMap.getOrDefault(new TransitionTriple(s, action, succ), 0);
+            for (int k = 0; k < m; k++) {
+                counts[k][mapping.get(k)] += c;
+            }
+        }
+
+        return counts;
+    }
+
     @Override
     public UMDP<Double> buildMarginalUMDP(MDP<Double> mdp) {
         int numStates = mdp.getNumStates();
@@ -131,13 +158,6 @@ public class PACIntervalEstimator extends MAPEstimator {
                 List<List<Interval<Double>>> marginalIntervals = getMarginalIntervals(s, i);
                 UDistributionVertices<Double> udist = (UDistributionVertices<Double>) constructMarginalDist(marginalIntervals, pdist.supportArrayUnique, false);
 
-                if (udist.vertices.length == 0) {
-                    System.out.println("ERROR: no marginal distribution found for state " + s);
-                    System.out.println("Marginals here: " + marginalIntervals);
-                    System.out.println("True marignals: " + ((MDPSimple<Double>) mdp).getChoice(s,i).getMarginals());
-                    System.out.println("Counts: " + Arrays.deepToString(getMarginalCountsTied(s, i)));
-                }
-
                 umdp.addActionLabelledChoice(s, udist, getActionString(mdp, s, i));
             }
         }
@@ -147,14 +167,11 @@ public class PACIntervalEstimator extends MAPEstimator {
             umdp.addLabel(entry.getKey(), entry.getValue());
         }
         this.marginalEstimate = umdp;
-//        System.out.println("Sizes:  " + verticesCache.size() + " " + successCache.size() + " " + modelChache.size());
-//        System.out.println("Vertices Cache: " + verticesCache);
+
         // Clean up cache
         verticesCache.clear();
         successCache.clear();
         modelChache.clear();
-
-        //System.out.println("Sizes:  " + verticesCache.size() + " " + successCache.size() + " " + modelChache.size());
 
         Executors.newSingleThreadExecutor().submit(System::gc);
 
@@ -162,7 +179,6 @@ public class PACIntervalEstimator extends MAPEstimator {
     }
 
     public UDistribution<Double> constructMarginalDist(List<List<Interval<Double>>> marginals, int[] supportArray, boolean smart) {
-
         switch (ex.compositionType) {
             case VERTEX -> {
                 String key = marginals.toString();
@@ -176,6 +192,12 @@ public class PACIntervalEstimator extends MAPEstimator {
 
                 return distrUncVert;
             }
+            case MCCORMICK -> {
+                throw new NotImplementedException("MCCORMICK");
+            }
+            case SMART -> {
+                throw new NotImplementedException("SMART");
+            }
             default -> {
                 throw new IllegalArgumentException("Invalid composition type: " + ex.compositionType);
             }
@@ -184,7 +206,6 @@ public class PACIntervalEstimator extends MAPEstimator {
 
     @Override
     public UMDP<Double> buildPointIMDP(MDP<Double> mdp) {
-        //System.out.println("Building IMDP");
         int numStates = mdp.getNumStates();
         IMDPSimple<Double> imdp = new IMDPSimple<>(numStates);
         imdp.addInitialState(mdp.getFirstInitialState());
@@ -209,7 +230,7 @@ public class PACIntervalEstimator extends MAPEstimator {
                         distrNew.add(sTo, interval);
                         this.intervalsMap.put(t, interval);
                     } else if (p == 1.0) {
-                        interval = new Interval<Double>(p, p);
+                        interval = new Interval<>(p, p);
                         distrNew.add(sTo, interval);
                         this.intervalsMap.put(t, interval);
                     }
@@ -270,19 +291,24 @@ public class PACIntervalEstimator extends MAPEstimator {
             List<Interval<Double>> sub = new ArrayList<>(sz);
 
             if (sz == 1) {
-                sub.add(new Interval<>(1.0, 1.0)); // Known graph structure
+                sub.add(new Interval<>(1.0, 1.0));
             } else {
                 for (int j = 0; j < sz; j++) {
                     if (!ex.tieParameters) {
-                        //sub.add(getWCCnterval(counts[k][j], sac));
+//                      sub.add(getWCCnterval(counts[k][j], sac));
                         sub.add(getClopperPearsonInterval(counts[k][j], sac));
                     } else {
-//                        sub.add(getWCCnterval(tiedMarginalTransitionCounts.get(pdist.getMarginals().get(k).get(j)),
-//                                              tiedMarginalStateActionCounts.get(pdist.getMarginals().get(k).get(j))));
-                        sub.add(getClopperPearsonInterval(tiedMarginalTransitionCounts.get(pdist.getMarginals().get(k).get(j)),
-                                                        tiedMarginalStateActionCounts.get(pdist.getMarginals().get(k).get(j))));
+//                      sub.add(getWCCnterval(tiedMarginalTransitionCounts.get(pdist.getMarginals().get(k).get(j)),
+//                                            tiedMarginalStateActionCounts.get(pdist.getMarginals().get(k).get(j))));
+                        Function func = pdist.getMarginals().get(k).get(j);
+                        if (tiedMarginalIntervals.containsKey(func)) {
+                            sub.add(tiedMarginalIntervals.get(func));
+                        } else {
+                            sub.add(getClopperPearsonInterval(tiedMarginalTransitionCounts.get(func),
+                                                              tiedMarginalStateActionCounts.get(func)));
+                            tiedMarginalIntervals.put(func, sub.getLast());
+                        }
                     }
-
                 }
             }
 
@@ -290,46 +316,6 @@ public class PACIntervalEstimator extends MAPEstimator {
         }
 
         return marginalIntervals;
-    }
-
-    public int[][] getMarginalCountsTied(int s, int i) {
-        Distribution<Function> pdist = pmdp.getChoice(s, i);
-        String action = getActionString(mdp, s, i);
-
-        // 1) prepare marginal counts
-        List<List<Function>> marginals = pdist.getMarginals();
-        int m = marginals.size();
-        int[][] counts = new int[m][];
-        for (int k = 0; k < m; k++) {
-            counts[k] = new int[marginals.get(k).size()];
-        }
-
-        // 2) map product counts back to marginals
-        for (int succ : pdist.supportArrayUnique) {
-            List<Integer> mapping = pdist.supportMarginalsMap.get(succ);
-            int c = samplesMap.getOrDefault(new TransitionTriple(s, action, succ), 0);
-            for (int k = 0; k < m; k++) {
-                counts[k][mapping.get(k)] += c;
-            }
-        }
-
-        return counts;
-    }
-
-    @Override
-    public double averageDistanceToSUL() {
-        double totalDist = 0.0;
-
-        for (TransitionTriple t : super.trueProbabilitiesMap.keySet()) {
-            Interval<Double> interval = this.intervalsMap.get(t);
-            double p = super.trueProbabilitiesMap.get(t);
-            double dist = maxIntervalPointDistance(interval, p);
-            totalDist += dist;
-        }
-
-        double averageDist = totalDist / super.trueProbabilitiesMap.size();
-        return averageDist;
-
     }
 
     @Override
@@ -388,8 +374,8 @@ public class PACIntervalEstimator extends MAPEstimator {
         }
 
         int m = ex.tieParameters ? this.tiedMarginalStateActionCounts.size() : this.pmdp.getNumMarginals();
-        // α = error_tolerance/m
-        double alpha = (1.0   - error_tolerance) / (double) m;
+        double alpha = (1.0 - error_tolerance) / (double) m;
+
         return computeClopperPearson(sacount, count, alpha);
     }
 
@@ -407,11 +393,6 @@ public class PACIntervalEstimator extends MAPEstimator {
     }
 
     private Interval<Double> computeClopperPearson(int n, int k, double alpha) {
-        if (k > n) {
-            System.out.printf("hit");
-            return new Interval<>(precision, 1.0 - precision);
-        }
-
         double lower = (k == 0)
                 ? precision
                 : invRegularizedBeta(alpha/2.0, (double)k, (double)(n - k + 1));
@@ -419,5 +400,21 @@ public class PACIntervalEstimator extends MAPEstimator {
                 ? 1.0 - precision
                 : invRegularizedBeta(1.0 - alpha/2.0, (double)(k + 1), (double)(n - k));
         return new Interval<>(Math.max(lower, precision), Math.min(upper,1-precision));
+    }
+
+    @Override
+    public double averageDistanceToSUL() {
+        double totalDist = 0.0;
+
+        for (TransitionTriple t : super.trueProbabilitiesMap.keySet()) {
+            Interval<Double> interval = this.intervalsMap.get(t);
+            double p = super.trueProbabilitiesMap.get(t);
+            double dist = maxIntervalPointDistance(interval, p);
+            totalDist += dist;
+        }
+
+        double averageDist = totalDist / super.trueProbabilitiesMap.size();
+        return averageDist;
+
     }
 }

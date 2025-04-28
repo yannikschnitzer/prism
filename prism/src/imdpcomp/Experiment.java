@@ -14,8 +14,8 @@ public class Experiment {
     public String optimisticSpec;
     public Values parameterValues = new Values();
     public Values exactValues = new Values();
-    public boolean tieParameters = false;
-    public double error_tolerance = 0.9999;
+    public boolean tieParameters = true;
+    public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
 
     public ConstructModel.CompositionType compositionType = ConstructModel.CompositionType.VERTEX;

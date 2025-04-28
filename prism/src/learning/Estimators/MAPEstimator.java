@@ -105,9 +105,6 @@ public class MAPEstimator extends Estimator {
         return count;
     }
 
-    public int getStateActionCountTied(StateActionPair sa) {
-        return this.sampleSizeMap.get(sa);
-    }
 
     public void updatePriors() {
         boolean needsNormalization = false;
@@ -116,18 +113,6 @@ public class MAPEstimator extends Estimator {
                 this.dirichletPriorsMap.put(t, this.dirichletPriorsMap.get(t) + this.samplesMap.get(t));
             }
         }
-    }
-
-    public Result iterateMDP(boolean robust) throws PrismException {
-        return iterateMDP(robust, false);
-    }
-
-
-    public Result iterateMDP(boolean robust, boolean verbose) throws PrismException {
-        updatePriors();
-        buildPointIMDP(mdp);
-        Result result = modelCheckPointEstimate(true, false);
-        return result;
     }
 
     public double[] getCurrentResults() throws PrismException {

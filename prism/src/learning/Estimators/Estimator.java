@@ -246,50 +246,6 @@ public class Estimator {
         if (ex.tieParameters) this.numLearnableTransitions = this.functionMap.size();
     }
 
-//    public void processTrueTransitions() {
-//        //this.numLearnableTransitions = 0;
-//        //this.transitionsOfInterest.clear();
-//        int numStates = this.mdp.getNumStates();
-//        //System.out.println("Processing Transitions");
-//        for (int s = 0; s < numStates; s++) {
-//            //System.out.println("State:" + s);
-//            int numChoices = this.mdp.getNumChoices(s);
-//            final int state = s;
-//            for (int i = 0 ; i < numChoices; i++) {
-//                //System.out.println("Choice:" + i);
-//                final String action = getActionString(this.mdp, s, i);
-//                //System.out.println("Action String:" + action);
-//                this.mdp.forEachDoubleTransition(s, i, (int sFrom, int sTo, double p)->{
-//                    //System.out.println("State to:" + sTo + " with Prob: " + p);
-//                    if (0 < p && p < 1.0) {
-//                        //this.numLearnableTransitions += 1;
-//                        //this.transitionsOfInterest.add(new TransitionTriple(state, action, sTo));
-//                        this.trueProbabilitiesMap.put(new TransitionTriple(state, action, sTo), p);
-//                    }
-//                });
-//            }
-//        }
-//    }
-//
-//    public void processTransitions() {
-//        this.numLearnableTransitions = 0;
-//        this.transitionsOfInterest.clear();
-//        System.out.println("Here");
-//        for (Function function : this.functionMap.keySet()) {
-//            List<TransitionTriple> transitions = this.functionMap.get(function);
-//            if (function.isConstant()) {
-//                for (TransitionTriple transition : transitions) {
-//                    this.constantMap.put(transition, function.asBigRational().doubleValue());
-//                }
-//            } else {
-//                this.numLearnableTransitions += transitions.size();
-//                this.transitionsOfInterest.addAll(transitions);
-//            }
-//        }
-//        processTrueTransitions();
-//    }
-
-
     public double maxIntervalPointDistance(Interval<Double> interval, double p) {
 		double lower = interval.getLower();
 		double upper = interval.getUpper();
