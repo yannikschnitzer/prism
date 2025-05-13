@@ -164,7 +164,7 @@ public class MAPEstimator extends Estimator {
         DTMCModelChecker mc = new DTMCModelChecker(this.prism);
         //mc.setPrecomp(false); //TODO: here
         mc.setErrorOnNonConverge(false);
-        mc.setMaxIters(100000);
+        mc.setMaxIters(1000);
         mc.setGenStrat(true);
         PropertiesFile pf = prism.parsePropertiesString(ex.dtmcSpec);
 
@@ -188,11 +188,11 @@ public class MAPEstimator extends Estimator {
     public double[] getInitialResults() throws PrismException {
         buildPointIMDP(mdp);
         buildMarginalUMDP(mdp);
-
+        System.out.println("Here");
         double resultRobustMDP = round((Double) modelCheckPointEstimate(true, false).getResult());
         MDStrategy robustStrat = computeStrategyFromEstimate(this.estimate, true);
         double resultRobustDTMC = round((Double) checkDTMC(robustStrat).getResult());
-
+        System.out.println("Here");
         Result resultRobustMarginal = modelCheckMarginalEstimate(true, true);
         double resultRobustMDPMarginal = round((Double) resultRobustMarginal.getResult());
         MDStrategy<Double> robustStratMarginal = (MDStrategy<Double>) resultRobustMarginal.getStrategy();
@@ -269,7 +269,8 @@ public class MAPEstimator extends Estimator {
         UMDPModelChecker mc = new UMDPModelChecker(this.prism);
         mc.setGenStrat(true);
         mc.setPrecomp(true);
-        mc.setErrorOnNonConverge(true);
+        mc.setMaxIters(1000);
+        mc.setErrorOnNonConverge(false);
 
         PropertiesFile pf;
         if (robust)
@@ -295,7 +296,8 @@ public class MAPEstimator extends Estimator {
         UMDPModelChecker mc = new UMDPModelChecker(this.prism);
         mc.setGenStrat(true);
         mc.setPrecomp(true);
-        mc.setErrorOnNonConverge(true);
+        mc.setMaxIters(1000);
+        mc.setErrorOnNonConverge(false);
 
         PropertiesFile pf;
         if (robust)

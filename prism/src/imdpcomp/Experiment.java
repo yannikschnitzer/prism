@@ -100,13 +100,16 @@ public class Experiment {
                 this.modelFile = "../models/lake/frozen_lake_swarm_eps.prism";
                 this.certainModelFile = "../models/lake/frozen_lake_swarm_eps_certain.prism";
                 this.robustSpec = "Rminmax=? [ F goal ]";
+                this.optimisticSpec = "Rminmin=? [ F goal ]";
                 this.dtmcSpec = "R=? [ F goal ]";
+                this.spec = "Rmin=? [ F goal ]";
+                this.type = Type.REWARD;
 
                 // Set Parameter Values
                 this.parameterValues.addValue("eps", 0.05);
-                this.parameterValues.addValue("N", 7);
-                this.parameterValues.addValue("M", 7);
-                this.parameterValues.addValue("p", 0.35);
+                this.parameterValues.addValue("N", 10);
+                this.parameterValues.addValue("M", 10);
+                this.parameterValues.addValue("p", 0.2);
             }
 
             case LAKE_SWARM_MULTI_SLIP -> {

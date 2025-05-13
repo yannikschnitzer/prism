@@ -1,7 +1,7 @@
 mdp
 
-const int M;
-const int N;
+const int M = 10;
+const int N = 10;
 const double p;
 
 formula goal = 1<=r1 & r1<=2 & 2<=c1 & c1<=3 & 1<=r2 & r2<=4 & 3<=c2 & c2<=4;
