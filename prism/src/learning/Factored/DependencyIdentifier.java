@@ -24,9 +24,4 @@ public interface DependencyIdentifier {
      */
     public String getIdentifier(int state_index, int action, int module);
 
-    /**
-     * Return number of identifiers, to get number of learnable parameters.
-     * @return Number of identifiers
-     */
-    public int numIdentifiers();
 }

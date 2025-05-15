@@ -36,6 +36,7 @@ public class PACIntervalEstimator extends MAPEstimator {
     protected HashMap<String, List<Integer>> tiedDepIdTransCounts = new HashMap<>();
     protected HashMap<String, Integer> tiedDepIdSACounts = new HashMap<>();
     protected HashMap<String, List<Interval<Double>>> tiedDepIdIntervals = new HashMap<>();
+    protected int numDependencyMarginals = -1;
 
     // For marginal paramter-tying Level 2
     protected HashMap<Function, Integer> tiedMarginalTransitionCounts = new HashMap<>();
@@ -439,10 +440,9 @@ public class PACIntervalEstimator extends MAPEstimator {
 
         int m = switch (ex.tieParameters) {
             case NO_TYING -> this.pmdp.getNumMarginals();
-            case DEPENDENCY_TYING -> this.pmdp.dependencyIdentifier.numIdentifiers();
+            case DEPENDENCY_TYING -> getNumDependencyMarginals();
             case FULL_TYING -> this.tiedMarginalStateActionCounts.size();
         };
-
 
 //        int m = ex.tieParameters ? (depIds ? pmdp.dependencyIdentifier.numIdentifiers() :this.tiedMarginalStateActionCounts.size()) : this.pmdp.getNumMarginals();
         double alpha = (1.0 - error_tolerance) / (double) m;
@@ -487,5 +487,18 @@ public class PACIntervalEstimator extends MAPEstimator {
         double averageDist = totalDist / super.trueProbabilitiesMap.size();
         return averageDist;
 
+    }
+
+
+    public int getNumDependencyMarginals() {
+        if (numDependencyMarginals != -1) {
+            return numDependencyMarginals;
+        } else {
+            numDependencyMarginals = 0;
+            for (List<Integer> a : this.tiedDepIdTransCounts.values()) {
+                numDependencyMarginals += a.size();
+            }
+            return numDependencyMarginals;
+        }
     }
 }

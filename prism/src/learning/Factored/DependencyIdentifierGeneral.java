@@ -27,11 +27,6 @@ public class DependencyIdentifierGeneral implements DependencyIdentifier {
         return identifiers.get(new KeyTriple(state_index, action, module));
     }
 
-    @Override
-    public int numIdentifiers() {
-        return identifiers.size();
-    }
-
     private String computeIdentifier(State marginalState, int state_index, int action, int module) {
         return marginalState.toString() + "-" + action + "-" + module;
     }
