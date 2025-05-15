@@ -107,8 +107,8 @@ public class Experiment {
 
                 // Set Parameter Values
                 this.parameterValues.addValue("eps", 0.05);
-                this.parameterValues.addValue("N", 10);
-                this.parameterValues.addValue("M", 10);
+                this.parameterValues.addValue("N", 8);
+                this.parameterValues.addValue("M", 8);
                 this.parameterValues.addValue("p", 0.2);
             }
 
