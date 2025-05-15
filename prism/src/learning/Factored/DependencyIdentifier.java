@@ -23,4 +23,10 @@ public interface DependencyIdentifier {
      * @return Depdency identifier that was cached for this state-action-module combination.
      */
     public String getIdentifier(int state_index, int action, int module);
+
+    /**
+     * Return number of identifiers, to get number of learnable parameters.
+     * @return Number of identifiers
+     */
+    public int numIdentifiers();
 }
