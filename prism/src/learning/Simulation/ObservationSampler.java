@@ -4,6 +4,7 @@ package learning.Simulation;
 import common.Interval;
 import explicit.*;
 import explicit.rewards.MDPRewardsSimple;
+import imdpcomp.Experiment;
 import parser.State;
 import parser.ast.Expression;
 import parser.ast.ModulesFile;
@@ -22,6 +23,8 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+
+import static imdpcomp.Experiment.*;
 
 public class ObservationSampler {
 
@@ -42,7 +45,7 @@ public class ObservationSampler {
 	private ModulesFile modulesFileIMDP;
     private ModulesFile modulesFileMDP;
 
-	private boolean tiedParameters;
+	private ParameterTying tiedParameters;
 
 	private int multiplier;
 
@@ -156,7 +159,7 @@ public class ObservationSampler {
 
 	public boolean collectedEnoughSamples(float ratio) {
 		for (Map.Entry<StateActionPair, Integer> entry: this.sampleSizeMap.entrySet()){
-			if (tiedParameters) {
+			if (tiedParameters == ParameterTying.FULL_TYING || tiedParameters == ParameterTying.DEPENDENCY_TYING) {
 				if (entry.getValue() - this.accumulatedSamples.getOrDefault(entry.getKey(), 1) >= ratio * this.accumulatedSamples.getOrDefault(entry.getKey(), 1)) {
 					return true;
 				}
@@ -327,12 +330,7 @@ public class ObservationSampler {
 		return samples;
 	}
 
-
-	public boolean isTiedParameters() {
-		return tiedParameters;
-	}
-
-	public void setTiedParameters(boolean tiedParameters) {
+	public void setTiedParameters(ParameterTying tiedParameters) {
 		this.tiedParameters = tiedParameters;
 	}
 

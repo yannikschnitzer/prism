@@ -2,6 +2,7 @@ package learning;
 
 import explicit.*;
 import imdpcomp.Experiment;
+import imdpcomp.Experiment.ParameterTying;
 import learning.Data.DataPoint;
 import learning.Data.DataProcessor;
 import learning.Estimators.Estimator;
@@ -22,6 +23,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+
+import static imdpcomp.Experiment.ParameterTying.*;
 
 /**
  * Orchestrates sampling-based learning of IMDPs.
@@ -195,7 +198,7 @@ public class CompositionLearner {
                     currentResults = estimator.getCurrentResults();
                     samplingStrategy = estimator.buildStrategy();
 
-                    if (!ex.tieParameters) { // || (!verification && ex.isBayesian())
+                    if (ex.tieParameters == NO_TYING) { // || (!verification && ex.isBayesian())
                         observationSampler.resetObservationSequence();
                     } else {
                         observationSampler.incrementAccumulatedSamples();

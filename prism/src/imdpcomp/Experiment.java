@@ -3,6 +3,8 @@ package imdpcomp;
 import explicit.ConstructModel;
 import parser.Values;
 
+import static imdpcomp.Experiment.ParameterTying.*;
+
 public class Experiment {
     public Model model;
     public Type type;
@@ -14,9 +16,16 @@ public class Experiment {
     public String optimisticSpec;
     public Values parameterValues = new Values();
     public Values exactValues = new Values();
-    public boolean tieParameters = true;
+    public ParameterTying tieParameters = DEPENDENCY_TYING;
+    public boolean factored = true;
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
+
+    public enum ParameterTying {
+        NO_TYING,
+        FULL_TYING,
+        DEPENDENCY_TYING // Only relevant for factored
+    }
 
     public ConstructModel.CompositionType compositionType = ConstructModel.CompositionType.VERTEX;
 

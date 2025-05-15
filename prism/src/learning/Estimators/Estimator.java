@@ -208,7 +208,7 @@ public class Estimator {
     public String getModelStats() {
         String stats = "%------\n%Model stats\n%";
         stats += "  #States: " + this.mdp.getNumStates()+"\n%";
-        stats += "  #transitions: " + this.mdp.getNumTransitions() + "  of which  " + this.numLearnableTransitions + "  p < 1\n%";
+        stats += "  #transitions: " + this.mdp.getNumTransitions() + ",  with  " + this.numLearnableTransitions + "  learnable components.\n%";
         stats += "  true MDP optimum for " + ex.robustSpec + "  =  " + this.SULoptimum + "\n%";
         stats += "------";
         return stats;
@@ -243,7 +243,12 @@ public class Estimator {
             }
         }
 
-        if (ex.tieParameters) this.numLearnableTransitions = this.functionMap.size();
+        switch (ex.tieParameters) {
+            case NO_TYING -> {;} // Number from above correct
+            case FULL_TYING, DEPENDENCY_TYING -> {
+                this.numLearnableTransitions = this.functionMap.size();
+            }
+        }
     }
 
     public double maxIntervalPointDistance(Interval<Double> interval, double p) {

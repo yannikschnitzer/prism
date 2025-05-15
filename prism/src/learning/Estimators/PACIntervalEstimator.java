@@ -4,6 +4,7 @@ import com.gurobi.gurobi.GRBModel;
 import common.Interval;
 import explicit.*;
 import imdpcomp.Experiment;
+import imdpcomp.Experiment.ParameterTying;
 import learning.Simulation.StateActionPair;
 import learning.Simulation.TransitionTriple;
 import org.apache.commons.lang3.NotImplementedException;
@@ -17,6 +18,9 @@ import prism.Prism;
 
 import java.util.*;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+
+import static imdpcomp.Experiment.ParameterTying.*;
 
 public class PACIntervalEstimator extends MAPEstimator {
 
@@ -29,9 +33,9 @@ public class PACIntervalEstimator extends MAPEstimator {
     protected HashMap<TransitionTriple, Integer> tiedStateActionCounts = new HashMap<>();
 
     // For marginal paramter-tying Level 1 (Dependency Identifiers)
-    protected HashMap<String, List<Integer>> tiedDependencyIdentifierTransitionCounts = new HashMap<>();
-    protected HashMap<String, List<Integer>> tiedDepndenyIdentifierStateActionCounts = new HashMap<>();
-    protected HashMap<String, List<Interval<Double>>> tiedDependencyIdentifierIntervals = new HashMap<>();
+    protected HashMap<String, List<Integer>> tiedDepIdTransCounts = new HashMap<>();
+    protected HashMap<String, Integer> tiedDepIdSACounts = new HashMap<>();
+    protected HashMap<String, List<Interval<Double>>> tiedDepIdIntervals = new HashMap<>();
 
     // For marginal paramter-tying Level 2
     protected HashMap<Function, Integer> tiedMarginalTransitionCounts = new HashMap<>();
@@ -83,11 +87,12 @@ public class PACIntervalEstimator extends MAPEstimator {
 
     /**
      * Parameter-tying Level 1 - Tie Dependency Identifiers
+     * TODO: update this potentially
      */
     public void tieDependencyIdentifiers() {
-        tiedDependencyIdentifierTransitionCounts.clear();
-        tiedDepndenyIdentifierStateActionCounts.clear();
-        tiedDependencyIdentifierIntervals.clear();
+        tiedDepIdTransCounts.clear();
+        tiedDepIdSACounts.clear();
+        tiedDepIdIntervals.clear();
 
         for (int s = 0; s < pmdp.getNumStates(); s++) {
             for (int i = 0; i < pmdp.getNumChoices(s); i++) {
@@ -98,8 +103,28 @@ public class PACIntervalEstimator extends MAPEstimator {
 
                 int[][] marginalCounts = getMarginalCountsTied(s, i);
 
+                for (int j = 0; j < marginalCounts.length; j++) {
+                    String dependencyId = pmdp.dependencyIdentifier.getIdentifier(s,i,j);
+                    ArrayList<Integer> countList = Arrays.stream(marginalCounts[j])
+                            .boxed()
+                            .collect(Collectors.toCollection(ArrayList::new));
 
+                    if (!tiedDepIdTransCounts.containsKey(dependencyId)) {
+                        tiedDepIdTransCounts.put(dependencyId, countList);
+                        tiedDepIdSACounts.put(dependencyId, sac);
+                    } else {
+                        sumLists(tiedDepIdTransCounts.get(dependencyId), countList);
+                        tiedDepIdSACounts.put(dependencyId, tiedDepIdSACounts.get(dependencyId) + sac);
+                    }
+                }
             }
+        }
+    }
+
+    public void sumLists(List<Integer> a,List<Integer> b) {
+        assert a.size() == b.size();
+        for (int i = 0; i < a.size(); i++) {
+            a.set(i, a.get(i) + b.get(i));
         }
     }
 
@@ -175,7 +200,10 @@ public class PACIntervalEstimator extends MAPEstimator {
         umdp.setStatesList(mdp.getStatesList());
         umdp.setConstantValues(mdp.getConstantValues());
 
-        if (ex.tieParameters) tieMarginalParameters(); // TODO: currently only level 2 tying, make this a choice
+        switch (ex.tieParameters) {
+            case FULL_TYING -> {tieMarginalParameters();}
+            case DEPENDENCY_TYING -> {tieDependencyIdentifiers();}
+        }
 
         for (int s = 0; s < numStates; s++) {
             int numChoices = mdp.getNumChoices(s);
@@ -240,7 +268,7 @@ public class PACIntervalEstimator extends MAPEstimator {
         imdp.setConstantValues(mdp.getConstantValues());
         imdp.setIntervalEvaluator(Evaluator.forDoubleInterval());
 
-        if (ex.tieParameters) tieParameters();
+        if (ex.tieParameters != NO_TYING) tieParameters();
 
         for (int s = 0; s < numStates; s++) {
             int numChoices = mdp.getNumChoices(s);
@@ -321,19 +349,26 @@ public class PACIntervalEstimator extends MAPEstimator {
                 sub.add(new Interval<>(1.0, 1.0));
             } else {
                 for (int j = 0; j < sz; j++) {
-                    if (!ex.tieParameters) {
+                    if (ex.tieParameters == NO_TYING) {
 //                      sub.add(getWCCnterval(counts[k][j], sac));
                         sub.add(getClopperPearsonInterval(counts[k][j], sac));
                     } else {
 //                      sub.add(getWCCnterval(tiedMarginalTransitionCounts.get(pdist.getMarginals().get(k).get(j)),
 //                                            tiedMarginalStateActionCounts.get(pdist.getMarginals().get(k).get(j))));
                         Function func = pdist.getMarginals().get(k).get(j);
-                        if (tiedMarginalIntervals.containsKey(func)) {
-                            sub.add(tiedMarginalIntervals.get(func));
+                        String depId = pmdp.dependencyIdentifier.getIdentifier(s, i, k);
+
+                        if (ex.tieParameters == DEPENDENCY_TYING) {
+                            sub.add(getClopperPearsonInterval(tiedDepIdTransCounts.get(depId).get(j),
+                                                                tiedDepIdSACounts.get(depId)));
                         } else {
-                            sub.add(getClopperPearsonInterval(tiedMarginalTransitionCounts.get(func),
-                                                              tiedMarginalStateActionCounts.get(func)));
-                            tiedMarginalIntervals.put(func, sub.getLast());
+                            if (tiedMarginalIntervals.containsKey(func)) {
+                                sub.add(tiedMarginalIntervals.get(func));
+                            } else {
+                                sub.add(getClopperPearsonInterval(tiedMarginalTransitionCounts.get(func),
+                                        tiedMarginalStateActionCounts.get(func)));
+                                tiedMarginalIntervals.put(func, sub.getLast());
+                            }
                         }
                     }
                 }
@@ -350,7 +385,7 @@ public class PACIntervalEstimator extends MAPEstimator {
         double point;
         int n, k;
 
-        if (!this.ex.tieParameters) {
+        if (this.ex.tieParameters == NO_TYING) {
             point = mode(t);
             n = getStateActionCount(t.getStateAction());
             k = getTransitionCount(t);
@@ -376,7 +411,7 @@ public class PACIntervalEstimator extends MAPEstimator {
             return new Interval<>(precision, 1 - precision);
         }
 
-        int m = ex.tieParameters ? this.tiedMarginalStateActionCounts.size() : this.pmdp.getNumMarginals();
+        int m = ex.tieParameters == NO_TYING ? this.tiedMarginalStateActionCounts.size() : this.pmdp.getNumMarginals(); //TODO: replace this before using!!
         double point = (double) count / (double) sacount;
         return computeWilsonCC(sacount, point, error_tolerance / (double) m);
     }
@@ -394,13 +429,22 @@ public class PACIntervalEstimator extends MAPEstimator {
     /**
      * Returns the Clopper–Pearson exact (1–α) confidence interval
      * for a binomial proportion based on k successes in n trials.
+     *
+     * Only used by marginal computation
      */
     protected Interval<Double> getClopperPearsonInterval(int count, int sacount) {
         if (sacount == 0) {
             return new Interval<>(precision, 1 - precision);
         }
 
-        int m = ex.tieParameters ? this.tiedMarginalStateActionCounts.size() : this.pmdp.getNumMarginals();
+        int m = switch (ex.tieParameters) {
+            case NO_TYING -> this.pmdp.getNumMarginals();
+            case DEPENDENCY_TYING -> this.pmdp.dependencyIdentifier.numIdentifiers();
+            case FULL_TYING -> this.tiedMarginalStateActionCounts.size();
+        };
+
+
+//        int m = ex.tieParameters ? (depIds ? pmdp.dependencyIdentifier.numIdentifiers() :this.tiedMarginalStateActionCounts.size()) : this.pmdp.getNumMarginals();
         double alpha = (1.0 - error_tolerance) / (double) m;
 
         return computeClopperPearson(sacount, count, alpha);
