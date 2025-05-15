@@ -32,6 +32,8 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 
 import io.ExplicitModelImporter;
+import learning.Factored.DependencyIdentifier;
+import learning.Factored.DependencyIdentifierGeneral;
 import parser.State;
 import prism.Evaluator;
 import prism.PrismException;
@@ -61,8 +63,7 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 
 	private int numMarginals = -1;
 
-	public List<HashMap<State, List<Integer>>> marginalStateTyingList = new ArrayList<>();
-
+	public DependencyIdentifier dependencyIdentifier = new DependencyIdentifierGeneral();
 	// Constructors
 
 	/**

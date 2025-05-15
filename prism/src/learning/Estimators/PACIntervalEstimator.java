@@ -28,6 +28,11 @@ public class PACIntervalEstimator extends MAPEstimator {
     protected HashMap<TransitionTriple, Integer> tiedTransitionCounts = new HashMap<>();
     protected HashMap<TransitionTriple, Integer> tiedStateActionCounts = new HashMap<>();
 
+    // For marginal paramter-tying Level 1 (Dependency Identifiers)
+    protected HashMap<String, List<Integer>> tiedDependencyIdentifierTransitionCounts = new HashMap<>();
+    protected HashMap<String, List<Integer>> tiedDepndenyIdentifierStateActionCounts = new HashMap<>();
+    protected HashMap<String, List<Interval<Double>>> tiedDependencyIdentifierIntervals = new HashMap<>();
+
     // For marginal paramter-tying Level 2
     protected HashMap<Function, Integer> tiedMarginalTransitionCounts = new HashMap<>();
     protected HashMap<Function, Integer> tiedMarginalStateActionCounts = new HashMap<>();
@@ -72,6 +77,28 @@ public class PACIntervalEstimator extends MAPEstimator {
                 tiedModes.put(t, mode);
                 tiedTransitionCounts.put(t, num);
                 tiedStateActionCounts.put(t, denum);
+            }
+        }
+    }
+
+    /**
+     * Parameter-tying Level 1 - Tie Dependency Identifiers
+     */
+    public void tieDependencyIdentifiers() {
+        tiedDependencyIdentifierTransitionCounts.clear();
+        tiedDepndenyIdentifierStateActionCounts.clear();
+        tiedDependencyIdentifierIntervals.clear();
+
+        for (int s = 0; s < pmdp.getNumStates(); s++) {
+            for (int i = 0; i < pmdp.getNumChoices(s); i++) {
+                Distribution<Function> pdist = pmdp.getChoice(s, i);
+                String action = getActionString(mdp, s, i);
+                StateActionPair sa = new StateActionPair(s, action);
+                int sac = sampleSizeMap.getOrDefault(sa, 0);
+
+                int[][] marginalCounts = getMarginalCountsTied(s, i);
+
+
             }
         }
     }

@@ -36,6 +36,7 @@ import com.gurobi.gurobi.GRBEnv;
 import com.gurobi.gurobi.GRBException;
 import com.gurobi.gurobi.GRBModel;
 import common.Interval;
+import learning.Factored.DependencyIdentifierGeneral;
 import parser.State;
 import parser.Values;
 import parser.VarList;
@@ -77,7 +78,7 @@ public class ConstructModel extends PrismComponent
 	protected final Map<String, Boolean> successCache = new HashMap<>();
 	protected final Map<String, GRBModel> modelChache = new HashMap<>();
 
-	protected final List<HashMap<State, List<Integer>>> marginalStateTyingList = new ArrayList<>();
+	protected final DependencyIdentifierGeneral dependencyIdentifier = new DependencyIdentifierGeneral();
 
 	GRBEnv env;
     {
@@ -278,11 +279,6 @@ public class ConstructModel extends PrismComponent
 	        ((ModelExplicit<Value>) modelSimple).setVarList(varList);
 		}
 
-		// Initialise maps for parameter-tying of marginal states
-		for (int k = 0; k < modelGen.getModulesFile().getNumModules(); k++) {
-			this.marginalStateTyingList.add(new HashMap<>());
-		}
-
 		// Initialise states storage
 		states = new IndexedSet<State>(true);
 		explore = new LinkedList<State>();
@@ -305,11 +301,12 @@ public class ConstructModel extends PrismComponent
 
 			// Explore all choices/transitions from this state
 			modelGen.exploreState(state);
-			tieMarginalStates(modelGen, state, src);
+
 
 			// Look at each outgoing choice in turn
 			nc = modelGen.getNumChoices();
 			for (i = 0; i < nc; i++) {
+				extractDepdendencyIdentifiers(modelGen, state, src, i);
 				// If required, check for duplicate actions here
 				if (modelType.partiallyObservable()) {
 					if (((NondetModel<Value>) modelSimple).getChoiceByAction(src, modelGen.getChoiceAction(i)) != -1) {
@@ -548,7 +545,7 @@ public class ConstructModel extends PrismComponent
 					model = sortStates ? new MDPSimple<>(mdp, permut) : mdp;
 				}
                 assert model instanceof MDPSimple<Value>;
-                ((MDPSimple<Value>) model).marginalStateTyingList = marginalStateTyingList;
+                ((MDPSimple<Value>) model).dependencyIdentifier = dependencyIdentifier;
 				break;
 			case POMDP:
 				model = sortStates ? new POMDPSimple<>(pomdp, permut) : pomdp;
@@ -635,15 +632,15 @@ public class ConstructModel extends PrismComponent
 		}
 	}
 
-	private <Value> void tieMarginalStates(ModelGenerator<Value> modelGen, State state, int index) {
+	private <Value> void extractDepdendencyIdentifiers(ModelGenerator<Value> modelGen, State state, int index, int action) {
 		ModulesFile modulesFile = modelGen.getModulesFile();
 
 		int base = 0;
 		for (int i = 0; i < modulesFile.getNumModules(); i++) {
 			int D = modulesFile.getModule(i).getNumDeclarations();
 			State marginalState = state.subState(base, base + D);
-			if (!this.marginalStateTyingList.get(i).containsKey(marginalState)) this.marginalStateTyingList.get(i).put(marginalState, new ArrayList<>());
-			this.marginalStateTyingList.get(i).get(marginalState).add(index);
+			// TODO: Depdendency Identifiers - Only important thing here, clean rest up
+			dependencyIdentifier.getIdentifier(state, marginalState, index, action, i);
 			base += D;
 		}
 	}

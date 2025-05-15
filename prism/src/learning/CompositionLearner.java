@@ -50,10 +50,6 @@ public class CompositionLearner {
         // Build the parametric MDP to infer parametric structure
         MDPSimple<Function> pmdp = learner.buildParamModel(ex);
 
-        for (HashMap<State, List<Integer>> map : pmdp.marginalStateTyingList) {
-            System.out.println(map.keySet());
-        }
-
        //System.out.println(pmdp);
         for (int i = 0; i < pmdp.getNumStates(); i++) {
             //System.out.println("State: " + i);
