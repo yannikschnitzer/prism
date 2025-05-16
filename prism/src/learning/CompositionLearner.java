@@ -258,8 +258,7 @@ public class CompositionLearner {
     }
 
     public String makeLabel(Experiment ex) {
-        String label = String.format("%s_%s_%s", ex.model.toString(), ex.factored ? "factored" : "unfactored", ex.tieParameters);
-        return label;
+        return String.format("%s_%s_%s_%s", ex.model.toString(), ex.factored ? "factored" : "unfactored", ex.tieParameters, ex.compositionType);
     }
 
     // Creates the directory path for dumping experimental results

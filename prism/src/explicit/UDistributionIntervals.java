@@ -27,8 +27,10 @@
 package explicit;
 
 import common.Interval;
+import prism.Evaluator;
 
 import java.util.BitSet;
+import java.util.List;
 import java.util.Set;
 
 public class UDistributionIntervals<Value> implements UDistribution<Value>
@@ -42,6 +44,10 @@ public class UDistributionIntervals<Value> implements UDistribution<Value>
 	public UDistributionIntervals(Distribution<Interval<Value>> intervals)
 	{
 		this.intervals = intervals;
+	}
+
+	public UDistributionIntervals(List<List<Interval<Value>>> marginals, int[] supportArray, Evaluator<Interval<Value>> eval){
+		this.intervals = new Distribution<>(marginals, supportArray, eval);
 	}
 
 	// Accessors for UDistribution

@@ -212,7 +212,7 @@ public class PACIntervalEstimator extends MAPEstimator {
             for (int i = 0; i < numChoices; i++) {
                 Distribution<Function> pdist = pmdp.getChoice(s, i);
                 List<List<Interval<Double>>> marginalIntervals = getMarginalIntervals(s, i);
-                UDistributionVertices<Double> udist = (UDistributionVertices<Double>) constructMarginalDist(marginalIntervals, pdist.supportArrayUnique, false);
+                UDistribution<Double> udist = constructMarginalDist(marginalIntervals, pdist.supportArrayUnique, false);
 
                 umdp.addActionLabelledChoice(s, udist, getActionString(mdp, s, i));
             }
@@ -240,12 +240,11 @@ public class PACIntervalEstimator extends MAPEstimator {
                 String key = marginals.toString();
 
                 if (verticesCache.containsKey(key)) {
-                    distrUncVert = new UDistributionVertices<>(supportArray, verticesCache.get(key));
+                    distrUncVert = new UDistributionVertices<>(supportArray, verticesCache.get(key)); //TODO: replace this cache with an actual distribution cache, no need to only cache the vertices
                 } else {
                     distrUncVert = new UDistributionVertices<>(marginals, supportArray, false);
                     verticesCache.put(key, distrUncVert.vertices);
                 }
-
                 return distrUncVert;
             }
             case MCCORMICK -> {
@@ -253,6 +252,10 @@ public class PACIntervalEstimator extends MAPEstimator {
             }
             case SMART -> {
                 throw new NotImplementedException("SMART");
+            }
+            case INTERVAL_PRODUCT -> {
+                UDistributionIntervals<Double> udist = new UDistributionIntervals<>(marginals, supportArray, Evaluator.forDoubleInterval());
+                return udist;
             }
             default -> {
                 throw new IllegalArgumentException("Invalid composition type: " + ex.compositionType);

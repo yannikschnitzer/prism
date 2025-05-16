@@ -3,6 +3,8 @@ package imdpcomp;
 import explicit.ConstructModel;
 import parser.Values;
 
+import static explicit.ConstructModel.*;
+import static explicit.ConstructModel.CompositionType.*;
 import static imdpcomp.Experiment.ParameterTying.*;
 
 public class Experiment {
@@ -16,12 +18,13 @@ public class Experiment {
     public String optimisticSpec;
     public Values parameterValues = new Values();
     public Values exactValues = new Values();
-    public ParameterTying tieParameters = FULL_TYING;
-    public boolean factored = false;
+    public ParameterTying tieParameters = DEPENDENCY_TYING;
+    public boolean factored = true;
+    public CompositionType compositionType = VERTEX;
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
-    public int iterations = 1_000;
+    public int iterations = 1_000_000;
     public int max_episode_length = 20;
     public int multiplier = 5;
 
@@ -31,13 +34,11 @@ public class Experiment {
         DEPENDENCY_TYING // Only relevant for factored
     }
 
-    public ConstructModel.CompositionType compositionType = ConstructModel.CompositionType.VERTEX;
-
     public Experiment(Model model){
         this.setModel(model);
     }
 
-    public Experiment(Model model, ConstructModel.CompositionType type){
+    public Experiment(Model model, CompositionType type){
         this.setModel(model);
         this.compositionType = type;
     }
@@ -66,7 +67,7 @@ public class Experiment {
         REWARD
     }
 
-    public Experiment setCompositonType(ConstructModel.CompositionType type){
+    public Experiment setCompositonType(CompositionType type){
         this.compositionType = type;
         return this;
     }

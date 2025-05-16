@@ -29,6 +29,7 @@ package explicit;
 import java.util.*;
 import java.util.Map.Entry;
 
+import common.Interval;
 import common.iterable.FunctionalIterable;
 import common.iterable.FunctionalIterator;
 import common.iterable.Reducible;
@@ -75,6 +76,21 @@ public class Distribution<Value> implements FunctionalIterable<Entry<Integer, Va
 	{
 		this.eval = eval;
 		this.map = new HashMap<>();
+	}
+
+	public Distribution(List<List<Value>> marginals, int[] supportArray, Evaluator<Value> eval) {
+		this.marginals = marginals;
+		this.supportArray = supportArray;
+		this.supportArrayUnique = Arrays.stream(supportArray).distinct().toArray();
+		this.eval = eval;
+		this.map = new HashMap<>();
+
+		// Build product distribution
+		List<Value> mutliplies = multiplyMarginals();
+		assert mutliplies.size() == supportArray.length;
+		for (int i = 0; i < mutliplies.size(); i++) {
+			add(supportArray[i], mutliplies.get(i));
+		}
 	}
 
 	/**
