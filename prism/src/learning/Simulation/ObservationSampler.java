@@ -4,7 +4,6 @@ package learning.Simulation;
 import common.Interval;
 import explicit.*;
 import explicit.rewards.MDPRewardsSimple;
-import imdpcomp.Experiment;
 import parser.State;
 import parser.ast.Expression;
 import parser.ast.ModulesFile;
@@ -24,7 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import static imdpcomp.Experiment.*;
+import static imdpcomp.Experiment.ParameterTying;
 
 public class ObservationSampler {
 
@@ -78,7 +77,7 @@ public class ObservationSampler {
 	public void setTransitionsOfInterest(HashSet<TransitionTriple> set) {
 		this.transitionsOfInterest = set;
 	}
-	
+
 	public int getIndexFromState(State s) {
 		return sul.getStatesList().indexOf(s);
 	}
@@ -247,7 +246,7 @@ public class ObservationSampler {
 			}
 		}
 	}
-    
+
 	/**
 	 * Reset observation sequence
 	 */
@@ -272,14 +271,14 @@ public class ObservationSampler {
 		// Load model into simulator
 		//this.prism.loadModelIntoSimulator();
 		//SimulatorEngine sim = prism.getSimulator();
-		
+
 		long startTime = System.currentTimeMillis();
 		int numStates = this.sul.getNumStates();
 		MDPRewardsSimple<Double> rewards = new MDPRewardsSimple<>(numStates);
 		for (int s = 0; s < numStates; s++)
 		{
 			int numChoices = this.sul.getNumChoices(s);
-			for (int i = 0; i < numChoices; i++) 
+			for (int i = 0; i < numChoices; i++)
 			{
 				String action = getActionString(this.sul, s,i);
 				int count = 0;
@@ -291,13 +290,13 @@ public class ObservationSampler {
 						double width = interval.getUpper() - interval.getLower();
 						sum += width;
 					}
-				} 
+				}
 				double rank = sum / count;
 				rewards.addToTransitionReward(s, i, rank);
 			}
 		}
-		
-		
+
+
 		//MinMax minMax = MinMax.max().setMinUnc(true);
 		MinMax minMax = MinMax.max().setMinUnc(false);
 		UMDPModelChecker mc = new UMDPModelChecker(this.prism);

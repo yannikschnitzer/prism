@@ -1,7 +1,5 @@
 package learning.Simulation;
 
-import java.util.Objects;
-
 /**
  * Small class for transition triples (s,a,s')
  */

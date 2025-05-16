@@ -25,43 +25,34 @@ import java.math.RoundingMode;
 import java.util.*;
 
 public class Estimator {
+    private final HashSet<TransitionTriple> transitionsOfInterest;
     protected String name = "Base";
     protected Prism prism;
-
     protected Experiment ex;
-
     protected HashMap<TransitionTriple, Integer> samplesMap;
     protected HashMap<StateActionPair, Integer> sampleSizeMap;
     protected HashMap<TransitionTriple, Interval<Double>> intervalsMap;
-    private Map<Function, List<TransitionTriple>> functionMap;
-
-    // Contains lists of similar transitions, whose counts can be tied
-    private List<List<TransitionTriple>> similarTransitions;
-
     protected Map<TransitionTriple, Double> constantMap;
-
     protected ModulesFile modulesFile;
     protected ModulesFile modulesFileIMDP;
     protected ModulesFile modulesFileMDP;
-
     protected MDP<Double> mdp;
     protected MDPSimple<Function> pmdp;
     protected String SULoptimum;
     protected double sulOpt;
     protected HashSet<Integer> prob01States;
     protected HashSet<Integer> rew0InfStates;
-
     protected UMDP<Double> estimate;
     protected UMDP<Double> marginalEstimate;
-
-    private final HashSet<TransitionTriple> transitionsOfInterest;
     protected HashMap<TransitionTriple, Double> trueProbabilitiesMap;
-    private int numLearnableTransitions = 0;
-
-    private MRStrategy uniformStrat;
     protected MDStrategy currentStrat;
+    private Map<Function, List<TransitionTriple>> functionMap;
+    // Contains lists of similar transitions, whose counts can be tied
+    private List<List<TransitionTriple>> similarTransitions;
+    private int numLearnableTransitions = 0;
+    private MRStrategy uniformStrat;
 
-    Estimator(Prism prism, Experiment ex)  {
+    Estimator(Prism prism, Experiment ex) {
         this.prism = prism;
         this.ex = ex;
 
@@ -83,14 +74,14 @@ public class Estimator {
         //this.processTransitions();
     }
 
-    public void set_experiment(Experiment ex)  {
+    public void set_experiment(Experiment ex) {
         this.ex = ex;
         this.buildModulesFiles();
         this.tryBuildSUL();
         this.processTransitionsNaive();
     }
 
-    private void buildModulesFiles()  {
+    private void buildModulesFiles() {
         try {
             this.modulesFile = this.prism.parseModelFile(new File(ex.certainModelFile));
             this.modulesFileIMDP = this.prism.parseModelFile(new File(ex.certainModelFile), ModelType.IMDP);
@@ -98,7 +89,7 @@ public class Estimator {
         } catch (FileNotFoundException e) {
             System.out.println("Error file: " + e.getMessage());
             System.exit(1);
-        } catch (PrismLangException e){
+        } catch (PrismLangException e) {
             System.out.println("Error parsing file: " + e.getMessage());
             System.exit(1);
         } catch (NullPointerException e) {
@@ -112,7 +103,9 @@ public class Estimator {
     }
 
     public Double round(double value, int precision) {
-        if (value == Double.POSITIVE_INFINITY) { return 1.0; }
+        if (value == Double.POSITIVE_INFINITY) {
+            return 1.0;
+        }
         BigDecimal bd = BigDecimal.valueOf(value);
         bd = bd.setScale(precision, RoundingMode.HALF_UP);
         return bd.doubleValue();
@@ -132,7 +125,7 @@ public class Estimator {
     }
 
     public String getActionString(MDP<Double> mdp, int s, int i) {
-        String action = (String) mdp.getAction(s,i);
+        String action = (String) mdp.getAction(s, i);
         if (action == null) {
             action = "_empty";
         }
@@ -172,8 +165,7 @@ public class Estimator {
         this.mdp = mdp;
 
         ArrayList<Integer> initialStates = (ArrayList<Integer>) this.mdp.getInitialStates();
-        if (ex.type == Experiment.Type.REACH)
-        {
+        if (ex.type == Experiment.Type.REACH) {
             computeProb01States(result);
             for (int s : initialStates) {
                 if (this.prob01States.contains(s)) {
@@ -181,19 +173,15 @@ public class Estimator {
                     System.exit(0);
                 }
             }
-        }
-        else if (ex.type == Experiment.Type.REWARD)
-        {
+        } else if (ex.type == Experiment.Type.REWARD) {
             computeRew0InfStates(result);
-        }
-        else
-        {
+        } else {
             System.out.println("ERROR: unsupported type unknown " + ex.type);
             System.exit(1);
         }
     }
 
-    public MDP<Double> getSUL(){
+    public MDP<Double> getSUL() {
         return this.mdp;
     }
 
@@ -207,7 +195,7 @@ public class Estimator {
 
     public String getModelStats() {
         String stats = "%------\n%Model stats\n%";
-        stats += "  #States: " + this.mdp.getNumStates()+"\n%";
+        stats += "  #States: " + this.mdp.getNumStates() + "\n%";
         stats += "  #transitions: " + this.mdp.getNumTransitions() + ",  with  " + this.numLearnableTransitions + "  learnable components.\n%";
         stats += "  true MDP optimum for " + ex.robustSpec + "  =  " + this.SULoptimum + "\n%";
         stats += "------";
@@ -231,9 +219,9 @@ public class Estimator {
         for (int s = 0; s < numStates; s++) {
             int numChoices = this.mdp.getNumChoices(s);
             final int state = s;
-            for (int i = 0 ; i < numChoices; i++) {
+            for (int i = 0; i < numChoices; i++) {
                 final String action = getActionString(this.mdp, s, i);
-                this.mdp.forEachDoubleTransition(s, i, (int sFrom, int sTo, double p)->{
+                this.mdp.forEachDoubleTransition(s, i, (int sFrom, int sTo, double p) -> {
                     if (0 < p && p < 1.0) {
                         this.numLearnableTransitions += 1;
                         this.transitionsOfInterest.add(new TransitionTriple(state, action, sTo));
@@ -244,7 +232,8 @@ public class Estimator {
         }
 
         switch (ex.tieParameters) {
-            case NO_TYING -> {;} // Number from above correct
+            case NO_TYING -> {
+            } // Number from above correct
             case FULL_TYING, DEPENDENCY_TYING -> {
                 this.numLearnableTransitions = this.functionMap.size();
             }
@@ -252,13 +241,13 @@ public class Estimator {
     }
 
     public double maxIntervalPointDistance(Interval<Double> interval, double p) {
-		double lower = interval.getLower();
-		double upper = interval.getUpper();
-		double d1 = Math.abs(p-lower);
-		double d2 = Math.abs(p-upper);
-		double maxDist = Double.max(d1, d2);
-		return maxDist;
-	}
+        double lower = interval.getLower();
+        double upper = interval.getUpper();
+        double d1 = Math.abs(p - lower);
+        double d2 = Math.abs(p - upper);
+        double maxDist = Double.max(d1, d2);
+        return maxDist;
+    }
 
 
     public HashSet<TransitionTriple> getTransitionsOfInterest() {
@@ -270,41 +259,38 @@ public class Estimator {
     }
 
     public void computeProb01States(Result result) throws PrismException {
-		//System.out.println("compute");
-		StateVector vector = result.getVector();
-		//System.out.println("vector = " + vector);
-		int numStates = this.mdp.getNumStates();
-		for (int s = 0; s < numStates; s++) {
-			double value = (Double) vector.getValue(s);
-			if (value == 0.0) {
-				this.prob01States.add(s);
-			}
-			else if (value == 1.0) {
-				this.prob01States.add(s);
-			}
-			else {
-				continue;
-			}
-		}
-	}
+        //System.out.println("compute");
+        StateVector vector = result.getVector();
+        //System.out.println("vector = " + vector);
+        int numStates = this.mdp.getNumStates();
+        for (int s = 0; s < numStates; s++) {
+            double value = (Double) vector.getValue(s);
+            if (value == 0.0) {
+                this.prob01States.add(s);
+            } else if (value == 1.0) {
+                this.prob01States.add(s);
+            } else {
+                continue;
+            }
+        }
+    }
 
     public void computeRew0InfStates(Result result) throws PrismException {
-		//System.out.println("compute");
-		StateVector vector = result.getVector();
-		//System.out.println("vector = " + vector);
-		int numStates = this.mdp.getNumStates();
-		for (int s = 0; s < numStates; s++) {
-			double value = (Double) vector.getValue(s);
-			if (value == 0.0) {
-				this.rew0InfStates.add(s);
-			}
-			else if (value == Double.POSITIVE_INFINITY) {
-				this.rew0InfStates.add(s);
-			}
-		}
-	}
+        //System.out.println("compute");
+        StateVector vector = result.getVector();
+        //System.out.println("vector = " + vector);
+        int numStates = this.mdp.getNumStates();
+        for (int s = 0; s < numStates; s++) {
+            double value = (Double) vector.getValue(s);
+            if (value == 0.0) {
+                this.rew0InfStates.add(s);
+            } else if (value == Double.POSITIVE_INFINITY) {
+                this.rew0InfStates.add(s);
+            }
+        }
+    }
 
-    public Strategy buildStrategy() throws PrismException{
+    public Strategy buildStrategy() throws PrismException {
         throw new UnsupportedOperationException("build strategy is undefined");
     }
 
@@ -325,12 +311,12 @@ public class Estimator {
 
 
     public MDStrategy computeStrategyFromEstimate(UMDP<Double> estimate) throws PrismException {
-		return this.computeStrategyFromEstimate(estimate, true);
-	}
+        return this.computeStrategyFromEstimate(estimate, true);
+    }
 
-	public MDStrategy computeOptimisticStrategyFromEstimate(UMDP<Double> estimate) throws PrismException {
-		return this.computeStrategyFromEstimate(estimate, false);
-	}
+    public MDStrategy computeOptimisticStrategyFromEstimate(UMDP<Double> estimate) throws PrismException {
+        return this.computeStrategyFromEstimate(estimate, false);
+    }
 
 
     public Strategy buildWeightedOptimisticStrategy(UMDP<Double> estimate, double weight) throws PrismException {
@@ -346,10 +332,9 @@ public class Estimator {
                     if (i == optimisticChoice)
                         strat.setChoiceProbability(s, i, weight);
                     else
-                        strat.setChoiceProbability(s, i, (1.0 - weight)/(numChoices - 1));
+                        strat.setChoiceProbability(s, i, (1.0 - weight) / (numChoices - 1));
                 }
-            }
-            else {
+            } else {
                 for (int i = 0; i < numChoices; i++) {
                     strat.setChoiceProbability(s, i, 1.0 / numChoices);
                 }
@@ -358,25 +343,25 @@ public class Estimator {
         return strat;
     }
 
-	public MDStrategy computeStrategyFromEstimate(UMDP<Double> estimate, boolean robust) throws PrismException {
+    public MDStrategy computeStrategyFromEstimate(UMDP<Double> estimate, boolean robust) throws PrismException {
         UMDPModelChecker mc = new UMDPModelChecker(this.prism);
-		mc.setGenStrat(true);
+        mc.setGenStrat(true);
         mc.setPrecomp(true);
-		mc.setErrorOnNonConverge(false);
+        mc.setErrorOnNonConverge(false);
         mc.setMaxIters(1000);
 
-		PropertiesFile pf = robust
-			? prism.parsePropertiesString(ex.robustSpec)
-			: prism.parsePropertiesString(ex.optimisticSpec);
-		ModulesFileModelGenerator<?> modelGen = ModulesFileModelGenerator.create(modulesFileIMDP, this.prism);
-		modelGen.setSomeUndefinedConstants(estimate.getConstantValues());
-		mc.setModelCheckingInfo(modelGen, pf, modelGen);
-		Expression exprTarget = pf.getProperty(0);
-		Result result = mc.check(estimate, exprTarget);
-		MDStrategy strat = (MDStrategy) result.getStrategy();
-		//System.out.println("Strategy = " + strat);    // strat is null
-		return strat;
-	}
+        PropertiesFile pf = robust
+                ? prism.parsePropertiesString(ex.robustSpec)
+                : prism.parsePropertiesString(ex.optimisticSpec);
+        ModulesFileModelGenerator<?> modelGen = ModulesFileModelGenerator.create(modulesFileIMDP, this.prism);
+        modelGen.setSomeUndefinedConstants(estimate.getConstantValues());
+        mc.setModelCheckingInfo(modelGen, pf, modelGen);
+        Expression exprTarget = pf.getProperty(0);
+        Result result = mc.check(estimate, exprTarget);
+        MDStrategy strat = (MDStrategy) result.getStrategy();
+        //System.out.println("Strategy = " + strat);    // strat is null
+        return strat;
+    }
 
     public double[] getCurrentResults() throws PrismException {
         throw new UnsupportedOperationException("can't get results from estimator");
@@ -412,6 +397,10 @@ public class Estimator {
 
     public void setPmdp(MDPSimple<Function> pmdp) {
         this.pmdp = pmdp;
+    }
+
+    public int getNumLearnableComponents() {
+        return -1;
     }
 }
 

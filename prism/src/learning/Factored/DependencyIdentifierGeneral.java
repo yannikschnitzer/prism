@@ -8,7 +8,6 @@ import java.util.HashMap;
  * General Dependency Identifier for dependencies that only depend on the individual module / factor state.
  */
 public class DependencyIdentifierGeneral implements DependencyIdentifier {
-    private record KeyTriple(int x, int y, int z) {}
     private final HashMap<KeyTriple, String> identifiers;
 
     public DependencyIdentifierGeneral() {
@@ -29,6 +28,9 @@ public class DependencyIdentifierGeneral implements DependencyIdentifier {
 
     private String computeIdentifier(State marginalState, int state_index, int action, int module) {
         return marginalState.toString() + "-" + action + "-" + module;
+    }
+
+    private record KeyTriple(int x, int y, int z) {
     }
 
 

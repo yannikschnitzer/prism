@@ -2,7 +2,6 @@ package learning;
 
 import explicit.*;
 import imdpcomp.Experiment;
-import imdpcomp.Experiment.ParameterTying;
 import learning.Data.DataPoint;
 import learning.Data.DataProcessor;
 import learning.Estimators.Estimator;
@@ -11,10 +10,12 @@ import learning.Estimators.PACIntervalEstimatorOptimistic;
 import learning.Simulation.ObservationSampler;
 import learning.Simulation.TransitionTriple;
 import param.Function;
-import parser.State;
 import parser.Values;
 import parser.ast.ModulesFile;
-import prism.*;
+import prism.Pair;
+import prism.Prism;
+import prism.PrismDevNullLog;
+import prism.PrismException;
 import strat.Strategy;
 
 import java.io.File;
@@ -22,9 +23,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
-import static imdpcomp.Experiment.ParameterTying.*;
+import static imdpcomp.Experiment.ParameterTying.NO_TYING;
 
 /**
  * Orchestrates sampling-based learning of IMDPs.
@@ -34,11 +38,6 @@ public class CompositionLearner {
     Prism prism;
 
     private final boolean verbose = true;
-
-    int seed = 5;
-    int iterations = 1_000_000;
-    int max_episode_length = 20;
-    int multiplier = 5;
 
     public CompositionLearner(Prism prism) {
         this.prism = prism;
@@ -69,7 +68,7 @@ public class CompositionLearner {
             }
             //System.out.println("");
         }
-        learner.learnIMDP("learning", ex, PACIntervalEstimatorOptimistic::new, pmdp, ex.parameterValues, true);
+        learner.learnIMDP(ex, PACIntervalEstimatorOptimistic::new, pmdp, ex.parameterValues, true);
 
         System.out.println("Done");
     }
@@ -116,13 +115,16 @@ public class CompositionLearner {
     }
 
     // Learns an IMDP by running sampling-based experiments with the specified estimator
-    public Pair<List<List<IMDP<Double>>>, List<MDP<Double>>> learnIMDP(String label, Experiment ex, EstimatorConstructor estimatorConstructor, MDPSimple<Function> pmdp, Values parameterValuation, boolean verification) {
-        resetAll(seed);
+    public Pair<List<List<IMDP<Double>>>, List<MDP<Double>>> learnIMDP(Experiment ex, EstimatorConstructor estimatorConstructor, MDPSimple<Function> pmdp, Values parameterValuation, boolean verification) {
+        resetAll(ex.seed);
 
-        System.out.println("\n\n\n\n%------\n% Learning IMDP\n%  Model: " + ex.model + "\n%  max_episode_length: "
-                + max_episode_length + "\n%  iterations: " + iterations + "\n%------");
-        if (verbose)
-            System.out.printf("%s, seed %d\n", label, seed);
+        System.out.println("\n\n\n\n%------\n%  Learning UMDP\n%  Model: " + ex.model +
+                                                            "\n%  Episode Length: " + ex.max_episode_length +
+                                                            "\n%  Iterations: " + ex.iterations +
+                                                            "\n%" +  "  Label: " + makeLabel(ex) +
+                                                            "\n%" +  "  Composition Type: " + ex.compositionType +
+                                                            "\n%" +  "  Seed: " + ex.seed +
+                                                            "\n%------");
 
         try {
             ModulesFile modulesFile = prism.parseModelFile(new File(ex.certainModelFile));
@@ -139,11 +141,15 @@ public class CompositionLearner {
             estimator.setSimilarTransitions(similarTransitions);
             estimator.set_experiment(ex);
 
+            long startTime = System.nanoTime();
             // Iterate and run experiments for each of the sampled parameter vectors
             Pair<ArrayList<DataPoint>, ArrayList<IMDP<Double>>> resIMDP = runSampling(ex, estimator, verification);
+            double durationInSeconds = (System.nanoTime() - startTime) / 1_000_000_000.0;
 
+            // Dump experiment data and results
             DataProcessor dp = new DataProcessor();
-            dp.dumpDataRobustPolicies(makeOutputDirectory(ex), label, resIMDP.first);
+            dp.dumpExperimentMetaData(makeOutputDirectory(ex), makeLabel(ex), ex, durationInSeconds, estimator.getSulOpt(), pmdp.getNumStates(), pmdp.getNumTransitions(), resIMDP.first.size(), estimator.getNumLearnableComponents());
+            dp.dumpDataRobustPolicies(makeOutputDirectory(ex), makeLabel(ex), resIMDP.first);
 
         } catch (PrismException | FileNotFoundException e) {
             throw new RuntimeException(e);
@@ -172,7 +178,7 @@ public class CompositionLearner {
             ObservationSampler observationSampler = new ObservationSampler(this.prism, SUL, estimator.getTerminatingStates());
             observationSampler.setTransitionsOfInterest(estimator.getTransitionsOfInterest());
             observationSampler.setTiedParameters(ex.tieParameters);
-            observationSampler.setMultiplier(multiplier);
+            observationSampler.setMultiplier(ex.multiplier);
 
             double[] currentResults = estimator.getInitialResults();
 
@@ -180,18 +186,21 @@ public class CompositionLearner {
             ArrayList<DataPoint> results = new ArrayList<>();
             ArrayList<UMDP<Double>> estimates = new ArrayList<>();
             if (past_iterations == 0) {
-                results.add(new DataPoint(0, past_iterations, currentResults));
+                results.add(new DataPoint(0, 0,0, currentResults));
                 //estimates.add(estimator.getEstimate());
             }
+
             int samples = 0;
             Strategy samplingStrategy = estimator.buildStrategy();
-            for (int i = past_iterations; i < iterations + past_iterations; i++) {
+            long startTime = System.nanoTime();
+
+            for (int i = past_iterations; i < ex.iterations + past_iterations; i++) {
                 // Simulate one episode and collect samples
-                int sampled = observationSampler.simulateEpisode(max_episode_length, samplingStrategy);
+                int sampled = observationSampler.simulateEpisode(ex.max_episode_length, samplingStrategy);
                 samples += sampled;
 
                 // Check if enough samples have been collected or if this is the last iteration
-                boolean last_iteration = i == iterations + past_iterations - 1;
+                boolean last_iteration = i == ex.iterations + past_iterations - 1;
                 if (observationSampler.collectedEnoughSamples() || last_iteration) { // || resultIteration(i)
                     estimator.setObservationMaps(observationSampler.getSamplesMap(), observationSampler.getSampleSizeMap());
 
@@ -205,15 +214,15 @@ public class CompositionLearner {
                     }
 
                     if (this.verbose) System.out.println("Episode " + i + ".");
-                    if (this.verbose) System.out.println("Performance on MDPs (J): " + currentResults[1]);
-                    if (this.verbose) System.out.println("Performance Guarantee on IMDPs (J̃): " + currentResults[0]);
+                    if (this.verbose) System.out.println("Performance on unknown MDP (J): " + currentResults[1]);
+                    if (this.verbose) System.out.println("Performance Guarantee on learned UMDP (J̃): " + currentResults[0]);
                     if (this.verbose) System.out.println();
 
-                    results.add(new DataPoint(samples, i + 1, currentResults));
+                    results.add(new DataPoint(samples, i + 1, System.nanoTime() - startTime, currentResults));
 
                     //if (last_iteration || ex.resultIteration(i)) {
                     if(false) {
-                        results.add(new DataPoint(samples, i + 1, currentResults));
+                        results.add(new DataPoint(samples, i + 1, System.nanoTime() - startTime, currentResults));
                         estimates.add(estimator.getEstimate());
                     }
                 }
@@ -248,9 +257,14 @@ public class CompositionLearner {
         }
     }
 
+    public String makeLabel(Experiment ex) {
+        String label = String.format("%s_%s_%s", ex.model.toString(), ex.factored ? "factored" : "unfactored", ex.tieParameters);
+        return label;
+    }
+
     // Creates the directory path for dumping experimental results
     public String makeOutputDirectory(Experiment ex) {
-        String outputPath = String.format("plotting/results/%s/%s/%s/", ex.model.toString(),ex.parameterValues, seed);
+        String outputPath = String.format("plotting/results/%s/%s/%s/", ex.model.toString(), ex.parameterValues, ex.seed);
         try {
             Files.createDirectories(Paths.get(outputPath));
         } catch (IOException e) {

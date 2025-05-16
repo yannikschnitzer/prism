@@ -22,7 +22,7 @@ public class MAPEstimator extends Estimator {
     protected HashMap<StateActionPair, HashSet<Integer>> successorStatesMap;
 
     // Cache for MAP mode denominator: sum of Dirichlet priors minus one per transition
-    private final TransitionTriple keyTriple = new TransitionTriple(0,"",0);
+    private final TransitionTriple keyTriple = new TransitionTriple(0, "", 0);
 
 
     public MAPEstimator(Prism prism, Experiment ex) {
@@ -117,31 +117,53 @@ public class MAPEstimator extends Estimator {
 
     public double[] getCurrentResults() throws PrismException {
         updatePriors();
-        buildPointIMDP(mdp);
-        buildMarginalUMDP(mdp);
+        Result resultRobust;
+        Result resultOptimistic;
 
-        Result resultRobust = modelCheckPointEstimate(true, true);
-        Result resultOptimistic = modelCheckPointEstimate(false, true);
+        long startTime;
+        long modelBuildingTime;
+        long modelCheckingTimeRobust;
+        long modelCheckingTimeOptimistic;
+        long modelCheckingTimeDTMC;
+
+        if (ex.factored) {
+            startTime = System.nanoTime();
+            buildMarginalUMDP(mdp);
+            modelBuildingTime = System.nanoTime() - startTime;
+
+            startTime = System.nanoTime();
+            resultRobust = modelCheckMarginalEstimate(true, true);
+            modelCheckingTimeRobust = System.nanoTime() - startTime;
+
+            startTime = System.nanoTime();
+            resultOptimistic = modelCheckMarginalEstimate(false, true);
+            modelCheckingTimeOptimistic = System.nanoTime() - startTime;
+        } else {
+            startTime = System.nanoTime();
+            buildPointIMDP(mdp);
+            modelBuildingTime = System.nanoTime() - startTime;
+
+            startTime = System.nanoTime();
+            resultRobust = modelCheckPointEstimate(true, true);
+            modelCheckingTimeRobust = System.nanoTime() - startTime;
+
+            startTime = System.nanoTime();
+            resultOptimistic = modelCheckPointEstimate(false, true);
+            modelCheckingTimeOptimistic = System.nanoTime() - startTime;
+        }
+
         double resultRobustMDP = round((Double) resultRobust.getResult());
-        //double resultOptimisticMDP = round((Double) resultOptimistic.getResult());
-
-        Result resultRobustMarginal = modelCheckMarginalEstimate(true, true);
-        //Result resultOptimisticMarginal = modelCheckMarginalEstimate(false, true);
-        double resultRobustMDPMarginal = round((Double) resultRobustMarginal.getResult());
-        //double resultOptimisticMDPMarginal = round((Double) resultOptimisticMarginal.getResult());
-
         MDStrategy<Double> robustStrat = (MDStrategy<Double>) resultRobust.getStrategy();
         MDStrategy<Double> optimisticStrat = (MDStrategy<Double>) resultOptimistic.getStrategy();
         this.currentStrat = optimisticStrat;
+
+        startTime = System.nanoTime();
         double resultRobustDTMC = round((Double) checkDTMC(robustStrat).getResult());
+        modelCheckingTimeDTMC = System.nanoTime() - startTime;
+
         double resultOptimisticDTMC = round((Double) checkDTMC(optimisticStrat).getResult());
 
-        MDStrategy<Double> robustStratMarginal = (MDStrategy<Double>) resultRobustMarginal.getStrategy();
-        double resultRobustDTMCMarginal = round((Double) checkDTMC(robustStratMarginal).getResult());
-
-        System.out.println("Performance on MDPs with marginal policy: " + resultRobustDTMCMarginal);
-
-        return new double[]{resultRobustMDP, resultRobustDTMC, resultRobustMDPMarginal, resultRobustDTMCMarginal};
+        return new double[]{resultRobustMDP, resultRobustDTMC, resultOptimisticDTMC, modelBuildingTime, modelCheckingTimeRobust, modelCheckingTimeOptimistic, modelCheckingTimeDTMC};
     }
 
     @Override
@@ -186,18 +208,53 @@ public class MAPEstimator extends Estimator {
     }
 
     public double[] getInitialResults() throws PrismException {
-        buildPointIMDP(mdp);
-        buildMarginalUMDP(mdp);
-        System.out.println("Here");
-        double resultRobustMDP = round((Double) modelCheckPointEstimate(true, false).getResult());
-        MDStrategy robustStrat = computeStrategyFromEstimate(this.estimate, true);
+        Result resultRobust;
+        Result resultOptimistic;
+
+        long startTime;
+        long modelBuildingTime;
+        long modelCheckingTimeRobust;
+        long modelCheckingTimeOptimistic;
+        long modelCheckingTimeDTMC;
+
+        if (ex.factored) {
+            startTime = System.nanoTime();
+            buildMarginalUMDP(mdp);
+            modelBuildingTime = System.nanoTime() - startTime;
+
+            startTime = System.nanoTime();
+            resultRobust = modelCheckMarginalEstimate(true, true);
+            modelCheckingTimeRobust = System.nanoTime() - startTime;
+
+            startTime = System.nanoTime();
+            resultOptimistic = modelCheckMarginalEstimate(false, true);
+            modelCheckingTimeOptimistic = System.nanoTime() - startTime;
+        } else {
+            startTime = System.nanoTime();
+            buildPointIMDP(mdp);
+            modelBuildingTime = System.nanoTime() - startTime;
+
+            startTime = System.nanoTime();
+            resultRobust = modelCheckPointEstimate(true, true);
+            modelCheckingTimeRobust = System.nanoTime() - startTime;
+
+            startTime = System.nanoTime();
+            resultOptimistic = modelCheckPointEstimate(false, true);
+            modelCheckingTimeOptimistic = System.nanoTime() - startTime;
+        }
+
+        double resultRobustMDP = round((Double) resultRobust.getResult());
+        MDStrategy<Double> robustStrat = (MDStrategy<Double>) resultRobust.getStrategy();
+        MDStrategy<Double> optimisticStrat = (MDStrategy<Double>) resultOptimistic.getStrategy();
+        this.currentStrat = optimisticStrat;
+
+        startTime = System.nanoTime();
         double resultRobustDTMC = round((Double) checkDTMC(robustStrat).getResult());
-        System.out.println("Here");
-        Result resultRobustMarginal = modelCheckMarginalEstimate(true, true);
-        double resultRobustMDPMarginal = round((Double) resultRobustMarginal.getResult());
-        MDStrategy<Double> robustStratMarginal = (MDStrategy<Double>) resultRobustMarginal.getStrategy();
-        double resultRobustDTMCMarginal = round((Double) checkDTMC(robustStratMarginal).getResult());
-        return new double[]{resultRobustMDP, resultRobustDTMC, resultRobustMDPMarginal, resultRobustDTMCMarginal};
+        modelCheckingTimeDTMC = System.nanoTime() - startTime;
+
+        double resultOptimisticDTMC = round((Double) checkDTMC(optimisticStrat).getResult());
+
+        return new double[]{resultRobustMDP, resultRobustDTMC, resultOptimisticDTMC, modelBuildingTime, modelCheckingTimeRobust, modelCheckingTimeOptimistic, modelCheckingTimeDTMC};
     }
 
     /**

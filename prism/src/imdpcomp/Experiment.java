@@ -16,10 +16,14 @@ public class Experiment {
     public String optimisticSpec;
     public Values parameterValues = new Values();
     public Values exactValues = new Values();
-    public ParameterTying tieParameters = DEPENDENCY_TYING;
-    public boolean factored = true;
+    public ParameterTying tieParameters = FULL_TYING;
+    public boolean factored = false;
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
+    public int seed = 5;
+    public int iterations = 1_000;
+    public int max_episode_length = 20;
+    public int multiplier = 5;
 
     public enum ParameterTying {
         NO_TYING,

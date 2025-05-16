@@ -4,7 +4,6 @@ import com.gurobi.gurobi.GRBModel;
 import common.Interval;
 import explicit.*;
 import imdpcomp.Experiment;
-import imdpcomp.Experiment.ParameterTying;
 import learning.Simulation.StateActionPair;
 import learning.Simulation.TransitionTriple;
 import org.apache.commons.lang3.NotImplementedException;
@@ -20,7 +19,8 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-import static imdpcomp.Experiment.ParameterTying.*;
+import static imdpcomp.Experiment.ParameterTying.DEPENDENCY_TYING;
+import static imdpcomp.Experiment.ParameterTying.NO_TYING;
 
 public class PACIntervalEstimator extends MAPEstimator {
 
@@ -499,6 +499,19 @@ public class PACIntervalEstimator extends MAPEstimator {
                 numDependencyMarginals += a.size();
             }
             return numDependencyMarginals;
+        }
+    }
+
+    @Override
+    public int getNumLearnableComponents() {
+        if (ex.factored) {
+            return switch (ex.tieParameters) {
+                case NO_TYING -> this.pmdp.getNumMarginals();
+                case DEPENDENCY_TYING -> getNumDependencyMarginals();
+                case FULL_TYING -> this.tiedMarginalStateActionCounts.size();
+            };
+        } else {
+            return this.getNumLearnableTransitions();
         }
     }
 }

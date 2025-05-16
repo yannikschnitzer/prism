@@ -6,22 +6,23 @@ public interface DependencyIdentifier {
 
     /**
      * Compute and remember dependency identifier, this may depend on the actual state variables, but is cached on the index level.
-     * @param state Actual state
+     *
+     * @param state         Actual state
      * @param marginalState Substate containing only the variables of the respective module
-     * @param state_index State index
-     * @param action Action index
-     * @param module Module / Factor index
+     * @param state_index   State index
+     * @param action        Action index
+     * @param module        Module / Factor index
      * @return Dependency identifier that was generated and cached for this state-action-module combination.
      */
-    public String getIdentifier(State state, State marginalState,  int state_index, int action, int module);
+    String getIdentifier(State state, State marginalState, int state_index, int action, int module);
 
     /**
      * Get the computed dependency identifier on the index level.
+     *
      * @param state_index State Index
-     * @param action Action index
-     * @param module Module / Factor index
+     * @param action      Action index
+     * @param module      Module / Factor index
      * @return Depdency identifier that was cached for this state-action-module combination.
      */
-    public String getIdentifier(int state_index, int action, int module);
-
+    String getIdentifier(int state_index, int action, int module);
 }
