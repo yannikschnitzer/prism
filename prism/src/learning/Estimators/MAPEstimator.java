@@ -15,6 +15,7 @@ import strat.Strategy;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.Executors;
 
 
 public class MAPEstimator extends Estimator {
@@ -138,6 +139,11 @@ public class MAPEstimator extends Estimator {
             startTime = System.nanoTime();
             resultOptimistic = modelCheckMarginalEstimate(false, true);
             modelCheckingTimeOptimistic = System.nanoTime() - startTime;
+
+            // Reset Marginal Estimate and request low priority garbage collection
+            this.marginalEstimate = null;
+            Executors.newSingleThreadExecutor().submit(System::gc);
+
         } else {
             startTime = System.nanoTime();
             buildPointIMDP(mdp);

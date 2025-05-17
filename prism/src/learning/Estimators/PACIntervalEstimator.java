@@ -240,7 +240,7 @@ public class PACIntervalEstimator extends MAPEstimator {
                 String key = marginals.toString();
 
                 if (verticesCache.containsKey(key)) {
-                    distrUncVert = new UDistributionVertices<>(supportArray, verticesCache.get(key)); //TODO: replace this cache with an actual distribution cache, no need to only cache the vertices
+                    distrUncVert = new UDistributionVertices<>(supportArray, verticesCache.get(key));
                 } else {
                     distrUncVert = new UDistributionVertices<>(marginals, supportArray, false);
                     verticesCache.put(key, distrUncVert.vertices);
