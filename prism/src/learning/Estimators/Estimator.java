@@ -348,7 +348,7 @@ public class Estimator {
         mc.setGenStrat(true);
         mc.setPrecomp(true);
         mc.setErrorOnNonConverge(false);
-        mc.setMaxIters(1000);
+        mc.setMaxIters(2000);
 
         PropertiesFile pf = robust
                 ? prism.parsePropertiesString(ex.robustSpec)

@@ -18,15 +18,16 @@ public class Experiment {
     public String optimisticSpec;
     public Values parameterValues = new Values();
     public Values exactValues = new Values();
-    public ParameterTying tieParameters = DEPENDENCY_TYING;
-    public boolean factored = true;
-    public CompositionType compositionType = VERTEX;
+    public ParameterTying tieParameters = NO_TYING;
+    public boolean factored = false;
+    public CompositionType compositionType = INTERVAL_PRODUCT;
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
     public int iterations = 1_000_000;
     public int max_episode_length = 20;
     public int multiplier = 5;
+    public int maxVIIters = 1000;
 
     public enum ParameterTying {
         NO_TYING,
@@ -121,6 +122,8 @@ public class Experiment {
                 this.spec = "Rmin=? [ F goal ]";
                 this.type = Type.REWARD;
 
+                this.max_episode_length = 50;
+
                 // Set Parameter Values
                 this.parameterValues.addValue("eps", 0.05);
                 this.parameterValues.addValue("N", 8);
@@ -196,14 +199,21 @@ public class Experiment {
                 this.modelFile = "../models/chain/chain_multi_succ.prism";
                 this.certainModelFile = "../models/chain/chain_multi_succ_certain.prism";
                 this.robustSpec = "Rminmax=? [F \"goal\"]";
+                this.optimisticSpec = "Rminmin=? [F \"goal\"]";
                 this.dtmcSpec = "R=? [F \"goal\"]";
+                this.spec = "Rmin=? [F \"goal\"]";
+                this.type = Type.REWARD;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("H", 7);
+                this.parameterValues.addValue("H", 8);
                 this.parameterValues.addValue("p", 0.4);
                 this.parameterValues.addValue("q", 0.6);
                 this.parameterValues.addValue("r", 0.5);
                 this.parameterValues.addValue("eps", 0.02);
+
+                this.multiplier = 2;
+                this.max_episode_length = 20;
+                this.maxVIIters = 100000;
             }
 
             case CHAIN_MULTI_SINGLE -> {
@@ -224,7 +234,10 @@ public class Experiment {
                 this.modelFile = "../models/dice/dice2.prism";
                 this.certainModelFile = "../models/dice/dice2_certain.prism";
                 this.robustSpec = "Rminmax=? [ F (s1=7 & s2 = 7) ]";
+                this.optimisticSpec = "Rminmin=? [ F (s1=7 & s2 = 7) ]";
+                this.spec = "Rmin=? [ F (s1=7 & s2 = 7) ]";
                 this.dtmcSpec = "R=? [ F (s1=7 & s2 = 7) ]";
+                this.type = Type.REWARD;
 
                 // Set Parameter Values
                 this.parameterValues.addValue("p", 0.4);
@@ -235,10 +248,14 @@ public class Experiment {
                 this.modelFile = "../models/dice/dice3.prism";
                 this.certainModelFile = "../models/dice/dice3_certain.prism";
                 this.robustSpec = "Rminmax=? [ F (s1=7 & s2 = 7 & s3 = 7) ]";
+                this.optimisticSpec = "Rminmin=? [ F (s1=7 & s2 = 7 & s3 = 7) ]";
+                this.spec = "Rmin=? [ F (s1=7 & s2 = 7 & s3 = 7) ]";
                 this.dtmcSpec = "R=? [ F (s1=7 & s2 = 7 & s3 = 7) ]";
+                this.type = Type.REWARD;
 
                 // Set Parameter Values
                 this.parameterValues.addValue("p", 0.22);
+                this.parameterValues.addValue("q", 0.4);
                 this.parameterValues.addValue("eps", 0.1);
             }
 

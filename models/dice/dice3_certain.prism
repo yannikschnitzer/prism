@@ -1,6 +1,7 @@
 mdp
 
 const double p;
+const double q;
 
 module die1
 
@@ -10,21 +11,31 @@ module die1
 	d1 : [0..6] init 0;
 	
 	[flip] s1=0 -> p : (s1'=1) + (1-p) : (s1'=2);
-	[flip] s1=1 -> p : (s1'=3) + (1-p) : (s1'=4);
-	[flip] s1=2 -> p : (s1'=5) + (1-p) : (s1'=6);
+	[flip] s1=1 -> p : (s1'=1) + (1-p) : (s1'=4);
+	[flip] s1=2 -> p : (s1'=1) + (1-p) : (s1'=6);
 	[flip] s1=3 -> p : (s1'=1) + (1-p) : (s1'=7) & (d1'=1);
 	[flip] s1=4 -> p : (s1'=7) & (d1'=2) + (1-p) : (s1'=7) & (d1'=3);
 	[flip] s1=5 -> p : (s1'=7) & (d1'=4) + (1-p) : (s1'=7) & (d1'=5);
 	[flip] s1=6 -> p : (s1'=2) + (1-p) : (s1'=7) & (d1'=6);
 	[flip] s1=7 -> (s1'=7);
+
+    [flipt] s1=0 -> q : (s1'=1) + (1-q) : (s1'=2);
+    [flipt] s1=1 -> q : (s1'=1) + (1-q) : (s1'=4);
+    [flipt] s1=2 -> q : (s1'=1) + (1-q) : (s1'=6);
+    [flipt] s1=3 -> q : (s1'=1) + (1-q) : (s1'=7) & (d1'=1);
+    [flipt] s1=4 -> q : (s1'=7) & (d1'=2) + (1-q) : (s1'=7) & (d1'=3);
+    [flipt] s1=5 -> q : (s1'=7) & (d1'=4) + (1-q) : (s1'=7) & (d1'=5);
+    [flipt] s1=6 -> q : (s1'=2) + (1-q) : (s1'=7) & (d1'=6);
+    [flipt] s1=7 -> (s1'=7);
 	
 endmodule
 
 module die2 = die1 [ s1=s2, d1=d2 ] endmodule
 module die3 = die1 [ s1=s3, d1=d3 ] endmodule
 module die4 = die1 [ s1=s4, d1=d4 ] endmodule
-module die5 = die1 [ s1=s5, d1=d5 ] endmodule
+//module die5 = die1 [ s1=s5, d1=d5 ] endmodule
 
 rewards
-	[flip] !(s1=7 & s2=7 & s3=7 & s4=7 & s5=7) : 1;
+	[flip] !(s1=7 & s2=7 & s3=7 & s4=7) : 1;
+	[flipt] !(s1=7 & s2=7 & s3=7 & s4=7) : 1;
 endrewards

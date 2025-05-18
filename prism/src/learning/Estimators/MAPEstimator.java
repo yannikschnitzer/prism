@@ -192,7 +192,7 @@ public class MAPEstimator extends Estimator {
         DTMCModelChecker mc = new DTMCModelChecker(this.prism);
         //mc.setPrecomp(false); //TODO: here
         mc.setErrorOnNonConverge(false);
-        mc.setMaxIters(1000);
+        mc.setMaxIters(ex.maxVIIters);
         mc.setGenStrat(true);
         PropertiesFile pf = prism.parsePropertiesString(ex.dtmcSpec);
 
@@ -332,7 +332,7 @@ public class MAPEstimator extends Estimator {
         UMDPModelChecker mc = new UMDPModelChecker(this.prism);
         mc.setGenStrat(true);
         mc.setPrecomp(true);
-        mc.setMaxIters(1000);
+        mc.setMaxIters(2000);
         mc.setErrorOnNonConverge(false);
 
         PropertiesFile pf;
@@ -359,7 +359,7 @@ public class MAPEstimator extends Estimator {
         UMDPModelChecker mc = new UMDPModelChecker(this.prism);
         mc.setGenStrat(true);
         mc.setPrecomp(true);
-        mc.setMaxIters(1000);
+        mc.setMaxIters(2000);
         mc.setErrorOnNonConverge(false);
 
         PropertiesFile pf;

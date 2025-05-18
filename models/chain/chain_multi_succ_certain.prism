@@ -1,6 +1,6 @@
 mdp
 
-const int H;
+const int H = 7;
 const double p;
 const double q;
 const double r; //= 1/2
@@ -22,7 +22,7 @@ module chain
 	            pdiv : (s1'=max(0, s1-6)) +
 	            pdiv : (s1'=max(0, s1-7)) +
 	            pdiv : (s1'=0);
-    [a] true -> q : (s1'=min(s1+1,H)) +
+    [b] true -> q : (s1'=min(s1+1,H)) +
                 qdiv : (s1'=max(0, s1-1)) +
                 qdiv : (s1'=max(0, s1-2)) +
                 qdiv : (s1'=max(0, s1-3))  +
@@ -40,7 +40,7 @@ module chain2 = chain[s1 = s2] endmodule
 
 rewards
 	[a] true : 1;
-	//[b] true : 1;
+	[b] true : 1;
 	//[c] true : 1;
 endrewards
 
