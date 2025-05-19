@@ -31,6 +31,7 @@ import common.Interval;
 import common.iterable.Reducible;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class UDistributionLinearProgram<Value> implements UDistribution<Value>
 {
@@ -62,6 +63,30 @@ public class UDistributionLinearProgram<Value> implements UDistribution<Value>
     public UDistributionLinearProgram(List<List<Interval<Value>>> marginals, List<Integer> support, GRBEnv env) {
         this.support = support.stream().mapToInt(Integer::intValue).toArray();
         this.supportSet = new HashSet<>(support);
+        this.marginals = marginals;
+
+        //System.out.println("Support: " + Arrays.toString(this.support) + " Marginals: " + marginals);
+
+        // Build McCormick LP from marginals
+        try {
+            this.model = new GRBModel(env);
+            buildMcCormickLP();
+
+            model.set(GRB.IntParam.Method, 1);         // Use simplex (Method=1)
+            model.set(GRB.IntParam.Threads, 4);        // Parallelise solving
+            model.update();
+
+            //printModel();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public UDistributionLinearProgram(List<List<Interval<Value>>> marginals, int[] support, GRBEnv env) {
+        this.support = support;
+        this.supportSet = (HashSet<Integer>) Arrays.stream(support)
+                                            .boxed()
+                                            .collect(Collectors.toSet());
         this.marginals = marginals;
 
         //System.out.println("Support: " + Arrays.toString(this.support) + " Marginals: " + marginals);

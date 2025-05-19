@@ -18,16 +18,16 @@ public class Experiment {
     public String optimisticSpec;
     public Values parameterValues = new Values();
     public Values exactValues = new Values();
-    public ParameterTying tieParameters = NO_TYING;
-    public boolean factored = false;
-    public CompositionType compositionType = INTERVAL_PRODUCT;
+    public ParameterTying tieParameters = DEPENDENCY_TYING;
+    public boolean factored = true;
+    public CompositionType compositionType = SMART;
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
     public int iterations = 1_000_000;
     public int max_episode_length = 20;
     public int multiplier = 5;
-    public int maxVIIters = 1000;
+    public int maxVIIters = 100000;
 
     public enum ParameterTying {
         NO_TYING,
@@ -135,7 +135,12 @@ public class Experiment {
                 this.modelFile = "../models/lake_multislip_large9/frozen_lake_swarm_eps.prism";
                 this.certainModelFile = "../models/lake_multislip_large9/frozen_lake_swarm_eps_certain.prism";
                 this.robustSpec = "Rminmax=? [ F goal ]";
+                this.optimisticSpec = "Rminmin=? [ F goal ]";
                 this.dtmcSpec = "R=? [ F goal ]";
+                this.spec = "Rmin=? [ F goal ]";
+                this.type = Type.REWARD;
+
+                this.max_episode_length = 100;
 
                 // Set Parameter Values
                 this.parameterValues.addValue("eps", 0.04);

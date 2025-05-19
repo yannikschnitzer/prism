@@ -191,8 +191,9 @@ public class MAPEstimator extends Estimator {
         DTMC<Double> dtmc = (DTMC<Double>) mdp.constructInducedModel(strat);
         DTMCModelChecker mc = new DTMCModelChecker(this.prism);
         //mc.setPrecomp(false); //TODO: here
-        mc.setErrorOnNonConverge(false);
+        mc.setErrorOnNonConverge(true);
         mc.setMaxIters(ex.maxVIIters);
+        mc.setTermCritParam(1e-3);
         mc.setGenStrat(true);
         PropertiesFile pf = prism.parsePropertiesString(ex.dtmcSpec);
 

@@ -1,5 +1,8 @@
 package learning.Estimators;
 
+import com.gurobi.gurobi.GRB;
+import com.gurobi.gurobi.GRBEnv;
+import com.gurobi.gurobi.GRBException;
 import com.gurobi.gurobi.GRBModel;
 import common.Interval;
 import explicit.*;
@@ -52,6 +55,19 @@ public class PACIntervalEstimator extends MAPEstimator {
     UDistributionLinearProgram<Double> distUncMcCormick = null;
 
     NormalDistribution distribution = NormalDistribution.of(0, 1);
+
+    GRBEnv env;
+    {
+        try {
+            env = new GRBEnv(true);
+            env.set(GRB.IntParam.OutputFlag, 0);
+            env.start();
+        } catch (GRBException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public HashMap<Integer, Integer> lengths = new HashMap<>(); //TODO: delete
 
     public PACIntervalEstimator(Prism prism, Experiment ex) {
         super(prism, ex);
@@ -114,6 +130,7 @@ public class PACIntervalEstimator extends MAPEstimator {
                         tiedDepIdTransCounts.put(dependencyId, countList);
                         tiedDepIdSACounts.put(dependencyId, sac);
                     } else {
+                        //System.out.println("s: " + s + "action: " + action + " depid: " + dependencyId);
                         sumLists(tiedDepIdTransCounts.get(dependencyId), countList);
                         tiedDepIdSACounts.put(dependencyId, tiedDepIdSACounts.get(dependencyId) + sac);
                     }
@@ -124,6 +141,7 @@ public class PACIntervalEstimator extends MAPEstimator {
 
     public void sumLists(List<Integer> a,List<Integer> b) {
         assert a.size() == b.size();
+        //System.out.println(a + " " + b);
         for (int i = 0; i < a.size(); i++) {
             a.set(i, a.get(i) + b.get(i));
         }
@@ -201,6 +219,8 @@ public class PACIntervalEstimator extends MAPEstimator {
         umdp.setStatesList(mdp.getStatesList());
         umdp.setConstantValues(mdp.getConstantValues());
 
+        lengths.clear();
+
         switch (ex.tieParameters) {
             case FULL_TYING -> {tieMarginalParameters();}
             case DEPENDENCY_TYING -> {tieDependencyIdentifiers();}
@@ -231,8 +251,11 @@ public class PACIntervalEstimator extends MAPEstimator {
 
         Executors.newSingleThreadExecutor().submit(System::gc);
 
+        System.out.println("Num Vertices: " + lengths);
+
         return umdp;
     }
+
 
     public UDistribution<Double> constructMarginalDist(List<List<Interval<Double>>> marginals, int[] supportArray, boolean smart) {
         switch (ex.compositionType) {
@@ -245,17 +268,40 @@ public class PACIntervalEstimator extends MAPEstimator {
                     distrUncVert = new UDistributionVertices<>(marginals, supportArray, false);
                     verticesCache.put(key, distrUncVert.vertices);
                 }
+
+                lengths.merge(distrUncVert.vertices.length, 1, Integer::sum); //TODO: delete
+
                 return distrUncVert;
             }
             case MCCORMICK -> {
                 throw new NotImplementedException("MCCORMICK");
             }
             case SMART -> {
-                throw new NotImplementedException("SMART");
+                String key = marginals.toString();
+
+                if (verticesCache.containsKey(key)) {
+                    distrUncVert = new UDistributionVertices<>(supportArray, verticesCache.get(key));
+                    return distrUncVert;
+                } else if (!successCache.getOrDefault(key, true)) {
+                    distUncMcCormick = new UDistributionLinearProgram<>(marginals, supportArray, env);
+                    System.out.println("Building McCormick");
+                    return distUncMcCormick;
+                } else {
+                    distrUncVert = new UDistributionVertices<Double>(marginals, supportArray, true);
+
+                    if (!distrUncVert.smartSuccess) {
+                        distUncMcCormick = new UDistributionLinearProgram<>(marginals, supportArray, env);
+                        successCache.put(key, false);
+                        System.out.println("Building McCormick");
+                        return distUncMcCormick;
+                    } else {
+                        verticesCache.put(key, distrUncVert.vertices);
+                    }
+                    return distrUncVert;
+                }
             }
             case INTERVAL_PRODUCT -> {
-                UDistributionIntervals<Double> udist = new UDistributionIntervals<>(marginals, supportArray, Evaluator.forDoubleInterval());
-                return udist;
+                return new UDistributionIntervals<>(marginals, supportArray, Evaluator.forDoubleInterval());
             }
             default -> {
                 throw new IllegalArgumentException("Invalid composition type: " + ex.compositionType);

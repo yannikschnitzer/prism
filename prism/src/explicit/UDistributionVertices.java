@@ -17,7 +17,7 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
 
     protected int smartThreshholdMarginal = 20000;
     protected int smartThreshholdProduct = 20000;
-    protected boolean smartSuccess = true;
+    public boolean smartSuccess = true;
 
     public UDistributionVertices (List<List<Interval<Value>>> marginals, List<Integer> support) {
         this.support = support.stream().mapToInt(Integer::intValue).toArray();
