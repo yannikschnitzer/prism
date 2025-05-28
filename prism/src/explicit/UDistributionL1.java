@@ -26,6 +26,8 @@
 
 package explicit;
 
+import prism.Evaluator;
+
 import java.util.*;
 
 public class UDistributionL1<Value> implements UDistribution<Value>
@@ -37,12 +39,45 @@ public class UDistributionL1<Value> implements UDistribution<Value>
 	protected Value l1max;
 
 	/**
-	 * Constructor
+	 * Standard Constructor
 	 */
 	public UDistributionL1(Distribution<Value> frequencies, Value l1max)
 	{
 		this.frequencies = frequencies;
 		this.l1max = l1max;
+	}
+
+	/**
+	 * Build the product L1-distribution from a list of marginals.
+	 * Each marginal contributes its frequency-distribution and its radius.
+	 *
+	 * @param marginals    the list of UDistributionL1 to multiply together
+	 * @param supportArray an array of “combined” support indices, one per product outcome
+	 */
+	public UDistributionL1(List<UDistributionL1<Value>> marginals, int[] supportArray) {
+		if (marginals == null || marginals.isEmpty()) {
+			throw new IllegalArgumentException("Must supply at least one marginal");
+		}
+
+		// 1) all marginals share the same numeric evaluator
+		Evaluator<Value> eval = marginals.getFirst().frequencies.getEvaluator();
+
+		// 2) sum up all the l1 radii
+		Value sumRadius = eval.zero();
+		for (UDistributionL1<Value> d : marginals) {
+			sumRadius = eval.add(sumRadius, d.l1max);
+		}
+		this.l1max = sumRadius;
+
+		List<List<Value>> marginalFrequencies = new ArrayList<>();
+		for (UDistributionL1<Value> d : marginals) {
+			marginalFrequencies.add(d.frequencies.frequencies);
+		}
+
+		// 4) delegate to Distribution’s product‐constructor:
+		//    it will multiply all the freqLists together and map them
+		//    onto the supplied supportArray, building our new frequencies.
+		this.frequencies = new Distribution<>(marginalFrequencies, supportArray, eval);
 	}
 
 	@Override
@@ -158,9 +193,10 @@ public class UDistributionL1<Value> implements UDistribution<Value>
 	@Override
 	public String toString()
 	{
-		String s = "";
+		String s = "[";
 		s += frequencies.toString();
 		s += ", L1Max: " + l1max.toString();
+		s += "]";
 		return s;
 	}
 }

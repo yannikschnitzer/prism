@@ -22,6 +22,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+import static explicit.ConstructModel.CompositionType.L1;
 import static imdpcomp.Experiment.ParameterTying.DEPENDENCY_TYING;
 import static imdpcomp.Experiment.ParameterTying.NO_TYING;
 
@@ -229,12 +230,20 @@ public class PACIntervalEstimator extends MAPEstimator {
         for (int s = 0; s < numStates; s++) {
             int numChoices = mdp.getNumChoices(s);
 
-            for (int i = 0; i < numChoices; i++) {
-                Distribution<Function> pdist = pmdp.getChoice(s, i);
-                List<List<Interval<Double>>> marginalIntervals = getMarginalIntervals(s, i);
-                UDistribution<Double> udist = constructMarginalDist(marginalIntervals, pdist.supportArrayUnique, false);
-
-                umdp.addActionLabelledChoice(s, udist, getActionString(mdp, s, i));
+            if (ex.compositionType == L1) {
+                for (int i = 0; i < numChoices; i++) {
+                    Distribution<Function> pdist = pmdp.getChoice(s, i);
+                    List<UDistributionL1<Double>> marginalDists = getMarginalL1Dists(s, i);
+                    UDistributionL1<Double> udist = new UDistributionL1<>(marginalDists, pdist.supportArrayUnique);
+                    umdp.addActionLabelledChoice(s, udist, getActionString(mdp, s, i));
+                }
+            } else {
+                for (int i = 0; i < numChoices; i++) {
+                    Distribution<Function> pdist = pmdp.getChoice(s, i);
+                    List<List<Interval<Double>>> marginalIntervals = getMarginalIntervals(s, i);
+                    UDistribution<Double> udist = constructMarginalDist(marginalIntervals, pdist.supportArrayUnique, false);
+                    umdp.addActionLabelledChoice(s, udist, getActionString(mdp, s, i));
+                }
             }
         }
 
@@ -429,6 +438,95 @@ public class PACIntervalEstimator extends MAPEstimator {
         }
 
         return marginalIntervals;
+    }
+
+    /**
+     * Function to generate marginal L_p distributions (currently only L1)
+     * @param s State Index
+     * @param i Action Index
+     * @return List of marginal L_p distributions (currently only L1)
+     */
+    public List<UDistributionL1<Double>> getMarginalL1Dists(int s, int i) {
+        Distribution<Function> pdist = pmdp.getChoice(s, i);
+        String action = getActionString(mdp, s, i);
+        StateActionPair sa = new StateActionPair(s, action);
+        int sac = getStateActionCount(sa);
+
+        int m = pdist.getMarginals().size();
+        int[][] counts;
+
+        counts = getMarginalCounts(s, i);
+
+        List<UDistributionL1<Double>> marginalDists = new ArrayList<>(m);
+        UDistributionL1<Double> udist;
+        Distribution<Double> sub;
+        for (int k = 0; k < m; k++) {
+            int sz = counts[k].length;
+            int countsum = Arrays.stream(counts[k]).sum();
+            if (sz == 1) {
+                sub = new Distribution<>(Evaluator.forDouble());
+                sub.add(0, 1.0);
+                sub.addFrequency(1.0);
+                udist = new UDistributionL1<>(sub, 0.0);
+            }
+            else {
+                String depId = pmdp.dependencyIdentifier.getIdentifier(s, i, k);
+                sub = new Distribution<>(Evaluator.forDouble());
+                for (int j = 0; j < sz; j++) {
+                    if (ex.tieParameters == NO_TYING) {
+                        double emp_prob;
+                        if (sac > 0) {
+                            emp_prob = (double) counts[k][j] / (double) countsum;
+                        } else {
+                            emp_prob = 1.0 / (double) sz;
+                        }
+
+                        sub.add(j, emp_prob);
+                        sub.addFrequency(emp_prob);
+                    } else {
+
+                        double emp_prob;
+                        if (ex.tieParameters == DEPENDENCY_TYING) {
+                            if (tiedDepIdSACounts.get(depId) > 0) {
+                                emp_prob = (double) tiedDepIdTransCounts.get(depId).get(j) / (double) tiedDepIdSACounts.get(depId);
+                            } else {
+                                emp_prob = 1.0 / (double) sz;
+                            }
+                        } else {
+                            throw new NotImplementedException("Full Tying not possible with L1");
+                        }
+                        sub.add(j, emp_prob);
+                        sub.addFrequency(emp_prob);
+                    }
+                }
+
+                int numSamples = switch (ex.tieParameters) {
+                    case NO_TYING -> countsum;
+                    case DEPENDENCY_TYING -> tiedDepIdSACounts.get(depId);
+                    case FULL_TYING -> throw new NotImplementedException("Full Tying not possible with L1");
+                };
+                udist = new UDistributionL1<>(sub, getL1WeissmannBound(sz, numSamples));
+            }
+            marginalDists.add(udist);
+        }
+
+        return marginalDists;
+    }
+
+    public double getL1WeissmannBound(int numSucc, int numSamples) {
+        int m = switch (ex.tieParameters) {
+            case NO_TYING -> this.pmdp.getNumMarginals();
+            case DEPENDENCY_TYING -> getNumDependencyMarginals();
+            case FULL_TYING -> this.tiedMarginalStateActionCounts.size();
+        };
+
+        if (numSamples > 0) {
+            double alpha = (1.0 - error_tolerance) / (double) m;
+            return Math.sqrt(2 * (Math.log(Math.pow(2, numSucc) - 2) - Math.log(alpha)) / (double) numSamples);
+        } else {
+            return 2.0; // Maximum non-informative L_1 radius
+        }
+
     }
 
     @Override

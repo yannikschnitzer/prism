@@ -96,7 +96,8 @@ public class ConstructModel extends PrismComponent
 		INTERVAL_PRODUCT,
 		MCCORMICK,
 		VERTEX,
-		SMART
+		SMART,
+		L1
 	};
 	protected CompositionType compositionType = CompositionType.SMART;
 	protected boolean cacheGRBModels = false;

@@ -20,7 +20,7 @@ public class Experiment {
     public Values exactValues = new Values();
     public ParameterTying tieParameters = DEPENDENCY_TYING;
     public boolean factored = true;
-    public CompositionType compositionType = VERTEX;
+    public CompositionType compositionType = SMART;
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
@@ -100,7 +100,7 @@ public class Experiment {
                 this.parameterValues.addValue("r", 0.80);
                 this.parameterValues.addValue("p",0.2);
                 this.parameterValues.addValue("maxX",10);
-                this.parameterValues.addValue("maxY",20);
+                this.parameterValues.addValue("maxY",15);
             }
 
             case AIRCRAFT_MULTI_SLIP -> {
@@ -116,7 +116,7 @@ public class Experiment {
                 this.parameterValues.addValue("eps", 0.02);
                 this.parameterValues.addValue("r", 0.80);
                 this.parameterValues.addValue("p",0.2);
-                this.parameterValues.addValue("maxX",10);
+                this.parameterValues.addValue("maxX",15);
                 this.parameterValues.addValue("maxY",10);
             }
 

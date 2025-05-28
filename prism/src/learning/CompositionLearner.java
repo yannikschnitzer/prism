@@ -47,7 +47,7 @@ public class CompositionLearner {
         CompositionLearner learner = new CompositionLearner(new Prism(new PrismDevNullLog()));
         learner.initializePrism();
 
-        Experiment ex = new Experiment(Experiment.Model.DRONE_MULTI);
+        Experiment ex = new Experiment(Experiment.Model.AIRCRAFT_MULTI_SLIP);
 
         // Build the parametric MDP to infer parametric structure
         MDPSimple<Function> pmdp = learner.buildParamModel(ex);

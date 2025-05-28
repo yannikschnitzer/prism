@@ -45,7 +45,10 @@ public class Distribution<Value> implements FunctionalIterable<Entry<Integer, Va
 {
 	/** Mapping from indices to probability values */
 	protected final HashMap<Integer, Value> map;
-	
+
+	// List of frequencies
+	public List<Value> frequencies = new ArrayList<>();
+
 	/** Evaluator for manipulating probability values in the distribution (of type {@code Value}) */
 	protected final Evaluator<Value> eval;
 
@@ -153,6 +156,10 @@ public class Distribution<Value> implements FunctionalIterable<Entry<Integer, Va
 	public void clear()
 	{
 		map.clear();
+	}
+
+	public void addFrequency(Value a) {
+		this.frequencies.add(a);
 	}
 
 	/**
