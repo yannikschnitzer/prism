@@ -20,14 +20,14 @@ public class Experiment {
     public Values exactValues = new Values();
     public ParameterTying tieParameters = DEPENDENCY_TYING;
     public boolean factored = true;
-    public CompositionType compositionType = SMART;
+    public CompositionType compositionType = VERTEX;
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
     public int iterations = 1_000_000;
     public int max_episode_length = 20;
-    public int multiplier = 5;
-    public int maxVIIters = 100000;
+    public int multiplier = 2;
+    public int maxVIIters = 2000;
 
     public enum ParameterTying {
         NO_TYING,
@@ -107,10 +107,17 @@ public class Experiment {
                 this.modelFile = "../models/aircraft_collision_multislip/aircraft_10x20_resolution_3.prism";
                 this.certainModelFile = "../models/aircraft_collision_multislip/aircraft_10x20_resolution_3_certain.prism";
                 this.robustSpec = "Pmaxmin=? [!\"collision\" U \"goal\"]";
+                this.optimisticSpec = "Pmaxmax=? [!\"collision\" U \"goal\"]";
                 this.dtmcSpec = "P=? [!\"collision\" U \"goal\"]";
+                this.spec = "Pmax=? [!\"collision\" U \"goal\"]";
+                this.type = Type.REACH;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("eps", 0.04);
+                this.parameterValues.addValue("eps", 0.02);
+                this.parameterValues.addValue("r", 0.80);
+                this.parameterValues.addValue("p",0.2);
+                this.parameterValues.addValue("maxX",10);
+                this.parameterValues.addValue("maxY",10);
             }
 
             case LAKE_SWARM -> {
@@ -225,12 +232,15 @@ public class Experiment {
                 this.modelFile = "../models/chain/chain_multi_succ_single.prism";
                 this.certainModelFile = "../models/chain/chain_multi_succ_single_certain.prism";
                 this.robustSpec = "Rminmax=? [F \"goal\"]";
+                this.optimisticSpec = "Rminmin=? [F \"goal\"]";
                 this.dtmcSpec = "R=? [F \"goal\"]";
+                this.spec = "Rmin=? [F \"goal\"]";
+                this.type = Type.REWARD;
 
                 // Set Parameter Values
                 this.parameterValues.addValue("H", 9);
-                this.parameterValues.addValue("p", 0.4);
-                this.parameterValues.addValue("q", 0.6);
+                this.parameterValues.addValue("p", 0.6);
+                this.parameterValues.addValue("q", 0.4);
                 this.parameterValues.addValue("r", 0.5);
                 this.parameterValues.addValue("eps", 0.02);
             }
@@ -279,7 +289,10 @@ public class Experiment {
                 this.modelFile = "../models/drone/drone.prism";
                 this.certainModelFile = "../models/drone/drone_certain.prism";
                 this.robustSpec = "Pmaxmin=? [!crash U target]";
+                this.optimisticSpec = "Pmaxmax=? [!crash U target]";
                 this.dtmcSpec = "P=? [!crash U target]";
+                this.spec = "Pmax=? [!crash U target]";
+                this.type = Type.REACH;
 
                 // Set Parameter Values
                 this.parameterValues.addValue("p", 0.2);
@@ -290,7 +303,10 @@ public class Experiment {
                 this.modelFile = "../models/drone_multislip/drone.prism";
                 this.certainModelFile = "../models/drone_multislip/drone_certain.prism";
                 this.robustSpec = "Pmaxmin=? [!crash U target]";
+                this.optimisticSpec = "Pmaxmax=? [!crash U target]";
                 this.dtmcSpec = "P=? [!crash U target]";
+                this.spec = "Pmax=? [!crash U target]";
+                this.type = Type.REACH;
 
                 // Set Parameter Values
                 this.parameterValues.addValue("p", 0.3);

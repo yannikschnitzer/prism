@@ -2,7 +2,7 @@ mdp
 
 // Environment Dimensions
 const int MAXX = 8;
-const int MAXY = 8;
+const int MAXY = 8; // works with 6
 const int MAXZ = 8;
 
 // Disturbance Probability Parameter

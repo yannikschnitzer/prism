@@ -252,6 +252,7 @@ public class PACIntervalEstimator extends MAPEstimator {
         Executors.newSingleThreadExecutor().submit(System::gc);
 
         System.out.println("Num Vertices: " + lengths);
+        System.out.println("Max: " + lengths.keySet().stream().max(Integer::compareTo).orElse(0));
 
         return umdp;
     }
