@@ -20,7 +20,7 @@ public class Experiment {
     public Values exactValues = new Values();
     public ParameterTying tieParameters = DEPENDENCY_TYING;
     public boolean factored = true;
-    public CompositionType compositionType = L1;
+    public CompositionType compositionType = SMART;
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
