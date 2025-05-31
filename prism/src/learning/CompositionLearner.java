@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.Map;
 
 import static imdpcomp.Experiment.ParameterTying.NO_TYING;
@@ -42,8 +43,39 @@ public class CompositionLearner {
     public CompositionLearner(Prism prism) {
         this.prism = prism;
     }
-
+    
     public static void main(String[] args) throws PrismException {
+        CompositionLearner learner = new CompositionLearner(new Prism(new PrismDevNullLog()));
+        learner.initializePrism();
+        
+        int masterSeed = 5;
+        int numSeeds = 5;
+        List<Integer> seeds = new ArrayList<>();
+        Random rng = new Random(masterSeed);
+        for (int i = 0; i < numSeeds; i++) {
+            seeds.add(rng.nextInt(Integer.MAX_VALUE - 1) + 1);
+        }
+
+        for (int seed : seeds) {
+            Experiment ex = new Experiment(Experiment.Model.AIRCRAFT);
+            ex.seed = seed;
+
+            // Build the parametric MDP to infer parametric structure
+            MDPSimple<Function> pmdp = learner.buildParamModel(ex);
+
+            for (int i = 0; i < pmdp.getNumStates(); i++) {
+                for (int j = 0; j < pmdp.getNumChoices(i); j++) {
+                    Distribution<Function> c = pmdp.getChoice(i,j);
+                    c.calculateSupportMarginalMap();
+                }
+            }
+            learner.learnIMDP(ex, PACIntervalEstimatorOptimistic::new, pmdp, ex.parameterValues, true);
+        }
+
+        System.out.println("Done");
+    }
+
+    public static void main_2(String[] args) throws PrismException {
         CompositionLearner learner = new CompositionLearner(new Prism(new PrismDevNullLog()));
         learner.initializePrism();
 

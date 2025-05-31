@@ -24,7 +24,7 @@ public class Experiment {
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
-    public int iterations = 1_000_000;
+    public int iterations = 1_000;
     public int max_episode_length = 50;
     public int multiplier = 5;
     public int maxVIIters = 2000;
@@ -94,12 +94,13 @@ public class Experiment {
                 this.dtmcSpec = "P=? [!\"collision\" U \"goal\"]";
                 this.spec = "Pmax=? [!\"collision\" U \"goal\"]";
                 this.type = Type.REACH;
+                this.max_episode_length = 16;
 
                 // Set Parameter Values
                 this.parameterValues.addValue("eps", 0.02);
                 this.parameterValues.addValue("r", 0.80);
                 this.parameterValues.addValue("p",0.2);
-                this.parameterValues.addValue("maxX",10);
+                this.parameterValues.addValue("maxX",15);
                 this.parameterValues.addValue("maxY",15);
             }
 
