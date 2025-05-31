@@ -13,7 +13,6 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.solvers.BrentSolver;
 import org.apache.commons.math3.special.Beta;
-import org.apache.commons.statistics.distribution.NormalDistribution;
 import param.Function;
 import prism.Evaluator;
 import prism.Prism;
@@ -55,7 +54,7 @@ public class PACIntervalEstimator extends MAPEstimator {
     UDistributionVertices<Double> distrUncVert = null;
     UDistributionLinearProgram<Double> distUncMcCormick = null;
 
-    NormalDistribution distribution = NormalDistribution.of(0, 1);
+    //NormalDistribution distribution = NormalDistribution.of(0, 1);
 
     GRBEnv env;
     {
@@ -555,25 +554,25 @@ public class PACIntervalEstimator extends MAPEstimator {
     }
 
 
-    protected Interval<Double> getWCCnterval(int count, int sacount) {
-        if (sacount == 0) {
-            return new Interval<>(precision, 1 - precision);
-        }
+//    protected Interval<Double> getWCCnterval(int count, int sacount) {
+//        if (sacount == 0) {
+//            return new Interval<>(precision, 1 - precision);
+//        }
+//
+//        int m = ex.tieParameters == NO_TYING ? this.tiedMarginalStateActionCounts.size() : this.pmdp.getNumMarginals(); //TODO: replace this before using!!
+//        double point = (double) count / (double) sacount;
+//        return computeWilsonCC(sacount, point, error_tolerance / (double) m);
+//    }
 
-        int m = ex.tieParameters == NO_TYING ? this.tiedMarginalStateActionCounts.size() : this.pmdp.getNumMarginals(); //TODO: replace this before using!!
-        double point = (double) count / (double) sacount;
-        return computeWilsonCC(sacount, point, error_tolerance / (double) m);
-    }
-
-    // Wilson Score Interval with Continuity Correction
-    private Interval<Double> computeWilsonCC(double n, double p, double delta) {
-        double z = distribution.inverseCumulativeProbability(1 - delta / 2.0);
-
-        double pWCCLower = Math.max(0, (2 * n * p + z * z - z * Math.sqrt(z * z - (1.0 / n) + 4 * n * p * (1 - p) + 4 * p - 2) - 1) / (2 * (n + z * z)));
-        double pWCCUpper = Math.min(1, (2 * n * p + z * z + z * Math.sqrt(z * z - (1.0 / n) + 4 * n * p * (1 - p) - 4 * p + 2) + 1) / (2 * (n + z * z)));
-
-        return new Interval<>(pWCCLower, pWCCUpper);
-    }
+//    // Wilson Score Interval with Continuity Correction
+//    private Interval<Double> computeWilsonCC(double n, double p, double delta) {
+//        double z = distribution.inverseCumulativeProbability(1 - delta / 2.0);
+//
+//        double pWCCLower = Math.max(0, (2 * n * p + z * z - z * Math.sqrt(z * z - (1.0 / n) + 4 * n * p * (1 - p) + 4 * p - 2) - 1) / (2 * (n + z * z)));
+//        double pWCCUpper = Math.min(1, (2 * n * p + z * z + z * Math.sqrt(z * z - (1.0 / n) + 4 * n * p * (1 - p) - 4 * p + 2) + 1) / (2 * (n + z * z)));
+//
+//        return new Interval<>(pWCCLower, pWCCUpper);
+//    }
 
     /**
      * Returns the Clopper–Pearson exact (1–α) confidence interval
