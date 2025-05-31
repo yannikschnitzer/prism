@@ -7,7 +7,7 @@
 
 # Reminder: $@ = target, $* = target without extension, $< = dependency
 
-THIS_DIR = explicit
+THIS_DIR = learning
 PRISM_DIR_REL = ../..
 
 JNI_GEN_HEADER_DIR=$(THIS_DIR)/$(PRISM_DIR_REL)/$(PRISM_INCLUDE_DIR)/jni
