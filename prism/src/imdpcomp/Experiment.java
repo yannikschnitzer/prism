@@ -20,13 +20,13 @@ public class Experiment {
     public Values exactValues = new Values();
     public ParameterTying tieParameters = DEPENDENCY_TYING;
     public boolean factored = true;
-    public CompositionType compositionType = SMART;
+    public CompositionType compositionType = L1;
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
     public int iterations = 1_000_000;
-    public int max_episode_length = 20;
-    public int multiplier = 2;
+    public int max_episode_length = 50;
+    public int multiplier = 5;
     public int maxVIIters = 2000;
 
     public enum ParameterTying {
