@@ -29,16 +29,29 @@ import java.util.List;
 import java.util.Random;
 import java.util.Map;
 
+import static explicit.ConstructModel.CompositionType.*;
+import static imdpcomp.Experiment.Model.AIRCRAFT;
+import static imdpcomp.Experiment.Model.LAKE_SWARM;
+import static imdpcomp.Experiment.ParameterTying.DEPENDENCY_TYING;
 import static imdpcomp.Experiment.ParameterTying.NO_TYING;
 
 /**
  * Orchestrates sampling-based learning of IMDPs.
  * Builds the parametric MDP, samples execution traces, and dumps robust policy data.
  */
+@CommandLine.Command(mixinStandardHelpOptions = true, version = "AAAI V-0.0.1", description = "Compositional Learner for AAAI")
 public class CompositionLearner {
     Prism prism;
 
     private final boolean verbose = true;
+
+    @CommandLine.Option(names = {"-c", "--casestudy"}, description = "Run a specific case study - \"aircraft\", \"betting\", \"sav\", \"chain\", \"drone\", \"lake\"")
+    private String casestudy = "aircraft";
+
+    @CommandLine.Option(names = {"-o", "--composition"}, description = "Run a specific IMDP learning algorhtm - \"smart\", \"vertex\", \"interval\", \"l1\", \"none\"")
+    private String composition = "smart";
+
+
 
     public CompositionLearner(Prism prism) {
         this.prism = prism;
@@ -57,7 +70,43 @@ public class CompositionLearner {
         }
 
         for (int seed : seeds) {
-            Experiment ex = new Experiment(Experiment.Model.AIRCRAFT);
+            Experiment ex;
+            switch (learner.casestudy) {
+                case "aircraft" -> {
+                    ex = new Experiment(AIRCRAFT);
+                }
+                case "lake" -> {
+                    ex = new Experiment(LAKE_SWARM);
+                }
+                default -> {
+                    ex = new Experiment(AIRCRAFT);
+                }
+            }
+
+            switch (learner.composition) {
+                case "smart" -> {
+                    ex.tieParameters = DEPENDENCY_TYING;
+                    ex.compositionType = SMART;
+                }
+                case "vertex" -> {
+                    ex.tieParameters = DEPENDENCY_TYING;
+                    ex.compositionType = VERTEX;
+                }
+                case "interval" -> {
+                    ex.tieParameters = DEPENDENCY_TYING;
+                    ex.compositionType = INTERVAL_PRODUCT;
+                }
+                case "l1" -> {
+                    ex.tieParameters = DEPENDENCY_TYING;
+                    ex.compositionType = L1;
+                }
+                case "none" -> {
+                    ex.tieParameters = NO_TYING;
+                    ex.compositionType = INTERVAL_PRODUCT;
+                }
+                default -> {}
+            }
+
             ex.seed = seed;
 
             // Build the parametric MDP to infer parametric structure
@@ -79,7 +128,7 @@ public class CompositionLearner {
         CompositionLearner learner = new CompositionLearner(new Prism(new PrismDevNullLog()));
         learner.initializePrism();
 
-        Experiment ex = new Experiment(Experiment.Model.AIRCRAFT);
+        Experiment ex = new Experiment(AIRCRAFT);
 
         // Build the parametric MDP to infer parametric structure
         MDPSimple<Function> pmdp = learner.buildParamModel(ex);
