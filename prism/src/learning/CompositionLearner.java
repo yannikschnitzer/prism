@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import static explicit.ConstructModel.CompositionType.*;
 import static imdpcomp.Experiment.Model.AIRCRAFT;
@@ -40,7 +41,7 @@ import static imdpcomp.Experiment.ParameterTying.NO_TYING;
  * Builds the parametric MDP, samples execution traces, and dumps robust policy data.
  */
 @CommandLine.Command(mixinStandardHelpOptions = true, version = "AAAI V-0.0.1", description = "Compositional Learner for AAAI")
-public class CompositionLearner {
+public class CompositionLearner implements Callable<Integer> {
     Prism prism;
 
     private final boolean verbose = true;
@@ -64,8 +65,9 @@ public class CompositionLearner {
             System.out.println("No Arguments Provided");
         }
     }
-    
-    public Integer call(String[] args) throws PrismException {
+
+    @Override
+    public Integer call() throws Exception {
         CompositionLearner learner = new CompositionLearner(new Prism(new PrismDevNullLog()));
         learner.initializePrism();
         
