@@ -68,8 +68,7 @@ public class CompositionLearner implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        CompositionLearner learner = new CompositionLearner(new Prism(new PrismDevNullLog()));
-        learner.initializePrism();
+        this.initializePrism();
         
         int masterSeed = 5;
         int numSeeds = 5;
@@ -81,7 +80,7 @@ public class CompositionLearner implements Callable<Integer> {
 
         for (int seed : seeds) {
             Experiment ex;
-            switch (learner.casestudy) {
+            switch (this.casestudy) {
                 case "aircraft" -> {
                     ex = new Experiment(AIRCRAFT);
                 }
@@ -93,7 +92,7 @@ public class CompositionLearner implements Callable<Integer> {
                 }
             }
 
-            switch (learner.composition) {
+            switch (this.composition) {
                 case "smart" -> {
                     ex.tieParameters = DEPENDENCY_TYING;
                     ex.compositionType = SMART;
@@ -120,7 +119,7 @@ public class CompositionLearner implements Callable<Integer> {
             ex.seed = seed;
 
             // Build the parametric MDP to infer parametric structure
-            MDPSimple<Function> pmdp = learner.buildParamModel(ex);
+            MDPSimple<Function> pmdp = this.buildParamModel(ex);
 
             for (int i = 0; i < pmdp.getNumStates(); i++) {
                 for (int j = 0; j < pmdp.getNumChoices(i); j++) {
@@ -128,7 +127,7 @@ public class CompositionLearner implements Callable<Integer> {
                     c.calculateSupportMarginalMap();
                 }
             }
-            learner.learnIMDP(ex, PACIntervalEstimatorOptimistic::new, pmdp, ex.parameterValues, true);
+            this.learnIMDP(ex, PACIntervalEstimatorOptimistic::new, pmdp, ex.parameterValues, true);
         }
 
         System.out.println("Done");
