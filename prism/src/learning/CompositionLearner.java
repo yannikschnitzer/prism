@@ -52,12 +52,20 @@ public class CompositionLearner {
     private String composition = "smart";
 
 
-
     public CompositionLearner(Prism prism) {
         this.prism = prism;
     }
+
+    public static void main(String[] args) {
+        if (args.length > 0) {
+            int exitCode = new CommandLine(new CompositionLearner(new Prism(new PrismDevNullLog()))).execute(args);
+            System.exit(exitCode);
+        } else {
+            System.out.println("No Arguments Provided");
+        }
+    }
     
-    public static void main(String[] args) throws PrismException {
+    public Integer call(String[] args) throws PrismException {
         CompositionLearner learner = new CompositionLearner(new Prism(new PrismDevNullLog()));
         learner.initializePrism();
         
@@ -122,6 +130,7 @@ public class CompositionLearner {
         }
 
         System.out.println("Done");
+        return 0;
     }
 
     public static void main_2(String[] args) throws PrismException {
