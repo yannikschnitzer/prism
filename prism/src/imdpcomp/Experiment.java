@@ -101,7 +101,7 @@ public class Experiment {
                 this.parameterValues.addValue("r", 0.80);
                 this.parameterValues.addValue("p",0.2);
                 this.parameterValues.addValue("maxX",10);
-                this.parameterValues.addValue("maxY",15);
+                this.parameterValues.addValue("maxY",10);
             }
 
             case AIRCRAFT_MULTI_SLIP -> {
