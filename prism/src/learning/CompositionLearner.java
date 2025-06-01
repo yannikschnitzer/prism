@@ -96,22 +96,27 @@ public class CompositionLearner implements Callable<Integer> {
                 case "smart" -> {
                     ex.tieParameters = DEPENDENCY_TYING;
                     ex.compositionType = SMART;
+                    ex.factored = true;
                 }
                 case "vertex" -> {
                     ex.tieParameters = DEPENDENCY_TYING;
                     ex.compositionType = VERTEX;
+                    ex.factored = true;
                 }
                 case "interval" -> {
                     ex.tieParameters = DEPENDENCY_TYING;
                     ex.compositionType = INTERVAL_PRODUCT;
+                    ex.factored = true;
                 }
                 case "l1" -> {
                     ex.tieParameters = DEPENDENCY_TYING;
                     ex.compositionType = L1;
+                    ex.factored = true;
                 }
                 case "none" -> {
                     ex.tieParameters = NO_TYING;
                     ex.compositionType = INTERVAL_PRODUCT;
+                    ex.factored = false;
                 }
                 default -> {}
             }
