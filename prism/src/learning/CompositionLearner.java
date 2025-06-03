@@ -31,8 +31,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import static explicit.ConstructModel.CompositionType.*;
-import static imdpcomp.Experiment.Model.AIRCRAFT;
-import static imdpcomp.Experiment.Model.LAKE_SWARM;
+import static imdpcomp.Experiment.Model.*;
 import static imdpcomp.Experiment.ParameterTying.DEPENDENCY_TYING;
 import static imdpcomp.Experiment.ParameterTying.NO_TYING;
 
@@ -87,6 +86,12 @@ public class CompositionLearner implements Callable<Integer> {
                 case "lake" -> {
                     ex = new Experiment(LAKE_SWARM);
                 }
+                case "stock_2_2" -> {
+                    ex = new Experiment(STOCK_TRADING_2_2);
+                }
+                case "stock_3_2" -> {
+                    ex = new Experiment(STOCK_TRADING_3_2);
+                }
                 default -> {
                     ex = new Experiment(AIRCRAFT);
                 }
@@ -139,11 +144,11 @@ public class CompositionLearner implements Callable<Integer> {
         return 0;
     }
 
-    public static void main_2(String[] args) throws PrismException {
+    public static void main2(String[] args) throws PrismException {
         CompositionLearner learner = new CompositionLearner(new Prism(new PrismDevNullLog()));
         learner.initializePrism();
 
-        Experiment ex = new Experiment(AIRCRAFT);
+        Experiment ex = new Experiment(STOCK_TRADING_3_2);
 
         // Build the parametric MDP to infer parametric structure
         MDPSimple<Function> pmdp = learner.buildParamModel(ex);

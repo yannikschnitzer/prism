@@ -361,7 +361,7 @@ public class MAPEstimator extends Estimator {
         mc.setGenStrat(true);
         mc.setPrecomp(true);
         mc.setMaxIters(2000);
-        mc.setErrorOnNonConverge(false);
+        mc.setErrorOnNonConverge(true);
 
         PropertiesFile pf;
         if (robust)

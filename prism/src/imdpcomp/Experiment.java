@@ -1,6 +1,5 @@
 package imdpcomp;
 
-import explicit.ConstructModel;
 import parser.Values;
 
 import static explicit.ConstructModel.*;
@@ -61,6 +60,8 @@ public class Experiment {
         DRONE,
         DRONE_MULTI,
         DRONE_MULTI_2,
+        STOCK_TRADING_2_2,
+        STOCK_TRADING_3_2,
     }
 
     public enum Type {
@@ -156,6 +157,41 @@ public class Experiment {
                 this.parameterValues.addValue("M", 8);
                 this.parameterValues.addValue("p", 0.45);
             }
+
+            case STOCK_TRADING_2_2 -> {
+                this.modelFile = "../models/stockmarket/stock_trading_2_2.prism";
+                this.certainModelFile = "../models/stockmarket/stock_trading_2_2.prism";
+                this.robustSpec = "Rmaxmin=? [ F goal ]";
+                this.optimisticSpec = "Rmaxmax=? [ F goal ]";
+                this.dtmcSpec = "R=? [ F goal ]";
+                this.spec = "Rmax=? [ F goal ]";
+                this.type = Type.REWARD;
+
+                this.max_episode_length = 11;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("T", 10);
+                this.parameterValues.addValue("BASE", 0.1);
+                this.parameterValues.addValue("SCALE", 0.8);
+            }
+
+            case STOCK_TRADING_3_2 -> {
+                this.modelFile = "../models/stockmarket/stock_trading_3_2.prism";
+                this.certainModelFile = "../models/stockmarket/stock_trading_3_2.prism";
+                this.robustSpec = "Rmaxmin=? [ F goal ]";
+                this.optimisticSpec = "Rmaxmax=? [ F goal ]";
+                this.dtmcSpec = "R=? [ F goal ]";
+                this.spec = "Rmax=? [ F goal ]";
+                this.type = Type.REWARD;
+
+                this.max_episode_length = 11;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("T", 10);
+                this.parameterValues.addValue("BASE", 0.1);
+                this.parameterValues.addValue("SCALE", 0.8);
+            }
+
 
             case COIN -> {
                 this.modelFile = "../models/coin/coin4.prism";
