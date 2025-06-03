@@ -3,6 +3,7 @@ package learning.Factored;
 import parser.State;
 
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * General Dependency Identifier for dependencies that only depend on the individual module / factor state.
@@ -15,8 +16,8 @@ public class DependencyIdentifierGeneral implements DependencyIdentifier {
     }
 
     @Override
-    public String getIdentifier(State state, State marginalState, int state_index, int action, int module) {
-        String id = computeIdentifier(marginalState, state_index, action, module).intern();
+    public String getIdentifier(State state, List<State> marginalStates, int state_index, int action, int module) {
+        String id = computeIdentifier(marginalStates.get(module), state_index, action, module).intern();
         identifiers.put(new KeyTriple(state_index, action, module), id);
         return id;
     }

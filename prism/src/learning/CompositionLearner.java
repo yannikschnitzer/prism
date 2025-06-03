@@ -92,6 +92,9 @@ public class CompositionLearner implements Callable<Integer> {
                 case "stock_3_2" -> {
                     ex = new Experiment(STOCK_TRADING_3_2);
                 }
+                case "sysadmin" -> {
+                    ex = new Experiment(SYSADMIN);
+                }
                 default -> {
                     ex = new Experiment(AIRCRAFT);
                 }
@@ -148,7 +151,7 @@ public class CompositionLearner implements Callable<Integer> {
         CompositionLearner learner = new CompositionLearner(new Prism(new PrismDevNullLog()));
         learner.initializePrism();
 
-        Experiment ex = new Experiment(STOCK_TRADING_3_2);
+        Experiment ex = new Experiment(SYSADMIN);
 
         // Build the parametric MDP to infer parametric structure
         MDPSimple<Function> pmdp = learner.buildParamModel(ex);

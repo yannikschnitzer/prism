@@ -62,6 +62,8 @@ public class Experiment {
         DRONE_MULTI_2,
         STOCK_TRADING_2_2,
         STOCK_TRADING_3_2,
+        STOCK_TRADING_2_3,
+        SYSADMIN
     }
 
     public enum Type {
@@ -190,6 +192,44 @@ public class Experiment {
                 this.parameterValues.addValue("T", 10);
                 this.parameterValues.addValue("BASE", 0.1);
                 this.parameterValues.addValue("SCALE", 0.8);
+            }
+
+            case STOCK_TRADING_2_3 -> {
+                this.modelFile = "../models/stockmarket/stock_trading_2_3.prism";
+                this.certainModelFile = "../models/stockmarket/stock_trading_2_3.prism";
+                this.robustSpec = "Rmaxmin=? [ F goal ]";
+                this.optimisticSpec = "Rmaxmax=? [ F goal ]";
+                this.dtmcSpec = "R=? [ F goal ]";
+                this.spec = "Rmax=? [ F goal ]";
+                this.type = Type.REWARD;
+
+                this.max_episode_length = 11;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("T", 10);
+                this.parameterValues.addValue("BASE", 0.1);
+                this.parameterValues.addValue("SCALE", 0.8);
+            }
+
+            case SYSADMIN -> {
+                int N = 8;
+                int T = 5;
+
+                this.modelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_T%s.pm",N, T);
+                this.certainModelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_T%s.pm",N, T);
+                this.robustSpec = "Rmaxmin=? [ F (t_0 = T) ]";
+                this.optimisticSpec = "Rmaxmax=? [ F (t_0 = T) ]";
+                this.dtmcSpec = "R=? [ F (t_0 = T) ]";
+                this.spec = "Rmax=? [ F (t_0 = T) ]";
+                this.type = Type.REWARD;
+
+                this.max_episode_length = 11;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("T", T);
+                this.parameterValues.addValue("N", N);
+                this.parameterValues.addValue("p0", 0.1);
+                this.parameterValues.addValue("p1", 0.6);
             }
 
 

@@ -36,7 +36,8 @@ import com.gurobi.gurobi.GRBEnv;
 import com.gurobi.gurobi.GRBException;
 import com.gurobi.gurobi.GRBModel;
 import common.Interval;
-import learning.Factored.DependencyIdentifierGeneral;
+import learning.Factored.DependencyIdentiferSysAdmin;
+import learning.Factored.DependencyIdentifier;
 import parser.State;
 import parser.Values;
 import parser.VarList;
@@ -78,7 +79,7 @@ public class ConstructModel extends PrismComponent
 	protected final Map<String, Boolean> successCache = new HashMap<>();
 	protected final Map<String, GRBModel> modelChache = new HashMap<>();
 
-	protected final DependencyIdentifierGeneral dependencyIdentifier = new DependencyIdentifierGeneral();
+	protected final DependencyIdentifier dependencyIdentifier = new DependencyIdentiferSysAdmin();
 
 	GRBEnv env;
     {
@@ -636,13 +637,18 @@ public class ConstructModel extends PrismComponent
 	private <Value> void extractDepdendencyIdentifiers(ModelGenerator<Value> modelGen, State state, int index, int action) {
 		ModulesFile modulesFile = modelGen.getModulesFile();
 
+		List<State> marginalStates = new ArrayList<>();
 		int base = 0;
 		for (int i = 0; i < modulesFile.getNumModules(); i++) {
 			int D = modulesFile.getModule(i).getNumDeclarations();
 			State marginalState = state.subState(base, base + D);
-			// TODO: Depdendency Identifiers - Only important thing here, clean rest up
-			dependencyIdentifier.getIdentifier(state, marginalState, index, action, i);
+			marginalStates.add(marginalState);
 			base += D;
+		}
+
+		for (int i = 0; i < modulesFile.getNumModules(); i++) {
+			// TODO: Depdendency Identifiers - Only important thing here, clean rest up
+			dependencyIdentifier.getIdentifier(state, marginalStates, index, action, i);
 		}
 	}
 
