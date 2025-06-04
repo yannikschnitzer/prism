@@ -19,11 +19,11 @@ public class Experiment {
     public Values exactValues = new Values();
     public ParameterTying tieParameters = DEPENDENCY_TYING;
     public boolean factored = true;
-    public CompositionType compositionType = SMART;
+    public CompositionType compositionType = INTERVAL_PRODUCT;
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
-    public int iterations = 1_000_000;
+    public int iterations = 1_00_000;
     public int max_episode_length = 50;
     public int multiplier = 5;
     public int maxVIIters = 2000;
@@ -212,8 +212,8 @@ public class Experiment {
             }
 
             case SYSADMIN -> {
-                int N = 8;
-                int T = 5;
+                int N = 5;
+                int T = 20;
 
                 this.modelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_T%s.pm",N, T);
                 this.certainModelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_T%s.pm",N, T);
@@ -223,12 +223,12 @@ public class Experiment {
                 this.spec = "Rmax=? [ F (t_0 = T) ]";
                 this.type = Type.REWARD;
 
-                this.max_episode_length = 11;
+                this.max_episode_length = 21;
 
                 // Set Parameter Values
                 this.parameterValues.addValue("T", T);
                 this.parameterValues.addValue("N", N);
-                this.parameterValues.addValue("p0", 0.1);
+                this.parameterValues.addValue("p0", 0.3);
                 this.parameterValues.addValue("p1", 0.6);
             }
 
