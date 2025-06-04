@@ -23,7 +23,7 @@ public class Experiment {
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
-    public int iterations = 1_000_000;
+    public int iterations = 1_00_000;
     public int max_episode_length = 50;
     public int multiplier = 5;
     public int maxVIIters = 2000;
@@ -169,11 +169,11 @@ public class Experiment {
                 this.spec = "Rmax=? [ F goal ]";
                 this.type = Type.REWARD;
 
-                this.max_episode_length = 16;
+                this.max_episode_length = 11;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("T", 15);
-                this.parameterValues.addValue("BASE", 0.1);
+                this.parameterValues.addValue("T", 10);
+                this.parameterValues.addValue("BASE", 0.101);
                 this.parameterValues.addValue("SCALE", 0.8);
             }
 

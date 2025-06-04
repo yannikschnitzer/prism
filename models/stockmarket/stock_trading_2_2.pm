@@ -1,7 +1,7 @@
 mdp
 
 // Time horizon
-const int T = 15;
+const int T = 10;
 
 // Parametric probabilities
 // Base probability that a stock rises when 0 previous stocks are rising
