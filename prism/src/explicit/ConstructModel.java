@@ -36,6 +36,7 @@ import com.gurobi.gurobi.GRBEnv;
 import com.gurobi.gurobi.GRBException;
 import com.gurobi.gurobi.GRBModel;
 import common.Interval;
+import learning.Factored.DependencyIdentiferStockTrading;
 import learning.Factored.DependencyIdentiferSysAdmin;
 import learning.Factored.DependencyIdentifier;
 import parser.State;
@@ -79,7 +80,7 @@ public class ConstructModel extends PrismComponent
 	protected final Map<String, Boolean> successCache = new HashMap<>();
 	protected final Map<String, GRBModel> modelChache = new HashMap<>();
 
-	protected final DependencyIdentifier dependencyIdentifier = new DependencyIdentiferSysAdmin();
+	protected final DependencyIdentifier dependencyIdentifier = new DependencyIdentiferStockTrading();
 
 	GRBEnv env;
     {

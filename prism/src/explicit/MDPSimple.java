@@ -32,6 +32,7 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 
 import io.ExplicitModelImporter;
+import learning.Factored.DependencyIdentiferStockTrading;
 import learning.Factored.DependencyIdentiferSysAdmin;
 import learning.Factored.DependencyIdentifier;
 import prism.Evaluator;
@@ -62,7 +63,7 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 
 	private int numMarginals = -1;
 
-	public DependencyIdentifier dependencyIdentifier = new DependencyIdentiferSysAdmin();
+	public DependencyIdentifier dependencyIdentifier = new DependencyIdentiferStockTrading();
 	// Constructors
 
 	/**

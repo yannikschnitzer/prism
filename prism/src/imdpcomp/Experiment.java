@@ -19,11 +19,11 @@ public class Experiment {
     public Values exactValues = new Values();
     public ParameterTying tieParameters = DEPENDENCY_TYING;
     public boolean factored = true;
-    public CompositionType compositionType = INTERVAL_PRODUCT;
+    public CompositionType compositionType = SMART;
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
-    public int iterations = 1_00_000;
+    public int iterations = 1_000_000;
     public int max_episode_length = 50;
     public int multiplier = 5;
     public int maxVIIters = 2000;
@@ -161,8 +161,8 @@ public class Experiment {
             }
 
             case STOCK_TRADING_2_2 -> {
-                this.modelFile = "../models/stockmarket/stock_trading_2_2.prism";
-                this.certainModelFile = "../models/stockmarket/stock_trading_2_2.prism";
+                this.modelFile = "../models/stockmarket/stock_trading_2_2.pm";
+                this.certainModelFile = "../models/stockmarket/stock_trading_2_2.pm";
                 this.robustSpec = "Rmaxmin=? [ F goal ]";
                 this.optimisticSpec = "Rmaxmax=? [ F goal ]";
                 this.dtmcSpec = "R=? [ F goal ]";
@@ -178,8 +178,8 @@ public class Experiment {
             }
 
             case STOCK_TRADING_3_2 -> {
-                this.modelFile = "../models/stockmarket/stock_trading_3_2.prism";
-                this.certainModelFile = "../models/stockmarket/stock_trading_3_2.prism";
+                this.modelFile = "../models/stockmarket/stock_trading_3_2.pm";
+                this.certainModelFile = "../models/stockmarket/stock_trading_3_2.pm";
                 this.robustSpec = "Rmaxmin=? [ F goal ]";
                 this.optimisticSpec = "Rmaxmax=? [ F goal ]";
                 this.dtmcSpec = "R=? [ F goal ]";
@@ -195,8 +195,8 @@ public class Experiment {
             }
 
             case STOCK_TRADING_2_3 -> {
-                this.modelFile = "../models/stockmarket/stock_trading_2_3.prism";
-                this.certainModelFile = "../models/stockmarket/stock_trading_2_3.prism";
+                this.modelFile = "../models/stockmarket/stock_trading_2_3.pm";
+                this.certainModelFile = "../models/stockmarket/stock_trading_2_3.pm";
                 this.robustSpec = "Rmaxmin=? [ F goal ]";
                 this.optimisticSpec = "Rmaxmax=? [ F goal ]";
                 this.dtmcSpec = "R=? [ F goal ]";
@@ -212,8 +212,8 @@ public class Experiment {
             }
 
             case SYSADMIN -> {
-                int N = 5;
-                int T = 20;
+                int N = 10;
+                int T = 10;
 
                 this.modelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_T%s.pm",N, T);
                 this.certainModelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_T%s.pm",N, T);
@@ -228,7 +228,7 @@ public class Experiment {
                 // Set Parameter Values
                 this.parameterValues.addValue("T", T);
                 this.parameterValues.addValue("N", N);
-                this.parameterValues.addValue("p0", 0.3);
+                this.parameterValues.addValue("p0", 0.1);
                 this.parameterValues.addValue("p1", 0.6);
             }
 
