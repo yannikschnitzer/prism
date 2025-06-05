@@ -56,7 +56,7 @@ public class CompositionLearner implements Callable<Integer> {
         this.prism = prism;
     }
 
-    public static void main(String[] args) {
+    public static void main2(String[] args) {
         if (args.length > 0) {
             int exitCode = new CommandLine(new CompositionLearner(new Prism(new PrismDevNullLog()))).execute(args);
             System.exit(exitCode);
@@ -153,7 +153,7 @@ public class CompositionLearner implements Callable<Integer> {
         return 0;
     }
 
-    public static void main2(String[] args) throws PrismException {
+    public static void main(String[] args) throws PrismException {
         CompositionLearner learner = new CompositionLearner(new Prism(new PrismDevNullLog()));
         learner.initializePrism();
 

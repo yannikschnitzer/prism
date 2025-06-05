@@ -231,7 +231,7 @@ public class Experiment {
 
             case SYSADMIN -> {
                 int N = 10;
-                int T = 5;
+                int T = 8;
 
                 this.modelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_T%s.pm",N, T);
                 this.certainModelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_T%s.pm",N, T);
