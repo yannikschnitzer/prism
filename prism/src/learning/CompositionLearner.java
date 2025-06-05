@@ -56,7 +56,7 @@ public class CompositionLearner implements Callable<Integer> {
         this.prism = prism;
     }
 
-    public static void main(String[] args) {
+    public static void mai2n(String[] args) {
         if (args.length > 0) {
             int exitCode = new CommandLine(new CompositionLearner(new Prism(new PrismDevNullLog()))).execute(args);
             System.exit(exitCode);
@@ -91,6 +91,12 @@ public class CompositionLearner implements Callable<Integer> {
                 }
                 case "stock_3_2" -> {
                     ex = new Experiment(STOCK_TRADING_3_2);
+                }
+                case "stock_2_3" -> {
+                    ex = new Experiment(STOCK_TRADING_2_3);
+                }
+                case "stock_3_3" -> {
+                    ex = new Experiment(STOCK_TRADING_3_3);
                 }
                 case "sysadmin" -> {
                     ex = new Experiment(SYSADMIN);
@@ -147,11 +153,11 @@ public class CompositionLearner implements Callable<Integer> {
         return 0;
     }
 
-    public static void main2(String[] args) throws PrismException {
+    public static void main(String[] args) throws PrismException {
         CompositionLearner learner = new CompositionLearner(new Prism(new PrismDevNullLog()));
         learner.initializePrism();
 
-        Experiment ex = new Experiment(STOCK_TRADING_2_2);
+        Experiment ex = new Experiment(STOCK_TRADING_2_3);
 
         // Build the parametric MDP to infer parametric structure
         MDPSimple<Function> pmdp = learner.buildParamModel(ex);
