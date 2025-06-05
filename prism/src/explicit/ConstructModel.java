@@ -80,7 +80,7 @@ public class ConstructModel extends PrismComponent
 	protected final Map<String, Boolean> successCache = new HashMap<>();
 	protected final Map<String, GRBModel> modelChache = new HashMap<>();
 
-	protected final DependencyIdentifier dependencyIdentifier = new DependencyIdentiferStockTrading();
+	protected final DependencyIdentifier dependencyIdentifier = new DependencyIdentiferSysAdmin();
 
 	GRBEnv env;
     {
