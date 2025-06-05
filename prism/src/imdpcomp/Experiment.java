@@ -241,7 +241,7 @@ public class Experiment {
                 this.spec = "Rmax=? [ F (t_0 = T) ]";
                 this.type = Type.REWARD;
 
-                this.max_episode_length = 21;
+                this.max_episode_length = 11;
 
                 // Set Parameter Values
                 this.parameterValues.addValue("T", T);
