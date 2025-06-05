@@ -3,7 +3,7 @@ mdp
 
 const double p0;    // if both neighbors are up
 const double p1;    // if at least one neighbor is down
-const int    T  = 10;
+const int    T  = 5;
 
 module comp_0
     // 0 = failed, 1 = up

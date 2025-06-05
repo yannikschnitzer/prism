@@ -231,7 +231,7 @@ public class Experiment {
 
             case SYSADMIN -> {
                 int N = 10;
-                int T = 10;
+                int T = 5;
 
                 this.modelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_T%s.pm",N, T);
                 this.certainModelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_T%s.pm",N, T);
@@ -241,7 +241,7 @@ public class Experiment {
                 this.spec = "Rmax=? [ F (t_0 = T) ]";
                 this.type = Type.REWARD;
 
-                this.max_episode_length = 11;
+                this.max_episode_length = 6;
 
                 // Set Parameter Values
                 this.parameterValues.addValue("T", T);
