@@ -333,7 +333,7 @@ public class MAPEstimator extends Estimator {
         UMDPModelChecker mc = new UMDPModelChecker(this.prism);
         mc.setGenStrat(true);
         mc.setPrecomp(true);
-        mc.setMaxIters(2000);
+        mc.setMaxIters(ex.maxVIIters);
         mc.setErrorOnNonConverge(false);
 
         PropertiesFile pf;
@@ -360,8 +360,8 @@ public class MAPEstimator extends Estimator {
         UMDPModelChecker mc = new UMDPModelChecker(this.prism);
         mc.setGenStrat(true);
         mc.setPrecomp(true);
-        mc.setMaxIters(2000);
-        mc.setErrorOnNonConverge(true);
+        mc.setMaxIters(ex.maxVIIters);
+        mc.setErrorOnNonConverge(false);
 
         PropertiesFile pf;
         if (robust)

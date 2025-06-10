@@ -138,9 +138,9 @@ public class Experiment {
 
                 // Set Parameter Values
                 this.parameterValues.addValue("eps", 0.05);
-                this.parameterValues.addValue("N", 8);
-                this.parameterValues.addValue("M", 8);
-                this.parameterValues.addValue("p", 0.2);
+                this.parameterValues.addValue("N", 10);
+                this.parameterValues.addValue("M", 6);
+                this.parameterValues.addValue("p", 0.3);
             }
 
             case LAKE_SWARM_MULTI_SLIP -> {
@@ -156,8 +156,8 @@ public class Experiment {
 
                 // Set Parameter Values
                 this.parameterValues.addValue("eps", 0.04);
-                this.parameterValues.addValue("N", 8);
-                this.parameterValues.addValue("M", 8);
+                this.parameterValues.addValue("N", 10);
+                this.parameterValues.addValue("M", 6);
                 this.parameterValues.addValue("p", 0.45);
             }
 
