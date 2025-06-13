@@ -119,56 +119,46 @@ public class ExperimentRunner implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-
-        int masterSeed = 5;
-        int numSeeds = 5;
-        List<Integer> seeds = new ArrayList<>();
-        Random rng = new Random(masterSeed);
-        for (int i = 0; i < numSeeds; i++) {
-            seeds.add(rng.nextInt(Integer.MAX_VALUE - 1) + 1);
-        }
-
-        for (int seed : seeds) {
-            Experiment ex;
-            switch (this.casestudy) {
-                case "aircraft" -> {
-                    ex = new Experiment(AIRCRAFT);
-                }
-                case "lake" -> {
-                    ex = new Experiment(LAKE_SWARM);
-                }
-                case "drone" -> {
-                    ex = new Experiment(DRONE_MULTI);
-                }
-                case "chain" -> {
-                    ex = new Experiment(CHAIN_MULTI);
-                }
-                default -> {
-                    ex = new Experiment(AIRCRAFT);
-                }
+        Experiment ex;
+        switch (this.casestudy) {
+            case "aircraft" -> {
+                ex = new Experiment(AIRCRAFT);
             }
-
-            ex.setSingleValue("epsilon", epsilon);
-
-            switch (this.composition) {
-                case "smart" -> {
-                    ex.compositionType = SMART;
-                    this.runExperiment(ex);
-                }
-                case "vertex" -> {
-                    ex.compositionType = VERTEX;
-                    this.runExperiment(ex);
-                }
-                case "interval" -> {
-                    ex.compositionType = INTERVAL_PRODUCT;
-                    this.runExperiment(ex);
-                }
-                case "all" -> {
-                    this.runExperimentAllTypes(ex);
-                }
-                default -> {}
+            case "lake" -> {
+                ex = new Experiment(LAKE_SWARM);
+            }
+            case "drone" -> {
+                ex = new Experiment(DRONE_MULTI);
+            }
+            case "chain" -> {
+                ex = new Experiment(CHAIN_MULTI);
+            }
+            default -> {
+                ex = new Experiment(AIRCRAFT);
             }
         }
+
+        ex.setSingleValue("epsilon", epsilon);
+
+        switch (this.composition) {
+            case "smart" -> {
+                ex.compositionType = SMART;
+                this.runExperiment(ex);
+            }
+            case "vertex" -> {
+                ex.compositionType = VERTEX;
+                this.runExperiment(ex);
+            }
+            case "interval" -> {
+                ex.compositionType = INTERVAL_PRODUCT;
+                this.runExperiment(ex);
+            }
+            case "all" -> {
+                this.runExperimentAllTypes(ex);
+            }
+            default -> {}
+        }
+
 
         System.out.println("Done");
         return 0;
