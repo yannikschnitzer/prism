@@ -58,6 +58,11 @@ public class Experiment {
         return this;
     }
 
+    public Experiment setSingleValue(String name, Object value) {
+        this.parameterValues.setValue(name, value);
+        return this;
+    }
+
     public Experiment setExactValues(Values values) {
         this.exactValues = values;
         return this;
@@ -67,8 +72,8 @@ public class Experiment {
         this.model = model;
         switch (model) {
             case AIRCRAFT -> {
-                this.modelFile = "../models/aircraft_collision/aircraft_10x20_resolution_3.prism";
-                this.certainModelFile = "../models/aircraft_collision/aircraft_10x20_resolution_3_certain.prism";
+                this.modelFile = "../models/aircraft_collision/aircraft_3.prism";
+                this.certainModelFile = "../models/aircraft_collision/aircraft_3_certain.prism";
                 this.robustSpec = "Pmaxmin=? [!\"collision\" U \"goal\"]";
                 this.dtmcSpec = "P=? [!\"collision\" U \"goal\"]";
 
@@ -77,13 +82,15 @@ public class Experiment {
             }
 
             case AIRCRAFT_MULTI_SLIP -> {
-                this.modelFile = "../models/aircraft_collision_multislip/aircraft_10x20_resolution_3.prism";
-                this.certainModelFile = "../models/aircraft_collision_multislip/aircraft_10x20_resolution_3_certain.prism";
+                this.modelFile = "../models/aircraft_collision_multislip/aircraft_3.prism";
+                this.certainModelFile = "../models/aircraft_collision_multislip/aircraft_3_certain.prism";
                 this.robustSpec = "Pmaxmin=? [!\"collision\" U \"goal\"]";
                 this.dtmcSpec = "P=? [!\"collision\" U \"goal\"]";
 
                 // Set Parameter Values
                 this.parameterValues.addValue("eps", 0.04);
+                this.parameterValues.addValue("maxX", 20);
+                this.parameterValues.addValue("maxY", 20);
             }
 
             case LAKE_SWARM -> {

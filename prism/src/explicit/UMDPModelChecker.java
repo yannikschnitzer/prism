@@ -719,7 +719,7 @@ public class UMDPModelChecker extends ProbModelChecker
 			prism.setEngine(Prism.EXPLICIT);
 			prism.setGenStrat(true);
 
-			ModulesFile modulesFile = prism.parseModelFile(new File("../models/aircraft_collision/aircraft_10x20_resolution_3.prism"));
+			ModulesFile modulesFile = prism.parseModelFile(new File("../models/aircraft_collision/aircraft_3.prism"));
 			//ModulesFile modulesFile = prism.parseModelFile(new File("../models/aircraft_collision/aircraft_4_overshoot.prism"));
 			//ModulesFile modulesFile = prism.parseModelFile(new File("../models/grid_world_robot/grid_robot_1.prism"));
 			//ModulesFile modulesFile = prism.parseModelFile(new File("../models/blocks_world/block_epistemic.prism"));

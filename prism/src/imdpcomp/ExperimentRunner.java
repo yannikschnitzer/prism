@@ -2,6 +2,7 @@ package imdpcomp;
 
 import explicit.Model;
 import explicit.*;
+import param.Function;
 import parser.Values;
 import parser.ast.ModulesFile;
 import parser.ast.PropertiesFile;
@@ -15,17 +16,33 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.Callable;
 
 import static explicit.ConstructModel.CompositionType.*;
+import static imdpcomp.Experiment.Model.*;
+import static imdpcomp.Experiment.Model.AIRCRAFT;
 
-public class ExperimentRunner {
+@CommandLine.Command(mixinStandardHelpOptions = true, version = "AAAI V-0.0.1", description = "Compositional Solver for AAAI")
+public class ExperimentRunner implements Callable<Integer> {
 
-    Prism prism = new Prism(new PrismPrintStreamLog(System.out));
+    Prism prism;
+
+    @CommandLine.Option(names = {"-c", "--casestudy"}, description = "Run a specific case study - \"aircraft\", \"betting\", \"sav\", \"chain\", \"drone\", \"lake\"")
+    private String casestudy = "aircraft";
+
+    @CommandLine.Option(names = {"-o", "--composition"}, description = "Run a specific IMDP learning algorhtm - \"smart\", \"vertex\", \"interval\", \"all\"")
+    private String composition = "smart";
+
+    @CommandLine.Option(names = {"-e", "--eps"}, description = "Run a specific IMDP learning algorhtm - \"smart\", \"vertex\", \"interval\", \"all\"")
+    private Double epsilon = 0.02;
 
     public ExperimentRunner() {
         try {
+            this.prism = new Prism(new PrismPrintStreamLog(System.out));
             prism.setVerbose(true);
             prism.initialise();
             prism.setEngine(Prism.EXPLICIT);
@@ -44,7 +61,7 @@ public class ExperimentRunner {
             prism.setEngine(Prism.EXPLICIT);
             prism.setGenStrat(true);
 
-            ModulesFile modulesFile = prism.parseModelFile(new File("../models/aircraft_collision/aircraft_10x20_resolution_3.prism"));
+            ModulesFile modulesFile = prism.parseModelFile(new File("../models/aircraft_collision/aircraft_3.prism"));
             //ModulesFile modulesFile = prism.parseModelFile(new File("../models/aircraft_collision/aircraft_4_overshoot.prism"));
             //ModulesFile modulesFile = prism.parseModelFile(new File("../models/grid_world_robot/grid_robot_1.prism"));
             //ModulesFile modulesFile = prism.parseModelFile(new File("../models/blocks_world/block_epistemic.prism"));
@@ -92,8 +109,75 @@ public class ExperimentRunner {
     }
 
     public static void main(String[] args) {
+        if (args.length > 0) {
+            int exitCode = new CommandLine(new ExperimentRunner()).execute(args);
+            System.exit(exitCode);
+        } else {
+            System.out.println("No Arguments Provided");
+        }
+    }
+
+    @Override
+    public Integer call() throws Exception {
+
+        int masterSeed = 5;
+        int numSeeds = 5;
+        List<Integer> seeds = new ArrayList<>();
+        Random rng = new Random(masterSeed);
+        for (int i = 0; i < numSeeds; i++) {
+            seeds.add(rng.nextInt(Integer.MAX_VALUE - 1) + 1);
+        }
+
+        for (int seed : seeds) {
+            Experiment ex;
+            switch (this.casestudy) {
+                case "aircraft" -> {
+                    ex = new Experiment(AIRCRAFT);
+                }
+                case "lake" -> {
+                    ex = new Experiment(LAKE_SWARM);
+                }
+                case "drone" -> {
+                    ex = new Experiment(DRONE_MULTI);
+                }
+                case "chain" -> {
+                    ex = new Experiment(CHAIN_MULTI);
+                }
+                default -> {
+                    ex = new Experiment(AIRCRAFT);
+                }
+            }
+
+            ex.setSingleValue("epsilon", epsilon);
+
+            switch (this.composition) {
+                case "smart" -> {
+                    ex.compositionType = SMART;
+                    this.runExperiment(ex);
+                }
+                case "vertex" -> {
+                    ex.compositionType = VERTEX;
+                    this.runExperiment(ex);
+                }
+                case "interval" -> {
+                    ex.compositionType = INTERVAL_PRODUCT;
+                    this.runExperiment(ex);
+                }
+                case "all" -> {
+                    this.runExperimentAllTypes(ex);
+                }
+                default -> {}
+            }
+        }
+
+        System.out.println("Done");
+        return 0;
+    }
+
+
+    public static void main3(String[] args) {
         ExperimentRunner experimentRunner = new ExperimentRunner();
-        Experiment experiment = new Experiment(Experiment.Model.DRONE_MULTI);
+        Experiment experiment = new Experiment(Experiment.Model.AIRCRAFT_MULTI_SLIP);
 
         try {
             experimentRunner.runExperimentAllTypes(experiment);
@@ -185,6 +269,11 @@ public class ExperimentRunner {
             writer.write("State Space: " + model.getNumStates() + "\n");
             writer.write("Transitions: " + model.getNumTransitions() + "\n");
             writer.write("Constant Values: " + experiment.parameterValues + "\n");
+            try {
+                writer.write("Epsilon: " + experiment.parameterValues.getValueOf("eps") + "\n");
+            } catch (PrismLangException e) {
+                throw new RuntimeException(e);
+            }
             writer.write("Composition Type: " + experiment.compositionType + "\n");
             writer.write("Robust Goal: " + experiment.robustSpec + "\n");
             writer.write("Robust Result: " + resultUMDP.getResult() + "\n");
@@ -198,4 +287,5 @@ public class ExperimentRunner {
         }
         System.out.println("Dump experiment setting to " + outputPath);
     }
+
 }

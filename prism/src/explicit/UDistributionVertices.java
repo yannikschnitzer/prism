@@ -12,12 +12,12 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
 
     int[] support;
     HashSet<Integer> supportSet;
-    double [][] vertices;
-    List<List<Interval<Value>>> marginals;
+    public double [][] vertices;
+    public List<List<Interval<Value>>> marginals;
 
     protected int smartThreshholdMarginal = 20000;
     protected int smartThreshholdProduct = 20000;
-    protected boolean smartSuccess = true;
+    public boolean smartSuccess = true;
 
     public UDistributionVertices (List<List<Interval<Value>>> marginals, List<Integer> support) {
         this.support = support.stream().mapToInt(Integer::intValue).toArray();
@@ -37,6 +37,19 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
 
         buildVertices(smart);
         System.out.println("Num Vertices: " + vertices.length + " - Early stop: " + !smartSuccess);
+    }
+
+    public UDistributionVertices (List<List<Interval<Value>>> marginals, int[] support, boolean smart) {
+        this.support = support;
+        supportSet = new HashSet<>();
+        for (int i : support) {
+            supportSet.add(i);
+        }
+        this.marginals = marginals;
+        //System.out.println("Support: " + Arrays.toString(this.support) + " Marginals: " + marginals);
+
+        buildVertices(smart);
+        //System.out.println("Num Vertices: " + vertices.length + " - Early stop: " + !smartSuccess);
     }
 
     public UDistributionVertices(int[] support, double[][] vertices) {
@@ -272,6 +285,10 @@ public class UDistributionVertices<Value> implements UDistribution<Value>{
         double[] vectProj = new double[support.length];
         for (int i = 0; i < vectProj.length; i++) {
             vectProj[i] = vect[support[i]];
+        }
+
+        if(vertices.length == 0) {
+            System.out.println("No vertices found: Marginals: "+ marginals);
         }
 
         double opt = innerMultiply(vectProj, vertices[0]);
