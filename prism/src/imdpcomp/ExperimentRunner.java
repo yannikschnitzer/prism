@@ -122,7 +122,7 @@ public class ExperimentRunner implements Callable<Integer> {
         Experiment ex;
         switch (this.casestudy) {
             case "aircraft" -> {
-                ex = new Experiment(AIRCRAFT);
+                ex = new Experiment(AIRCRAFT_MULTI_SLIP);
             }
             case "lake" -> {
                 ex = new Experiment(LAKE_SWARM);
