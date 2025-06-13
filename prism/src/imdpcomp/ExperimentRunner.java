@@ -138,7 +138,7 @@ public class ExperimentRunner implements Callable<Integer> {
             }
         }
 
-        ex.setSingleValue("epsilon", epsilon);
+        ex.setSingleValue("eps", epsilon);
 
         switch (this.composition) {
             case "smart" -> {
