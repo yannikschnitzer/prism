@@ -108,7 +108,7 @@ public class ExperimentRunner implements Callable<Integer> {
 
     }
 
-    public static void main(String[] args) {
+    public static void main3(String[] args) {
         if (args.length > 0) {
             int exitCode = new CommandLine(new ExperimentRunner()).execute(args);
             System.exit(exitCode);
@@ -165,7 +165,7 @@ public class ExperimentRunner implements Callable<Integer> {
     }
 
 
-    public static void main3(String[] args) {
+    public static void main(String[] args) {
         ExperimentRunner experimentRunner = new ExperimentRunner();
         Experiment experiment = new Experiment(Experiment.Model.AIRCRAFT_MULTI_SLIP);
 

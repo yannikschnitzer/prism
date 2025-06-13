@@ -88,7 +88,7 @@ public class Experiment {
                 this.dtmcSpec = "P=? [!\"collision\" U \"goal\"]";
 
                 // Set Parameter Values
-                this.parameterValues.addValue("eps", 0.04);
+                this.parameterValues.addValue("eps", 0.025);
                 this.parameterValues.addValue("maxX", 20);
                 this.parameterValues.addValue("maxY", 20);
             }
