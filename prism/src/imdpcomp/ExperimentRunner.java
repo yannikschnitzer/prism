@@ -127,6 +127,9 @@ public class ExperimentRunner implements Callable<Integer> {
             case "lake" -> {
                 ex = new Experiment(LAKE_SWARM);
             }
+            case "lakemulti" -> {
+                ex = new Experiment(LAKE_SWARM_MULTI_SLIP);
+            }
             case "drone" -> {
                 ex = new Experiment(DRONE_MULTI);
             }
@@ -165,9 +168,9 @@ public class ExperimentRunner implements Callable<Integer> {
     }
 
 
-    public static void main3(String[] args) {
+    public static void mai2n(String[] args) {
         ExperimentRunner experimentRunner = new ExperimentRunner();
-        Experiment experiment = new Experiment(Experiment.Model.AIRCRAFT_MULTI_SLIP);
+        Experiment experiment = new Experiment(LAKE_SWARM_MULTI_SLIP);
 
         try {
             experimentRunner.runExperimentAllTypes(experiment);
@@ -213,7 +216,7 @@ public class ExperimentRunner implements Callable<Integer> {
         timer = System.currentTimeMillis() - timer;
         //System.out.println("Strategy:" + result.getStrategy());
 
-        Result resultDTMC = null;//checkInducedDTMC(experiment, (MDStrategy<Double>) resultUMDP.getStrategy());
+        Result resultDTMC = checkInducedDTMC(experiment, (MDStrategy<Double>) resultUMDP.getStrategy());
         dumpExperiment(experiment, umdp, resultUMDP, resultDTMC, timer);
     }
 

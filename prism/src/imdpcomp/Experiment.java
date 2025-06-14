@@ -113,10 +113,10 @@ public class Experiment {
                 this.dtmcSpec = "R=? [ F goal ]";
 
                 // Set Parameter Values
-                this.parameterValues.addValue("eps", 0.04);
-                this.parameterValues.addValue("N", 8);
-                this.parameterValues.addValue("M", 8);
-                this.parameterValues.addValue("p", 0.45);
+                this.parameterValues.addValue("eps", 0.025);
+                this.parameterValues.addValue("N", 15);
+                this.parameterValues.addValue("M", 15);
+                this.parameterValues.addValue("p", 0.4);
             }
 
             case COIN -> {
