@@ -10,6 +10,7 @@ public class Experiment {
     public String certainModelFile; //TODO: replace this with UMDP
     public String dtmcSpec;
     public String robustSpec;
+    public String optimisticSpec;
     public Values parameterValues = new Values();
     public Values exactValues = new Values();
 
@@ -85,6 +86,7 @@ public class Experiment {
                 this.modelFile = "../models/aircraft_collision_multislip/aircraft_3.prism";
                 this.certainModelFile = "../models/aircraft_collision_multislip/aircraft_3_certain.prism";
                 this.robustSpec = "Pmaxmin=? [!\"collision\" U \"goal\"]";
+                this.optimisticSpec = "Pmaxmax=? [!\"collision\" U \"goal\"]";
                 this.dtmcSpec = "P=? [!\"collision\" U \"goal\"]";
 
                 // Set Parameter Values
@@ -97,6 +99,7 @@ public class Experiment {
                 this.modelFile = "../models/lake/frozen_lake_swarm_eps.prism";
                 this.certainModelFile = "../models/lake/frozen_lake_swarm_eps_certain.prism";
                 this.robustSpec = "Rminmax=? [ F goal ]";
+                this.optimisticSpec = "Rminmin=? [ F goal ]";
                 this.dtmcSpec = "R=? [ F goal ]";
 
                 // Set Parameter Values
@@ -110,6 +113,7 @@ public class Experiment {
                 this.modelFile = "../models/lake_multislip_large9/frozen_lake_swarm_eps.prism";
                 this.certainModelFile = "../models/lake_multislip_large9/frozen_lake_swarm_eps_certain.prism";
                 this.robustSpec = "Rminmax=? [ F goal ]";
+                this.optimisticSpec = "Rminmin=? [ F goal ]";
                 this.dtmcSpec = "R=? [ F goal ]";
 
                 // Set Parameter Values

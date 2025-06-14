@@ -168,7 +168,7 @@ public class ExperimentRunner implements Callable<Integer> {
     }
 
 
-    public static void mai2n(String[] args) {
+    public static void mai3n(String[] args) {
         ExperimentRunner experimentRunner = new ExperimentRunner();
         Experiment experiment = new Experiment(LAKE_SWARM_MULTI_SLIP);
 
@@ -207,17 +207,25 @@ public class ExperimentRunner implements Callable<Integer> {
         mc.setGenStrat(true);
         mc.setErrorOnNonConverge(true);
 
-        // Set Objective
+        // Set Objective for robust check
         PropertiesFile pf = prism.parsePropertiesString(experiment.robustSpec);
         ModulesFileModelGenerator<?> modelGen = ModulesFileModelGenerator.create(modulesFile, prism);
         mc.setModelCheckingInfo(modelGen, pf, modelGen);
         double timer = System.currentTimeMillis();
-        Result resultUMDP = mc.check(umdp, pf.getProperty(0));
-        timer = System.currentTimeMillis() - timer;
+        Result resultUMDProbust = mc.check(umdp, pf.getProperty(0));
+        double timerrobust = System.currentTimeMillis() - timer;
         //System.out.println("Strategy:" + result.getStrategy());
 
-        Result resultDTMC = checkInducedDTMC(experiment, (MDStrategy<Double>) resultUMDP.getStrategy());
-        dumpExperiment(experiment, umdp, resultUMDP, resultDTMC, timer);
+        // Set Objective for optimistic check
+        pf = prism.parsePropertiesString(experiment.optimisticSpec);
+        modelGen = ModulesFileModelGenerator.create(modulesFile, prism);
+        mc.setModelCheckingInfo(modelGen, pf, modelGen);
+        timer = System.currentTimeMillis();
+        Result resultUMDPoptimistic = mc.check(umdp, pf.getProperty(0));
+        double timeroptimistic = System.currentTimeMillis() - timer;
+
+        Result resultDTMC = checkInducedDTMC(experiment, (MDStrategy<Double>) resultUMDProbust.getStrategy());
+        dumpExperiment(experiment, umdp, resultUMDProbust, resultUMDPoptimistic, resultDTMC, timerrobust, timeroptimistic);
     }
 
     public Result checkInducedDTMC(Experiment experiment, MDStrategy<Double> strat) throws PrismException, FileNotFoundException {
@@ -249,7 +257,7 @@ public class ExperimentRunner implements Callable<Integer> {
         return result;
     }
 
-    public void dumpExperiment(Experiment experiment, Model<Double> model, Result resultUMDP, Result resultDTMC, double timer) {
+    public void dumpExperiment(Experiment experiment, Model<Double> model, Result resultUMDProbust, Result resultUMDPoptimistic, Result resultDTMC, double timerRobust, double timeroptimistic) {
         String outputPath = String.format("results/%s/%s/", experiment.model, experiment.parameterValues);
         try {
             Files.createDirectories(Paths.get(outputPath));
@@ -269,11 +277,15 @@ public class ExperimentRunner implements Callable<Integer> {
             }
             writer.write("Composition Type: " + experiment.compositionType + "\n");
             writer.write("Robust Goal: " + experiment.robustSpec + "\n");
-            writer.write("Robust Result: " + resultUMDP.getResult() + "\n");
-            writer.write("VI Iterations: " + resultUMDP.getNumIters() + "\n");
+            writer.write("Robust Result: " + resultUMDProbust.getResult() + "\n");
+            writer.write("VI Iterations: " + resultUMDProbust.getNumIters() + "\n");
+            writer.write("Optimistic Goal: " + experiment.optimisticSpec + "\n");
+            writer.write("Optimistic Result: " + resultUMDPoptimistic.getResult() + "\n");
+            writer.write("VI Iterations Optimistic: " + resultUMDPoptimistic.getNumIters() + "\n");
             writer.write("DTMC Goal: " + experiment.dtmcSpec + "\n");
             writer.write("DTMC Result: " + ((resultDTMC != null) ?  resultDTMC.getResult() : "n/a") + "\n");
-            writer.write("Runtime: " + timer / 1000 + "s \n");
+            writer.write("Runtime Robust: " + timerRobust / 1000 + "s \n");
+            writer.write("Runtime Optimistic: " + timeroptimistic / 1000 + "s \n");
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();
