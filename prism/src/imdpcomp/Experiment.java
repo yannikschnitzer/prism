@@ -189,6 +189,7 @@ public class Experiment {
                 this.modelFile = "../models/chain/chain_multi_succ_single.prism";
                 this.certainModelFile = "../models/chain/chain_multi_succ_single_certain.prism";
                 this.robustSpec = "Rminmax=? [F \"goal\"]";
+                this.optimisticSpec = "Rminmin=? [F \"goal\"]";
                 this.dtmcSpec = "R=? [F \"goal\"]";
 
                 // Set Parameter Values
