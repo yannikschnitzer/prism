@@ -247,6 +247,7 @@ public class Experiment {
                 this.modelFile = "../models/drone_multislip/drone.prism";
                 this.certainModelFile = "../models/drone_multislip/drone_certain.prism";
                 this.robustSpec = "Pmaxmin=? [!crash U target]";
+                this.optimisticSpec = "Pmaxmax=? [!crash U target]";
                 this.dtmcSpec = "P=? [!crash U target]";
 
                 // Set Parameter Values
@@ -258,6 +259,7 @@ public class Experiment {
                 this.modelFile = "../models/drone_multislip/drone_2.prism";
                 this.certainModelFile = "../models/drone_multislip/drone_certain.prism";
                 this.robustSpec = "Pmaxmin=? [!crash U target]";
+                this.optimisticSpec = "Pmaxmax=? [!crash U target]";
                 this.dtmcSpec = "P=? [!crash U target]";
 
                 // Set Parameter Values
