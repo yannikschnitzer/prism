@@ -133,6 +133,9 @@ public class ExperimentRunner implements Callable<Integer> {
             case "drone" -> {
                 ex = new Experiment(DRONE_MULTI);
             }
+            case "drone2" -> {
+                ex = new Experiment(DRONE_MULTI_2);
+            }
             case "chain" -> {
                 ex = new Experiment(CHAIN_MULTI);
             }
