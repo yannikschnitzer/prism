@@ -179,7 +179,7 @@ public class ExperimentRunner implements Callable<Integer> {
 
     public static void mai3n(String[] args) {
         ExperimentRunner experimentRunner = new ExperimentRunner();
-        Experiment experiment = new Experiment(LAKE_SWARM_MULTI_SLIP);
+        Experiment experiment = new Experiment(DRONE_MULTI);
 
         try {
             experimentRunner.runExperimentAllTypes(experiment);
@@ -251,8 +251,11 @@ public class ExperimentRunner implements Callable<Integer> {
         DTMCExplicit<Double> dtmc = (DTMCExplicit<Double>) mdp.constructInducedModel(strat);
 
         // Model check DTMC to get true performance of robust policy
+        System.out.println("Building DTMC");
         DTMCModelChecker mc = new DTMCModelChecker(this.prism);
-        mc.setPrecomp(false);
+        mc.setPrecomp(true);
+        mc.setErrorOnNonConverge(true);
+        mc.setTermCritParam(1e-4);
 
         PropertiesFile pf = prism.parsePropertiesString(experiment.dtmcSpec);
 

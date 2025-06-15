@@ -1,12 +1,12 @@
 mdp
 
 // Increased grid resolution (twice as large)
-const int maxX = 20;
-const int maxY = 20;
+const int maxX;
+const int maxY;
 
 // Main parameters: pilot response factor and adversary probability
-const double r   = 0.60795462532; // pilot response factor for intended one-cell move
-const double p   = 0.25;          // adversary probability for intended one-cell move
+const double r   = 0.30795462532; // pilot response factor for intended one-cell move
+const double p   = 0.2;          // adversary probability for intended one-cell move
 
 // Additional parameters for overshooting (for [up] and [down])
 // These probabilities must be at least as large as eps so that lower bounds remain non-negative.

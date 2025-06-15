@@ -92,7 +92,7 @@ public class Experiment {
                 // Set Parameter Values
                 this.parameterValues.addValue("eps", 0.025);
                 this.parameterValues.addValue("maxX", 20);
-                this.parameterValues.addValue("maxY", 20);
+                this.parameterValues.addValue("maxY", 24);
             }
 
             case LAKE_SWARM -> {
@@ -253,6 +253,9 @@ public class Experiment {
                 // Set Parameter Values
                 this.parameterValues.addValue("p", 0.3);
                 this.parameterValues.addValue("eps", 0.029);
+                this.parameterValues.addValue("MAXX", 8);
+                this.parameterValues.addValue("MAXY", 8);
+                this.parameterValues.addValue("MAXZ", 8);
             }
 
             case DRONE_MULTI_2 -> {
