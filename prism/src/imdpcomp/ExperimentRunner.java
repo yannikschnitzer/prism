@@ -37,8 +37,14 @@ public class ExperimentRunner implements Callable<Integer> {
     @CommandLine.Option(names = {"-o", "--composition"}, description = "Run a specific IMDP learning algorhtm - \"smart\", \"vertex\", \"interval\", \"all\"")
     private String composition = "smart";
 
-    @CommandLine.Option(names = {"-e", "--eps"}, description = "Run a specific IMDP learning algorhtm - \"smart\", \"vertex\", \"interval\", \"all\"")
+    @CommandLine.Option(names = {"-e", "--eps"}, description = "Set epsilon")
     private Double epsilon = 0.02;
+
+    @CommandLine.Option(names = {"-nd", "--nodtmc"}, description = "Do not compute DTMC value")
+    private boolean nodtmc = false;
+
+    @CommandLine.Option(names = {"-no", "--nooptimistic"}, description = "Do not compute optimistic value")
+    private boolean noopt = false;
 
     public ExperimentRunner() {
         try {
@@ -224,10 +230,10 @@ public class ExperimentRunner implements Callable<Integer> {
         modelGen = ModulesFileModelGenerator.create(modulesFile, prism);
         mc.setModelCheckingInfo(modelGen, pf, modelGen);
         timer = System.currentTimeMillis();
-        Result resultUMDPoptimistic = mc.check(umdp, pf.getProperty(0));
+        Result resultUMDPoptimistic = noopt ? null : mc.check(umdp, pf.getProperty(0));
         double timeroptimistic = System.currentTimeMillis() - timer;
 
-        Result resultDTMC = checkInducedDTMC(experiment, (MDStrategy<Double>) resultUMDProbust.getStrategy());
+        Result resultDTMC = nodtmc ? null : checkInducedDTMC(experiment, (MDStrategy<Double>) resultUMDProbust.getStrategy());
         dumpExperiment(experiment, umdp, resultUMDProbust, resultUMDPoptimistic, resultDTMC, timerrobust, timeroptimistic);
     }
 
@@ -283,8 +289,8 @@ public class ExperimentRunner implements Callable<Integer> {
             writer.write("Robust Result: " + resultUMDProbust.getResult() + "\n");
             writer.write("VI Iterations: " + resultUMDProbust.getNumIters() + "\n");
             writer.write("Optimistic Goal: " + experiment.optimisticSpec + "\n");
-            writer.write("Optimistic Result: " + resultUMDPoptimistic.getResult() + "\n");
-            writer.write("VI Iterations Optimistic: " + resultUMDPoptimistic.getNumIters() + "\n");
+            writer.write("Optimistic Result: " + ((resultUMDPoptimistic != null) ?  resultUMDPoptimistic.getResult() : "n/a") + "\n");
+            writer.write("VI Iterations Optimistic: " + ((resultUMDPoptimistic != null) ?  resultUMDPoptimistic.getNumIters() : "n/a") + "\n");
             writer.write("DTMC Goal: " + experiment.dtmcSpec + "\n");
             writer.write("DTMC Result: " + ((resultDTMC != null) ?  resultDTMC.getResult() : "n/a") + "\n");
             writer.write("Runtime Robust: " + timerRobust / 1000 + "s \n");
