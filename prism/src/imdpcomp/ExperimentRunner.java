@@ -180,7 +180,7 @@ public class ExperimentRunner implements Callable<Integer> {
     }
 
 
-    public static void main3(String[] args) {
+    public static void mai3n(String[] args) {
         ExperimentRunner experimentRunner = new ExperimentRunner();
         Experiment experiment = new Experiment(HERMAN_3);
 
