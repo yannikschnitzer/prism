@@ -42,6 +42,7 @@ public class Experiment {
         DRONE,
         DRONE_MULTI,
         DRONE_MULTI_2,
+        SYSADMIN,
     }
 
     public enum Type {
@@ -200,6 +201,26 @@ public class Experiment {
                 this.parameterValues.addValue("eps", 0.02);
             }
 
+            case SYSADMIN -> {
+                int N = 12;
+                int T = 10;
+
+                this.modelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_eps.pm",N);
+                this.certainModelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_certain.pm",N);
+                this.robustSpec = "Rmaxmin=? [ F (t_0 = T) ]";
+                this.optimisticSpec = "Rmaxmax=? [ F (t_0 = T) ]";
+                this.dtmcSpec = "R=? [ F (t_0 = T) ]";
+                this.type = Type.REWARD;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("T", T);
+                this.parameterValues.addValue("N", N);
+                this.parameterValues.addValue("p0", 0.1);
+                this.parameterValues.addValue("p1", 0.6);
+                this.parameterValues.addValue("eps", 0.025);
+            }
+
+
             case DICE_2 -> {
                 this.modelFile = "../models/dice/dice2.prism";
                 this.certainModelFile = "../models/dice/dice2_certain.prism";
@@ -223,14 +244,15 @@ public class Experiment {
             }
 
             case HERMAN_3 -> {
-                this.modelFile = "../models/herman/herman7.prism";
-                this.certainModelFile = "../models/herman/herman7_certain.prism";
+                this.modelFile = "../models/herman/herman11.prism";
+                this.certainModelFile = "../models/herman/herman11_certain.prism";
                 this.robustSpec = "Rminmax=? [ F \"stable\"]";
+                this.optimisticSpec = "Rminmin=? [ F \"stable\"]";
                 this.dtmcSpec = "R=? [ F \"stable\" ]";
 
                 // Set Parameter Values
                 this.parameterValues.addValue("p", 0.3333333);
-                this.parameterValues.addValue("eps", 0.1);
+                this.parameterValues.addValue("eps", 0.025);
             }
 
             case DRONE -> {

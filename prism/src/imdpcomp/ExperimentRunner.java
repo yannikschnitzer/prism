@@ -145,6 +145,9 @@ public class ExperimentRunner implements Callable<Integer> {
             case "chain" -> {
                 ex = new Experiment(CHAIN_MULTI_SINGLE);
             }
+            case "herman" -> {
+                ex = new Experiment(HERMAN_3);
+            }
             default -> {
                 ex = new Experiment(AIRCRAFT);
             }
@@ -177,9 +180,9 @@ public class ExperimentRunner implements Callable<Integer> {
     }
 
 
-    public static void mai3n(String[] args) {
+    public static void main3(String[] args) {
         ExperimentRunner experimentRunner = new ExperimentRunner();
-        Experiment experiment = new Experiment(CHAIN_MULTI_SINGLE);
+        Experiment experiment = new Experiment(HERMAN_3);
 
         try {
             experimentRunner.runExperimentAllTypes(experiment);

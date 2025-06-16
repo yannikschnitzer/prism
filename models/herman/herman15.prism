@@ -13,8 +13,8 @@ module process1
 	// Boolean variable for process 1
 	x1 : [0..1];
 
-	[step]  (x1=x11) -> [p - eps, p + eps] : (x1'=0) + [1-p-eps,1-p+eps] : (x1'=1);
-	[step] !(x1=x11) -> (x1'=x11);
+	[step]  (x1=x13) -> [p - eps, p + eps] : (x1'=0) + [1-p-eps,1-p+eps] : (x1'=1);
+	[step] !(x1=x13) -> (x1'=x13);
 
 endmodule
 
