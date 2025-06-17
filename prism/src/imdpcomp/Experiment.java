@@ -43,6 +43,7 @@ public class Experiment {
         DRONE_MULTI,
         DRONE_MULTI_2,
         SYSADMIN,
+        STOCK_TRADING
     }
 
     public enum Type {
@@ -202,8 +203,8 @@ public class Experiment {
             }
 
             case SYSADMIN -> {
-                int N = 12;
-                int T = 10;
+                int N = 10;
+                int T = 17;
 
                 this.modelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_eps.pm",N);
                 this.certainModelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_certain.pm",N);
@@ -217,6 +218,21 @@ public class Experiment {
                 this.parameterValues.addValue("N", N);
                 this.parameterValues.addValue("p0", 0.1);
                 this.parameterValues.addValue("p1", 0.6);
+                this.parameterValues.addValue("eps", 0.025);
+            }
+
+            case STOCK_TRADING -> {
+                this.modelFile = "../models/stocktrading/stock_trading_3_3_eps.pm";
+                this.certainModelFile = "../models/stocktrading/stock_trading_3_3_certain.pm";
+                this.robustSpec = "Rmaxmin=? [ F goal ]";
+                this.optimisticSpec = "Rmaxmax=? [ F goal ]";
+                this.dtmcSpec = "R=? [ F goal ]";
+                this.type = Type.REWARD;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("T", 10);
+                this.parameterValues.addValue("BASE", 0.1);
+                this.parameterValues.addValue("SCALE", 0.8);
                 this.parameterValues.addValue("eps", 0.025);
             }
 
@@ -235,12 +251,13 @@ public class Experiment {
             case DICE_3 -> {
                 this.modelFile = "../models/dice/dice3.prism";
                 this.certainModelFile = "../models/dice/dice3_certain.prism";
-                this.robustSpec = "Rminmax=? [ F (s1=7 & s2 = 7 & s3 = 7) ]";
-                this.dtmcSpec = "R=? [ F (s1=7 & s2 = 7 & s3 = 7) ]";
+                this.robustSpec = "Rminmax=? [ F (s1=7 & s2=7 & s3=7 & s4=7 & s5=7) ]";
+                this.optimisticSpec = "Rminmin=? [ F (s1=7 & s2=7 & s3=7 & s4=7 & s5=7) ]";
+                this.dtmcSpec = "R=? [ F (s1=7 & s2=7 & s3=7 & s4=7 & s5=7) ]";
 
                 // Set Parameter Values
-                this.parameterValues.addValue("p", 0.22);
-                this.parameterValues.addValue("eps", 0.1);
+                this.parameterValues.addValue("p", 0.4);
+                this.parameterValues.addValue("eps", 0.025);
             }
 
             case HERMAN_3 -> {

@@ -10,7 +10,7 @@ module die1
 	// value of the die
 	d1 : [0..6] init 0;
 	
-	[flip] s1=0 -> [p - eps, p + eps] : (s1'=1) + [1 - p - eps, 1 - p + eps]  : (s1'=2);
+	[flip] s1=0 -> [max(p - eps,0), p + eps] : (s1'=1) + [1 - p - eps, 1 - p + eps]  : (s1'=2);
 	[flip] s1=1 -> [p - eps, p + eps] : (s1'=3) + [1 - p - eps, 1 - p + eps]  : (s1'=4);
 	[flip] s1=2 -> [p - eps, p + eps] : (s1'=5) + [1 - p - eps, 1 - p + eps]  : (s1'=6);
 	[flip] s1=3 -> [p - eps, p + eps] : (s1'=1) + [1 - p - eps, 1 - p + eps]  : (s1'=7) & (d1'=1);
