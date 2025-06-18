@@ -204,7 +204,7 @@ public class Experiment {
 
             case SYSADMIN -> {
                 int N = 10;
-                int T = 17;
+                int T = 15;
 
                 this.modelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_eps.pm",N);
                 this.certainModelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_certain.pm",N);
@@ -222,15 +222,15 @@ public class Experiment {
             }
 
             case STOCK_TRADING -> {
-                this.modelFile = "../models/stocktrading/stock_trading_3_3_eps.pm";
-                this.certainModelFile = "../models/stocktrading/stock_trading_3_3_certain.pm";
+                this.modelFile = "../models/stocktrading/stock_trading_3_2_eps.pm";
+                this.certainModelFile = "../models/stocktrading/stock_trading_3_2_certain.pm";
                 this.robustSpec = "Rmaxmin=? [ F goal ]";
                 this.optimisticSpec = "Rmaxmax=? [ F goal ]";
                 this.dtmcSpec = "R=? [ F goal ]";
                 this.type = Type.REWARD;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("T", 10);
+                this.parameterValues.addValue("T", 25);
                 this.parameterValues.addValue("BASE", 0.1);
                 this.parameterValues.addValue("SCALE", 0.8);
                 this.parameterValues.addValue("eps", 0.025);
