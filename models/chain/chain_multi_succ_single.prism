@@ -1,54 +1,54 @@
-mdp
-
 const int H;
 const double p;
 const double q;
 const double r; //= 1/2
 const double eps;
+const double mu = 0.001; // Graph-preserving tolerance
 
 const double pdiv = (1/9) * (1 - p);
 const double qdiv = (1/9) * (1 - q);
 
 module chain
-	s1 : [0..H] init 0;
+    s1 : [0..H] init 0;
 
-    //[a] true -> [1-r - eps, 1-r + eps] : (s1'=min(s1+1,H)) + [r - eps, r + eps] : (s1'=0);
-	[a] (s1 != H-1) -> [p - eps, p + eps] : (s1'=min(s1+1,H)) +
-	            [1 - p - eps, 1 - p + eps] : (s1'=0);
-    [a] (s1 != H-1) -> [q - eps, q + eps] : (s1'=min(s1+1,H)) +
-                [1- q - eps, 1 - q + eps] : (s1'=0);
+    [a] (s1 != H-1) -> [max(mu,p-eps), min(p+eps, 1-mu)] : (s1'=min(s1+1, H)) +
+                    [max(mu,1-p-eps), min(1-p+eps, 1-mu)] : (s1'=0);
 
-    [a] (s1 = H-1) -> [p - eps, p + eps] : (s1'=min(s1+1,H)) +
-    	            [pdiv- eps, pdiv + eps] : (s1'=max(0, s1-1)) +
-    	            [pdiv- eps, pdiv + eps] : (s1'=max(0, s1-2)) +
-    	            [pdiv- eps, pdiv + eps] : (s1'=max(0, s1-3)) +
-    	            [pdiv- eps, pdiv + eps] : (s1'=max(0, s1-4)) +
-    	            [pdiv- eps, pdiv + eps] : (s1'=max(0, s1-5)) +
-    	            [pdiv- eps, pdiv + eps] : (s1'=max(0, s1-6)) +
-    	            [pdiv- eps, pdiv + eps] : (s1'=max(0, s1-7)) +
-    	            [pdiv- eps, pdiv + eps] : (s1'=max(0, s1-8)) +
-    	            [pdiv - eps, pdiv + eps] : (s1'=0);
-    [a] (s1 = H-1) -> [q - eps, q + eps] : (s1'=min(s1+1,H)) +
-                    [qdiv- eps, pdiv + eps] : (s1'=max(0, s1-1)) +
-                    [qdiv- eps, pdiv + eps] : (s1'=max(0, s1-2)) +
-                    [qdiv- eps, pdiv + eps] : (s1'=max(0, s1-3)) +
-                    [qdiv- eps, pdiv + eps] : (s1'=max(0, s1-4)) +
-                    [qdiv- eps, pdiv + eps] : (s1'=max(0, s1-5)) +
-                    [qdiv- eps, pdiv + eps] : (s1'=max(0, s1-6)) +
-                    [qdiv- eps, pdiv + eps] : (s1'=max(0, s1-7)) +
-                    [qdiv- eps, pdiv + eps] : (s1'=max(0, s1-8)) +
-                    [qdiv - eps, pdiv + eps] : (s1'=0);
+    [a] (s1 != H-1) -> [max(mu,q-eps), min(q+eps, 1-mu)] : (s1'=min(s1+1, H)) +
+                    [max(mu,1-q-eps), min(1-q+eps, 1-mu)] : (s1'=0);
+
+    [a] (s1 = H-1) -> [max(mu,p-eps), min(p+eps, 1-mu)] : (s1'=min(s1+1, H)) +
+                    [max(mu,pdiv-eps), min(pdiv+eps, 1-mu)] : (s1'=max(0, s1-1)) +
+                    [max(mu,pdiv-eps), min(pdiv+eps, 1-mu)] : (s1'=max(0, s1-2)) +
+                    [max(mu,pdiv-eps), min(pdiv+eps, 1-mu)] : (s1'=max(0, s1-3)) +
+                    [max(mu,pdiv-eps), min(pdiv+eps, 1-mu)] : (s1'=max(0, s1-4)) +
+                    [max(mu,pdiv-eps), min(pdiv+eps, 1-mu)] : (s1'=max(0, s1-5)) +
+                    [max(mu,pdiv-eps), min(pdiv+eps, 1-mu)] : (s1'=max(0, s1-6)) +
+                    [max(mu,pdiv-eps), min(pdiv+eps, 1-mu)] : (s1'=max(0, s1-7)) +
+                    [max(mu,pdiv-eps), min(pdiv+eps, 1-mu)] : (s1'=max(0, s1-8)) +
+                    [max(mu,pdiv-eps), min(pdiv+eps, 1-mu)] : (s1'=0);
+
+    [a] (s1 = H-1) -> [max(mu,q-eps), min(q+eps, 1-mu)] : (s1'=min(s1+1, H)) +
+                    [max(mu,qdiv-eps), min(qdiv+eps, 1-mu)] : (s1'=max(0, s1-1)) +
+                    [max(mu,qdiv-eps), min(qdiv+eps, 1-mu)] : (s1'=max(0, s1-2)) +
+                    [max(mu,qdiv-eps), min(qdiv+eps, 1-mu)] : (s1'=max(0, s1-3)) +
+                    [max(mu,qdiv-eps), min(qdiv+eps, 1-mu)] : (s1'=max(0, s1-4)) +
+                    [max(mu,qdiv-eps), min(qdiv+eps, 1-mu)] : (s1'=max(0, s1-5)) +
+                    [max(mu,qdiv-eps), min(qdiv+eps, 1-mu)] : (s1'=max(0, s1-6)) +
+                    [max(mu,qdiv-eps), min(qdiv+eps, 1-mu)] : (s1'=max(0, s1-7)) +
+                    [max(mu,qdiv-eps), min(qdiv+eps, 1-mu)] : (s1'=max(0, s1-8)) +
+                    [max(mu,qdiv-eps), min(qdiv+eps, 1-mu)] : (s1'=0);
 endmodule
 
-module chain2 = chain[s1 = s2] endmodule
-//module chain3=chain[s1 = s3] endmodule
-//module chain4=chain[s1 = s4] endmodule
-//module chain5=chain[s1 = s5] endmodule
+module chain2 = chain[s1=s2] endmodule
+//module chain3 = chain[s1=s3] endmodule
+//module chain4 = chain[s1=s4] endmodule
+//module chain5 = chain[s1=s5] endmodule
 
 rewards
-	[a] true : 1;
-	//[b] true : 1;
-	//[c] true : 1;
+    [a] true : 1;
+//  [b] true : 1;
+//  [c] true : 1;
 endrewards
 
-label "goal" = s1=H;
+label "goal" = s1 = H;
