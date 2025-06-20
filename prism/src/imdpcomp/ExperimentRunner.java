@@ -188,7 +188,7 @@ public class ExperimentRunner implements Callable<Integer> {
 
     public static void mai3n(String[] args) {
         ExperimentRunner experimentRunner = new ExperimentRunner();
-        Experiment experiment = new Experiment(LAKE_SWARM_MULTI_SLIP);
+        Experiment experiment = new Experiment(AIRCRAFT_MULTI_SLIP);
 
         try {
             experimentRunner.runExperimentAllTypes(experiment);
