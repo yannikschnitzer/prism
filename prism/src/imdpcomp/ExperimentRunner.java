@@ -151,6 +151,9 @@ public class ExperimentRunner implements Callable<Integer> {
             case "sysadmin" -> {
                 ex = new Experiment(SYSADMIN);
             }
+            case "stocktrading" -> {
+                ex = new Experiment(STOCK_TRADING);
+            }
             default -> {
                 ex = new Experiment(AIRCRAFT);
             }
@@ -185,7 +188,7 @@ public class ExperimentRunner implements Callable<Integer> {
 
     public static void mai3n(String[] args) {
         ExperimentRunner experimentRunner = new ExperimentRunner();
-        Experiment experiment = new Experiment(SYSADMIN);
+        Experiment experiment = new Experiment(STOCK_TRADING);
 
         try {
             experimentRunner.runExperimentAllTypes(experiment);
