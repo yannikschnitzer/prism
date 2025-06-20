@@ -6,6 +6,7 @@ const int maxY;
 const double r   = 0.30795462532; // pilot response factor for intended one-cell move
 const double p   = 0.2;          // adversary probability for intended one-cell move
 const double eps;          // uncertainty interval
+const double mu = 0.0001; // Graph preserving tolerance
 
 // Additional parameters for overshooting (for [up] and [down])
 // These probabilities must be at least as large as eps so that lower bounds remain non-negative.
@@ -39,41 +40,41 @@ module aircraft
     // [up] action: pilot intends to climb (increase altitude)
     [up] x < maxX ->
          // Intended one-cell climb (with probability r)
-         [max(0,r-eps),min(r+eps,1)] : (y' = min(y+1, maxY)) & (x' = x+1) +
+         [max(mu,r-eps),min(r+eps,1-mu)] : (y' = min(y+1, maxY)) & (x' = x+1) +
          // Overshoot: climb by 2 cells (with probability d2)
-         [max(0,d2-eps),min(d2+eps,1)] : (y' = min(y+2, maxY)) & (x' = x+1) +
+         [max(mu,d2-eps),min(d2+eps,1-mu)] : (y' = min(y+2, maxY)) & (x' = x+1) +
          // Overshoot further: climb by 3 cells (with probability d3)
-         [max(0,d3-eps),min(d3+eps,1)] : (y' = min(y+3, maxY)) & (x' = x+1) +
+         [max(mu,d3-eps),min(d3+eps,1-mu)] : (y' = min(y+3, maxY)) & (x' = x+1) +
          // Otherwise: no altitude change
-         [max(0,1 - r - d2 - d3 - eps),min(1 - r - d2 - d3 + eps,1)] : (y' = y) & (x' = x+1);
+         [max(mu,1 - r - d2 - d3 - eps),min(1 - r - d2 - d3 + eps,1-mu)] : (y' = y) & (x' = x+1);
 
     // [down] action: pilot intends to descend (decrease altitude)
     [down] x < maxX ->
          // Intended one-cell descent (with probability r)
-         [max(0,r-eps),min(r+eps,1)] : (y' = max(y-1, 0)) & (x' = x+1) +
+         [max(mu,r-eps),min(r+eps,1-mu)] : (y' = max(y-1, 0)) & (x' = x+1) +
          // Overshoot: descend by 2 cells (with probability d2)
-         [max(0,d2-eps),min(d2+eps,1)] : (y' = max(y-2, 0)) & (x' = x+1) +
+         [max(mu,d2-eps),min(d2+eps,1-mu)] : (y' = max(y-2, 0)) & (x' = x+1) +
          // Overshoot further: descend by 3 cells (with probability d3)
-         [max(0,d3-eps),min(d3+eps,1)] : (y' = max(y-3, 0)) & (x' = x+1) +
+         [max(mu,d3-eps),min(d3+eps,1-mu)] : (y' = max(y-3, 0)) & (x' = x+1) +
          // Otherwise: no altitude change
-         [max(0,1 - r - d2 - d3 - eps),min(1 - r - d2 - d3 + eps,1)] : (y' = y) & (x' = x+1);
+         [max(mu,1 - r - d2 - d3 - eps),min(1 - r - d2 - d3 + eps,1-mu)] : (y' = y) & (x' = x+1);
 
     // [stay] action: pilot intends to maintain altitude but small drift may occur
     [stay] x < maxX ->
          // Drift upward by 3 cells
-         [max(0,drift3-eps),min(drift3+eps,1)] : (y' = min(y+3, maxY)) & (x' = x+1) +
+         [max(mu,drift3-eps),min(drift3+eps,1-mu)] : (y' = min(y+3, maxY)) & (x' = x+1) +
          // Drift upward by 2 cells
-         [max(0,drift2-eps),min(drift2+eps,1)] : (y' = min(y+2, maxY)) & (x' = x+1) +
+         [max(mu,drift2-eps),min(drift2+eps,1-mu)] : (y' = min(y+2, maxY)) & (x' = x+1) +
          // Drift upward by 1 cell
-         [max(0,drift1-eps),min(drift1+eps,1)] : (y' = min(y+1, maxY)) & (x' = x+1) +
+         [max(mu,drift1-eps),min(drift1+eps,1-mu)] : (y' = min(y+1, maxY)) & (x' = x+1) +
          // No drift (most likely)
-         [max(0,0.70-eps),min(0.70+eps,1)] : (y' = y) & (x' = x+1) +
+         [max(mu,0.70-eps),min(0.70+eps,1-mu)] : (y' = y) & (x' = x+1) +
          // Drift downward by 1 cell
-         [max(0,drift1-eps),min(drift1+eps,1)] : (y' = max(y-1, 0)) & (x' = x+1) +
+         [max(mu,drift1-eps),min(drift1+eps,1-mu)] : (y' = max(y-1, 0)) & (x' = x+1) +
          // Drift downward by 2 cells
-         [max(0,drift2-eps),min(drift2+eps,1)] : (y' = max(y-2, 0)) & (x' = x+1) +
+         [max(mu,drift2-eps),min(drift2+eps,1-mu)] : (y' = max(y-2, 0)) & (x' = x+1) +
          // Drift downward by 3 cells
-         [max(0,drift3-eps),min(drift3+eps,1)] : (y' = max(y-3, 0)) & (x' = x+1);
+         [max(mu,drift3-eps),min(drift3+eps,1-mu)] : (y' = max(y-3, 0)) & (x' = x+1);
 
     // When x = maxX, the aircraft remains in a terminal state.
     [up] x = maxX -> true;
@@ -91,52 +92,52 @@ module adversary
     // [up] action: adversary moves left (decreasing ax) and changes altitude
     [up] ax > 0 ->
          // Intended upward move (decrease altitude by 1) with probability p
-         [max(0,p-eps),min(p+eps,1)] : (ay' = max(ay-1, 0)) & (ax' = ax-1) +
+         [max(mu,p-eps),min(p+eps,1-mu)] : (ay' = max(ay-1, 0)) & (ax' = ax-1) +
          // Overshoot upward by 2 cells with probability d2
-         [max(0,d2-eps),min(d2+eps,1)] : (ay' = max(ay-2, 0)) & (ax' = ax-1) +
+         [max(mu,d2-eps),min(d2+eps,1-mu)] : (ay' = max(ay-2, 0)) & (ax' = ax-1) +
          // Overshoot upward by 3 cells with probability d3
-         [max(0,d3-eps),min(d3+eps,1)] : (ay' = max(ay-3, 0)) & (ax' = ax-1) +
+         [max(mu,d3-eps),min(d3+eps,1-mu)] : (ay' = max(ay-3, 0)) & (ax' = ax-1) +
          // Intended downward move (increase altitude by 1) with probability p
-         [max(0,p-eps),min(p+eps,1)] : (ay' = min(ay+1, maxY)) & (ax' = ax-1) +
+         [max(mu,p-eps),min(p+eps,1-mu)] : (ay' = min(ay+1, maxY)) & (ax' = ax-1) +
          // Overshoot downward by 2 cells with probability d2
-         [max(0,d2-eps),min(d2+eps,1)] : (ay' = min(ay+2, maxY)) & (ax' = ax-1) +
+         [max(mu,d2-eps),min(d2+eps,1-mu)] : (ay' = min(ay+2, maxY)) & (ax' = ax-1) +
          // Overshoot downward by 3 cells with probability d3
-         [max(0,d3-eps),min(d3+eps,1)] : (ay' = min(ay+3, maxY)) & (ax' = ax-1) +
+         [max(mu,d3-eps),min(d3+eps,1-mu)] : (ay' = min(ay+3, maxY)) & (ax' = ax-1) +
          // Otherwise: no altitude change
-         [max(0,1 - 2*p - 2*d2 - 2*d3 - eps),min(1 - 2*p - 2*d2 - 2*d3 + eps,1)] : (ay' = ay) & (ax' = ax-1);
+         [max(mu,1 - 2*p - 2*d2 - 2*d3 - eps),min(1 - 2*p - 2*d2 - 2*d3 + eps,1-mu)] : (ay' = ay) & (ax' = ax-1);
 
     // [down] action: same structure as [up]
     [down] ax > 0 ->
-         [max(0,p-eps),min(p+eps,1)] : (ay' = max(ay-1, 0)) & (ax' = ax-1) +
-         [max(0,d2-eps),min(d2+eps,1)] : (ay' = max(ay-2, 0)) & (ax' = ax-1) +
-         [max(0,d3-eps),min(d3+eps,1)] : (ay' = max(ay-3, 0)) & (ax' = ax-1) +
-         [max(0,p-eps),min(p+eps,1)] : (ay' = min(ay+1, maxY)) & (ax' = ax-1) +
-         [max(0,d2-eps),min(d2+eps,1)] : (ay' = min(ay+2, maxY)) & (ax' = ax-1) +
-         [max(0,d3-eps),min(d3+eps,1)] : (ay' = min(ay+3, maxY)) & (ax' = ax-1) +
-         [max(0,1 - 2*p - 2*d2 - 2*d3 - eps),min(1 - 2*p - 2*d2 - 2*d3 + eps,1)] : (ay' = ay) & (ax' = ax-1);
+         [max(mu,p-eps),min(p+eps,1-mu)] : (ay' = max(ay-1, 0)) & (ax' = ax-1) +
+         [max(mu,d2-eps),min(d2+eps,1-mu)] : (ay' = max(ay-2, 0)) & (ax' = ax-1) +
+         [max(mu,d3-eps),min(d3+eps,1-mu)] : (ay' = max(ay-3, 0)) & (ax' = ax-1) +
+         [max(mu,p-eps),min(p+eps,1-mu)] : (ay' = min(ay+1, maxY)) & (ax' = ax-1) +
+         [max(mu,d2-eps),min(d2+eps,1-mu)] : (ay' = min(ay+2, maxY)) & (ax' = ax-1) +
+         [max(mu,d3-eps),min(d3+eps,1-mu)] : (ay' = min(ay+3, maxY)) & (ax' = ax-1) +
+         [max(mu,1 - 2*p - 2*d2 - 2*d3 - eps),min(1 - 2*p - 2*d2 - 2*d3 + eps,1-mu)] : (ay' = ay) & (ax' = ax-1);
 
     // [stay] action: adversary stays in the same column but may drift in altitude
     [stay] ax > 0 & (ax < 3 | ax > 10) ->
-         [max(0,p_div-eps),min(p_div+eps,1)] : (ay' = max(ay-3, 0)) & (ax' = ax-1) +
-         [max(0,p_div-eps),min(p_div+eps,1)] : (ay' = max(ay-2, 0)) & (ax' = ax-1) +
-         [max(0,p_div-eps),min(p_div+eps,1)] : (ay' = max(ay-1, 0)) & (ax' = ax-1) +
-         [max(0,p_div-eps),min(p_div+eps,1)] : (ay' = max(ay-4, 0)) & (ax' = ax-1) +
-         [max(0,p_div-eps),min(p_div+eps,1)] : (ay' = max(ay-5, 0)) & (ax' = ax-1) +
-         [max(0,p_div-eps),min(p_div+eps,1)] : (ay' = ay) & (ax' = ax-1) +
-         [max(0,p_div-eps),min(p_div+eps,1)] : (ay' = min(ay+1, maxY)) & (ax' = ax-1) +
-         [max(0,p_div-eps),min(p_div+eps,1)] : (ay' = min(ay+2, maxY)) & (ax' = ax-1) +
-         [max(0,p_div-eps),min(p_div+eps,1)] : (ay' = min(ay+3, maxY)) & (ax' = ax-1) +
-         [max(0,p_div-eps),min(p_div+eps,1)] : (ay' = min(ay+5, maxY)) & (ax' = ax-1) +
-         [max(0,p_div-eps),min(p_div+eps,1)] : (ay' = min(ay+4, maxY)) & (ax' = ax-1);
+         [max(mu,p_div-eps),min(p_div+eps,1-mu)] : (ay' = max(ay-3, 0)) & (ax' = ax-1) +
+         [max(mu,p_div-eps),min(p_div+eps,1-mu)] : (ay' = max(ay-2, 0)) & (ax' = ax-1) +
+         [max(mu,p_div-eps),min(p_div+eps,1-mu)] : (ay' = max(ay-1, 0)) & (ax' = ax-1) +
+         [max(mu,p_div-eps),min(p_div+eps,1-mu)] : (ay' = max(ay-4, 0)) & (ax' = ax-1) +
+         [max(mu,p_div-eps),min(p_div+eps,1-mu)] : (ay' = max(ay-5, 0)) & (ax' = ax-1) +
+         [max(mu,p_div-eps),min(p_div+eps,1-mu)] : (ay' = ay) & (ax' = ax-1) +
+         [max(mu,p_div-eps),min(p_div+eps,1-mu)] : (ay' = min(ay+1, maxY)) & (ax' = ax-1) +
+         [max(mu,p_div-eps),min(p_div+eps,1-mu)] : (ay' = min(ay+2, maxY)) & (ax' = ax-1) +
+         [max(mu,p_div-eps),min(p_div+eps,1-mu)] : (ay' = min(ay+3, maxY)) & (ax' = ax-1) +
+         [max(mu,p_div-eps),min(p_div+eps,1-mu)] : (ay' = min(ay+5, maxY)) & (ax' = ax-1) +
+         [max(mu,p_div-eps),min(p_div+eps,1-mu)] : (ay' = min(ay+4, maxY)) & (ax' = ax-1);
 
     [stay] ax > 0 & ax >= 3 & ax <= 10  ->
-             [max(0,drift3-eps),min(drift3+eps,1)] : (ay' = max(ay-3, 0)) & (ax' = ax-1) +
-             [max(0,drift2-eps),min(drift2+eps,1)] : (ay' = max(ay-2, 0)) & (ax' = ax-1) +
-             [max(0,drift1-eps),min(drift1+eps,1)] : (ay' = max(ay-1, 0)) & (ax' = ax-1) +
-             [max(0,0.70-eps),min(0.70+eps,1)] : (ay' = ay) & (ax' = ax-1) +
-             [max(0,drift1-eps),min(drift1+eps,1)] : (ay' = min(ay+1, maxY)) & (ax' = ax-1) +
-             [max(0,drift2-eps),min(drift2+eps,1)] : (ay' = min(ay+2, maxY)) & (ax' = ax-1) +
-             [max(0,drift3-eps),min(drift3+eps,1)] : (ay' = min(ay+3, maxY)) & (ax' = ax-1);
+             [max(mu,drift3-eps),min(drift3+eps,1-mu)] : (ay' = max(ay-3, 0)) & (ax' = ax-1) +
+             [max(mu,drift2-eps),min(drift2+eps,1-mu)] : (ay' = max(ay-2, 0)) & (ax' = ax-1) +
+             [max(mu,drift1-eps),min(drift1+eps,1-mu)] : (ay' = max(ay-1, 0)) & (ax' = ax-1) +
+             [max(mu,0.70-eps),min(0.70+eps,1-mu)] : (ay' = ay) & (ax' = ax-1) +
+             [max(mu,drift1-eps),min(drift1+eps,1-mu)] : (ay' = min(ay+1, maxY)) & (ax' = ax-1) +
+             [max(mu,drift2-eps),min(drift2+eps,1-mu)] : (ay' = min(ay+2, maxY)) & (ax' = ax-1) +
+             [max(mu,drift3-eps),min(drift3+eps,1-mu)] : (ay' = min(ay+3, maxY)) & (ax' = ax-1);
 
     [up] ax = 0 -> true;
     [down] ax = 0 -> true;
