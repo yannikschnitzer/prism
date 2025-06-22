@@ -63,7 +63,7 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 
 	private int numMarginals = -1;
 
-	public DependencyIdentifier dependencyIdentifier = new DependencyIdentiferSysAdmin();
+	public DependencyIdentifier dependencyIdentifier = new DependencyIdentiferStockTrading();
 	// Constructors
 
 	/**

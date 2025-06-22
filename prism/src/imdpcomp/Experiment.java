@@ -403,7 +403,10 @@ public class Experiment {
                 this.spec = "Pmax=? [!crash U target]";
                 this.type = Type.REACH;
 
-                // Set Parameter Values
+                // Set Parameter V alues
+                this.parameterValues.addValue("MAXX", 5);
+                this.parameterValues.addValue("MAXY", 5);
+                this.parameterValues.addValue("MAXZ", 5);
                 this.parameterValues.addValue("p", 0.3);
                 this.parameterValues.addValue("eps", 0.029);
             }
