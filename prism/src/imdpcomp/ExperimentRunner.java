@@ -93,7 +93,7 @@ public class ExperimentRunner {
 
     public static void main(String[] args) {
         ExperimentRunner experimentRunner = new ExperimentRunner();
-        Experiment experiment = new Experiment(Experiment.Model.DRONE_MULTI);
+        Experiment experiment = new Experiment(Experiment.Model.CHAIN_MULTI);
 
         try {
             experimentRunner.runExperimentAllTypes(experiment);

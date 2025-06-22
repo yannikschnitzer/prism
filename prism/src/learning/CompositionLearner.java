@@ -153,11 +153,11 @@ public class CompositionLearner implements Callable<Integer> {
         return 0;
     }
 
-    public static void main2(String[] args) throws PrismException {
+    public static void mai3n(String[] args) throws PrismException {
         CompositionLearner learner = new CompositionLearner(new Prism(new PrismDevNullLog()));
         learner.initializePrism();
 
-        Experiment ex = new Experiment(LAKE_SWARM);
+        Experiment ex = new Experiment(STOCK_TRADING_2_2);
 
         // Build the parametric MDP to infer parametric structure
         MDPSimple<Function> pmdp = learner.buildParamModel(ex);
