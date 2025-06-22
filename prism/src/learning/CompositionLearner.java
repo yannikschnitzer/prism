@@ -101,6 +101,9 @@ public class CompositionLearner implements Callable<Integer> {
                 case "sysadmin" -> {
                     ex = new Experiment(SYSADMIN);
                 }
+                case "drone" -> {
+                    ex = new Experiment(DRONE_MULTI);
+                }
                 default -> {
                     ex = new Experiment(AIRCRAFT);
                 }

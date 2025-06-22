@@ -35,6 +35,7 @@ import io.ExplicitModelImporter;
 import learning.Factored.DependencyIdentiferStockTrading;
 import learning.Factored.DependencyIdentiferSysAdmin;
 import learning.Factored.DependencyIdentifier;
+import learning.Factored.DependencyIdentifierGeneral;
 import prism.Evaluator;
 import prism.PrismException;
 

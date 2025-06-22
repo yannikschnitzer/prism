@@ -170,10 +170,10 @@ public class Experiment {
                 this.spec = "Rmax=? [ F goal ]";
                 this.type = Type.REWARD;
 
-                this.max_episode_length = 21;
+                this.max_episode_length = 11;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("T", 20);
+                this.parameterValues.addValue("T", 10);
                 this.parameterValues.addValue("BASE", 0.1);
                 this.parameterValues.addValue("SCALE", 0.8);
             }
