@@ -193,7 +193,7 @@ public class MAPEstimator extends Estimator {
         //mc.setPrecomp(false); //TODO: here
         mc.setErrorOnNonConverge(true);
         mc.setMaxIters(ex.maxVIIters);
-        mc.setTermCritParam(1e-3);
+        mc.setTermCritParam(1e-4);
         mc.setGenStrat(true);
         PropertiesFile pf = prism.parsePropertiesString(ex.dtmcSpec);
 
@@ -334,6 +334,7 @@ public class MAPEstimator extends Estimator {
         mc.setGenStrat(true);
         mc.setPrecomp(true);
         mc.setMaxIters(ex.maxVIIters);
+        mc.setTermCritParam(1e-4);
         mc.setErrorOnNonConverge(false);
 
         PropertiesFile pf;
