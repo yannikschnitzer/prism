@@ -405,6 +405,7 @@ public class Experiment {
 
                 this.max_episode_length = 100;
                 this.maxVIIters = 3500;
+                this.multiplier = 10;
 
                 // Set Parameter V alues
                 this.parameterValues.addValue("MAXX", 5);
