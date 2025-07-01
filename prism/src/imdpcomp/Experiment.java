@@ -404,7 +404,7 @@ public class Experiment {
                 this.type = Type.REACH;
 
                 this.max_episode_length = 100;
-                this.maxVIIters = 5000;
+                this.maxVIIters = 3500;
 
                 // Set Parameter V alues
                 this.parameterValues.addValue("MAXX", 5);

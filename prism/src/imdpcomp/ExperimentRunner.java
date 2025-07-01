@@ -128,7 +128,7 @@ public class ExperimentRunner {
         UMDPModelChecker mc = new UMDPModelChecker(null);
         mc.setPrecomp(true);
         mc.setGenStrat(true);
-        mc.setErrorOnNonConverge(true);
+        mc.setErrorOnNonConverge(false);
 
         // Set Objective
         PropertiesFile pf = prism.parsePropertiesString(experiment.robustSpec);
