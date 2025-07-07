@@ -403,9 +403,9 @@ public class Experiment {
                 this.spec = "Pmax=? [!crash U target]";
                 this.type = Type.REACH;
 
-                this.max_episode_length = 100;
+                this.max_episode_length = 50;
                 this.maxVIIters = 3500;
-                this.multiplier = 10;
+                this.multiplier = 5;
 
                 // Set Parameter V alues
                 this.parameterValues.addValue("MAXX", 5);
