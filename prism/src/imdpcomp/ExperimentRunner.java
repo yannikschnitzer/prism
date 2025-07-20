@@ -2,6 +2,8 @@ package imdpcomp;
 
 import explicit.Model;
 import explicit.*;
+import learning.CommandLine;
+import param.Function;
 import parser.Values;
 import parser.ast.ModulesFile;
 import parser.ast.PropertiesFile;
@@ -15,17 +17,39 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.Callable;
 
 import static explicit.ConstructModel.CompositionType.*;
+import static imdpcomp.Experiment.Model.*;
+import static imdpcomp.Experiment.Model.AIRCRAFT;
 
-public class ExperimentRunner {
+@CommandLine.Command(mixinStandardHelpOptions = true, version = "AAAI V-0.0.1", description = "Compositional Solver for AAAI")
+public class ExperimentRunner implements Callable<Integer> {
 
-    Prism prism = new Prism(new PrismPrintStreamLog(System.out));
+    Prism prism;
+
+    @CommandLine.Option(names = {"-c", "--casestudy"}, description = "Run a specific case study - \"aircraft\", \"betting\", \"sav\", \"chain\", \"drone\", \"lake\"")
+    private String casestudy = "aircraft";
+
+    @CommandLine.Option(names = {"-o", "--composition"}, description = "Run a specific IMDP learning algorhtm - \"smart\", \"vertex\", \"interval\", \"all\"")
+    private String composition = "smart";
+
+    @CommandLine.Option(names = {"-e", "--eps"}, description = "Set epsilon")
+    private Double epsilon = 0.02;
+
+    @CommandLine.Option(names = {"-nd", "--nodtmc"}, description = "Do not compute DTMC value")
+    private boolean nodtmc = false;
+
+    @CommandLine.Option(names = {"-no", "--nooptimistic"}, description = "Do not compute optimistic value")
+    private boolean noopt = false;
 
     public ExperimentRunner() {
         try {
+            this.prism = new Prism(new PrismPrintStreamLog(System.out));
             prism.setVerbose(true);
             prism.initialise();
             prism.setEngine(Prism.EXPLICIT);
@@ -44,7 +68,7 @@ public class ExperimentRunner {
             prism.setEngine(Prism.EXPLICIT);
             prism.setGenStrat(true);
 
-            ModulesFile modulesFile = prism.parseModelFile(new File("../models/aircraft_collision/aircraft_10x20_resolution_3.prism"));
+            ModulesFile modulesFile = prism.parseModelFile(new File("../models/aircraft_collision/aircraft_3.prism"));
             //ModulesFile modulesFile = prism.parseModelFile(new File("../models/aircraft_collision/aircraft_4_overshoot.prism"));
             //ModulesFile modulesFile = prism.parseModelFile(new File("../models/grid_world_robot/grid_robot_1.prism"));
             //ModulesFile modulesFile = prism.parseModelFile(new File("../models/blocks_world/block_epistemic.prism"));
@@ -92,8 +116,80 @@ public class ExperimentRunner {
     }
 
     public static void main(String[] args) {
+        if (args.length > 0) {
+            int exitCode = new CommandLine(new ExperimentRunner()).execute(args);
+            System.exit(exitCode);
+        } else {
+            System.out.println("No Arguments Provided");
+        }
+    }
+
+    @Override
+    public Integer call() throws Exception {
+        Experiment ex;
+        switch (this.casestudy) {
+            case "aircraft" -> {
+                ex = new Experiment(AIRCRAFT_MULTI_SLIP);
+            }
+            case "lake" -> {
+                ex = new Experiment(LAKE_SWARM);
+            }
+            case "lakemulti" -> {
+                ex = new Experiment(LAKE_SWARM_MULTI_SLIP);
+            }
+            case "drone" -> {
+                ex = new Experiment(DRONE_MULTI);
+            }
+            case "drone2" -> {
+                ex = new Experiment(DRONE_MULTI_2);
+            }
+            case "chain" -> {
+                ex = new Experiment(CHAIN_MULTI_SINGLE);
+            }
+            case "herman" -> {
+                ex = new Experiment(HERMAN_3);
+            }
+            case "sysadmin" -> {
+                ex = new Experiment(SYSADMIN);
+            }
+            case "stocktrading" -> {
+                ex = new Experiment(STOCK_TRADING_2_2);
+            }
+            default -> {
+                ex = new Experiment(AIRCRAFT);
+            }
+        }
+
+        ex.setSingleValue("eps", epsilon);
+
+        switch (this.composition) {
+            case "smart" -> {
+                ex.compositionType = SMART;
+                this.runExperiment(ex);
+            }
+            case "vertex" -> {
+                ex.compositionType = VERTEX;
+                this.runExperiment(ex);
+            }
+            case "interval" -> {
+                ex.compositionType = INTERVAL_PRODUCT;
+                this.runExperiment(ex);
+            }
+            case "all" -> {
+                this.runExperimentAllTypes(ex);
+            }
+            default -> {}
+        }
+
+
+        System.out.println("Done");
+        return 0;
+    }
+
+
+    public static void mai3n(String[] args) {
         ExperimentRunner experimentRunner = new ExperimentRunner();
-        Experiment experiment = new Experiment(Experiment.Model.CHAIN_MULTI);
+        Experiment experiment = new Experiment(LAKE_SWARM_MULTI_SLIP);
 
         try {
             experimentRunner.runExperimentAllTypes(experiment);
@@ -110,6 +206,7 @@ public class ExperimentRunner {
 
     public void runExperimentAllTypes(Experiment experiment) throws PrismException, FileNotFoundException {
         runExperiment(experiment.setCompositonType(INTERVAL_PRODUCT));
+        //runExperiment(experiment.setCompositonType(LINFINITY));
         runExperiment(experiment.setCompositonType(SMART));
         runExperiment(experiment.setCompositonType(VERTEX));
     }
@@ -128,19 +225,27 @@ public class ExperimentRunner {
         UMDPModelChecker mc = new UMDPModelChecker(null);
         mc.setPrecomp(true);
         mc.setGenStrat(true);
-        mc.setErrorOnNonConverge(false);
+        mc.setErrorOnNonConverge(true);
 
-        // Set Objective
+        // Set Objective for robust check
         PropertiesFile pf = prism.parsePropertiesString(experiment.robustSpec);
         ModulesFileModelGenerator<?> modelGen = ModulesFileModelGenerator.create(modulesFile, prism);
         mc.setModelCheckingInfo(modelGen, pf, modelGen);
         double timer = System.currentTimeMillis();
-        Result resultUMDP = mc.check(umdp, pf.getProperty(0));
-        timer = System.currentTimeMillis() - timer;
+        Result resultUMDProbust = mc.check(umdp, pf.getProperty(0));
+        double timerrobust = System.currentTimeMillis() - timer;
         //System.out.println("Strategy:" + result.getStrategy());
 
-        Result resultDTMC = null;//checkInducedDTMC(experiment, (MDStrategy<Double>) resultUMDP.getStrategy());
-        dumpExperiment(experiment, umdp, resultUMDP, resultDTMC, timer);
+        // Set Objective for optimistic check
+        pf = prism.parsePropertiesString(experiment.optimisticSpec);
+        modelGen = ModulesFileModelGenerator.create(modulesFile, prism);
+        mc.setModelCheckingInfo(modelGen, pf, modelGen);
+        timer = System.currentTimeMillis();
+        Result resultUMDPoptimistic = noopt ? null : mc.check(umdp, pf.getProperty(0));
+        double timeroptimistic = System.currentTimeMillis() - timer;
+
+        Result resultDTMC = nodtmc ? null : checkInducedDTMC(experiment, (MDStrategy<Double>) resultUMDProbust.getStrategy());
+        dumpExperiment(experiment, umdp, resultUMDProbust, resultUMDPoptimistic, resultDTMC, timerrobust, timeroptimistic);
     }
 
     public Result checkInducedDTMC(Experiment experiment, MDStrategy<Double> strat) throws PrismException, FileNotFoundException {
@@ -153,12 +258,16 @@ public class ExperimentRunner {
 
         // Build induced DTMC
         prism.buildModel(experiment.compositionType);
+
         MDPExplicit<Double> mdp = (MDPExplicit<Double>) prism.getBuiltModelExplicit();
         DTMCExplicit<Double> dtmc = (DTMCExplicit<Double>) mdp.constructInducedModel(strat);
 
         // Model check DTMC to get true performance of robust policy
+        System.out.println("Building DTMC");
         DTMCModelChecker mc = new DTMCModelChecker(this.prism);
         mc.setPrecomp(false);
+        mc.setErrorOnNonConverge(false);
+        mc.setTermCritParam(1e-5);
 
         PropertiesFile pf = prism.parsePropertiesString(experiment.dtmcSpec);
 
@@ -172,7 +281,7 @@ public class ExperimentRunner {
         return result;
     }
 
-    public void dumpExperiment(Experiment experiment, Model<Double> model, Result resultUMDP, Result resultDTMC, double timer) {
+    public void dumpExperiment(Experiment experiment, Model<Double> model, Result resultUMDProbust, Result resultUMDPoptimistic, Result resultDTMC, double timerRobust, double timeroptimistic) {
         String outputPath = String.format("results/%s/%s/", experiment.model, experiment.parameterValues);
         try {
             Files.createDirectories(Paths.get(outputPath));
@@ -185,17 +294,27 @@ public class ExperimentRunner {
             writer.write("State Space: " + model.getNumStates() + "\n");
             writer.write("Transitions: " + model.getNumTransitions() + "\n");
             writer.write("Constant Values: " + experiment.parameterValues + "\n");
+            try {
+                writer.write("Epsilon: " + experiment.parameterValues.getValueOf("eps") + "\n");
+            } catch (PrismLangException e) {
+                throw new RuntimeException(e);
+            }
             writer.write("Composition Type: " + experiment.compositionType + "\n");
             writer.write("Robust Goal: " + experiment.robustSpec + "\n");
-            writer.write("Robust Result: " + resultUMDP.getResult() + "\n");
-            writer.write("VI Iterations: " + resultUMDP.getNumIters() + "\n");
+            writer.write("Robust Result: " + resultUMDProbust.getResult() + "\n");
+            writer.write("VI Iterations: " + resultUMDProbust.getNumIters() + "\n");
+            writer.write("Optimistic Goal: " + experiment.optimisticSpec + "\n");
+            writer.write("Optimistic Result: " + ((resultUMDPoptimistic != null) ?  resultUMDPoptimistic.getResult() : "n/a") + "\n");
+            writer.write("VI Iterations Optimistic: " + ((resultUMDPoptimistic != null) ?  resultUMDPoptimistic.getNumIters() : "n/a") + "\n");
             writer.write("DTMC Goal: " + experiment.dtmcSpec + "\n");
             writer.write("DTMC Result: " + ((resultDTMC != null) ?  resultDTMC.getResult() : "n/a") + "\n");
-            writer.write("Runtime: " + timer / 1000 + "s \n");
+            writer.write("Runtime Robust: " + timerRobust / 1000 + "s \n");
+            writer.write("Runtime Optimistic: " + timeroptimistic / 1000 + "s \n");
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
         System.out.println("Dump experiment setting to " + outputPath);
     }
+
 }

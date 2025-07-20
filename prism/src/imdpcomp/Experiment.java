@@ -82,6 +82,11 @@ public class Experiment {
         return this;
     }
 
+    public Experiment setSingleValue(String name, Object value) {
+        this.parameterValues.setValue(name, value);
+        return this;
+    }
+
     public Experiment setExactValues(Values values) {
         this.exactValues = values;
         return this;
