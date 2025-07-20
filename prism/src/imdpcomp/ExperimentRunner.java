@@ -24,8 +24,7 @@ import java.util.Random;
 import java.util.concurrent.Callable;
 
 import static explicit.ConstructModel.CompositionType.*;
-import static imdpcomp.Experiment.Model.*;
-import static imdpcomp.Experiment.Model.AIRCRAFT;
+import static imdpcomp.SolvingExperiment.Model.*;
 
 @CommandLine.Command(mixinStandardHelpOptions = true, version = "AAAI V-0.0.1", description = "Compositional Solver for AAAI")
 public class ExperimentRunner implements Callable<Integer> {
@@ -126,37 +125,37 @@ public class ExperimentRunner implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        Experiment ex;
+        SolvingExperiment ex;
         switch (this.casestudy) {
             case "aircraft" -> {
-                ex = new Experiment(AIRCRAFT_MULTI_SLIP);
+                ex = new SolvingExperiment(AIRCRAFT_MULTI_SLIP);
             }
             case "lake" -> {
-                ex = new Experiment(LAKE_SWARM);
+                ex = new SolvingExperiment(LAKE_SWARM);
             }
             case "lakemulti" -> {
-                ex = new Experiment(LAKE_SWARM_MULTI_SLIP);
+                ex = new SolvingExperiment(LAKE_SWARM_MULTI_SLIP);
             }
             case "drone" -> {
-                ex = new Experiment(DRONE_MULTI);
+                ex = new SolvingExperiment(DRONE_MULTI);
             }
             case "drone2" -> {
-                ex = new Experiment(DRONE_MULTI_2);
+                ex = new SolvingExperiment(DRONE_MULTI_2);
             }
             case "chain" -> {
-                ex = new Experiment(CHAIN_MULTI_SINGLE);
+                ex = new SolvingExperiment(CHAIN_MULTI_SINGLE);
             }
             case "herman" -> {
-                ex = new Experiment(HERMAN_3);
+                ex = new SolvingExperiment(HERMAN_3);
             }
             case "sysadmin" -> {
-                ex = new Experiment(SYSADMIN);
+                ex = new SolvingExperiment(SYSADMIN);
             }
             case "stocktrading" -> {
-                ex = new Experiment(STOCK_TRADING_2_2);
+                ex = new SolvingExperiment(STOCK_TRADING);
             }
             default -> {
-                ex = new Experiment(AIRCRAFT);
+                ex = new SolvingExperiment(AIRCRAFT);
             }
         }
 
@@ -189,7 +188,7 @@ public class ExperimentRunner implements Callable<Integer> {
 
     public static void mai3n(String[] args) {
         ExperimentRunner experimentRunner = new ExperimentRunner();
-        Experiment experiment = new Experiment(LAKE_SWARM_MULTI_SLIP);
+        SolvingExperiment experiment = new SolvingExperiment(LAKE_SWARM_MULTI_SLIP);
 
         try {
             experimentRunner.runExperimentAllTypes(experiment);
@@ -198,20 +197,20 @@ public class ExperimentRunner implements Callable<Integer> {
         }
     }
 
-    public void runExperimentAllValues(Experiment experiment, List<Values> valueList) throws PrismException, FileNotFoundException {
+    public void runExperimentAllValues(SolvingExperiment experiment, List<Values> valueList) throws PrismException, FileNotFoundException {
         for (Values value : valueList) {
             runExperimentAllTypes(experiment.setValues(value));
         }
     }
 
-    public void runExperimentAllTypes(Experiment experiment) throws PrismException, FileNotFoundException {
+    public void runExperimentAllTypes(SolvingExperiment experiment) throws PrismException, FileNotFoundException {
         runExperiment(experiment.setCompositonType(INTERVAL_PRODUCT));
         //runExperiment(experiment.setCompositonType(LINFINITY));
         runExperiment(experiment.setCompositonType(SMART));
         runExperiment(experiment.setCompositonType(VERTEX));
     }
 
-    public void runExperiment(Experiment experiment) throws PrismException, FileNotFoundException {
+    public void runExperiment(SolvingExperiment experiment) throws PrismException, FileNotFoundException {
         // Build model
         ModulesFile modulesFile = prism.parseModelFile(new File(experiment.modelFile));
         prism.loadPRISMModel(modulesFile);
@@ -248,7 +247,7 @@ public class ExperimentRunner implements Callable<Integer> {
         dumpExperiment(experiment, umdp, resultUMDProbust, resultUMDPoptimistic, resultDTMC, timerrobust, timeroptimistic);
     }
 
-    public Result checkInducedDTMC(Experiment experiment, MDStrategy<Double> strat) throws PrismException, FileNotFoundException {
+    public Result checkInducedDTMC(SolvingExperiment experiment, MDStrategy<Double> strat) throws PrismException, FileNotFoundException {
         // Build model
         ModulesFile modulesFile = prism.parseModelFile(new File(experiment.certainModelFile));
         prism.loadPRISMModel(modulesFile);
@@ -281,7 +280,7 @@ public class ExperimentRunner implements Callable<Integer> {
         return result;
     }
 
-    public void dumpExperiment(Experiment experiment, Model<Double> model, Result resultUMDProbust, Result resultUMDPoptimistic, Result resultDTMC, double timerRobust, double timeroptimistic) {
+    public void dumpExperiment(SolvingExperiment experiment, Model<Double> model, Result resultUMDProbust, Result resultUMDPoptimistic, Result resultDTMC, double timerRobust, double timeroptimistic) {
         String outputPath = String.format("results/%s/%s/", experiment.model, experiment.parameterValues);
         try {
             Files.createDirectories(Paths.get(outputPath));

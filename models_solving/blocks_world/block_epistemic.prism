@@ -1,0 +1,127 @@
+// encoding of blocks world in PRISM with epistemic uncertainty
+mdp
+
+// Global uncertainty parameter
+const double eps = 0.05;
+
+// use global variables so we can use renaming of modules to simplify things
+global hand : [0..5] init 0; // 0 means no block in hand
+global onb1 : [0..5] init 4; // what is on top of block 1
+global onb2 : [0..5] init 0; // what is on top of block 2
+global onb3 : [0..5] init 0; // what is on top of block 3
+global onb4 : [0..5] init 0; // what is on top of block 4
+global onb5 : [0..5] init 3; // what is on top of block 5
+
+// 0 - nothing on top of block
+// 1-5 - this block is on top
+
+// Need these constants for renaming
+const int B1 = 1;
+const int B2 = 2;
+const int B3 = 3;
+const int B4 = 4;
+const int B5 = 5;
+
+//////////////////////////////////////////
+// Operations for Block 1 on its own
+//////////////////////////////////////////
+module block1
+
+    // Pick block 1 up (only allowed if nothing is on top of it)
+    [] hand=0 & onb1=0 ->
+         [3/4-eps,3/4+eps] : (onb2' = (onb2 = B1)? 0 : onb2) &
+                              (onb3' = (onb3 = B1)? 0 : onb3) &
+                              (onb4' = (onb4 = B1)? 0 : onb4) &
+                              (onb5' = (onb5 = B1)? 0 : onb5) &
+                              (hand'  = B1)
+      +    [1/4-eps,1/4+eps] : (onb2' = (onb2 = B1)? 0 : onb2) &
+                              (onb3' = (onb3 = B1)? 0 : onb3) &
+                              (onb4' = (onb4 = B1)? 0 : onb4) &
+                              (onb5' = (onb5 = B1)? 0 : onb5);
+
+    // Put block 1 onto another block (only allowed if block 1 is held and the target has nothing on top)
+    [] hand = B1 & onb2 = 0 & onb1 = 0 ->
+         [3/4-eps,3/4+eps] : (hand' = 0) & (onb2' = B1)
+      +    [1/4-eps,1/4+eps] : (hand' = 0);
+    [] hand = B1 & onb3 = 0 & onb1 = 0 ->
+         [3/4-eps,3/4+eps] : (hand' = 0) & (onb3' = B1)
+      +    [1/4-eps,1/4+eps] : (hand' = 0);
+    [] hand = B1 & onb4 = 0 & onb1 = 0 ->
+         [3/4-eps,3/4+eps] : (hand' = 0) & (onb4' = B1)
+      +    [1/4-eps,1/4+eps] : (hand' = 0);
+    [] hand = B1 & onb5 = 0 & onb1 = 0 ->
+         [3/4-eps,3/4+eps] : (hand' = 0) & (onb5' = B1)
+      +    [1/4-eps,1/4+eps] : (hand' = 0);
+
+    // Put block 1 down (if nothing is on top of it)
+    [] hand = B1 & onb1 = 0 -> (hand' = 0);
+
+endmodule
+
+// Construct operations for the other blocks by renaming
+module block2 = block1[B1 = B2, onb1 = onb2, onb2 = onb3, onb3 = onb4, onb4 = onb5, onb5 = onb1] endmodule
+module block3 = block1[B1 = B3, onb1 = onb3, onb2 = onb4, onb3 = onb5, onb4 = onb1, onb5 = onb2] endmodule
+module block4 = block1[B1 = B4, onb1 = onb4, onb2 = onb5, onb3 = onb1, onb4 = onb2, onb5 = onb3] endmodule
+module block5 = block1[B1 = B5, onb1 = onb5, onb2 = onb1, onb3 = onb2, onb4 = onb3, onb5 = onb4] endmodule
+
+//////////////////////////////////////////
+// Operations for Tower: block 1 on block 2
+//////////////////////////////////////////
+module tower1on2
+
+    // Pick the tower up (allowed if block1 is on block2 and there is at least one block atop block2)
+    [] hand=0 & onb1=0 & onb2 = B1 & (onb3 = B2 | onb4 = B2 | onb5 = B2)
+         -> [1/10-eps,1/10+eps] : (onb3' = (onb3 = B2)? 0 : onb3) &
+                                    (onb4' = (onb4 = B2)? 0 : onb4) &
+                                    (onb5' = (onb5 = B2)? 0 : onb5) &
+                                    (hand'  = B2)
+           +  [9/10-eps,9/10+eps] : true;
+
+    // Put the tower down on a block
+    [] hand = B2 & onb3 = 0 & onb2 = B1 ->
+         [1/10-eps,1/10+eps] : (hand' = 0) & (onb3' = B2)
+      +    [9/10-eps,9/10+eps] : (hand' = 0);
+    [] hand = B2 & onb4 = 0 & onb2 = B1 ->
+         [1/10-eps,1/10+eps] : (hand' = 0) & (onb4' = B2)
+      +    [9/10-eps,9/10+eps] : (hand' = 0);
+    [] hand = B2 & onb5 = 0 & onb2 = B1 ->
+         [1/10-eps,1/10+eps] : (hand' = 0) & (onb5' = B2)
+      +    [9/10-eps,9/10+eps] : (hand' = 0);
+
+    // Put the tower down (if the tower is simply on block1)
+    [] hand = B2 & onb2 = B1 -> (hand' = 0);
+
+endmodule
+
+// Rename remaining towers
+module tower1on3 = tower1on2[B2 = B3, onb2 = onb3, onb3 = onb4, onb4 = onb5, onb5 = onb2] endmodule
+module tower1on4 = tower1on2[B2 = B4, onb2 = onb4, onb3 = onb5, onb4 = onb2, onb5 = onb3] endmodule
+module tower1on5 = tower1on2[B2 = B5, onb2 = onb5, onb3 = onb2, onb4 = onb3, onb5 = onb4] endmodule
+
+module tower2on1 = tower1on2[B1 = B2, B2 = B1, onb1 = onb2, onb2 = onb1] endmodule
+module tower3on1 = tower1on3[B1 = B3, B3 = B1, onb1 = onb3, onb3 = onb1] endmodule
+module tower4on1 = tower1on4[B1 = B4, B4 = B1, onb1 = onb4, onb4 = onb1] endmodule
+module tower5on1 = tower1on5[B1 = B5, B5 = B1, onb1 = onb5, onb5 = onb1] endmodule
+
+module tower2on3 = tower2on1[B1 = B3, onb1 = onb3, onb3 = onb4, onb4 = onb5, onb5 = onb1] endmodule
+module tower2on4 = tower2on1[B1 = B4, onb1 = onb4, onb3 = onb5, onb4 = onb1, onb5 = onb3] endmodule
+module tower2on5 = tower2on1[B1 = B5, onb1 = onb5, onb3 = onb1, onb4 = onb3, onb5 = onb4] endmodule
+
+module tower3on2 = tower3on1[B1 = B2, onb1 = onb2, onb2 = onb4, onb4 = onb5, onb5 = onb1] endmodule
+module tower3on4 = tower3on1[B1 = B4, onb1 = onb4, onb2 = onb5, onb4 = onb1, onb5 = onb2] endmodule
+module tower3on5 = tower3on1[B1 = B5, onb1 = onb5, onb2 = onb1, onb4 = onb2, onb5 = onb4] endmodule
+
+module tower4on2 = tower4on1[B1 = B2, onb1 = onb2, onb2 = onb3, onb3 = onb5, onb5 = onb1] endmodule
+module tower4on3 = tower4on1[B1 = B3, onb1 = onb3, onb2 = onb5, onb3 = onb1, onb5 = onb2] endmodule
+module tower4on5 = tower4on1[B1 = B5, onb1 = onb5, onb2 = onb1, onb3 = onb2, onb5 = onb3] endmodule
+
+module tower5on2 = tower5on1[B1 = B2, onb1 = onb2, onb2 = onb3, onb3 = onb4, onb4 = onb1] endmodule
+module tower5on3 = tower5on1[B1 = B3, onb1 = onb3, onb2 = onb4, onb3 = onb1, onb4 = onb2] endmodule
+module tower5on4 = tower5on1[B1 = B4, onb1 = onb4, onb2 = onb1, onb3 = onb2, onb4 = onb3] endmodule
+
+rewards
+    [] true : 1;
+endrewards
+
+// The goal label for verification (example: a specific configuration)
+label "goal" = (hand = 0) & (onb3 = B1) & (onb4 = B2) & (onb1 = B4) & (onb2 = B5);

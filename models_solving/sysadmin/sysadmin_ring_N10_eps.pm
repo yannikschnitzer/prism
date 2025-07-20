@@ -1,0 +1,542 @@
+// Auto‐generated SysAdmin (N=10 bidirectional ring, T=10)
+mdp
+
+const double p0;    // if both neighbors are up
+const double p1;    // if at least one neighbor is down
+const double eps;    // if at least one neighbor is down
+const int    T;
+
+module comp_0
+    // 0 = failed, 1 = up
+    s_0 : [0..1] init 1;
+    t_0 : [0..T] init 0;
+
+    [repair_0] s_0=0 & t_0<T -> (s_0'=1) & (t_0'=t_0+1);
+    [repair_1] s_0=0 & t_0<T -> (s_0'=0) & (t_0'=t_0+1);
+    [repair_2] s_0=0 & t_0<T -> (s_0'=0) & (t_0'=t_0+1);
+    [repair_3] s_0=0 & t_0<T -> (s_0'=0) & (t_0'=t_0+1);
+    [repair_4] s_0=0 & t_0<T -> (s_0'=0) & (t_0'=t_0+1);
+    [repair_5] s_0=0 & t_0<T -> (s_0'=0) & (t_0'=t_0+1);
+    [repair_6] s_0=0 & t_0<T -> (s_0'=0) & (t_0'=t_0+1);
+    [repair_7] s_0=0 & t_0<T -> (s_0'=0) & (t_0'=t_0+1);
+    [repair_8] s_0=0 & t_0<T -> (s_0'=0) & (t_0'=t_0+1);
+    [repair_9] s_0=0 & t_0<T -> (s_0'=0) & (t_0'=t_0+1);
+    [noop] s_0=0 & t_0<T -> (s_0'=0) & (t_0'=t_0+1);
+
+    [repair_0] s_0=1 & s_9=1 & s_1=1 & t_0<T -> [p0-eps,p0+eps]:(s_0'=0) + [(1-p0-eps),(1-p0+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [repair_0] s_0=1 & (s_9=0 | s_1=0) & t_0<T -> [p1-eps,p1+eps]:(s_0'=0) + [(1-p1-eps),(1-p1+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [repair_1] s_0=1 & s_9=1 & s_1=1 & t_0<T -> [p0-eps,p0+eps]:(s_0'=0) + [(1-p0-eps),(1-p0+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [repair_1] s_0=1 & (s_9=0 | s_1=0) & t_0<T -> [p1-eps,p1+eps]:(s_0'=0) + [(1-p1-eps),(1-p1+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [repair_2] s_0=1 & s_9=1 & s_1=1 & t_0<T -> [p0-eps,p0+eps]:(s_0'=0) + [(1-p0-eps),(1-p0+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [repair_2] s_0=1 & (s_9=0 | s_1=0) & t_0<T -> [p1-eps,p1+eps]:(s_0'=0) + [(1-p1-eps),(1-p1+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [repair_3] s_0=1 & s_9=1 & s_1=1 & t_0<T -> [p0-eps,p0+eps]:(s_0'=0) + [(1-p0-eps),(1-p0+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [repair_3] s_0=1 & (s_9=0 | s_1=0) & t_0<T -> [p1-eps,p1+eps]:(s_0'=0) + [(1-p1-eps),(1-p1+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [repair_4] s_0=1 & s_9=1 & s_1=1 & t_0<T -> [p0-eps,p0+eps]:(s_0'=0) + [(1-p0-eps),(1-p0+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [repair_4] s_0=1 & (s_9=0 | s_1=0) & t_0<T -> [p1-eps,p1+eps]:(s_0'=0) + [(1-p1-eps),(1-p1+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [repair_5] s_0=1 & s_9=1 & s_1=1 & t_0<T -> [p0-eps,p0+eps]:(s_0'=0) + [(1-p0-eps),(1-p0+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [repair_5] s_0=1 & (s_9=0 | s_1=0) & t_0<T -> [p1-eps,p1+eps]:(s_0'=0) + [(1-p1-eps),(1-p1+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [repair_6] s_0=1 & s_9=1 & s_1=1 & t_0<T -> [p0-eps,p0+eps]:(s_0'=0) + [(1-p0-eps),(1-p0+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [repair_6] s_0=1 & (s_9=0 | s_1=0) & t_0<T -> [p1-eps,p1+eps]:(s_0'=0) + [(1-p1-eps),(1-p1+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [repair_7] s_0=1 & s_9=1 & s_1=1 & t_0<T -> [p0-eps,p0+eps]:(s_0'=0) + [(1-p0-eps),(1-p0+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [repair_7] s_0=1 & (s_9=0 | s_1=0) & t_0<T -> [p1-eps,p1+eps]:(s_0'=0) + [(1-p1-eps),(1-p1+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [repair_8] s_0=1 & s_9=1 & s_1=1 & t_0<T -> [p0-eps,p0+eps]:(s_0'=0) + [(1-p0-eps),(1-p0+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [repair_8] s_0=1 & (s_9=0 | s_1=0) & t_0<T -> [p1-eps,p1+eps]:(s_0'=0) + [(1-p1-eps),(1-p1+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [repair_9] s_0=1 & s_9=1 & s_1=1 & t_0<T -> [p0-eps,p0+eps]:(s_0'=0) + [(1-p0-eps),(1-p0+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [repair_9] s_0=1 & (s_9=0 | s_1=0) & t_0<T -> [p1-eps,p1+eps]:(s_0'=0) + [(1-p1-eps),(1-p1+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [noop] s_0=1 & s_9=1 & s_1=1 & t_0<T -> [p0-eps,p0+eps]:(s_0'=0) + [(1-p0-eps),(1-p0+eps)]:(s_0'=1) & (t_0'=t_0+1);
+    [noop] s_0=1 & (s_9=0 | s_1=0) & t_0<T -> [p1-eps,p1+eps]:(s_0'=0) + [(1-p1-eps),(1-p1+eps)]:(s_0'=1) & (t_0'=t_0+1);
+
+    [repair_0] t_0=T -> (s_0'=s_0) & (t_0'=T);
+    [repair_1] t_0=T -> (s_0'=s_0) & (t_0'=T);
+    [repair_2] t_0=T -> (s_0'=s_0) & (t_0'=T);
+    [repair_3] t_0=T -> (s_0'=s_0) & (t_0'=T);
+    [repair_4] t_0=T -> (s_0'=s_0) & (t_0'=T);
+    [repair_5] t_0=T -> (s_0'=s_0) & (t_0'=T);
+    [repair_6] t_0=T -> (s_0'=s_0) & (t_0'=T);
+    [repair_7] t_0=T -> (s_0'=s_0) & (t_0'=T);
+    [repair_8] t_0=T -> (s_0'=s_0) & (t_0'=T);
+    [repair_9] t_0=T -> (s_0'=s_0) & (t_0'=T);
+    [noop] t_0=T -> (s_0'=s_0) & (t_0'=T);
+endmodule
+
+module comp_1
+    // 0 = failed, 1 = up
+    s_1 : [0..1] init 1;
+
+    [repair_0] s_1=0 & t_0<T -> (s_1'=0);
+    [repair_1] s_1=0 & t_0<T -> (s_1'=1);
+    [repair_2] s_1=0 & t_0<T -> (s_1'=0);
+    [repair_3] s_1=0 & t_0<T -> (s_1'=0);
+    [repair_4] s_1=0 & t_0<T -> (s_1'=0);
+    [repair_5] s_1=0 & t_0<T -> (s_1'=0);
+    [repair_6] s_1=0 & t_0<T -> (s_1'=0);
+    [repair_7] s_1=0 & t_0<T -> (s_1'=0);
+    [repair_8] s_1=0 & t_0<T -> (s_1'=0);
+    [repair_9] s_1=0 & t_0<T -> (s_1'=0);
+    [noop] s_1=0 & t_0<T -> (s_1'=0);
+
+    [repair_0] s_1=1 & s_0=1 & s_2=1 & t_0<T -> [p0-eps,p0+eps]:(s_1'=0) + [(1-p0-eps),(1-p0+eps)]:(s_1'=1);
+    [repair_0] s_1=1 & (s_0=0 | s_2=0) & t_0<T -> [p1-eps,p1+eps]:(s_1'=0) + [(1-p1-eps),(1-p1+eps)]:(s_1'=1);
+    [repair_1] s_1=1 & s_0=1 & s_2=1 & t_0<T -> [p0-eps,p0+eps]:(s_1'=0) + [(1-p0-eps),(1-p0+eps)]:(s_1'=1);
+    [repair_1] s_1=1 & (s_0=0 | s_2=0) & t_0<T -> [p1-eps,p1+eps]:(s_1'=0) + [(1-p1-eps),(1-p1+eps)]:(s_1'=1);
+    [repair_2] s_1=1 & s_0=1 & s_2=1 & t_0<T -> [p0-eps,p0+eps]:(s_1'=0) + [(1-p0-eps),(1-p0+eps)]:(s_1'=1);
+    [repair_2] s_1=1 & (s_0=0 | s_2=0) & t_0<T -> [p1-eps,p1+eps]:(s_1'=0) + [(1-p1-eps),(1-p1+eps)]:(s_1'=1);
+    [repair_3] s_1=1 & s_0=1 & s_2=1 & t_0<T -> [p0-eps,p0+eps]:(s_1'=0) + [(1-p0-eps),(1-p0+eps)]:(s_1'=1);
+    [repair_3] s_1=1 & (s_0=0 | s_2=0) & t_0<T -> [p1-eps,p1+eps]:(s_1'=0) + [(1-p1-eps),(1-p1+eps)]:(s_1'=1);
+    [repair_4] s_1=1 & s_0=1 & s_2=1 & t_0<T -> [p0-eps,p0+eps]:(s_1'=0) + [(1-p0-eps),(1-p0+eps)]:(s_1'=1);
+    [repair_4] s_1=1 & (s_0=0 | s_2=0) & t_0<T -> [p1-eps,p1+eps]:(s_1'=0) + [(1-p1-eps),(1-p1+eps)]:(s_1'=1);
+    [repair_5] s_1=1 & s_0=1 & s_2=1 & t_0<T -> [p0-eps,p0+eps]:(s_1'=0) + [(1-p0-eps),(1-p0+eps)]:(s_1'=1);
+    [repair_5] s_1=1 & (s_0=0 | s_2=0) & t_0<T -> [p1-eps,p1+eps]:(s_1'=0) + [(1-p1-eps),(1-p1+eps)]:(s_1'=1);
+    [repair_6] s_1=1 & s_0=1 & s_2=1 & t_0<T -> [p0-eps,p0+eps]:(s_1'=0) + [(1-p0-eps),(1-p0+eps)]:(s_1'=1);
+    [repair_6] s_1=1 & (s_0=0 | s_2=0) & t_0<T -> [p1-eps,p1+eps]:(s_1'=0) + [(1-p1-eps),(1-p1+eps)]:(s_1'=1);
+    [repair_7] s_1=1 & s_0=1 & s_2=1 & t_0<T -> [p0-eps,p0+eps]:(s_1'=0) + [(1-p0-eps),(1-p0+eps)]:(s_1'=1);
+    [repair_7] s_1=1 & (s_0=0 | s_2=0) & t_0<T -> [p1-eps,p1+eps]:(s_1'=0) + [(1-p1-eps),(1-p1+eps)]:(s_1'=1);
+    [repair_8] s_1=1 & s_0=1 & s_2=1 & t_0<T -> [p0-eps,p0+eps]:(s_1'=0) + [(1-p0-eps),(1-p0+eps)]:(s_1'=1);
+    [repair_8] s_1=1 & (s_0=0 | s_2=0) & t_0<T -> [p1-eps,p1+eps]:(s_1'=0) + [(1-p1-eps),(1-p1+eps)]:(s_1'=1);
+    [repair_9] s_1=1 & s_0=1 & s_2=1 & t_0<T -> [p0-eps,p0+eps]:(s_1'=0) + [(1-p0-eps),(1-p0+eps)]:(s_1'=1);
+    [repair_9] s_1=1 & (s_0=0 | s_2=0) & t_0<T -> [p1-eps,p1+eps]:(s_1'=0) + [(1-p1-eps),(1-p1+eps)]:(s_1'=1);
+    [noop] s_1=1 & s_0=1 & s_2=1 & t_0<T -> [p0-eps,p0+eps]:(s_1'=0) + [(1-p0-eps),(1-p0+eps)]:(s_1'=1);
+    [noop] s_1=1 & (s_0=0 | s_2=0) & t_0<T -> [p1-eps,p1+eps]:(s_1'=0) + [(1-p1-eps),(1-p1+eps)]:(s_1'=1);
+
+    [repair_0] t_0=T -> (s_1'=s_1);
+    [repair_1] t_0=T -> (s_1'=s_1);
+    [repair_2] t_0=T -> (s_1'=s_1);
+    [repair_3] t_0=T -> (s_1'=s_1);
+    [repair_4] t_0=T -> (s_1'=s_1);
+    [repair_5] t_0=T -> (s_1'=s_1);
+    [repair_6] t_0=T -> (s_1'=s_1);
+    [repair_7] t_0=T -> (s_1'=s_1);
+    [repair_8] t_0=T -> (s_1'=s_1);
+    [repair_9] t_0=T -> (s_1'=s_1);
+    [noop] t_0=T -> (s_1'=s_1);
+endmodule
+
+module comp_2
+    // 0 = failed, 1 = up
+    s_2 : [0..1] init 1;
+
+    [repair_0] s_2=0 & t_0<T -> (s_2'=0);
+    [repair_1] s_2=0 & t_0<T -> (s_2'=0);
+    [repair_2] s_2=0 & t_0<T -> (s_2'=1);
+    [repair_3] s_2=0 & t_0<T -> (s_2'=0);
+    [repair_4] s_2=0 & t_0<T -> (s_2'=0);
+    [repair_5] s_2=0 & t_0<T -> (s_2'=0);
+    [repair_6] s_2=0 & t_0<T -> (s_2'=0);
+    [repair_7] s_2=0 & t_0<T -> (s_2'=0);
+    [repair_8] s_2=0 & t_0<T -> (s_2'=0);
+    [repair_9] s_2=0 & t_0<T -> (s_2'=0);
+    [noop] s_2=0 & t_0<T -> (s_2'=0);
+
+    [repair_0] s_2=1 & s_1=1 & s_3=1 & t_0<T -> [p0-eps,p0+eps]:(s_2'=0) + [(1-p0-eps),(1-p0+eps)]:(s_2'=1);
+    [repair_0] s_2=1 & (s_1=0 | s_3=0) & t_0<T -> [p1-eps,p1+eps]:(s_2'=0) + [(1-p1-eps),(1-p1+eps)]:(s_2'=1);
+    [repair_1] s_2=1 & s_1=1 & s_3=1 & t_0<T -> [p0-eps,p0+eps]:(s_2'=0) + [(1-p0-eps),(1-p0+eps)]:(s_2'=1);
+    [repair_1] s_2=1 & (s_1=0 | s_3=0) & t_0<T -> [p1-eps,p1+eps]:(s_2'=0) + [(1-p1-eps),(1-p1+eps)]:(s_2'=1);
+    [repair_2] s_2=1 & s_1=1 & s_3=1 & t_0<T -> [p0-eps,p0+eps]:(s_2'=0) + [(1-p0-eps),(1-p0+eps)]:(s_2'=1);
+    [repair_2] s_2=1 & (s_1=0 | s_3=0) & t_0<T -> [p1-eps,p1+eps]:(s_2'=0) + [(1-p1-eps),(1-p1+eps)]:(s_2'=1);
+    [repair_3] s_2=1 & s_1=1 & s_3=1 & t_0<T -> [p0-eps,p0+eps]:(s_2'=0) + [(1-p0-eps),(1-p0+eps)]:(s_2'=1);
+    [repair_3] s_2=1 & (s_1=0 | s_3=0) & t_0<T -> [p1-eps,p1+eps]:(s_2'=0) + [(1-p1-eps),(1-p1+eps)]:(s_2'=1);
+    [repair_4] s_2=1 & s_1=1 & s_3=1 & t_0<T -> [p0-eps,p0+eps]:(s_2'=0) + [(1-p0-eps),(1-p0+eps)]:(s_2'=1);
+    [repair_4] s_2=1 & (s_1=0 | s_3=0) & t_0<T -> [p1-eps,p1+eps]:(s_2'=0) + [(1-p1-eps),(1-p1+eps)]:(s_2'=1);
+    [repair_5] s_2=1 & s_1=1 & s_3=1 & t_0<T -> [p0-eps,p0+eps]:(s_2'=0) + [(1-p0-eps),(1-p0+eps)]:(s_2'=1);
+    [repair_5] s_2=1 & (s_1=0 | s_3=0) & t_0<T -> [p1-eps,p1+eps]:(s_2'=0) + [(1-p1-eps),(1-p1+eps)]:(s_2'=1);
+    [repair_6] s_2=1 & s_1=1 & s_3=1 & t_0<T -> [p0-eps,p0+eps]:(s_2'=0) + [(1-p0-eps),(1-p0+eps)]:(s_2'=1);
+    [repair_6] s_2=1 & (s_1=0 | s_3=0) & t_0<T -> [p1-eps,p1+eps]:(s_2'=0) + [(1-p1-eps),(1-p1+eps)]:(s_2'=1);
+    [repair_7] s_2=1 & s_1=1 & s_3=1 & t_0<T -> [p0-eps,p0+eps]:(s_2'=0) + [(1-p0-eps),(1-p0+eps)]:(s_2'=1);
+    [repair_7] s_2=1 & (s_1=0 | s_3=0) & t_0<T -> [p1-eps,p1+eps]:(s_2'=0) + [(1-p1-eps),(1-p1+eps)]:(s_2'=1);
+    [repair_8] s_2=1 & s_1=1 & s_3=1 & t_0<T -> [p0-eps,p0+eps]:(s_2'=0) + [(1-p0-eps),(1-p0+eps)]:(s_2'=1);
+    [repair_8] s_2=1 & (s_1=0 | s_3=0) & t_0<T -> [p1-eps,p1+eps]:(s_2'=0) + [(1-p1-eps),(1-p1+eps)]:(s_2'=1);
+    [repair_9] s_2=1 & s_1=1 & s_3=1 & t_0<T -> [p0-eps,p0+eps]:(s_2'=0) + [(1-p0-eps),(1-p0+eps)]:(s_2'=1);
+    [repair_9] s_2=1 & (s_1=0 | s_3=0) & t_0<T -> [p1-eps,p1+eps]:(s_2'=0) + [(1-p1-eps),(1-p1+eps)]:(s_2'=1);
+    [noop] s_2=1 & s_1=1 & s_3=1 & t_0<T -> [p0-eps,p0+eps]:(s_2'=0) + [(1-p0-eps),(1-p0+eps)]:(s_2'=1);
+    [noop] s_2=1 & (s_1=0 | s_3=0) & t_0<T -> [p1-eps,p1+eps]:(s_2'=0) + [(1-p1-eps),(1-p1+eps)]:(s_2'=1);
+
+    [repair_0] t_0=T -> (s_2'=s_2);
+    [repair_1] t_0=T -> (s_2'=s_2);
+    [repair_2] t_0=T -> (s_2'=s_2);
+    [repair_3] t_0=T -> (s_2'=s_2);
+    [repair_4] t_0=T -> (s_2'=s_2);
+    [repair_5] t_0=T -> (s_2'=s_2);
+    [repair_6] t_0=T -> (s_2'=s_2);
+    [repair_7] t_0=T -> (s_2'=s_2);
+    [repair_8] t_0=T -> (s_2'=s_2);
+    [repair_9] t_0=T -> (s_2'=s_2);
+    [noop] t_0=T -> (s_2'=s_2);
+endmodule
+
+module comp_3
+    // 0 = failed, 1 = up
+    s_3 : [0..1] init 1;
+
+    [repair_0] s_3=0 & t_0<T -> (s_3'=0);
+    [repair_1] s_3=0 & t_0<T -> (s_3'=0);
+    [repair_2] s_3=0 & t_0<T -> (s_3'=0);
+    [repair_3] s_3=0 & t_0<T -> (s_3'=1);
+    [repair_4] s_3=0 & t_0<T -> (s_3'=0);
+    [repair_5] s_3=0 & t_0<T -> (s_3'=0);
+    [repair_6] s_3=0 & t_0<T -> (s_3'=0);
+    [repair_7] s_3=0 & t_0<T -> (s_3'=0);
+    [repair_8] s_3=0 & t_0<T -> (s_3'=0);
+    [repair_9] s_3=0 & t_0<T -> (s_3'=0);
+    [noop] s_3=0 & t_0<T -> (s_3'=0);
+
+    [repair_0] s_3=1 & s_2=1 & s_4=1 & t_0<T -> [p0-eps,p0+eps]:(s_3'=0) + [(1-p0-eps),(1-p0+eps)]:(s_3'=1);
+    [repair_0] s_3=1 & (s_2=0 | s_4=0) & t_0<T -> [p1-eps,p1+eps]:(s_3'=0) + [(1-p1-eps),(1-p1+eps)]:(s_3'=1);
+    [repair_1] s_3=1 & s_2=1 & s_4=1 & t_0<T -> [p0-eps,p0+eps]:(s_3'=0) + [(1-p0-eps),(1-p0+eps)]:(s_3'=1);
+    [repair_1] s_3=1 & (s_2=0 | s_4=0) & t_0<T -> [p1-eps,p1+eps]:(s_3'=0) + [(1-p1-eps),(1-p1+eps)]:(s_3'=1);
+    [repair_2] s_3=1 & s_2=1 & s_4=1 & t_0<T -> [p0-eps,p0+eps]:(s_3'=0) + [(1-p0-eps),(1-p0+eps)]:(s_3'=1);
+    [repair_2] s_3=1 & (s_2=0 | s_4=0) & t_0<T -> [p1-eps,p1+eps]:(s_3'=0) + [(1-p1-eps),(1-p1+eps)]:(s_3'=1);
+    [repair_3] s_3=1 & s_2=1 & s_4=1 & t_0<T -> [p0-eps,p0+eps]:(s_3'=0) + [(1-p0-eps),(1-p0+eps)]:(s_3'=1);
+    [repair_3] s_3=1 & (s_2=0 | s_4=0) & t_0<T -> [p1-eps,p1+eps]:(s_3'=0) + [(1-p1-eps),(1-p1+eps)]:(s_3'=1);
+    [repair_4] s_3=1 & s_2=1 & s_4=1 & t_0<T -> [p0-eps,p0+eps]:(s_3'=0) + [(1-p0-eps),(1-p0+eps)]:(s_3'=1);
+    [repair_4] s_3=1 & (s_2=0 | s_4=0) & t_0<T -> [p1-eps,p1+eps]:(s_3'=0) + [(1-p1-eps),(1-p1+eps)]:(s_3'=1);
+    [repair_5] s_3=1 & s_2=1 & s_4=1 & t_0<T -> [p0-eps,p0+eps]:(s_3'=0) + [(1-p0-eps),(1-p0+eps)]:(s_3'=1);
+    [repair_5] s_3=1 & (s_2=0 | s_4=0) & t_0<T -> [p1-eps,p1+eps]:(s_3'=0) + [(1-p1-eps),(1-p1+eps)]:(s_3'=1);
+    [repair_6] s_3=1 & s_2=1 & s_4=1 & t_0<T -> [p0-eps,p0+eps]:(s_3'=0) + [(1-p0-eps),(1-p0+eps)]:(s_3'=1);
+    [repair_6] s_3=1 & (s_2=0 | s_4=0) & t_0<T -> [p1-eps,p1+eps]:(s_3'=0) + [(1-p1-eps),(1-p1+eps)]:(s_3'=1);
+    [repair_7] s_3=1 & s_2=1 & s_4=1 & t_0<T -> [p0-eps,p0+eps]:(s_3'=0) + [(1-p0-eps),(1-p0+eps)]:(s_3'=1);
+    [repair_7] s_3=1 & (s_2=0 | s_4=0) & t_0<T -> [p1-eps,p1+eps]:(s_3'=0) + [(1-p1-eps),(1-p1+eps)]:(s_3'=1);
+    [repair_8] s_3=1 & s_2=1 & s_4=1 & t_0<T -> [p0-eps,p0+eps]:(s_3'=0) + [(1-p0-eps),(1-p0+eps)]:(s_3'=1);
+    [repair_8] s_3=1 & (s_2=0 | s_4=0) & t_0<T -> [p1-eps,p1+eps]:(s_3'=0) + [(1-p1-eps),(1-p1+eps)]:(s_3'=1);
+    [repair_9] s_3=1 & s_2=1 & s_4=1 & t_0<T -> [p0-eps,p0+eps]:(s_3'=0) + [(1-p0-eps),(1-p0+eps)]:(s_3'=1);
+    [repair_9] s_3=1 & (s_2=0 | s_4=0) & t_0<T -> [p1-eps,p1+eps]:(s_3'=0) + [(1-p1-eps),(1-p1+eps)]:(s_3'=1);
+    [noop] s_3=1 & s_2=1 & s_4=1 & t_0<T -> [p0-eps,p0+eps]:(s_3'=0) + [(1-p0-eps),(1-p0+eps)]:(s_3'=1);
+    [noop] s_3=1 & (s_2=0 | s_4=0) & t_0<T -> [p1-eps,p1+eps]:(s_3'=0) + [(1-p1-eps),(1-p1+eps)]:(s_3'=1);
+
+    [repair_0] t_0=T -> (s_3'=s_3);
+    [repair_1] t_0=T -> (s_3'=s_3);
+    [repair_2] t_0=T -> (s_3'=s_3);
+    [repair_3] t_0=T -> (s_3'=s_3);
+    [repair_4] t_0=T -> (s_3'=s_3);
+    [repair_5] t_0=T -> (s_3'=s_3);
+    [repair_6] t_0=T -> (s_3'=s_3);
+    [repair_7] t_0=T -> (s_3'=s_3);
+    [repair_8] t_0=T -> (s_3'=s_3);
+    [repair_9] t_0=T -> (s_3'=s_3);
+    [noop] t_0=T -> (s_3'=s_3);
+endmodule
+
+module comp_4
+    // 0 = failed, 1 = up
+    s_4 : [0..1] init 1;
+
+    [repair_0] s_4=0 & t_0<T -> (s_4'=0);
+    [repair_1] s_4=0 & t_0<T -> (s_4'=0);
+    [repair_2] s_4=0 & t_0<T -> (s_4'=0);
+    [repair_3] s_4=0 & t_0<T -> (s_4'=0);
+    [repair_4] s_4=0 & t_0<T -> (s_4'=1);
+    [repair_5] s_4=0 & t_0<T -> (s_4'=0);
+    [repair_6] s_4=0 & t_0<T -> (s_4'=0);
+    [repair_7] s_4=0 & t_0<T -> (s_4'=0);
+    [repair_8] s_4=0 & t_0<T -> (s_4'=0);
+    [repair_9] s_4=0 & t_0<T -> (s_4'=0);
+    [noop] s_4=0 & t_0<T -> (s_4'=0);
+
+    [repair_0] s_4=1 & s_3=1 & s_5=1 & t_0<T -> [p0-eps,p0+eps]:(s_4'=0) + [(1-p0-eps),(1-p0+eps)]:(s_4'=1);
+    [repair_0] s_4=1 & (s_3=0 | s_5=0) & t_0<T -> [p1-eps,p1+eps]:(s_4'=0) + [(1-p1-eps),(1-p1+eps)]:(s_4'=1);
+    [repair_1] s_4=1 & s_3=1 & s_5=1 & t_0<T -> [p0-eps,p0+eps]:(s_4'=0) + [(1-p0-eps),(1-p0+eps)]:(s_4'=1);
+    [repair_1] s_4=1 & (s_3=0 | s_5=0) & t_0<T -> [p1-eps,p1+eps]:(s_4'=0) + [(1-p1-eps),(1-p1+eps)]:(s_4'=1);
+    [repair_2] s_4=1 & s_3=1 & s_5=1 & t_0<T -> [p0-eps,p0+eps]:(s_4'=0) + [(1-p0-eps),(1-p0+eps)]:(s_4'=1);
+    [repair_2] s_4=1 & (s_3=0 | s_5=0) & t_0<T -> [p1-eps,p1+eps]:(s_4'=0) + [(1-p1-eps),(1-p1+eps)]:(s_4'=1);
+    [repair_3] s_4=1 & s_3=1 & s_5=1 & t_0<T -> [p0-eps,p0+eps]:(s_4'=0) + [(1-p0-eps),(1-p0+eps)]:(s_4'=1);
+    [repair_3] s_4=1 & (s_3=0 | s_5=0) & t_0<T -> [p1-eps,p1+eps]:(s_4'=0) + [(1-p1-eps),(1-p1+eps)]:(s_4'=1);
+    [repair_4] s_4=1 & s_3=1 & s_5=1 & t_0<T -> [p0-eps,p0+eps]:(s_4'=0) + [(1-p0-eps),(1-p0+eps)]:(s_4'=1);
+    [repair_4] s_4=1 & (s_3=0 | s_5=0) & t_0<T -> [p1-eps,p1+eps]:(s_4'=0) + [(1-p1-eps),(1-p1+eps)]:(s_4'=1);
+    [repair_5] s_4=1 & s_3=1 & s_5=1 & t_0<T -> [p0-eps,p0+eps]:(s_4'=0) + [(1-p0-eps),(1-p0+eps)]:(s_4'=1);
+    [repair_5] s_4=1 & (s_3=0 | s_5=0) & t_0<T -> [p1-eps,p1+eps]:(s_4'=0) + [(1-p1-eps),(1-p1+eps)]:(s_4'=1);
+    [repair_6] s_4=1 & s_3=1 & s_5=1 & t_0<T -> [p0-eps,p0+eps]:(s_4'=0) + [(1-p0-eps),(1-p0+eps)]:(s_4'=1);
+    [repair_6] s_4=1 & (s_3=0 | s_5=0) & t_0<T -> [p1-eps,p1+eps]:(s_4'=0) + [(1-p1-eps),(1-p1+eps)]:(s_4'=1);
+    [repair_7] s_4=1 & s_3=1 & s_5=1 & t_0<T -> [p0-eps,p0+eps]:(s_4'=0) + [(1-p0-eps),(1-p0+eps)]:(s_4'=1);
+    [repair_7] s_4=1 & (s_3=0 | s_5=0) & t_0<T -> [p1-eps,p1+eps]:(s_4'=0) + [(1-p1-eps),(1-p1+eps)]:(s_4'=1);
+    [repair_8] s_4=1 & s_3=1 & s_5=1 & t_0<T -> [p0-eps,p0+eps]:(s_4'=0) + [(1-p0-eps),(1-p0+eps)]:(s_4'=1);
+    [repair_8] s_4=1 & (s_3=0 | s_5=0) & t_0<T -> [p1-eps,p1+eps]:(s_4'=0) + [(1-p1-eps),(1-p1+eps)]:(s_4'=1);
+    [repair_9] s_4=1 & s_3=1 & s_5=1 & t_0<T -> [p0-eps,p0+eps]:(s_4'=0) + [(1-p0-eps),(1-p0+eps)]:(s_4'=1);
+    [repair_9] s_4=1 & (s_3=0 | s_5=0) & t_0<T -> [p1-eps,p1+eps]:(s_4'=0) + [(1-p1-eps),(1-p1+eps)]:(s_4'=1);
+    [noop] s_4=1 & s_3=1 & s_5=1 & t_0<T -> [p0-eps,p0+eps]:(s_4'=0) + [(1-p0-eps),(1-p0+eps)]:(s_4'=1);
+    [noop] s_4=1 & (s_3=0 | s_5=0) & t_0<T -> [p1-eps,p1+eps]:(s_4'=0) + [(1-p1-eps),(1-p1+eps)]:(s_4'=1);
+
+    [repair_0] t_0=T -> (s_4'=s_4);
+    [repair_1] t_0=T -> (s_4'=s_4);
+    [repair_2] t_0=T -> (s_4'=s_4);
+    [repair_3] t_0=T -> (s_4'=s_4);
+    [repair_4] t_0=T -> (s_4'=s_4);
+    [repair_5] t_0=T -> (s_4'=s_4);
+    [repair_6] t_0=T -> (s_4'=s_4);
+    [repair_7] t_0=T -> (s_4'=s_4);
+    [repair_8] t_0=T -> (s_4'=s_4);
+    [repair_9] t_0=T -> (s_4'=s_4);
+    [noop] t_0=T -> (s_4'=s_4);
+endmodule
+
+module comp_5
+    // 0 = failed, 1 = up
+    s_5 : [0..1] init 1;
+
+    [repair_0] s_5=0 & t_0<T -> (s_5'=0);
+    [repair_1] s_5=0 & t_0<T -> (s_5'=0);
+    [repair_2] s_5=0 & t_0<T -> (s_5'=0);
+    [repair_3] s_5=0 & t_0<T -> (s_5'=0);
+    [repair_4] s_5=0 & t_0<T -> (s_5'=0);
+    [repair_5] s_5=0 & t_0<T -> (s_5'=1);
+    [repair_6] s_5=0 & t_0<T -> (s_5'=0);
+    [repair_7] s_5=0 & t_0<T -> (s_5'=0);
+    [repair_8] s_5=0 & t_0<T -> (s_5'=0);
+    [repair_9] s_5=0 & t_0<T -> (s_5'=0);
+    [noop] s_5=0 & t_0<T -> (s_5'=0);
+
+    [repair_0] s_5=1 & s_4=1 & s_6=1 & t_0<T -> [p0-eps,p0+eps]:(s_5'=0) + [(1-p0-eps),(1-p0+eps)]:(s_5'=1);
+    [repair_0] s_5=1 & (s_4=0 | s_6=0) & t_0<T -> [p1-eps,p1+eps]:(s_5'=0) + [(1-p1-eps),(1-p1+eps)]:(s_5'=1);
+    [repair_1] s_5=1 & s_4=1 & s_6=1 & t_0<T -> [p0-eps,p0+eps]:(s_5'=0) + [(1-p0-eps),(1-p0+eps)]:(s_5'=1);
+    [repair_1] s_5=1 & (s_4=0 | s_6=0) & t_0<T -> [p1-eps,p1+eps]:(s_5'=0) + [(1-p1-eps),(1-p1+eps)]:(s_5'=1);
+    [repair_2] s_5=1 & s_4=1 & s_6=1 & t_0<T -> [p0-eps,p0+eps]:(s_5'=0) + [(1-p0-eps),(1-p0+eps)]:(s_5'=1);
+    [repair_2] s_5=1 & (s_4=0 | s_6=0) & t_0<T -> [p1-eps,p1+eps]:(s_5'=0) + [(1-p1-eps),(1-p1+eps)]:(s_5'=1);
+    [repair_3] s_5=1 & s_4=1 & s_6=1 & t_0<T -> [p0-eps,p0+eps]:(s_5'=0) + [(1-p0-eps),(1-p0+eps)]:(s_5'=1);
+    [repair_3] s_5=1 & (s_4=0 | s_6=0) & t_0<T -> [p1-eps,p1+eps]:(s_5'=0) + [(1-p1-eps),(1-p1+eps)]:(s_5'=1);
+    [repair_4] s_5=1 & s_4=1 & s_6=1 & t_0<T -> [p0-eps,p0+eps]:(s_5'=0) + [(1-p0-eps),(1-p0+eps)]:(s_5'=1);
+    [repair_4] s_5=1 & (s_4=0 | s_6=0) & t_0<T -> [p1-eps,p1+eps]:(s_5'=0) + [(1-p1-eps),(1-p1+eps)]:(s_5'=1);
+    [repair_5] s_5=1 & s_4=1 & s_6=1 & t_0<T -> [p0-eps,p0+eps]:(s_5'=0) + [(1-p0-eps),(1-p0+eps)]:(s_5'=1);
+    [repair_5] s_5=1 & (s_4=0 | s_6=0) & t_0<T -> [p1-eps,p1+eps]:(s_5'=0) + [(1-p1-eps),(1-p1+eps)]:(s_5'=1);
+    [repair_6] s_5=1 & s_4=1 & s_6=1 & t_0<T -> [p0-eps,p0+eps]:(s_5'=0) + [(1-p0-eps),(1-p0+eps)]:(s_5'=1);
+    [repair_6] s_5=1 & (s_4=0 | s_6=0) & t_0<T -> [p1-eps,p1+eps]:(s_5'=0) + [(1-p1-eps),(1-p1+eps)]:(s_5'=1);
+    [repair_7] s_5=1 & s_4=1 & s_6=1 & t_0<T -> [p0-eps,p0+eps]:(s_5'=0) + [(1-p0-eps),(1-p0+eps)]:(s_5'=1);
+    [repair_7] s_5=1 & (s_4=0 | s_6=0) & t_0<T -> [p1-eps,p1+eps]:(s_5'=0) + [(1-p1-eps),(1-p1+eps)]:(s_5'=1);
+    [repair_8] s_5=1 & s_4=1 & s_6=1 & t_0<T -> [p0-eps,p0+eps]:(s_5'=0) + [(1-p0-eps),(1-p0+eps)]:(s_5'=1);
+    [repair_8] s_5=1 & (s_4=0 | s_6=0) & t_0<T -> [p1-eps,p1+eps]:(s_5'=0) + [(1-p1-eps),(1-p1+eps)]:(s_5'=1);
+    [repair_9] s_5=1 & s_4=1 & s_6=1 & t_0<T -> [p0-eps,p0+eps]:(s_5'=0) + [(1-p0-eps),(1-p0+eps)]:(s_5'=1);
+    [repair_9] s_5=1 & (s_4=0 | s_6=0) & t_0<T -> [p1-eps,p1+eps]:(s_5'=0) + [(1-p1-eps),(1-p1+eps)]:(s_5'=1);
+    [noop] s_5=1 & s_4=1 & s_6=1 & t_0<T -> [p0-eps,p0+eps]:(s_5'=0) + [(1-p0-eps),(1-p0+eps)]:(s_5'=1);
+    [noop] s_5=1 & (s_4=0 | s_6=0) & t_0<T -> [p1-eps,p1+eps]:(s_5'=0) + [(1-p1-eps),(1-p1+eps)]:(s_5'=1);
+
+    [repair_0] t_0=T -> (s_5'=s_5);
+    [repair_1] t_0=T -> (s_5'=s_5);
+    [repair_2] t_0=T -> (s_5'=s_5);
+    [repair_3] t_0=T -> (s_5'=s_5);
+    [repair_4] t_0=T -> (s_5'=s_5);
+    [repair_5] t_0=T -> (s_5'=s_5);
+    [repair_6] t_0=T -> (s_5'=s_5);
+    [repair_7] t_0=T -> (s_5'=s_5);
+    [repair_8] t_0=T -> (s_5'=s_5);
+    [repair_9] t_0=T -> (s_5'=s_5);
+    [noop] t_0=T -> (s_5'=s_5);
+endmodule
+
+module comp_6
+    // 0 = failed, 1 = up
+    s_6 : [0..1] init 1;
+
+    [repair_0] s_6=0 & t_0<T -> (s_6'=0);
+    [repair_1] s_6=0 & t_0<T -> (s_6'=0);
+    [repair_2] s_6=0 & t_0<T -> (s_6'=0);
+    [repair_3] s_6=0 & t_0<T -> (s_6'=0);
+    [repair_4] s_6=0 & t_0<T -> (s_6'=0);
+    [repair_5] s_6=0 & t_0<T -> (s_6'=0);
+    [repair_6] s_6=0 & t_0<T -> (s_6'=1);
+    [repair_7] s_6=0 & t_0<T -> (s_6'=0);
+    [repair_8] s_6=0 & t_0<T -> (s_6'=0);
+    [repair_9] s_6=0 & t_0<T -> (s_6'=0);
+    [noop] s_6=0 & t_0<T -> (s_6'=0);
+
+    [repair_0] s_6=1 & s_5=1 & s_7=1 & t_0<T -> [p0-eps,p0+eps]:(s_6'=0) + [(1-p0-eps),(1-p0+eps)]:(s_6'=1);
+    [repair_0] s_6=1 & (s_5=0 | s_7=0) & t_0<T -> [p1-eps,p1+eps]:(s_6'=0) + [(1-p1-eps),(1-p1+eps)]:(s_6'=1);
+    [repair_1] s_6=1 & s_5=1 & s_7=1 & t_0<T -> [p0-eps,p0+eps]:(s_6'=0) + [(1-p0-eps),(1-p0+eps)]:(s_6'=1);
+    [repair_1] s_6=1 & (s_5=0 | s_7=0) & t_0<T -> [p1-eps,p1+eps]:(s_6'=0) + [(1-p1-eps),(1-p1+eps)]:(s_6'=1);
+    [repair_2] s_6=1 & s_5=1 & s_7=1 & t_0<T -> [p0-eps,p0+eps]:(s_6'=0) + [(1-p0-eps),(1-p0+eps)]:(s_6'=1);
+    [repair_2] s_6=1 & (s_5=0 | s_7=0) & t_0<T -> [p1-eps,p1+eps]:(s_6'=0) + [(1-p1-eps),(1-p1+eps)]:(s_6'=1);
+    [repair_3] s_6=1 & s_5=1 & s_7=1 & t_0<T -> [p0-eps,p0+eps]:(s_6'=0) + [(1-p0-eps),(1-p0+eps)]:(s_6'=1);
+    [repair_3] s_6=1 & (s_5=0 | s_7=0) & t_0<T -> [p1-eps,p1+eps]:(s_6'=0) + [(1-p1-eps),(1-p1+eps)]:(s_6'=1);
+    [repair_4] s_6=1 & s_5=1 & s_7=1 & t_0<T -> [p0-eps,p0+eps]:(s_6'=0) + [(1-p0-eps),(1-p0+eps)]:(s_6'=1);
+    [repair_4] s_6=1 & (s_5=0 | s_7=0) & t_0<T -> [p1-eps,p1+eps]:(s_6'=0) + [(1-p1-eps),(1-p1+eps)]:(s_6'=1);
+    [repair_5] s_6=1 & s_5=1 & s_7=1 & t_0<T -> [p0-eps,p0+eps]:(s_6'=0) + [(1-p0-eps),(1-p0+eps)]:(s_6'=1);
+    [repair_5] s_6=1 & (s_5=0 | s_7=0) & t_0<T -> [p1-eps,p1+eps]:(s_6'=0) + [(1-p1-eps),(1-p1+eps)]:(s_6'=1);
+    [repair_6] s_6=1 & s_5=1 & s_7=1 & t_0<T -> [p0-eps,p0+eps]:(s_6'=0) + [(1-p0-eps),(1-p0+eps)]:(s_6'=1);
+    [repair_6] s_6=1 & (s_5=0 | s_7=0) & t_0<T -> [p1-eps,p1+eps]:(s_6'=0) + [(1-p1-eps),(1-p1+eps)]:(s_6'=1);
+    [repair_7] s_6=1 & s_5=1 & s_7=1 & t_0<T -> [p0-eps,p0+eps]:(s_6'=0) + [(1-p0-eps),(1-p0+eps)]:(s_6'=1);
+    [repair_7] s_6=1 & (s_5=0 | s_7=0) & t_0<T -> [p1-eps,p1+eps]:(s_6'=0) + [(1-p1-eps),(1-p1+eps)]:(s_6'=1);
+    [repair_8] s_6=1 & s_5=1 & s_7=1 & t_0<T -> [p0-eps,p0+eps]:(s_6'=0) + [(1-p0-eps),(1-p0+eps)]:(s_6'=1);
+    [repair_8] s_6=1 & (s_5=0 | s_7=0) & t_0<T -> [p1-eps,p1+eps]:(s_6'=0) + [(1-p1-eps),(1-p1+eps)]:(s_6'=1);
+    [repair_9] s_6=1 & s_5=1 & s_7=1 & t_0<T -> [p0-eps,p0+eps]:(s_6'=0) + [(1-p0-eps),(1-p0+eps)]:(s_6'=1);
+    [repair_9] s_6=1 & (s_5=0 | s_7=0) & t_0<T -> [p1-eps,p1+eps]:(s_6'=0) + [(1-p1-eps),(1-p1+eps)]:(s_6'=1);
+    [noop] s_6=1 & s_5=1 & s_7=1 & t_0<T -> [p0-eps,p0+eps]:(s_6'=0) + [(1-p0-eps),(1-p0+eps)]:(s_6'=1);
+    [noop] s_6=1 & (s_5=0 | s_7=0) & t_0<T -> [p1-eps,p1+eps]:(s_6'=0) + [(1-p1-eps),(1-p1+eps)]:(s_6'=1);
+
+    [repair_0] t_0=T -> (s_6'=s_6);
+    [repair_1] t_0=T -> (s_6'=s_6);
+    [repair_2] t_0=T -> (s_6'=s_6);
+    [repair_3] t_0=T -> (s_6'=s_6);
+    [repair_4] t_0=T -> (s_6'=s_6);
+    [repair_5] t_0=T -> (s_6'=s_6);
+    [repair_6] t_0=T -> (s_6'=s_6);
+    [repair_7] t_0=T -> (s_6'=s_6);
+    [repair_8] t_0=T -> (s_6'=s_6);
+    [repair_9] t_0=T -> (s_6'=s_6);
+    [noop] t_0=T -> (s_6'=s_6);
+endmodule
+
+module comp_7
+    // 0 = failed, 1 = up
+    s_7 : [0..1] init 1;
+
+    [repair_0] s_7=0 & t_0<T -> (s_7'=0);
+    [repair_1] s_7=0 & t_0<T -> (s_7'=0);
+    [repair_2] s_7=0 & t_0<T -> (s_7'=0);
+    [repair_3] s_7=0 & t_0<T -> (s_7'=0);
+    [repair_4] s_7=0 & t_0<T -> (s_7'=0);
+    [repair_5] s_7=0 & t_0<T -> (s_7'=0);
+    [repair_6] s_7=0 & t_0<T -> (s_7'=0);
+    [repair_7] s_7=0 & t_0<T -> (s_7'=1);
+    [repair_8] s_7=0 & t_0<T -> (s_7'=0);
+    [repair_9] s_7=0 & t_0<T -> (s_7'=0);
+    [noop] s_7=0 & t_0<T -> (s_7'=0);
+
+    [repair_0] s_7=1 & s_6=1 & s_8=1 & t_0<T -> [p0-eps,p0+eps]:(s_7'=0) + [(1-p0-eps),(1-p0+eps)]:(s_7'=1);
+    [repair_0] s_7=1 & (s_6=0 | s_8=0) & t_0<T -> [p1-eps,p1+eps]:(s_7'=0) + [(1-p1-eps),(1-p1+eps)]:(s_7'=1);
+    [repair_1] s_7=1 & s_6=1 & s_8=1 & t_0<T -> [p0-eps,p0+eps]:(s_7'=0) + [(1-p0-eps),(1-p0+eps)]:(s_7'=1);
+    [repair_1] s_7=1 & (s_6=0 | s_8=0) & t_0<T -> [p1-eps,p1+eps]:(s_7'=0) + [(1-p1-eps),(1-p1+eps)]:(s_7'=1);
+    [repair_2] s_7=1 & s_6=1 & s_8=1 & t_0<T -> [p0-eps,p0+eps]:(s_7'=0) + [(1-p0-eps),(1-p0+eps)]:(s_7'=1);
+    [repair_2] s_7=1 & (s_6=0 | s_8=0) & t_0<T -> [p1-eps,p1+eps]:(s_7'=0) + [(1-p1-eps),(1-p1+eps)]:(s_7'=1);
+    [repair_3] s_7=1 & s_6=1 & s_8=1 & t_0<T -> [p0-eps,p0+eps]:(s_7'=0) + [(1-p0-eps),(1-p0+eps)]:(s_7'=1);
+    [repair_3] s_7=1 & (s_6=0 | s_8=0) & t_0<T -> [p1-eps,p1+eps]:(s_7'=0) + [(1-p1-eps),(1-p1+eps)]:(s_7'=1);
+    [repair_4] s_7=1 & s_6=1 & s_8=1 & t_0<T -> [p0-eps,p0+eps]:(s_7'=0) + [(1-p0-eps),(1-p0+eps)]:(s_7'=1);
+    [repair_4] s_7=1 & (s_6=0 | s_8=0) & t_0<T -> [p1-eps,p1+eps]:(s_7'=0) + [(1-p1-eps),(1-p1+eps)]:(s_7'=1);
+    [repair_5] s_7=1 & s_6=1 & s_8=1 & t_0<T -> [p0-eps,p0+eps]:(s_7'=0) + [(1-p0-eps),(1-p0+eps)]:(s_7'=1);
+    [repair_5] s_7=1 & (s_6=0 | s_8=0) & t_0<T -> [p1-eps,p1+eps]:(s_7'=0) + [(1-p1-eps),(1-p1+eps)]:(s_7'=1);
+    [repair_6] s_7=1 & s_6=1 & s_8=1 & t_0<T -> [p0-eps,p0+eps]:(s_7'=0) + [(1-p0-eps),(1-p0+eps)]:(s_7'=1);
+    [repair_6] s_7=1 & (s_6=0 | s_8=0) & t_0<T -> [p1-eps,p1+eps]:(s_7'=0) + [(1-p1-eps),(1-p1+eps)]:(s_7'=1);
+    [repair_7] s_7=1 & s_6=1 & s_8=1 & t_0<T -> [p0-eps,p0+eps]:(s_7'=0) + [(1-p0-eps),(1-p0+eps)]:(s_7'=1);
+    [repair_7] s_7=1 & (s_6=0 | s_8=0) & t_0<T -> [p1-eps,p1+eps]:(s_7'=0) + [(1-p1-eps),(1-p1+eps)]:(s_7'=1);
+    [repair_8] s_7=1 & s_6=1 & s_8=1 & t_0<T -> [p0-eps,p0+eps]:(s_7'=0) + [(1-p0-eps),(1-p0+eps)]:(s_7'=1);
+    [repair_8] s_7=1 & (s_6=0 | s_8=0) & t_0<T -> [p1-eps,p1+eps]:(s_7'=0) + [(1-p1-eps),(1-p1+eps)]:(s_7'=1);
+    [repair_9] s_7=1 & s_6=1 & s_8=1 & t_0<T -> [p0-eps,p0+eps]:(s_7'=0) + [(1-p0-eps),(1-p0+eps)]:(s_7'=1);
+    [repair_9] s_7=1 & (s_6=0 | s_8=0) & t_0<T -> [p1-eps,p1+eps]:(s_7'=0) + [(1-p1-eps),(1-p1+eps)]:(s_7'=1);
+    [noop] s_7=1 & s_6=1 & s_8=1 & t_0<T -> [p0-eps,p0+eps]:(s_7'=0) + [(1-p0-eps),(1-p0+eps)]:(s_7'=1);
+    [noop] s_7=1 & (s_6=0 | s_8=0) & t_0<T -> [p1-eps,p1+eps]:(s_7'=0) + [(1-p1-eps),(1-p1+eps)]:(s_7'=1);
+
+    [repair_0] t_0=T -> (s_7'=s_7);
+    [repair_1] t_0=T -> (s_7'=s_7);
+    [repair_2] t_0=T -> (s_7'=s_7);
+    [repair_3] t_0=T -> (s_7'=s_7);
+    [repair_4] t_0=T -> (s_7'=s_7);
+    [repair_5] t_0=T -> (s_7'=s_7);
+    [repair_6] t_0=T -> (s_7'=s_7);
+    [repair_7] t_0=T -> (s_7'=s_7);
+    [repair_8] t_0=T -> (s_7'=s_7);
+    [repair_9] t_0=T -> (s_7'=s_7);
+    [noop] t_0=T -> (s_7'=s_7);
+endmodule
+
+module comp_8
+    // 0 = failed, 1 = up
+    s_8 : [0..1] init 1;
+
+    [repair_0] s_8=0 & t_0<T -> (s_8'=0);
+    [repair_1] s_8=0 & t_0<T -> (s_8'=0);
+    [repair_2] s_8=0 & t_0<T -> (s_8'=0);
+    [repair_3] s_8=0 & t_0<T -> (s_8'=0);
+    [repair_4] s_8=0 & t_0<T -> (s_8'=0);
+    [repair_5] s_8=0 & t_0<T -> (s_8'=0);
+    [repair_6] s_8=0 & t_0<T -> (s_8'=0);
+    [repair_7] s_8=0 & t_0<T -> (s_8'=0);
+    [repair_8] s_8=0 & t_0<T -> (s_8'=1);
+    [repair_9] s_8=0 & t_0<T -> (s_8'=0);
+    [noop] s_8=0 & t_0<T -> (s_8'=0);
+
+    [repair_0] s_8=1 & s_7=1 & s_9=1 & t_0<T -> [p0-eps,p0+eps]:(s_8'=0) + [(1-p0-eps),(1-p0+eps)]:(s_8'=1);
+    [repair_0] s_8=1 & (s_7=0 | s_9=0) & t_0<T -> [p1-eps,p1+eps]:(s_8'=0) + [(1-p1-eps),(1-p1+eps)]:(s_8'=1);
+    [repair_1] s_8=1 & s_7=1 & s_9=1 & t_0<T -> [p0-eps,p0+eps]:(s_8'=0) + [(1-p0-eps),(1-p0+eps)]:(s_8'=1);
+    [repair_1] s_8=1 & (s_7=0 | s_9=0) & t_0<T -> [p1-eps,p1+eps]:(s_8'=0) + [(1-p1-eps),(1-p1+eps)]:(s_8'=1);
+    [repair_2] s_8=1 & s_7=1 & s_9=1 & t_0<T -> [p0-eps,p0+eps]:(s_8'=0) + [(1-p0-eps),(1-p0+eps)]:(s_8'=1);
+    [repair_2] s_8=1 & (s_7=0 | s_9=0) & t_0<T -> [p1-eps,p1+eps]:(s_8'=0) + [(1-p1-eps),(1-p1+eps)]:(s_8'=1);
+    [repair_3] s_8=1 & s_7=1 & s_9=1 & t_0<T -> [p0-eps,p0+eps]:(s_8'=0) + [(1-p0-eps),(1-p0+eps)]:(s_8'=1);
+    [repair_3] s_8=1 & (s_7=0 | s_9=0) & t_0<T -> [p1-eps,p1+eps]:(s_8'=0) + [(1-p1-eps),(1-p1+eps)]:(s_8'=1);
+    [repair_4] s_8=1 & s_7=1 & s_9=1 & t_0<T -> [p0-eps,p0+eps]:(s_8'=0) + [(1-p0-eps),(1-p0+eps)]:(s_8'=1);
+    [repair_4] s_8=1 & (s_7=0 | s_9=0) & t_0<T -> [p1-eps,p1+eps]:(s_8'=0) + [(1-p1-eps),(1-p1+eps)]:(s_8'=1);
+    [repair_5] s_8=1 & s_7=1 & s_9=1 & t_0<T -> [p0-eps,p0+eps]:(s_8'=0) + [(1-p0-eps),(1-p0+eps)]:(s_8'=1);
+    [repair_5] s_8=1 & (s_7=0 | s_9=0) & t_0<T -> [p1-eps,p1+eps]:(s_8'=0) + [(1-p1-eps),(1-p1+eps)]:(s_8'=1);
+    [repair_6] s_8=1 & s_7=1 & s_9=1 & t_0<T -> [p0-eps,p0+eps]:(s_8'=0) + [(1-p0-eps),(1-p0+eps)]:(s_8'=1);
+    [repair_6] s_8=1 & (s_7=0 | s_9=0) & t_0<T -> [p1-eps,p1+eps]:(s_8'=0) + [(1-p1-eps),(1-p1+eps)]:(s_8'=1);
+    [repair_7] s_8=1 & s_7=1 & s_9=1 & t_0<T -> [p0-eps,p0+eps]:(s_8'=0) + [(1-p0-eps),(1-p0+eps)]:(s_8'=1);
+    [repair_7] s_8=1 & (s_7=0 | s_9=0) & t_0<T -> [p1-eps,p1+eps]:(s_8'=0) + [(1-p1-eps),(1-p1+eps)]:(s_8'=1);
+    [repair_8] s_8=1 & s_7=1 & s_9=1 & t_0<T -> [p0-eps,p0+eps]:(s_8'=0) + [(1-p0-eps),(1-p0+eps)]:(s_8'=1);
+    [repair_8] s_8=1 & (s_7=0 | s_9=0) & t_0<T -> [p1-eps,p1+eps]:(s_8'=0) + [(1-p1-eps),(1-p1+eps)]:(s_8'=1);
+    [repair_9] s_8=1 & s_7=1 & s_9=1 & t_0<T -> [p0-eps,p0+eps]:(s_8'=0) + [(1-p0-eps),(1-p0+eps)]:(s_8'=1);
+    [repair_9] s_8=1 & (s_7=0 | s_9=0) & t_0<T -> [p1-eps,p1+eps]:(s_8'=0) + [(1-p1-eps),(1-p1+eps)]:(s_8'=1);
+    [noop] s_8=1 & s_7=1 & s_9=1 & t_0<T -> [p0-eps,p0+eps]:(s_8'=0) + [(1-p0-eps),(1-p0+eps)]:(s_8'=1);
+    [noop] s_8=1 & (s_7=0 | s_9=0) & t_0<T -> [p1-eps,p1+eps]:(s_8'=0) + [(1-p1-eps),(1-p1+eps)]:(s_8'=1);
+
+    [repair_0] t_0=T -> (s_8'=s_8);
+    [repair_1] t_0=T -> (s_8'=s_8);
+    [repair_2] t_0=T -> (s_8'=s_8);
+    [repair_3] t_0=T -> (s_8'=s_8);
+    [repair_4] t_0=T -> (s_8'=s_8);
+    [repair_5] t_0=T -> (s_8'=s_8);
+    [repair_6] t_0=T -> (s_8'=s_8);
+    [repair_7] t_0=T -> (s_8'=s_8);
+    [repair_8] t_0=T -> (s_8'=s_8);
+    [repair_9] t_0=T -> (s_8'=s_8);
+    [noop] t_0=T -> (s_8'=s_8);
+endmodule
+
+module comp_9
+    // 0 = failed, 1 = up
+    s_9 : [0..1] init 1;
+
+    [repair_0] s_9=0 & t_0<T -> (s_9'=0);
+    [repair_1] s_9=0 & t_0<T -> (s_9'=0);
+    [repair_2] s_9=0 & t_0<T -> (s_9'=0);
+    [repair_3] s_9=0 & t_0<T -> (s_9'=0);
+    [repair_4] s_9=0 & t_0<T -> (s_9'=0);
+    [repair_5] s_9=0 & t_0<T -> (s_9'=0);
+    [repair_6] s_9=0 & t_0<T -> (s_9'=0);
+    [repair_7] s_9=0 & t_0<T -> (s_9'=0);
+    [repair_8] s_9=0 & t_0<T -> (s_9'=0);
+    [repair_9] s_9=0 & t_0<T -> (s_9'=1);
+    [noop] s_9=0 & t_0<T -> (s_9'=0);
+
+    [repair_0] s_9=1 & s_8=1 & s_0=1 & t_0<T -> [p0-eps,p0+eps]:(s_9'=0) + [(1-p0-eps),(1-p0+eps)]:(s_9'=1);
+    [repair_0] s_9=1 & (s_8=0 | s_0=0) & t_0<T -> [p1-eps,p1+eps]:(s_9'=0) + [(1-p1-eps),(1-p1+eps)]:(s_9'=1);
+    [repair_1] s_9=1 & s_8=1 & s_0=1 & t_0<T -> [p0-eps,p0+eps]:(s_9'=0) + [(1-p0-eps),(1-p0+eps)]:(s_9'=1);
+    [repair_1] s_9=1 & (s_8=0 | s_0=0) & t_0<T -> [p1-eps,p1+eps]:(s_9'=0) + [(1-p1-eps),(1-p1+eps)]:(s_9'=1);
+    [repair_2] s_9=1 & s_8=1 & s_0=1 & t_0<T -> [p0-eps,p0+eps]:(s_9'=0) + [(1-p0-eps),(1-p0+eps)]:(s_9'=1);
+    [repair_2] s_9=1 & (s_8=0 | s_0=0) & t_0<T -> [p1-eps,p1+eps]:(s_9'=0) + [(1-p1-eps),(1-p1+eps)]:(s_9'=1);
+    [repair_3] s_9=1 & s_8=1 & s_0=1 & t_0<T -> [p0-eps,p0+eps]:(s_9'=0) + [(1-p0-eps),(1-p0+eps)]:(s_9'=1);
+    [repair_3] s_9=1 & (s_8=0 | s_0=0) & t_0<T -> [p1-eps,p1+eps]:(s_9'=0) + [(1-p1-eps),(1-p1+eps)]:(s_9'=1);
+    [repair_4] s_9=1 & s_8=1 & s_0=1 & t_0<T -> [p0-eps,p0+eps]:(s_9'=0) + [(1-p0-eps),(1-p0+eps)]:(s_9'=1);
+    [repair_4] s_9=1 & (s_8=0 | s_0=0) & t_0<T -> [p1-eps,p1+eps]:(s_9'=0) + [(1-p1-eps),(1-p1+eps)]:(s_9'=1);
+    [repair_5] s_9=1 & s_8=1 & s_0=1 & t_0<T -> [p0-eps,p0+eps]:(s_9'=0) + [(1-p0-eps),(1-p0+eps)]:(s_9'=1);
+    [repair_5] s_9=1 & (s_8=0 | s_0=0) & t_0<T -> [p1-eps,p1+eps]:(s_9'=0) + [(1-p1-eps),(1-p1+eps)]:(s_9'=1);
+    [repair_6] s_9=1 & s_8=1 & s_0=1 & t_0<T -> [p0-eps,p0+eps]:(s_9'=0) + [(1-p0-eps),(1-p0+eps)]:(s_9'=1);
+    [repair_6] s_9=1 & (s_8=0 | s_0=0) & t_0<T -> [p1-eps,p1+eps]:(s_9'=0) + [(1-p1-eps),(1-p1+eps)]:(s_9'=1);
+    [repair_7] s_9=1 & s_8=1 & s_0=1 & t_0<T -> [p0-eps,p0+eps]:(s_9'=0) + [(1-p0-eps),(1-p0+eps)]:(s_9'=1);
+    [repair_7] s_9=1 & (s_8=0 | s_0=0) & t_0<T -> [p1-eps,p1+eps]:(s_9'=0) + [(1-p1-eps),(1-p1+eps)]:(s_9'=1);
+    [repair_8] s_9=1 & s_8=1 & s_0=1 & t_0<T -> [p0-eps,p0+eps]:(s_9'=0) + [(1-p0-eps),(1-p0+eps)]:(s_9'=1);
+    [repair_8] s_9=1 & (s_8=0 | s_0=0) & t_0<T -> [p1-eps,p1+eps]:(s_9'=0) + [(1-p1-eps),(1-p1+eps)]:(s_9'=1);
+    [repair_9] s_9=1 & s_8=1 & s_0=1 & t_0<T -> [p0-eps,p0+eps]:(s_9'=0) + [(1-p0-eps),(1-p0+eps)]:(s_9'=1);
+    [repair_9] s_9=1 & (s_8=0 | s_0=0) & t_0<T -> [p1-eps,p1+eps]:(s_9'=0) + [(1-p1-eps),(1-p1+eps)]:(s_9'=1);
+    [noop] s_9=1 & s_8=1 & s_0=1 & t_0<T -> [p0-eps,p0+eps]:(s_9'=0) + [(1-p0-eps),(1-p0+eps)]:(s_9'=1);
+    [noop] s_9=1 & (s_8=0 | s_0=0) & t_0<T -> [p1-eps,p1+eps]:(s_9'=0) + [(1-p1-eps),(1-p1+eps)]:(s_9'=1);
+
+    [repair_0] t_0=T -> (s_9'=s_9);
+    [repair_1] t_0=T -> (s_9'=s_9);
+    [repair_2] t_0=T -> (s_9'=s_9);
+    [repair_3] t_0=T -> (s_9'=s_9);
+    [repair_4] t_0=T -> (s_9'=s_9);
+    [repair_5] t_0=T -> (s_9'=s_9);
+    [repair_6] t_0=T -> (s_9'=s_9);
+    [repair_7] t_0=T -> (s_9'=s_9);
+    [repair_8] t_0=T -> (s_9'=s_9);
+    [repair_9] t_0=T -> (s_9'=s_9);
+    [noop] t_0=T -> (s_9'=s_9);
+endmodule
+
+rewards "up_with_cost"
+    [noop]      t_0 < T : s_0 + s_1 + s_2 + s_3 + s_4 + s_5 + s_6 + s_7 + s_8 + s_9;
+    [repair_0]  t_0 < T : max(0,(s_0 + s_1 + s_2 + s_3 + s_4 + s_5 + s_6 + s_7 + s_8 + s_9) - 1);
+    [repair_1]  t_0 < T : max(0,(s_0 + s_1 + s_2 + s_3 + s_4 + s_5 + s_6 + s_7 + s_8 + s_9) - 1);
+    [repair_2]  t_0 < T : max(0,(s_0 + s_1 + s_2 + s_3 + s_4 + s_5 + s_6 + s_7 + s_8 + s_9) - 1);
+    [repair_3]  t_0 < T : max(0,(s_0 + s_1 + s_2 + s_3 + s_4 + s_5 + s_6 + s_7 + s_8 + s_9) - 1);
+    [repair_4]  t_0 < T : max(0,(s_0 + s_1 + s_2 + s_3 + s_4 + s_5 + s_6 + s_7 + s_8 + s_9) - 1);
+    [repair_5]  t_0 < T : max(0,(s_0 + s_1 + s_2 + s_3 + s_4 + s_5 + s_6 + s_7 + s_8 + s_9) - 1);
+    [repair_6]  t_0 < T : max(0,(s_0 + s_1 + s_2 + s_3 + s_4 + s_5 + s_6 + s_7 + s_8 + s_9) - 1);
+    [repair_7]  t_0 < T : max(0,(s_0 + s_1 + s_2 + s_3 + s_4 + s_5 + s_6 + s_7 + s_8 + s_9) - 1);
+    [repair_8]  t_0 < T : max(0,(s_0 + s_1 + s_2 + s_3 + s_4 + s_5 + s_6 + s_7 + s_8 + s_9) - 1);
+    [repair_9]  t_0 < T : max(0,(s_0 + s_1 + s_2 + s_3 + s_4 + s_5 + s_6 + s_7 + s_8 + s_9) - 1);
+endrewards
