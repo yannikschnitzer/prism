@@ -28,7 +28,7 @@ public class Experiment {
     public int iterations = 1_000_000;
     public int max_episode_length = 50;
     public int multiplier = 5;
-    public int maxVIIters = 2000;
+    public int maxVIIters = 20000;
     public ArrayList<Integer> resultIterations = new ArrayList<>();
 
     public enum ParameterTying {

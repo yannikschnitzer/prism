@@ -11,7 +11,9 @@ import learning.Data.DataProcessor;
 import learning.Estimators.Estimator;
 import learning.Estimators.EstimatorConstructor;
 import learning.Estimators.PACConvexEstimatorOptimistic;
+import learning.ParameterTyer;
 import learning.Simulation.ObservationSampler;
+import learning.Simulation.TransitionTriple;
 import param.Function;
 import param.FunctionFactory;
 import parser.Values;
@@ -25,10 +27,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.List;
+import java.util.*;
 
 import static imdpcomp.Experiment.ParameterTying.NO_TYING;
 
@@ -205,9 +204,14 @@ public class ParametricConvexLearner {
 
             ex.parameterValues = parameterValuation;
 
+            List<List<TransitionTriple>> similarTransitions = ParameterTyer.getSimilarTransitions(pmdp);
+            Map<Function, List<TransitionTriple>> functionMap = ParameterTyer.getFunctionMap(pmdp);
+
             Estimator estimator = estimatorConstructor.get(this.prism, ex);
-            estimator.set_experiment(ex);
             estimator.setPmdp(pmdp);
+            estimator.setFunctionMap(functionMap);
+            estimator.setSimilarTransitions(similarTransitions);
+            estimator.set_experiment(ex);
 
             long startTime = System.nanoTime();
             // Iterate and run experiments for each of the sampled parameter vectors
@@ -265,8 +269,10 @@ public class ParametricConvexLearner {
                 boolean last_iteration = i == ex.iterations + past_iterations - 1;
                 if (observationSampler.collectedEnoughSamples() || last_iteration || ex.resultIteration(i)) {
                     estimator.setObservationMaps(observationSampler.getSamplesMap(), observationSampler.getSampleSizeMap());
-                    samplingStrategy = estimator.buildStrategy();
+
                     currentResults = estimator.getCurrentResults();
+                    samplingStrategy = estimator.buildStrategy();
+
 
                     if (ex.tieParameters == NO_TYING) {
                         observationSampler.resetObservationSequence();

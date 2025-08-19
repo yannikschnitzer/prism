@@ -1,7 +1,8 @@
-package explicit;
+package learning.ParametricConvex;
 
 import com.gurobi.gurobi.*;
 import common.Interval;
+import explicit.*;
 import param.Function;
 import param.FunctionFactory;
 import prism.Evaluator;
@@ -18,6 +19,12 @@ public class ConvexLearner {
     private MDPSimple<Function> mdpParam;
 
     private ExpressionTranslator trans;
+
+    // add at top with other fields:
+    private SharedVertexSet sharedVertices;     // null if not precomputed or cap exceeded
+    private int vertexCap = 10_000;            // default cap; set via setter if you want
+
+    public void setVertexCap(int cap) { this.vertexCap = cap; }
 
     public static void main(String[] args) throws PrismException, GRBException {
 
@@ -169,6 +176,19 @@ public class ConvexLearner {
         }
     }
 
+    // Call this after you have added all constraints (i.e., after setConstraints + model.update)
+    public void precomputeVertices() throws GRBException {
+        model.update(); // ensure model is finalized
+        SharedVertexSet sv = SharedVertexSet.fromModel(model, 1e-9, vertexCap);
+        if (sv.complete) {
+            System.out.println("Precomputed vertices: " + sv.vertexCount);
+            this.sharedVertices = sv;
+        } else {
+            System.out.println("Vertex enumeration exceeded cap (" + vertexCap + "); using LP mode.");
+            this.sharedVertices = null; // fall back to LP in the distributions
+        }
+    }
+
     public UMDPSimple<Double> getUMDP() {
         UMDPSimple<Double> convexUMDP = new UMDPSimple<>(mdpParam.getNumStates());
         for (int s = 0; s < mdpParam.getNumStates(); s++) {
@@ -176,7 +196,8 @@ public class ConvexLearner {
                 Distribution<Function> pdist = mdpParam.getDistribution(s, a);
                 Object action = mdpParam.getAction(s,a);
 
-                UDistribributionParametricConvex<Double> convex_dist = new UDistribributionParametricConvex<>(pdist, this.model, this.trans);
+                UDistribributionParametricConvex<Double> convex_dist =
+                        new UDistribributionParametricConvex<>(pdist, this.model, this.trans, this.sharedVertices);
                 convexUMDP.addActionLabelledChoice(s, convex_dist, action);
             }
         }

@@ -1115,7 +1115,7 @@ public class MDPModelChecker extends ProbModelChecker
 
 		// Limit iters for DTMC solution - this implements "modified" policy iteration
 		mcDTMC.setMaxIters(100);
-		mcDTMC.setErrorOnNonConverge(false);
+		mcDTMC.setErrorOnNonConverge(true);
 
 		// Store num states
 		n = mdp.getNumStates();

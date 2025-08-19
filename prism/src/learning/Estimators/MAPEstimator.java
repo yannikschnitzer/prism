@@ -191,7 +191,7 @@ public class MAPEstimator extends Estimator {
         DTMC<Double> dtmc = (DTMC<Double>) mdp.constructInducedModel(strat);
         DTMCModelChecker mc = new DTMCModelChecker(this.prism);
         //mc.setPrecomp(false); //TODO: here
-        mc.setErrorOnNonConverge(false);
+        mc.setErrorOnNonConverge(true);
         mc.setMaxIters(ex.maxVIIters);
         mc.setTermCritParam(1e-4);
         mc.setGenStrat(true);
@@ -335,7 +335,7 @@ public class MAPEstimator extends Estimator {
         mc.setPrecomp(true);
         mc.setMaxIters(ex.maxVIIters);
         mc.setTermCritParam(1e-4);
-        mc.setErrorOnNonConverge(false);
+        mc.setErrorOnNonConverge(true);
 
         PropertiesFile pf;
         if (robust)
@@ -365,7 +365,7 @@ public class MAPEstimator extends Estimator {
         mc.setGenStrat(true);
         mc.setMaxIters(ex.maxVIIters);
         mc.setTermCritParam(1e-4);
-        mc.setErrorOnNonConverge(false);
+        mc.setErrorOnNonConverge(true);
 
         PropertiesFile pf;
         if (robust)
@@ -394,7 +394,7 @@ public class MAPEstimator extends Estimator {
         mc.setGenStrat(true);
         mc.setPrecomp(true);
         mc.setMaxIters(ex.maxVIIters);
-        mc.setErrorOnNonConverge(false);
+        mc.setErrorOnNonConverge(true);
 
         PropertiesFile pf;
         if (robust)

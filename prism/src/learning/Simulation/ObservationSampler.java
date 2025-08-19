@@ -122,7 +122,6 @@ public class ObservationSampler {
 		return samples;
 	}
 
-
 	public int simulateEpisode(int horizon, Strategy strat) throws PrismException {
 		int number_of_samples = 0;
 		sim.createNewOnTheFlyPath();
@@ -179,46 +178,6 @@ public class ObservationSampler {
 		return total;
 	}
 
-	// TODO: sample with maxmax or minmin strategy (i.e. let adversary help)
-	public int simulateWithOptimisticRobustStrategy(long size, String propertyString, IMDP<Double> estimate, String robustSpec) throws PrismException {
-		resetObservationSequence();
-		int samples = 0;
-
-		MinMax minMax = MinMax.max().setMinUnc(false);
-		UMDPModelChecker mc = new UMDPModelChecker(this.prism);
-		mc.setGenStrat(true);
-		mc.setErrorOnNonConverge(false);
-		PropertiesFile pf = prism.parsePropertiesString(robustSpec);
-		ModulesFileModelGenerator<?> modelGen = ModulesFileModelGenerator.create(modulesFileIMDP, this.prism);
-		modelGen.setSomeUndefinedConstants(estimate.getConstantValues());
-		mc.setModelCheckingInfo(modelGen, pf, modelGen);
-		Expression exprTarget = this.prism.parsePropertiesString(propertyString).getProperty(0);
-		//BitSet target = mc.check(estimate, exprTarget).getBitSet();
-		//ModelCheckerResult result = mc.computeReachRewards(estimate, rewards, target, minMax);
-		//ModelCheckerResult result = mc.computeReachProbs(estimate, target, minMax);
-		Result result = mc.check(estimate, exprTarget);
-		MDStrategy strat = (MDStrategy) result.getStrategy();
-
-		sim.loadStrategy((StrategyGenerator<Double>) strat);
-		long i = size;
-		sim.createNewOnTheFlyPath();
-		sim.initialisePath(null);
-		while (i > 0) {
-			boolean step = sim.automaticTransition();
-			if (step) {
-				PathOnTheFly path = (PathOnTheFly) sim.getPath();
-				parseLastStep(path);
-				samples += 1;
-				i -= 1;
-			}
-			else {
-				sim.createNewOnTheFlyPath();
-				sim.initialisePath(null);
-			}
-		}
-		return samples;
-	}
-
 	public void parseStep(State s, String a, State sprime) {
 		int currentState = getIndexFromState(s);
 		int successorState = getIndexFromState(sprime);
@@ -260,73 +219,6 @@ public class ObservationSampler {
 		this.sampleSizeMap.forEach((sa, counter) -> {
 			this.accumulatedSamples.put(sa, this.accumulatedSamples.getOrDefault(sa, 0) + counter);
 		});
-	}
-
-
-	public int simulateWithRewardStrategy(long size, String propertyString, HashMap<TransitionTriple, Interval<Double>> intervalsMap, IMDP<Double> estimate) throws PrismException
-	{
-		//ArrayList<TransitionTriple> observations = new ArrayList<>();
-		resetObservationSequence();
-		int samples = 0;
-		// Load model into simulator
-		//this.prism.loadModelIntoSimulator();
-		//SimulatorEngine sim = prism.getSimulator();
-
-		long startTime = System.currentTimeMillis();
-		int numStates = this.sul.getNumStates();
-		MDPRewardsSimple<Double> rewards = new MDPRewardsSimple<>(numStates);
-		for (int s = 0; s < numStates; s++)
-		{
-			int numChoices = this.sul.getNumChoices(s);
-			for (int i = 0; i < numChoices; i++)
-			{
-				String action = getActionString(this.sul, s,i);
-				int count = 0;
-				double sum = 0;
-				for (int successor = 0; successor < numStates; successor++) {
-					Interval<Double> interval = intervalsMap.get(new TransitionTriple(s, action, successor));
-					if (interval != null) {
-						count += 1;
-						double width = interval.getUpper() - interval.getLower();
-						sum += width;
-					}
-				}
-				double rank = sum / count;
-				rewards.addToTransitionReward(s, i, rank);
-			}
-		}
-
-
-		//MinMax minMax = MinMax.max().setMinUnc(true);
-		MinMax minMax = MinMax.max().setMinUnc(false);
-		UMDPModelChecker mc = new UMDPModelChecker(this.prism);
-		mc.setGenStrat(true);
-		mc.setErrorOnNonConverge(false);
-		Expression exprTarget = this.prism.parsePropertiesString(propertyString).getProperty(0);
-		BitSet target = mc.checkExpression(estimate, exprTarget, null).getBitSet();
-		ModelCheckerResult result = mc.computeReachRewards(estimate, rewards, target, minMax);
-		MDStrategy strat = (MDStrategy) result.strat;
-		long stopTime = System.currentTimeMillis();
-		//System.out.println("Reward strategy computation time = " + (stopTime - startTime)/1000);
-
-		sim.loadStrategy((StrategyGenerator<Double>) strat);
-		long i = size;
-		sim.createNewOnTheFlyPath();
-		sim.initialisePath(null);
-		while (i > 0) {
-			boolean step = sim.automaticTransition();
-			if (step) {
-				PathOnTheFly path = (PathOnTheFly) sim.getPath();
-				parseLastStep(path);
-				samples += 1;
-				i -= 1;
-			}
-			else {
-				sim.createNewOnTheFlyPath();
-				sim.initialisePath(null);
-			}
-		}
-		return samples;
 	}
 
 	public void setTiedParameters(ParameterTying tiedParameters) {

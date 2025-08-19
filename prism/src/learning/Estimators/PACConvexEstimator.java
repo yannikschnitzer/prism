@@ -6,6 +6,7 @@ import com.gurobi.gurobi.GRBException;
 import common.Interval;
 import explicit.*;
 import imdpcomp.Experiment;
+import learning.ParametricConvex.ConvexLearner;
 import learning.Simulation.StateActionPair;
 import learning.Simulation.TransitionTriple;
 import org.apache.commons.math3.analysis.UnivariateFunction;
@@ -160,8 +161,7 @@ public class PACConvexEstimator extends MAPEstimator {
         imdp.setStatesList(mdp.getStatesList());
         imdp.setConstantValues(mdp.getConstantValues());
 
-        //tieParameters();
-        Map<TransitionTriple, Interval<Double>> minIntervals = Collections.emptyMap(); //computeMinIntervals();
+        if (ex.tieParameters != NO_TYING) tieParameters();
 
         for (int s = 0; s < numStates; s++) {
             int numChoices = mdp.getNumChoices(s);
@@ -173,24 +173,12 @@ public class PACConvexEstimator extends MAPEstimator {
                 mdp.forEachDoubleTransition(s, i, (int sFrom, int sTo, double p) -> {
                     TransitionTriple t = new TransitionTriple(state, action, sTo);
                     Interval<Double> interval;
-                    if (this.ex.tieParameters == NO_TYING) {
-                        if (0 < p && p < 1.0) {
-                            interval = getTransitionInterval(t);
-                            distrNew.add(sTo, interval);
-                            this.intervalsMap.put(t, interval);
-                        } else if (p == 1.0) {
-                            interval = new Interval<Double>(p, p);
-                            distrNew.add(sTo, interval);
-                            this.intervalsMap.put(t, interval);
-                        }
-                    } else {
-                        if (!this.constantMap.containsKey(t)) {
-                            interval = minIntervals.get(t);
-                        } else {
-                            p = this.constantMap.get(t);
-                            interval = new Interval<Double>(p, p);
-                        }
-
+                    if (0 < p && p < 1.0) {
+                        interval = getTransitionInterval(t);
+                        distrNew.add(sTo, interval);
+                        this.intervalsMap.put(t, interval);
+                    } else if (p == 1.0) {
+                        interval = new Interval<>(p, p);
                         distrNew.add(sTo, interval);
                         this.intervalsMap.put(t, interval);
                     }
@@ -200,9 +188,7 @@ public class PACConvexEstimator extends MAPEstimator {
             }
         }
         Map<String, BitSet> labels = mdp.getLabelToStatesMap();
-        Iterator<Map.Entry<String, BitSet>> it = labels.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, BitSet> entry = it.next();
+        for (Map.Entry<String, BitSet> entry : labels.entrySet()) {
             imdp.addLabel(entry.getKey(), entry.getValue());
         }
         this.estimate = imdp;
@@ -219,6 +205,8 @@ public class PACConvexEstimator extends MAPEstimator {
         cxl.setParamModel(pmdp);
         cxl.setConstraints(imdp);
         cxl.getModel().update();
+        cxl.setVertexCap(10000);
+        cxl.precomputeVertices();
 
 //        for (GRBConstr con : cxl.getModel().getConstrs()) {
 //            System.out.println(ExpressionTranslator.formatGBRConstraint(cxl.getModel(),con));
