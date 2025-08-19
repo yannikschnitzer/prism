@@ -744,10 +744,17 @@ public interface Evaluator<Value>
 		@Override
 		public Interval<Double> multiply(Interval<Double> x, Interval<Double> y)
 		{
+
 			double x1y1 = x.getLower() * y.getLower();
 			double x1y2 = x.getLower() * y.getUpper();
 			double x2y1 = x.getUpper() * y.getLower();
 			double x2y2 = x.getUpper() * y.getUpper();
+			if (x1y1 > x1y2 || x1y1> x2y1 || x1y1 > x2y2) {
+				System.out.println("Fail");
+			}
+			if (x2y2 < x1y2 || x2y2 < x2y1 || x2y2 < x1y1) {
+				System.out.println("Fail");
+			}
 			double lo = Math.min(x1y1, Math.min(x1y2, Math.min(x2y1, x2y2)));
 			double up = Math.max(x1y1, Math.max(x1y2, Math.max(x2y1, x2y2)));
 			return new Interval<Double>(lo, up);

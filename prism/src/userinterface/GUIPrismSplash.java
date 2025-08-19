@@ -43,8 +43,11 @@ public class GUIPrismSplash extends Frame
 	public void display() 
 	{
 		mt = new MediaTracker(this);
-		
+
+		System.out.println(System.getProperty("java.class.path"));
+
 		URL imageURL = GUIPrismSplash.class.getClassLoader().getResource(filename);
+
 		if (imageURL == null) 
 		{
 			System.out.println("Warning: Failed to load icon file \"" + filename + "\"");

@@ -295,7 +295,6 @@ public class CompositionLearner implements Callable<Integer> {
 
             double[] currentResults = estimator.getInitialResults();
 
-
             ArrayList<DataPoint> results = new ArrayList<>();
             ArrayList<UMDP<Double>> estimates = new ArrayList<>();
             if (past_iterations == 0) {

@@ -1,0 +1,314 @@
+package learning.ParametricConvex;
+
+import com.gurobi.gurobi.GRB;
+import com.gurobi.gurobi.GRBConstr;
+import com.gurobi.gurobi.GRBEnv;
+import com.gurobi.gurobi.GRBException;
+import common.Interval;
+import explicit.*;
+import learning.Data.DataPoint;
+import learning.Data.DataProcessor;
+import learning.Estimators.Estimator;
+import learning.Estimators.EstimatorConstructor;
+import learning.Estimators.PACConvexEstimatorOptimistic;
+import learning.Simulation.ObservationSampler;
+import param.Function;
+import param.FunctionFactory;
+import parser.Values;
+import parser.ast.ModulesFile;
+import prism.*;
+import strat.Strategy;
+import imdpcomp.Experiment;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.List;
+
+import static imdpcomp.Experiment.ParameterTying.NO_TYING;
+
+public class ParametricConvexLearner {
+
+    Prism prism;
+
+    private final boolean verbose = true;
+
+    public ParametricConvexLearner(Prism prism) {
+        this.prism = prism;
+    }
+
+    public static void main(String[] args) throws GRBException, PrismException {
+        PrismSettings settings = new PrismSettings();
+        FunctionFactory fact = FunctionFactory.create(new String[]{"p","q"}, new String[]{"0","0"}, new String[]{"1","1"}, settings);
+
+        //Function onemp = fact.getOne().multiply(1).subtract((fact.getVar("p").add(fact.getVar("q")).multiply(3)));
+        Function onemp = fact.getOne().subtract(fact.getVar("p"));
+        Function onemq = fact.getOne().subtract(fact.getVar("q"));
+
+        // Param MDP
+        MDPSimple<Function> mdp = new MDPSimple<>();
+        mdp.addStates(5);
+
+        Distribution<Function> dist = new Distribution<>(Evaluator.forRationalFunction(fact));
+        dist.add(1, fact.getVar("p"));
+        dist.add(4, onemp);
+        mdp.addActionLabelledChoice(0,dist,"a");
+
+        dist = new Distribution<>(Evaluator.forRationalFunction(fact));
+        dist.add(1, fact.getVar("q"));
+        dist.add(2, onemq);
+        mdp.addActionLabelledChoice(3,dist,"b");
+
+        dist = new Distribution<>(Evaluator.forRationalFunction(fact));
+        dist.add(1, fact.getVar("p").subtract(fact.getVar("q")));
+        dist.add(2, onemp.add(fact.getVar("q")));
+        mdp.addActionLabelledChoice(4,dist,"a");
+
+        dist = new Distribution<>(Evaluator.forRationalFunction(fact));
+        dist.add(1, fact.getOne());
+        mdp.addActionLabelledChoice(1, dist,"b");
+
+        dist = new Distribution<>(Evaluator.forRationalFunction(fact));
+        dist.add(2, fact.getOne());
+        mdp.addActionLabelledChoice(2, dist,"b");
+
+        // IMDP
+        UMDPSimple<Double> umdp = new UMDPSimple<>();
+        umdp.addStates(5);
+
+        Distribution<Interval<Double>> udist = new Distribution<>(Evaluator.forDoubleInterval());
+        udist.add(1, new Interval<>(0.5,0.9));
+        udist.add(4, new Interval<>(0.2,0.5));
+        umdp.addActionLabelledChoice(0, new UDistributionIntervals<>(udist), "a");
+
+        udist = new Distribution<>(Evaluator.forDoubleInterval());
+        udist.add(1, new Interval<>(1.0,1.0));
+        umdp.addActionLabelledChoice(1, new UDistributionIntervals<>(udist), "b");
+
+        udist = new Distribution<>(Evaluator.forDoubleInterval());
+        udist.add(2, new Interval<>(1.0,1.0));
+        umdp.addActionLabelledChoice(2, new UDistributionIntervals<>(udist), "b");
+
+        udist = new Distribution<>(Evaluator.forDoubleInterval());
+
+        udist.add(1, new Interval<>(0.2,0.5));
+        udist.add(2, new Interval<>(0.5,0.9));
+        umdp.addActionLabelledChoice(3, new UDistributionIntervals<>(udist), "a");
+
+        udist = new Distribution<>(Evaluator.forDoubleInterval());
+        udist.add(1, new Interval<>(0.0,0.25));
+        udist.add(2, new Interval<>(0.7,1.0));
+        umdp.addActionLabelledChoice(4, new UDistributionIntervals<>(udist), "a");
+
+        System.out.println("MDP: " + mdp);
+        System.out.println("IMDP: " + umdp);
+
+        GRBEnv env = new GRBEnv(true);
+        env.set(GRB.IntParam.OutputFlag, 0);
+        env.start();
+
+        ConvexLearner cxl = new ConvexLearner(env);
+        cxl.setParamModel(mdp);
+        cxl.setConstraints(umdp);
+        cxl.getModel().update();
+
+        for (GRBConstr con : cxl.getModel().getConstrs()) {
+            System.out.println(ExpressionTranslator.formatGBRConstraint(cxl.getModel(),con));
+        }
+
+        UMDPSimple<Double> convex_mdp = cxl.getUMDP();
+
+        UMDPModelChecker mc = new UMDPModelChecker(null);
+        mc.setPrecomp(true);
+
+        BitSet target = new BitSet();
+        target.set(1);
+        //target.set(5);
+        ModelCheckerResult res;
+        //convex_mdp.findDeadlocks(true);
+        res = mc.computeReachProbs(convex_mdp, target, MinMax.max().setMinUnc(false));
+        System.out.println("maxmax: " + res.soln[0]);
+
+
+        ParametricConvexLearner parametricConvexLearner = new ParametricConvexLearner(new Prism(new PrismDevNullLog()));
+        parametricConvexLearner.initializePrism();
+        Experiment ex = new Experiment(Experiment.Model.CHAIN_CONVEX);
+        MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
+        System.out.println(pmdp);
+
+        parametricConvexLearner.learnIMDP(ex, PACConvexEstimatorOptimistic::new, pmdp, ex.parameterValues, true);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void initializePrism() throws PrismException {
+        this.prism = new Prism(new PrismDevNullLog());
+        this.prism.initialise();
+        this.prism.setEngine(Prism.EXPLICIT);
+        this.prism.setGenStrat(true);
+    }
+
+    public MDPSimple<Function> buildParamModel(Experiment experiment) {
+        try {
+            ModulesFile modulesFile = this.prism.parseModelFile(new File(experiment.modelFile));
+            prism.loadPRISMModel(modulesFile);
+
+            List<String> namesList = experiment.parameterValues.getNames();
+            String[] paramNames = namesList.toArray(new String[0]);
+
+            int n = paramNames.length;
+            String[] paramLowerBounds = new String[n];
+            String[] paramUpperBounds = new String[n];
+            Arrays.fill(paramLowerBounds, "0");
+            Arrays.fill(paramUpperBounds, "1");
+
+            this.prism.setPRISMModelConstants(new Values(), true);
+            this.prism.setParametric(paramNames, paramLowerBounds, paramUpperBounds);
+            this.prism.buildModel();
+
+            return (MDPSimple<Function>) this.prism.getBuiltModelExplicit();
+
+        } catch (PrismException | FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Resets the PRISM engine and sets the simulator seed
+    public void resetAll(int seed) {
+        try {
+            initializePrism();
+            this.prism.setSimulatorSeed(seed);
+        } catch (PrismException e) {
+            System.out.println("PrismException in resetAll(): " + e.getMessage());
+            System.exit(1);
+        }
+    }
+
+    public Pair<List<List<IMDP<Double>>>, List<MDP<Double>>> learnIMDP(Experiment ex, EstimatorConstructor estimatorConstructor, MDPSimple<Function> pmdp, Values parameterValuation, boolean verification) {
+        resetAll(ex.seed);
+
+        System.out.println("\n\n\n\n%------\n%  Learning UMDP\n%  Model: " + ex.model +
+                "\n%  Episode Length: " + ex.max_episode_length +
+                "\n%  Iterations: " + ex.iterations +
+                "\n%" +  "  Label: " + makeLabel(ex) +
+                "\n%" +  "  Composition Type: " + ex.compositionType +
+                "\n%" +  "  Seed: " + ex.seed +
+                "\n%------");
+
+        try {
+            ModulesFile modulesFile = prism.parseModelFile(new File(ex.modelFile));
+            prism.loadPRISMModel(modulesFile);
+
+            ex.parameterValues = parameterValuation;
+
+            Estimator estimator = estimatorConstructor.get(this.prism, ex);
+            estimator.set_experiment(ex);
+            estimator.setPmdp(pmdp);
+
+            long startTime = System.nanoTime();
+            // Iterate and run experiments for each of the sampled parameter vectors
+            //ex.setTieParamters(verification);
+            Pair<ArrayList<DataPoint>, ArrayList<IMDP<Double>>> resIMDP = runSampling(ex, estimator, verification);
+            double durationInSeconds = (System.nanoTime() - startTime) / 1_000_000_000.0;
+
+            DataProcessor dp = new DataProcessor();
+            dp.dumpExperimentMetaData(makeOutputDirectory(ex), makeLabel(ex), ex, durationInSeconds, estimator.getSulOpt(), pmdp.getNumStates(), pmdp.getNumTransitions(), resIMDP.first.size(), estimator.getNumLearnableComponents());
+            dp.dumpDataRobustPolicies(makeOutputDirectory(ex), makeLabel(ex), resIMDP.first);
+
+        } catch (PrismException | FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        return null;
+    }
+
+    public Pair<ArrayList<DataPoint>, ArrayList<IMDP<Double>>> runSampling(Experiment ex, Estimator estimator, boolean verifcation) {
+        return runSampling(ex, estimator, 0, verifcation);
+    }
+
+    public Pair<ArrayList<DataPoint>, ArrayList<IMDP<Double>>> runSampling(Experiment ex, Estimator estimator, int past_iterations, boolean verficiation) {
+        try {
+            MDP<Double> SUL = estimator.getSUL();
+
+            if (true/*this.modelStats == null*/) {
+                System.out.println("======");
+                System.out.println(ex.model);
+                System.out.println("======");
+                System.out.println(estimator.getModelStats());
+            }
+
+            ObservationSampler observationSampler = new ObservationSampler(this.prism, SUL, estimator.getTerminatingStates());
+            observationSampler.setTransitionsOfInterest(estimator.getTransitionsOfInterest());
+            observationSampler.setTiedParameters(ex.tieParameters);
+            observationSampler.setMultiplier(ex.multiplier);
+
+            double[] currentResults = estimator.getInitialResults();
+
+            ArrayList<DataPoint> results = new ArrayList<>();
+            ArrayList<UMDP<Double>> estimates = new ArrayList<>();
+            if (past_iterations == 0) {
+                results.add(new DataPoint(0, 0,0, currentResults));
+                //estimates.add(estimator.getEstimate());
+            }
+            int samples = 0;
+            Strategy samplingStrategy = estimator.buildStrategy();
+            long startTime = System.nanoTime();
+
+            for (int i = past_iterations; i < ex.iterations + past_iterations; i++) {
+                int sampled = observationSampler.simulateEpisode(ex.max_episode_length, samplingStrategy);
+                samples += sampled;
+
+                boolean last_iteration = i == ex.iterations + past_iterations - 1;
+                if (observationSampler.collectedEnoughSamples() || last_iteration || ex.resultIteration(i)) {
+                    estimator.setObservationMaps(observationSampler.getSamplesMap(), observationSampler.getSampleSizeMap());
+                    samplingStrategy = estimator.buildStrategy();
+                    currentResults = estimator.getCurrentResults();
+
+                    if (ex.tieParameters == NO_TYING) {
+                        observationSampler.resetObservationSequence();
+                    } else {
+                        observationSampler.incrementAccumulatedSamples();
+                    }
+
+                    if (this.verbose) System.out.println("Episode " + i + ".");
+                    if (this.verbose) System.out.println("Performance on unknown MDP (J): " + currentResults[1]);
+                    if (this.verbose) System.out.println("Performance Guarantee on learned UMDP (J̃): " + currentResults[0]);
+                    if (this.verbose) System.out.println();
+
+                    results.add(new DataPoint(samples, i + 1, System.nanoTime() - startTime, currentResults));
+
+                    if(false) {
+                        results.add(new DataPoint(samples, i + 1, System.nanoTime() - startTime, currentResults));
+                        estimates.add(estimator.getEstimate());
+                    }
+                }
+            }
+
+            return new Pair(results, estimates);
+        } catch (PrismException e) {
+            System.out.println("Error: " + e.getMessage());
+            System.exit(1);
+        }
+        prism.closeDown();
+        return null;
+    }
+
+    public String makeLabel(Experiment ex) {
+        return String.format("%s_%s_%s_%s", ex.model.toString(), ex.factored ? "factored" : "unfactored", ex.tieParameters, ex.compositionType);
+    }
+
+    // Creates the directory path for dumping experimental results
+    public String makeOutputDirectory(Experiment ex) {
+        String outputPath = String.format("plotting/results/parametric_convex/%s/%s/%s/", ex.model.toString(), ex.parameterValues, ex.seed);
+        try {
+            Files.createDirectories(Paths.get(outputPath));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return outputPath;
+    }
+}

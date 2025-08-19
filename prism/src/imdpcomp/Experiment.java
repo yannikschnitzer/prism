@@ -2,6 +2,8 @@ package imdpcomp;
 
 import parser.Values;
 
+import java.util.ArrayList;
+
 import static explicit.ConstructModel.*;
 import static explicit.ConstructModel.CompositionType.*;
 import static imdpcomp.Experiment.ParameterTying.*;
@@ -17,9 +19,9 @@ public class Experiment {
     public String optimisticSpec;
     public Values parameterValues = new Values();
     public Values exactValues = new Values();
-    public ParameterTying tieParameters = DEPENDENCY_TYING;
-    public boolean factored = true;
-    public CompositionType compositionType = SMART;
+    public ParameterTying tieParameters = NO_TYING;
+    public boolean factored = false;
+    public CompositionType compositionType = INTERVAL_PRODUCT;
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
@@ -27,6 +29,7 @@ public class Experiment {
     public int max_episode_length = 50;
     public int multiplier = 5;
     public int maxVIIters = 2000;
+    public ArrayList<Integer> resultIterations = new ArrayList<>();
 
     public enum ParameterTying {
         NO_TYING,
@@ -54,6 +57,7 @@ public class Experiment {
         CHAIN,
         CHAIN_MULTI,
         CHAIN_MULTI_SINGLE,
+        CHAIN_CONVEX,
         DICE_2,
         DICE_3,
         HERMAN_3,
@@ -90,6 +94,10 @@ public class Experiment {
     public Experiment setExactValues(Values values) {
         this.exactValues = values;
         return this;
+    }
+
+    public boolean resultIteration(int i) {
+        return this.resultIterations.contains(i);
     }
 
     public Experiment setModel(Model model) {
@@ -343,6 +351,24 @@ public class Experiment {
                 this.parameterValues.addValue("q", 0.4);
                 this.parameterValues.addValue("r", 0.5);
                 this.parameterValues.addValue("eps", 0.02);
+            }
+
+            case CHAIN_CONVEX -> {
+                this.modelFile = "../parametric_convex_models/chain_convex.prism";
+                this.certainModelFile = "../parametric_convex_models/chain_convex.prism";
+                this.robustSpec = "Rminmax=? [F \"goal\"]";
+                this.optimisticSpec = "Rminmin=? [F \"goal\"]";
+                this.dtmcSpec = "R=? [F \"goal\"]";
+                this.spec = "Rmin=? [F \"goal\"]";
+                this.type = Type.REWARD;
+
+                this.multiplier = 2;
+                this.max_episode_length = 20;
+                this.maxVIIters = 20000;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("p", 0.1);
+                this.parameterValues.addValue("q", 0.12);
             }
 
             case DICE_2 -> {

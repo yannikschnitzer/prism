@@ -355,6 +355,38 @@ public class MAPEstimator extends Estimator {
     }
 
     /**
+     * Model check the point estimate stored in the class
+     *
+     * @return Result
+     * @throws PrismException
+     */
+    public Result modelCheckPointEstimate(UMDP<Double> estimate, boolean robust, boolean verbose) throws PrismException {
+        UMDPModelChecker mc = new UMDPModelChecker(this.prism);
+        mc.setGenStrat(true);
+        mc.setMaxIters(ex.maxVIIters);
+        mc.setTermCritParam(1e-4);
+        mc.setErrorOnNonConverge(false);
+
+        PropertiesFile pf;
+        if (robust)
+            pf = prism.parsePropertiesString(ex.robustSpec);
+        else
+            pf = prism.parsePropertiesString(ex.optimisticSpec);
+
+        ModulesFileModelGenerator<?> modelGen = ModulesFileModelGenerator.create(modulesFileIMDP, this.prism);
+        modelGen.setSomeUndefinedConstants(estimate.getConstantValues());
+        mc.setModelCheckingInfo(modelGen, pf, modelGen);
+        Result result = mc.check(estimate, pf.getProperty(0));
+
+        if (verbose) {
+            System.out.println("\nModel checking point estimate MDP:");
+            System.out.println(ex.robustSpec + " : " + result.getResultAndAccuracy());
+        }
+
+        return result;
+    }
+
+    /**
      * Model check the marginal estimate stored in the class
      */
     public Result modelCheckMarginalEstimate(boolean robust, boolean verbose) throws PrismException {

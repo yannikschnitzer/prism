@@ -114,7 +114,7 @@ public class ExperimentRunner implements Callable<Integer> {
 
     }
 
-    public static void main(String[] args) {
+    public static void ma3in(String[] args) {
         if (args.length > 0) {
             int exitCode = new CommandLine(new ExperimentRunner()).execute(args);
             System.exit(exitCode);
@@ -186,7 +186,7 @@ public class ExperimentRunner implements Callable<Integer> {
     }
 
 
-    public static void mai3n(String[] args) {
+    public static void main(String[] args) {
         ExperimentRunner experimentRunner = new ExperimentRunner();
         SolvingExperiment experiment = new SolvingExperiment(LAKE_SWARM_MULTI_SLIP);
 
@@ -206,8 +206,8 @@ public class ExperimentRunner implements Callable<Integer> {
     public void runExperimentAllTypes(SolvingExperiment experiment) throws PrismException, FileNotFoundException {
         runExperiment(experiment.setCompositonType(INTERVAL_PRODUCT));
         //runExperiment(experiment.setCompositonType(LINFINITY));
-        runExperiment(experiment.setCompositonType(SMART));
-        runExperiment(experiment.setCompositonType(VERTEX));
+       // runExperiment(experiment.setCompositonType(SMART));
+        //runExperiment(experiment.setCompositonType(VERTEX));
     }
 
     public void runExperiment(SolvingExperiment experiment) throws PrismException, FileNotFoundException {

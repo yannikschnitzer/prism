@@ -306,6 +306,11 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 		return set.size() - 1;
 	}
 
+	public Distribution<Value> getDistribution(int s, int i) {
+		return trans.get(s).get(i);
+	}
+
+
 	/**
 	 * Add a choice (distribution {@code distr}) labelled with {@code action} to state {@code s} (which must exist).
 	 * Action/distribution is only actually added if it does not already exists for state {@code s}.
