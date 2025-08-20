@@ -1,8 +1,8 @@
 mdp
 
 // Increased grid resolution (twice as large)
-const int maxX = 15;
-const int maxY = 15;
+const int maxX = 10;
+const int maxY = 10;
 
 // Main parameters: pilot response factor and adversary probability
 const double r;//   = 0.80795462532; // pilot response factor for intended one-cell move
@@ -10,15 +10,15 @@ const double p;//   = 0.2;          // adversary probability for intended one-ce
 
 // Additional parameters for overshooting (for [up] and [down])
 // These probabilities must be at least as large as eps so that lower bounds remain non-negative.
-const double d2 = 0.1;  // probability for a two-cell overshoot
-const double d3 = 0.05; // probability for a three-cell overshoot
+const double d2;  // probability for a two-cell overshoot
+const double d3; // probability for a three-cell overshoot
 // Then the probability for no altitude change is: 1 - (r + d2 + d3).
 
 // Additional parameters for drift in the [stay] action.
 // Drift upward or downward by 1, 2, or 3 cells.
-const double drift1 = 0.05;
-const double drift2 = 0.05;
-const double drift3 = 0.05;
+const double drift1;
+const double drift2;
+const double drift3;
 // The remaining probability for no drift is: 1 - 2*(drift1+drift2+drift3) = 0.70.
 
 // Update collision conditions (doubling the thresholds)

@@ -51,9 +51,12 @@ public class UDistribributionParametricConvex<Value> implements UDistribution<Va
             this.pd = ParametricDistribution.extractParametricDistribution(pdist);
             if (pdist.size() <= 1) return; // trivial case handled in mvMultUnc
 
-            buildSuccessorTerms(); // always needed
+            // always needed
 
             if (shared != null && shared.complete) {
+
+                buildSuccessorTerms();
+
                 this.vertexCount = shared.vertexCount;
                 this.succCount = pd.size;
                 this.Pflat = new double[vertexCount * succCount];

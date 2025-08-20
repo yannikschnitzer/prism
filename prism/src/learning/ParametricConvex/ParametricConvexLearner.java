@@ -136,7 +136,7 @@ public class ParametricConvexLearner {
 
         ParametricConvexLearner parametricConvexLearner = new ParametricConvexLearner(new Prism(new PrismDevNullLog()));
         parametricConvexLearner.initializePrism();
-        Experiment ex = new Experiment(Experiment.Model.CHAIN_CONVEX);
+        Experiment ex = new Experiment(Experiment.Model.BETTING_GAME_CONVEX);
         MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
         System.out.println(pmdp);
 
@@ -153,7 +153,7 @@ public class ParametricConvexLearner {
 
     public MDPSimple<Function> buildParamModel(Experiment experiment) {
         try {
-            ModulesFile modulesFile = this.prism.parseModelFile(new File(experiment.modelFile));
+            ModulesFile modulesFile = this.prism.parseModelFile(new File(experiment.certainModelFile));
             prism.loadPRISMModel(modulesFile);
 
             List<String> namesList = experiment.parameterValues.getNames();
@@ -199,7 +199,7 @@ public class ParametricConvexLearner {
                 "\n%------");
 
         try {
-            ModulesFile modulesFile = prism.parseModelFile(new File(ex.modelFile));
+            ModulesFile modulesFile = prism.parseModelFile(new File(ex.certainModelFile));
             prism.loadPRISMModel(modulesFile);
 
             ex.parameterValues = parameterValuation;

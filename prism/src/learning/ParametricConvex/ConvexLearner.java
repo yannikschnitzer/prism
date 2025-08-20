@@ -6,10 +6,12 @@ import explicit.*;
 import param.Function;
 import param.FunctionFactory;
 import prism.Evaluator;
+import prism.Pair;
 import prism.PrismException;
 import prism.PrismSettings;
 
 import java.util.BitSet;
+import java.util.HashMap;
 
 public class ConvexLearner {
 
@@ -19,6 +21,9 @@ public class ConvexLearner {
     private MDPSimple<Function> mdpParam;
 
     private ExpressionTranslator trans;
+
+    private HashMap<String, Pair<GRBLinExpr, Double>> constrLowerBounds = new HashMap<>();
+    private HashMap<String, Pair<GRBLinExpr, Double>> constrUpperBounds = new HashMap<>();
 
     // add at top with other fields:
     private SharedVertexSet sharedVertices;     // null if not precomputed or cap exceeded
@@ -166,19 +171,40 @@ public class ConvexLearner {
                     for (int i : idist.getSupport()) {
                         GRBLinExpr exp = trans.translateLinearExpression(pdist.get(i).asExpression());
                         //model.addRange(exp, idist.get(i).getLower(), idist.get(i).getUpper(), null);
-                        model.addConstr(exp, GRB.GREATER_EQUAL, idist.get(i).getLower(), null);
-                        model.addConstr(exp, GRB.LESS_EQUAL, idist.get(i).getUpper(), null);
+
+//                        model.addConstr(exp, GRB.GREATER_EQUAL, idist.get(i).getLower(), null);
+//                        model.addConstr(exp, GRB.LESS_EQUAL, idist.get(i).getUpper(), null);
+                        model.update();
+                        String exprString = ExpressionTranslator.formatGRBExpression(exp);
+
+                        double lower = 0.0;
+                        double upper = 1.0;
+                        if (constrUpperBounds.containsKey(exprString)) {
+                            lower = Math.max(idist.get(i).getLower(), constrLowerBounds.get(exprString).second);
+                            upper = Math.min(idist.get(i).getUpper(), constrUpperBounds.get(exprString).second);
+                        }
+
+                        constrLowerBounds.put(exprString, new Pair<>(exp, lower));
+                        constrUpperBounds.put(exprString, new Pair<>(exp, upper));
                     }
                 } else {
                     throw new PrismException("Only Interval MDPs supported.");
                 }
             }
         }
+
+        for (String expString : constrLowerBounds.keySet()) {
+            GRBLinExpr exp = constrLowerBounds.get(expString).first;
+
+            model.addConstr(exp, GRB.GREATER_EQUAL, constrLowerBounds.get(expString).second, null);
+            model.addConstr(exp, GRB.LESS_EQUAL, constrUpperBounds.get(expString).second, null);
+        }
     }
 
     // Call this after you have added all constraints (i.e., after setConstraints + model.update)
     public void precomputeVertices() throws GRBException {
         model.update(); // ensure model is finalized
+        System.out.println("Enumerating Vertices");
         SharedVertexSet sv = SharedVertexSet.fromModel(model, 1e-9, vertexCap);
         if (sv.complete) {
             System.out.println("Precomputed vertices: " + sv.vertexCount);

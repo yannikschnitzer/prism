@@ -68,7 +68,8 @@ public class Experiment {
         STOCK_TRADING_3_2,
         STOCK_TRADING_2_3,
         STOCK_TRADING_3_3,
-        SYSADMIN
+        SYSADMIN,
+        BETTING_GAME_CONVEX
     }
 
     public enum Type {
@@ -119,6 +120,11 @@ public class Experiment {
                 this.parameterValues.addValue("p",0.2);
                 this.parameterValues.addValue("maxX",15);
                 this.parameterValues.addValue("maxY",15);
+                this.parameterValues.addValue("d2",0.1);
+                this.parameterValues.addValue("d3",0.05);
+                this.parameterValues.addValue("drift1",0.05);
+                this.parameterValues.addValue("drift2",0.05);
+                this.parameterValues.addValue("drift3",0.05);
             }
 
             case AIRCRAFT_MULTI_SLIP -> {
@@ -369,6 +375,23 @@ public class Experiment {
                 // Set Parameter Values
                 this.parameterValues.addValue("p", 0.1);
                 this.parameterValues.addValue("q", 0.12);
+            }
+
+            case BETTING_GAME_CONVEX -> {
+                this.modelFile = "../parametric_convex_models/bet_fav.prism";
+                this.certainModelFile = "../parametric_convex_models/bet_fav.prism";
+                this.robustSpec = "Rmaxmin=? [F \"done\"]";
+                this.optimisticSpec = "Rmaxmax=? [F \"done\"]";
+                this.dtmcSpec = "R=? [F \"done\"]";
+                this.spec = "Rmax=? [F \"done\"]";
+                this.type = Type.REWARD;
+
+                this.multiplier = 2;
+                this.max_episode_length = 20;
+                this.maxVIIters = 20000;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("p", 0.55);
             }
 
             case DICE_2 -> {

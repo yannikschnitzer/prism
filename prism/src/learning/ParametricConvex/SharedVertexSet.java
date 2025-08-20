@@ -89,6 +89,7 @@ public final class SharedVertexSet {
                     verts.add(x.clone());
                     if (verts.size() > cap) {
                         // cap exceeded: tell caller not to use vertices
+                        System.out.println("Cap Exceeded");
                         return new SharedVertexSet(null, verts.size(), n, false);
                     }
                 }

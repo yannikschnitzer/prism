@@ -1,12 +1,14 @@
 package learning.Estimators;
 
 import com.gurobi.gurobi.GRB;
+import com.gurobi.gurobi.GRBConstr;
 import com.gurobi.gurobi.GRBEnv;
 import com.gurobi.gurobi.GRBException;
 import common.Interval;
 import explicit.*;
 import imdpcomp.Experiment;
 import learning.ParametricConvex.ConvexLearner;
+import learning.ParametricConvex.ExpressionTranslator;
 import learning.Simulation.StateActionPair;
 import learning.Simulation.TransitionTriple;
 import org.apache.commons.math3.analysis.UnivariateFunction;
@@ -27,6 +29,7 @@ public class PACConvexEstimator extends MAPEstimator {
 
     protected double error_tolerance;
     double precision = 1e-8;
+    boolean useVertexPrecomp = true;
 
     // For parameter-tying in IMDP
     protected HashMap<TransitionTriple, Double> tiedModes = new HashMap<>();
@@ -105,6 +108,7 @@ public class PACConvexEstimator extends MAPEstimator {
         // Solve Convex Parametric MDP
         try {
             startTime = System.nanoTime();
+            System.out.println("Building Convex UMDP");
             UMDP<Double> convex_mdp = buildConvexUMDP(imdp, this.pmdp);
             modelBuildingTime = System.nanoTime() - startTime;
 
@@ -205,12 +209,15 @@ public class PACConvexEstimator extends MAPEstimator {
         cxl.setParamModel(pmdp);
         cxl.setConstraints(imdp);
         cxl.getModel().update();
-        cxl.setVertexCap(10000);
-        cxl.precomputeVertices();
 
-//        for (GRBConstr con : cxl.getModel().getConstrs()) {
-//            System.out.println(ExpressionTranslator.formatGBRConstraint(cxl.getModel(),con));
-//        }
+        if (useVertexPrecomp) {
+            cxl.setVertexCap(10000);
+            cxl.precomputeVertices();
+        }
+
+        for (GRBConstr con : cxl.getModel().getConstrs()) {
+            System.out.println(ExpressionTranslator.formatGBRConstraint(cxl.getModel(),con));
+        }
 
         UMDPSimple<Double> convex_mdp = cxl.getUMDP();
         convex_mdp.addInitialState(pmdp.getFirstInitialState());
