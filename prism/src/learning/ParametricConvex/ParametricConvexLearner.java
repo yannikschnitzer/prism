@@ -8,9 +8,7 @@ import common.Interval;
 import explicit.*;
 import learning.Data.DataPoint;
 import learning.Data.DataProcessor;
-import learning.Estimators.Estimator;
-import learning.Estimators.EstimatorConstructor;
-import learning.Estimators.PACConvexEstimatorOptimistic;
+import learning.Estimators.*;
 import learning.ParameterTyer;
 import learning.Simulation.ObservationSampler;
 import learning.Simulation.TransitionTriple;
@@ -41,7 +39,7 @@ public class ParametricConvexLearner {
         this.prism = prism;
     }
 
-    public static void main(String[] args) throws GRBException, PrismException {
+    public static void main_old(String[] args) throws GRBException, PrismException {
         PrismSettings settings = new PrismSettings();
         FunctionFactory fact = FunctionFactory.create(new String[]{"p","q"}, new String[]{"0","0"}, new String[]{"1","1"}, settings);
 
@@ -141,6 +139,22 @@ public class ParametricConvexLearner {
         System.out.println(pmdp);
 
         parametricConvexLearner.learnIMDP(ex, PACConvexEstimatorOptimistic::new, pmdp, ex.parameterValues, true);
+    }
+
+    public static void main(String[] args) throws GRBException, PrismException {
+        ParametricConvexLearner parametricConvexLearner = new ParametricConvexLearner(new Prism(new PrismDevNullLog()));
+        parametricConvexLearner.initializePrism();
+
+        Experiment ex = new Experiment(Experiment.Model.BETTING_GAME_CONVEX).setParametricConvex(true);
+
+        MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
+//        System.out.println(pmdp);
+
+        parametricConvexLearner.learnIMDP(ex,
+                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+                pmdp,
+                ex.parameterValues,
+                true);
     }
 
     @SuppressWarnings("unchecked")
@@ -304,7 +318,7 @@ public class ParametricConvexLearner {
     }
 
     public String makeLabel(Experiment ex) {
-        return String.format("%s_%s_%s_%s", ex.model.toString(), ex.factored ? "factored" : "unfactored", ex.tieParameters, ex.compositionType);
+        return String.format("%s_%s_%s", ex.model.toString(), ex.useParametricConvex ? "PARCONVEX" : "IMDP", ex.tieParameters);
     }
 
     // Creates the directory path for dumping experimental results

@@ -30,6 +30,7 @@ public class Experiment {
     public int multiplier = 5;
     public int maxVIIters = 20000;
     public ArrayList<Integer> resultIterations = new ArrayList<>();
+    public boolean useParametricConvex = true;
 
     public enum ParameterTying {
         NO_TYING,
@@ -94,6 +95,11 @@ public class Experiment {
 
     public Experiment setExactValues(Values values) {
         this.exactValues = values;
+        return this;
+    }
+
+    public Experiment setParametricConvex(boolean useParametricConvex) {
+        this.useParametricConvex = useParametricConvex;
         return this;
     }
 
@@ -387,7 +393,7 @@ public class Experiment {
                 this.type = Type.REWARD;
 
                 this.multiplier = 2;
-                this.max_episode_length = 20;
+                this.max_episode_length = 10;
                 this.maxVIIters = 20000;
 
                 // Set Parameter Values

@@ -131,13 +131,13 @@ public class PACConvexEstimator extends MAPEstimator {
         double resultConvexOptimisticDTMC = round((Double) checkDTMC(optimisticStrat).getResult());
 
         // Model Check IMDP for comparison. TODO: delete and move to proper comparison
-        Result resultRobustIMDP = modelCheckPointEstimate(imdp,true, false);
-        double resRobustIMDP = round((Double) resultRobustIMDP.getResult());
-        MDStrategy<Double> robustIMDPStrat = (MDStrategy<Double>) resultRobustIMDP.getStrategy();
-        double resultRobustDTMC = round((Double) checkDTMC(robustIMDPStrat).getResult());
+//        Result resultRobustIMDP = modelCheckPointEstimate(imdp,true, false);
+//        double resRobustIMDP = round((Double) resultRobustIMDP.getResult());
+//        MDStrategy<Double> robustIMDPStrat = (MDStrategy<Double>) resultRobustIMDP.getStrategy();
+//        double resultRobustDTMC = round((Double) checkDTMC(robustIMDPStrat).getResult());
 
         System.out.println("Convex Guarantee: " + resconvexMDP + ", Convex Performance: " + resconvexDTMC);
-        System.out.println("IMDP Guarantee: " + resRobustIMDP + ", IMDP Performance: " + resultRobustDTMC);
+       // System.out.println("IMDP Guarantee: " + resRobustIMDP + ", IMDP Performance: " + resultRobustDTMC);
 
         return new double[]{resconvexMDP, resconvexDTMC, resultConvexOptimisticDTMC, modelBuildingTime, modelCheckingTimeRobust, modelCheckingTimeOptimistic, modelCheckingTimeDTMC};
     }
