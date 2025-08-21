@@ -1,0 +1,20 @@
+mdp
+
+const int N = 6;         // machines
+const double p;      // fail prob per healthy machine per slot
+const double q;      // repair prob per failed machine per slot
+
+module sysadmin
+  x : [0..N] init 0; // number failed
+
+  [a] true ->
+     (N - x)*p : (x' = min(x+1, N))
+   + x*q       : (x' = max(x-1, 0))
+   + (1 - (N - x)*p - x*q) : (x' = x);
+endmodule
+
+rewards
+	[a] true : 1;
+endrewards
+
+label "fail" = x >= 6;

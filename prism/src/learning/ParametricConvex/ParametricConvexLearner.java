@@ -145,7 +145,7 @@ public class ParametricConvexLearner {
         ParametricConvexLearner parametricConvexLearner = new ParametricConvexLearner(new Prism(new PrismDevNullLog()));
         parametricConvexLearner.initializePrism();
 
-        Experiment ex = new Experiment(Experiment.Model.BETTING_GAME_CONVEX).setParametricConvex(true);
+        Experiment ex = new Experiment(Experiment.Model.BETTING_GAME_CONVEX).setParametricConvex(false);
 
         MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
 //        System.out.println(pmdp);

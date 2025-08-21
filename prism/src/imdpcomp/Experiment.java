@@ -19,7 +19,7 @@ public class Experiment {
     public String optimisticSpec;
     public Values parameterValues = new Values();
     public Values exactValues = new Values();
-    public ParameterTying tieParameters = NO_TYING;
+    public ParameterTying tieParameters = FULL_TYING;
     public boolean factored = false;
     public CompositionType compositionType = INTERVAL_PRODUCT;
     public double error_tolerance = 0.999;
@@ -70,7 +70,8 @@ public class Experiment {
         STOCK_TRADING_2_3,
         STOCK_TRADING_3_3,
         SYSADMIN,
-        BETTING_GAME_CONVEX
+        BETTING_GAME_CONVEX,
+        SYSADMIN_CONVEX
     }
 
     public enum Type {
@@ -273,6 +274,24 @@ public class Experiment {
                 this.parameterValues.addValue("N", N);
                 this.parameterValues.addValue("p0", 0.1);
                 this.parameterValues.addValue("p1", 0.6);
+            }
+
+            case SYSADMIN_CONVEX -> {
+                int N = 10;
+
+                this.modelFile = String.format("../parametric_convex_models/sys_admin.prism");
+                this.certainModelFile = String.format("../parametric_convex_models/sys_admin.prism");
+                this.robustSpec = "Rmaxmin=? [ F \"fail\" ]";
+                this.optimisticSpec = "Rmaxmax=? [ F \"fail\" ]";
+                this.dtmcSpec = "R=? [ F \"fail\" ]";
+                this.spec = "Rmax=? [ F \"fail\" ]";
+                this.type = Type.REWARD;
+
+                this.max_episode_length = 100;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("p", 0.04);
+                this.parameterValues.addValue("q", 0.05);
             }
 
 

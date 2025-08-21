@@ -177,11 +177,11 @@ public class ConvexLearner {
                         model.update();
                         String exprString = ExpressionTranslator.formatGRBExpression(exp);
 
-                        double lower = 0.0;
-                        double upper = 1.0;
+                        double lower = idist.get(i).getLower();
+                        double upper = idist.get(i).getUpper();
                         if (constrUpperBounds.containsKey(exprString)) {
-                            lower = Math.max(idist.get(i).getLower(), constrLowerBounds.get(exprString).second);
-                            upper = Math.min(idist.get(i).getUpper(), constrUpperBounds.get(exprString).second);
+                            lower = Math.max(lower, constrLowerBounds.get(exprString).second);
+                            upper = Math.min(upper, constrUpperBounds.get(exprString).second);
                         }
 
                         constrLowerBounds.put(exprString, new Pair<>(exp, lower));
