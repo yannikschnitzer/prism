@@ -229,4 +229,27 @@ public class ConvexLearner {
         }
         return convexUMDP;
     }
+
+    public static void printModel(GRBModel model) throws GRBException {
+        model.update();
+
+        System.out.println("-------------");
+        System.out.println("Variables:");
+        GRBVar[] vars = model.getVars();
+        for (GRBVar v : vars) {
+            String name = v.get(GRB.StringAttr.VarName);
+            double lb = v.get(GRB.DoubleAttr.LB);
+            double ub = v.get(GRB.DoubleAttr.UB);
+            boolean fixed = Math.abs(lb - ub) < 1e-9;
+            System.out.println("Name: " + name + ", LB: " + lb + ", UB: " + ub + ", Fixed: " + fixed);
+        }
+        System.out.println("-------------");
+
+        System.out.println("Constraints:");
+        for (GRBConstr con : model.getConstrs()) {
+            System.out.println(ExpressionTranslator.formatGBRConstraint(model,con));
+        }
+        System.out.println("-------------");
+
+    }
 }

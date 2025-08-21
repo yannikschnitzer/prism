@@ -10,7 +10,9 @@ import prism.PrismException;
 import prism.PrismLangException;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,6 +25,7 @@ public class ExpressionTranslator {
     private final GRBModel model; // Gurobi model to which constraints are added
     private final Map<String, GRBVar> variableMap; // Map to store or retrieve variables by name
     private final Map<Double, GRBVar> constantMap;
+    private final Map<String, GRBVar> replacementMap; // Store replacement variables for non-linear sub-expressions
 
     /**
      * Constructor for ExpressionTranslator.
@@ -33,6 +36,7 @@ public class ExpressionTranslator {
         this.model = model;
         this.variableMap = new HashMap<>();
         this.constantMap = new HashMap<>();
+        this.replacementMap = new HashMap<>();
     }
 
     /**
@@ -71,6 +75,16 @@ public class ExpressionTranslator {
         });
     }
 
+    public GRBVar getOrCreateReplacement(String name) {
+        return variableMap.computeIfAbsent(name, key -> {
+            try {
+                return model.addVar(-GRB.INFINITY, GRB.INFINITY, 0.0, GRB.CONTINUOUS, name);
+            } catch (GRBException e) {
+                throw new RuntimeException(e);
+            }
+        }); // Default lower bound is 0
+    }
+
     /**
      * Translates a PRISM-style linear expression into a Gurobi Expression.
      *
@@ -80,7 +94,19 @@ public class ExpressionTranslator {
      */
     public GRBLinExpr translateLinearExpression(parser.ast.Expression prismExpression) throws PrismException {
         GRBLinExpr linearConstraint = new GRBLinExpr(); // Create a new Gurobi Expression
+ //       System.out.println("Translating linear expression: " + prismExpression);
         doTranslate(prismExpression, linearConstraint, 1.0); // Translate the PRISM expression recursively
+//        try {
+//            model.update();
+//        } catch (GRBException e) {
+//            throw new RuntimeException(e);
+//        }
+//        try {
+//            System.out.println("Linear expression translated to: " + formatGRBExpression(linearConstraint));
+//        } catch (GRBException e) {
+//            throw new RuntimeException(e);
+//        }
+
         return linearConstraint;
     }
 
@@ -122,6 +148,13 @@ public class ExpressionTranslator {
 
                     GRBVar variable = getOrCreateVariable(right.getName());
                     linearConstraint.addTerm(coefficient, variable);
+                } else if (op.getOperand1() instanceof ExpressionConstant left && op.getOperand2() instanceof ExpressionConstant right) {
+//                    GRBVar variable = getOrCreateReplacement(left.getName() + "_" + right.getName());
+//                    linearConstraint.addTerm(multiplier, variable);
+                    throw new PrismException("Unsupported constraint type"); // TODO: handle this with McCormick
+                } else if (op.getOperand1() instanceof ExpressionBinaryOp left || op.getOperand2() instanceof ExpressionBinaryOp right) {
+                    doTranslate(op.getOperand1(), linearConstraint, multiplier);
+                    doTranslate(op.getOperand2(), linearConstraint, multiplier);
                 } else {
                     throw new PrismException("Unsupported constraint type");
                 }
@@ -131,7 +164,53 @@ public class ExpressionTranslator {
             } else if (op.getOperator() == ExpressionBinaryOp.MINUS) {
                 doTranslate(op.getOperand1(), linearConstraint, multiplier);
                 doTranslate(op.getOperand2(), linearConstraint, -multiplier);
-            } else {
+            } else if (op.getOperator() == ExpressionBinaryOp.POW) {
+//                GRBVar variable = getOrCreateReplacement(op.getOperand1().toString() + "_" + op.getOperand2().toString());
+//                linearConstraint.addTerm(multiplier, variable);
+                throw new PrismException("Unsupported constraint type"); // TODO: handle this with McCormick
+            } else if (op.getOperator() == ExpressionBinaryOp.DIVIDE) {
+                if (op.getOperand1() instanceof ExpressionLiteral left && op.getOperand2() instanceof ExpressionLiteral right) {
+                    double leftval;
+                    double rightval;
+
+                    if (left.getValue() instanceof BigRational val) {
+                        leftval = val.doubleValue();
+                    } else if (left.getValue() instanceof BigInteger val) {
+                        leftval = val.doubleValue();
+                    } else {
+                        throw new PrismException("Unsupported value type:" + left.getType());
+                    }
+
+                    if (right.getValue() instanceof BigRational val) {
+                        rightval = val.doubleValue();
+                    } else if (right.getValue() instanceof BigInteger val) {
+                        rightval = val.doubleValue();
+                    } else {
+                        throw new PrismException("Unsupported value type:" + right.getType());
+                    }
+
+                    double value = leftval / rightval;
+                    GRBVar constant = getOrCreateConstant(value);
+                    linearConstraint.addTerm(multiplier, constant);
+                } else if (op.getOperand2() instanceof ExpressionLiteral right) {
+                        double denom;
+
+                        if (right.getValue() instanceof BigRational val) {
+                            denom = val.doubleValue();
+                        } else if (right.getValue() instanceof BigInteger val) {
+                            denom = val.doubleValue();
+                        } else {
+                            throw new PrismException("Unsupported value type:" + right.getType());
+                        }
+
+                        doTranslate(op.getOperand1(), linearConstraint, multiplier / denom);
+                } else {
+//                    GRBVar variable = getOrCreateReplacement(op.getOperand1().toString() + "_" + op.getOperand2().toString());
+//                    linearConstraint.addTerm(multiplier, variable);
+                    throw new PrismException("Unsupported constraint type"); // TODO: handle this
+                }
+            }
+            else {
                 throw new PrismException("Unsupported operand type: " + op.getOperatorSymbol());
             }
         } else if (prismExpression instanceof ExpressionUnaryOp op) {

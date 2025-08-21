@@ -1,7 +1,7 @@
 mdp
 
 
-const int n = 8;
+const int n = 30;
 const double p;
 module bet
 
@@ -10,9 +10,9 @@ module bet
  
 	[bet0]  steps < n & money >= 0 -> 1 : (money'=money) & (steps'=steps+1);
 	[bet1]  steps < n & money >= 1 & money <= n*10 -> p : (money'=money+1) & (steps'=steps+1) + 1 - p : (money'=money-1) & (steps'=steps+1);
-	[bet2]  steps < n & money >= 2 & money <= n*10 -> p : (money'=money+2) & (steps'=steps+1) + 1 - p : (money'=money-2) & (steps'=steps+1);
-	[bet5]  steps < n & money >= 5 & money <= n*10 -> p : (money'=money+5) & (steps'=steps+1) + 1 - p: (money'=money-5) & (steps'=steps+1);
-	[bet10] steps < n & money >=10 & money <= n*10 -> p : (money'=money+10) & (steps'=steps+1) + 1 - p : (money'=money-10) & (steps'=steps+1);
+	[bet2]  steps < n & money >= 2 & money <= n*10 -> p + 0.1 : (money'=money+2) & (steps'=steps+1) + 1 - p - 0.1: (money'=money-2) & (steps'=steps+1);
+	[bet5]  steps < n & money >= 5 & money <= n*10 -> p + 0.05 : (money'=money+5) & (steps'=steps+1) + 1 - p - 0.05: (money'=money-5) & (steps'=steps+1);
+	[bet10] steps < n & money >=10 & money <= n*10 -> (1/2) * p + 0.3 : (money'=money+10) & (steps'=steps+1) + 1 - (1/2) * p - 0.3 : (money'=money-10) & (steps'=steps+1);
 
 	[end] steps = n -> 1: (steps'=n+1);
 	[end] steps = n+1 -> 1: true;

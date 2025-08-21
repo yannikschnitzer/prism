@@ -1,9 +1,6 @@
 package learning.Estimators;
 
-import com.gurobi.gurobi.GRB;
-import com.gurobi.gurobi.GRBConstr;
-import com.gurobi.gurobi.GRBEnv;
-import com.gurobi.gurobi.GRBException;
+import com.gurobi.gurobi.*;
 import common.Interval;
 import explicit.*;
 import imdpcomp.Experiment;
@@ -215,9 +212,8 @@ public class PACConvexEstimator extends MAPEstimator {
             cxl.precomputeVertices();
         }
 
-        for (GRBConstr con : cxl.getModel().getConstrs()) {
-            System.out.println(ExpressionTranslator.formatGBRConstraint(cxl.getModel(),con));
-        }
+        // Printing Model
+        ConvexLearner.printModel(cxl.getModel());
 
         UMDPSimple<Double> convex_mdp = cxl.getUMDP();
         convex_mdp.addInitialState(pmdp.getFirstInitialState());

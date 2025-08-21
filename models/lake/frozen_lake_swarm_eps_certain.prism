@@ -1,14 +1,14 @@
 mdp
 
-const int M = 6;
-const int N = 10;
+const int M = 15;
+const int N = 15;
 const double p;
 
-formula goal = 1<=r1 & r1<=2 & 2<=c1 & c1<=3 & 1<=r2 & r2<=4 & 3<=c2 & c2<=4;
+formula goal = 1<=r1 & r1<=2 & 2<=c1 & c1<=3; //& 1<=r2 & r2<=4 & 3<=c2 & c2<=4;
 
 module grid1
   r1 : [0..M-1] init M-1;
-  c1 : [0..N-1] init 0;
+  c1 : [0..N-1] init N-3;
 
   [n] r1<M-1 & c1>0 & c1<N-1 -> p : (r1'=r1+1) & (c1'=c1) +
                              p : (r1'=r1) & (c1'=c1-1) + 1-2*p : (r1'=r1) & (c1'=c1+1);
@@ -54,8 +54,6 @@ module grid1
   [w] r1=0 & c1=0           -> 1-p : (r1'=r1) & (c1'=c1) + p : (r1'=r1+1) & (c1'=c1);
   [w] r1=M-1 & c1=0         -> 1-p : (r1'=r1) & (c1'=c1) + p : (r1'=r1-1) & (c1'=c1);
 endmodule
-
-module grid2=grid1[r1=r2,c1=c2] endmodule
 
 rewards
   [n] true : 1;
