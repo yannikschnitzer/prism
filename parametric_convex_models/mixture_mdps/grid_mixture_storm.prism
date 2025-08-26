@@ -1,0 +1,92 @@
+mdp
+
+// --- grid + goal (no wrapping) ---
+const int M = 10;                 // width  (0..M-1)
+const int N = 10;                 // height (0..N-1)
+const int Gx = 9;                 // goal x
+const int Gy = 9;                 // goal y
+
+// --- mixture weights ---
+const double theta1;              // pass via -const
+const double theta2;
+formula theta3 = 1 - theta1 - theta2;
+
+// --- regime drift parameters (choose so sums stay <= 1) ---
+const double de1 = 0.18; const double dw1 = 0.14; const double dn1 = 0.12; const double ds1 = 0.13;
+const double de2 = 0.04; const double dw2 = 0.15; const double dn2 = 0.16; const double ds2 = 0.17;
+const double de3 = 0.09; const double dw3 = 0.1; const double dn3 = 0.125; const double ds3 = 0.03;
+
+// mixture drift probabilities (affine in theta)
+formula pE = theta1*de1 + theta2*de2 + theta3*de3; // drift East
+formula pW = theta1*dw1 + theta2*dw2 + theta3*dw3; // drift West
+formula pN = theta1*dn1 + theta2*dn2 + theta3*dn3; // drift North
+formula pS = theta1*ds1 + theta2*ds2 + theta3*ds3; // drift South
+formula pI = 1 - (pE + pW + pN + pS);              // intended move  (ensure >=0)
+
+// --- costs ---
+const double dash_cost = 0.5;     // extra cost when using a dash action
+const double storm_cost = 2.0;    // per-step penalty in storm zone
+
+// --- hazard ("storm") zone: a central 4x4 square for example ---
+formula in_storm = (x>=3 & x<=6 & y>=3 & y<=6);
+
+module grid
+  // agent position; start at (0,0)
+  x : [0..M-1] init 0;
+  y : [0..N-1] init 0;
+
+  // ---------- regular moves (1 cell intended) ----------
+  [north] true ->
+     pE : (x' = min(x+1, M-1)) & (y' = y) +
+     pW : (x' = max(x-1, 0))   & (y' = y) +
+     pN : (x' = x)             & (y' = max(y-1, 0)) +
+     pS : (x' = x)             & (y' = min(y+1, N-1)) +
+     pI : (x' = x)             & (y' = max(y-1, 0));
+
+  [south] true ->
+     pE : (x' = min(x+1, M-1)) & (y' = y) +
+     pW : (x' = max(x-1, 0))   & (y' = y) +
+     pN : (x' = x)             & (y' = max(y-1, 0)) +
+     pS : (x' = x)             & (y' = min(y+1, N-1)) +
+     pI : (x' = x)             & (y' = min(y+1, N-1));
+
+  [east] true ->
+     pE : (x' = min(x+1, M-1)) & (y' = y) +
+     pW : (x' = max(x-1, 0))   & (y' = y) +
+     pN : (x' = x)             & (y' = max(y-1, 0)) +
+     pS : (x' = x)             & (y' = min(y+1, N-1)) +
+     pI : (x' = min(x+1, M-1)) & (y' = y);
+
+  [west] true ->
+     pE : (x' = min(x+1, M-1)) & (y' = y) +
+     pW : (x' = max(x-1, 0))   & (y' = y) +
+     pN : (x' = x)             & (y' = max(y-1, 0)) +
+     pS : (x' = x)             & (y' = min(y+1, N-1)) +
+     pI : (x' = max(x-1, 0))   & (y' = y);
+
+  // ---------- dash moves (2 cells intended; cost applied below) ----------
+  [dash_north] true ->
+     pE : (x' = min(x+1, M-1)) & (y' = y) +
+     pW : (x' = max(x-1, 0))   & (y' = y) +
+     pN : (x' = x)             & (y' = max(y-1, 0)) +
+     pS : (x' = x)             & (y' = min(y+1, N-1)) +
+     pI : (x' = x)             & (y' = max(y-2, 0));
+
+  [dash_east] true ->
+     pE : (x' = min(x+1, M-1)) & (y' = y) +
+     pW : (x' = max(x-1, 0))   & (y' = y) +
+     pN : (x' = x)             & (y' = max(y-1, 0)) +
+     pS : (x' = x)             & (y' = min(y+1, N-1)) +
+     pI : (x' = min(x+2, M-1)) & (y' = y);
+endmodule
+
+label "goal" = (x = Gx & y = Gy);
+
+// ---------- rewards ----------
+// per-step cost: 1 everywhere, + storm penalty inside hazard, until goal
+rewards "total_cost"
+  (x != Gx | y != Gy) & in_storm : 1 + storm_cost;
+  (x != Gx | y != Gy) & !in_storm : 1;
+  [dash_north] true : dash_cost;
+  [dash_east]  true : dash_cost;
+endrewards

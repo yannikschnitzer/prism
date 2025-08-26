@@ -42,44 +42,35 @@ public class UDistribributionParametricConvex<Value> implements UDistribution<Va
                                             GRBModel model,
                                             ExpressionTranslator trans,
                                             SharedVertexSet shared) {
-        this.pdist = pdist;
-        this.model = model;
-        this.trans = trans;
-        this.shared = shared;
-
+        this.pdist = pdist; this.model = model; this.trans = trans; this.shared = shared;
         try {
             this.pd = ParametricDistribution.extractParametricDistribution(pdist);
-            if (pdist.size() <= 1) return; // trivial case handled in mvMultUnc
+            if (pdist.size() <= 1) return;
 
-            // always needed
+            buildSuccessorTermsReduced(); // NEW
 
             if (shared != null && shared.complete) {
-
-                buildSuccessorTerms();
-
                 this.vertexCount = shared.vertexCount;
                 this.succCount = pd.size;
                 this.Pflat = new double[vertexCount * succCount];
 
-                // Evaluate each successor expression at each vertex
+                // evaluate p_i at each reduced-space vertex
                 for (int v = 0; v < vertexCount; v++) {
                     int base = v * succCount;
-                    int off = v * shared.nVars;
+                    int off = v * shared.nFree;
                     for (int i = 0; i < succCount; i++) {
                         double s = termConst[i];
                         int[] idx = termCols[i];
                         double[] cf = termCoeff[i];
                         for (int k = 0; k < idx.length; k++) {
-                            s += cf[k] * shared.Vflat[off + idx[k]];
+                            s += cf[k] * shared.Vflat[off + idx[k]]; // idx[k] is reduced column
                         }
                         Pflat[base + i] = s;
                     }
                 }
                 this.useVertices = true;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        } catch (Exception e) { throw new RuntimeException(e); }
     }
 
     // ------- existing UDistribution methods (unchanged) -------
@@ -143,27 +134,36 @@ public class UDistribributionParametricConvex<Value> implements UDistribution<Va
     }
 
     // ------- successor term extraction p_i(x) = a_i^T x + c_i -------
-    private void buildSuccessorTerms() throws GRBException, PrismException {
+    private void buildSuccessorTermsReduced() throws GRBException, PrismException {
         this.succCount = pd.size;
         this.pdIndex   = new int[succCount];
         this.termCols  = new int[succCount][];
         this.termCoeff = new double[succCount][];
         this.termConst = new double[succCount];
 
-        // map var -> col using IdentityHashMap for speed
         GRBVar[] vars = model.getVars();
-        IdentityHashMap<GRBVar,Integer> var2col = new IdentityHashMap<>(vars.length * 2);
-        for (int j = 0; j < vars.length; j++) var2col.put(vars[j], j);
 
         for (int i = 0; i < succCount; i++) {
             GRBLinExpr e = trans.translateLinearExpression(pd.probs[i].asExpression(), 1.0);
 
+            // aggregate but *map to reduced columns*, folding fixed vars into constant
             HashMap<Integer, Double> map = new HashMap<>();
+            double cst = getConstantSafe(e);
+
             int sz = e.size();
             for (int k = 0; k < sz; k++) {
-                Integer j = var2col.get(e.getVar(k));
-                map.put(j, map.getOrDefault(j, 0.0) + e.getCoeff(k));
+                int j = e.getVar(k).index();     // original column
+                double coef = e.getCoeff(k);
+                int red = (shared != null) ? shared.colMap[j] : j; // if no shared, no reduction
+                if (shared != null && red == -1) {
+                    // fixed var → fold into constant
+                    double fv = shared.fixedVal[j];
+                    cst += coef * fv;
+                } else {
+                    map.put(red, map.getOrDefault(red, 0.0) + coef);
+                }
             }
+
             int nnz = map.size();
             int[] idx = new int[nnz];
             double[] cf = new double[nnz];
@@ -173,7 +173,7 @@ public class UDistribributionParametricConvex<Value> implements UDistribution<Va
 
             termCols[i]  = idx;
             termCoeff[i] = cf;
-            termConst[i] = getConstantSafe(e);
+            termConst[i] = cst;
             pdIndex[i]   = pd.index[i];
         }
     }

@@ -1,0 +1,59 @@
+mdp
+
+// --- grid + goal (no wrapping) ---
+const int M = 50;                 // width  (columns: 0..M-1)
+const int N = 50;                 // height (rows:    0..N-1)
+const int Gx = 49;                // goal x in [0..M-1]
+const int Gy = 49;                // goal y in [0..N-1]
+
+// --- mixture weights ---
+const double theta1;
+const double theta2;
+formula theta3 = 1 - theta1 - theta2;
+
+// --- regime drift parameters ---
+const double de1 = 0.15; const double dw1 = 0.12;
+const double de2 = 0.1; const double dw2 = 0.2;
+const double de3 = 0.28; const double dw3 = 0.16;
+
+// mixture drift probabilities (affine in theta)
+formula pE = theta1*de1 + theta2*de2 + theta3*de3; // east drift
+formula pW = theta1*dw1 + theta2*dw2 + theta3*dw3; // west drift
+formula pI = 1 - pE - pW;                           // intended move (ensure pE+pW<=1)
+
+module grid
+  // start at (0,0); change in -const if you like
+  x : [0..M-1] init 0;
+  y : [0..N-1] init 0;
+
+  // move north: intended is y -> max(y-1,0)
+  [north] true ->
+     pE : (x' = min(x+1, M-1)) & (y' = y) +
+     pW : (x' = max(x-1, 0))   & (y' = y) +
+     pI : (x' = x)             & (y' = max(y-1, 0));
+
+  // move south: intended is y -> min(y+1,N-1)
+  [south] true ->
+     pE : (x' = min(x+1, M-1)) & (y' = y) +
+     pW : (x' = max(x-1, 0))   & (y' = y) +
+     pI : (x' = x)             & (y' = min(y+1, N-1));
+
+  // move east: intended is x -> min(x+1,M-1)
+  [east] true ->
+     pE : (x' = min(x+1, M-1)) & (y' = y) +
+     pW : (x' = max(x-1, 0))   & (y' = y) +
+     pI : (x' = min(x+1, M-1)) & (y' = y);
+
+  // move west: intended is x -> max(x-1,0)
+  [west] true ->
+     pE : (x' = min(x+1, M-1)) & (y' = y) +
+     pW : (x' = max(x-1, 0))   & (y' = y) +
+     pI : (x' = max(x-1, 0))   & (y' = y);
+endmodule
+
+label "goal" = (x = Gx & y = Gy);
+
+// optional step cost until goal
+rewards "steps"
+  !(x = Gx & y = Gy) : 1;
+endrewards

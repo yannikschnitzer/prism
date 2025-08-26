@@ -71,7 +71,10 @@ public class Experiment {
         STOCK_TRADING_3_3,
         SYSADMIN,
         BETTING_GAME_CONVEX,
-        SYSADMIN_CONVEX
+        BETTING_GAME_CONVEX_ADAPTIVE,
+        SYSADMIN_CONVEX,
+        GRID_MIXTURE_1,
+        GRID_MIXTURE_STORM,
     }
 
     public enum Type {
@@ -287,7 +290,7 @@ public class Experiment {
                 this.spec = "Rmax=? [ F \"fail\" ]";
                 this.type = Type.REWARD;
 
-                this.max_episode_length = 100;
+                this.max_episode_length = 10;
 
                 // Set Parameter Values
                 this.parameterValues.addValue("p", 0.04);
@@ -417,6 +420,59 @@ public class Experiment {
 
                 // Set Parameter Values
                 this.parameterValues.addValue("p", 0.55);
+            }
+
+            case BETTING_GAME_CONVEX_ADAPTIVE -> {
+                this.modelFile = "../parametric_convex_models/bet_fav_adaptive.prism";
+                this.certainModelFile = "../parametric_convex_models/bet_fav_adaptive.prism";
+                this.robustSpec = "Rmaxmin=? [F \"done\"]";
+                this.optimisticSpec = "Rmaxmax=? [F \"done\"]";
+                this.dtmcSpec = "R=? [F \"done\"]";
+                this.spec = "Rmax=? [F \"done\"]";
+                this.type = Type.REWARD;
+
+                this.multiplier = 2;
+                this.max_episode_length = 50;
+                this.maxVIIters = 20000;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("p", 0.55);
+            }
+
+            case GRID_MIXTURE_1 -> {
+                this.modelFile = "../parametric_convex_models/mixture_mdps/grid_mixture.prism";
+                this.certainModelFile = "../parametric_convex_models/mixture_mdps/grid_mixture.prism";
+                this.robustSpec = "R{\"steps\"}minmax=? [ F \"goal\" ]";
+                this.optimisticSpec = "R{\"steps\"}minmin=? [ F \"goal\" ]";
+                this.dtmcSpec = "R{\"steps\"}=? [ F \"goal\" ]";
+                this.spec = "R{\"steps\"}min=? [ F \"goal\" ]";
+                this.type = Type.REWARD;
+
+                this.multiplier = 2;
+                this.max_episode_length = 30;
+                this.maxVIIters = 20000;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("theta1", 0.3);
+                this.parameterValues.addValue("theta2", 0.4);
+            }
+
+            case GRID_MIXTURE_STORM -> {
+                this.modelFile = "../parametric_convex_models/mixture_mdps/grid_mixture_storm.prism";
+                this.certainModelFile = "../parametric_convex_models/mixture_mdps/grid_mixture_storm.prism";
+                this.robustSpec = "R{\"total_cost\"}minmax=? [ F \"goal\" ]";
+                this.optimisticSpec = "R{\"total_cost\"}minmin=? [ F \"goal\" ]";
+                this.dtmcSpec = "R{\"total_cost\"}=? [ F \"goal\" ]";
+                this.spec = "R{\"total_cost\"}min=? [ F \"goal\" ]";
+                this.type = Type.REWARD;
+
+                this.multiplier = 2;
+                this.max_episode_length = 20;
+                this.maxVIIters = 20000;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("theta1", 0.3);
+                this.parameterValues.addValue("theta2", 0.4);
             }
 
             case DICE_2 -> {

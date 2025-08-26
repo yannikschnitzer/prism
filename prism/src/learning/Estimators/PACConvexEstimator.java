@@ -263,4 +263,9 @@ public class PACConvexEstimator extends MAPEstimator {
                 : invRegularizedBeta(1.0 - alpha/2.0, (double)(k + 1), (double)(n - k));
         return new Interval<>(Math.max(lower, precision), Math.min(upper,1-precision));
     }
+
+    @Override
+    public int getNumLearnableComponents() {
+        return this.getNumLearnableTransitions();
+    }
 }
