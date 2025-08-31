@@ -1,0 +1,203 @@
+mdp
+
+const int MAXX = 16;
+const int MAXY = 16;
+const int MAXZ = 16;
+
+const double theta1;
+const double theta2;
+const double theta3;
+formula theta4 = 1 - (theta1 + theta2 + theta3);
+
+formula target = (x > MAXX - 2) & (y < 2) & (z > MAXZ - 2);
+formula obstacle1 = (x >= 3 & x <= 5 & z >= 1 & z <= 10);
+formula obstacle2 = (x >= 3 & x <= 2 & y >= 1 & y <= 12);
+formula obstacle3 = (x >= 3 & x <= 10 & y >= 3 & y <= 9);
+formula obstacle4 = (x >= 3 & x <= 6 & z >= 7 & z <= 14);
+formula crash = obstacle1 | obstacle2 | obstacle3 | obstacle4;
+
+// (reuse the same fL*,...,dS* constants from the base model)
+const double fL1=0.08; const double fR1=0.06; const double fS1=0.08;
+const double fL2=0.18; const double fR2=0.12; const double fS2=0.15;
+const double fL3=0.14; const double fR3=0.04; const double fS3=0.10;
+const double fL4=0.20; const double fR4=0.18; const double fS4=0.15;
+
+const double bL1=0.05; const double bR1=0.04; const double bS1=0.06;
+const double bL2=0.16; const double bR2=0.10; const double bS2=0.14;
+const double bL3=0.10; const double bR3=0.06; const double bS3=0.12;
+const double bL4=0.18; const double bR4=0.14; const double bS4=0.18;
+
+const double rO1=0.10; const double rB1=0.06;
+const double rO2=0.22; const double rB2=0.16;
+const double rO3=0.14; const double rB3=0.08;
+const double rO4=0.24; const double rB4=0.18;
+
+const double lO1=0.09; const double lB1=0.06;
+const double lO2=0.20; const double lB2=0.18;
+const double lO3=0.12; const double lB3=0.10;
+const double lO4=0.22; const double lB4=0.20;
+
+const double uL1=0.07; const double uR1=0.05; const double uS1=0.08;
+const double uL2=0.16; const double uR2=0.12; const double uS2=0.20;
+const double uL3=0.10; const double uR3=0.06; const double uS3=0.16;
+const double uL4=0.18; const double uR4=0.16; const double uS4=0.26;
+
+const double dL1=0.07; const double dR1=0.05; const double dS1=0.08;
+const double dL2=0.16; const double dR2=0.12; const double dS2=0.18;
+const double dL3=0.12; const double dR3=0.08; const double dS3=0.14;
+const double dL4=0.20; const double dR4=0.16; const double dS4=0.24;
+
+// base linear-in-θ (without altitude scaling)
+formula pFL0 = theta1*fL1 + theta2*fL2 + theta3*fL3 + theta4*fL4;
+formula pFR0 = theta1*fR1 + theta2*fR2 + theta3*fR3 + theta4*fR4;
+formula pFS0 = theta1*fS1 + theta2*fS2 + theta3*fS3 + theta4*fS4;
+
+formula pBL0 = theta1*bL1 + theta2*bL2 + theta3*bL3 + theta4*bL4;
+formula pBR0 = theta1*bR1 + theta2*bR2 + theta3*bR3 + theta4*bR4;
+formula pBS0 = theta1*bS1 + theta2*bS2 + theta3*bS3 + theta4*bS4;
+
+formula pRO0 = theta1*rO1 + theta2*rO2 + theta3*rO3 + theta4*rO4;
+formula pRB0 = theta1*rB1 + theta2*rB2 + theta3*rB3 + theta4*rB4;
+
+formula pLO0 = theta1*lO1 + theta2*lO2 + theta3*lO3 + theta4*lO4;
+formula pLB0 = theta1*lB1 + theta2*lB2 + theta3*lB3 + theta4*lB4;
+
+formula pUL0 = theta1*uL1 + theta2*uL2 + theta3*uL3 + theta4*uL4;
+formula pUR0 = theta1*uR1 + theta2*uR2 + theta3*uR3 + theta4*uR4;
+formula pUS0 = theta1*uS1 + theta2*uS2 + theta3*uS3 + theta4*uS4;
+
+formula pDL0 = theta1*dL1 + theta2*dL2 + theta3*dL3 + theta4*dL4;
+formula pDR0 = theta1*dR1 + theta2*dR2 + theta3*dR3 + theta4*dR4;
+formula pDS0 = theta1*dS1 + theta2*dS2 + theta3*dS3 + theta4*dS4;
+
+// altitude zones: low (1..3), mid (4..6), high (7..8)
+const double aLow = 0.9;
+const double aMid = 1.3;
+const double aHigh= 1.6;
+
+module drone
+  x : [1..MAXX] init 1;
+  y : [1..MAXY] init 1;
+  z : [1..MAXZ] init 1;
+
+  [done] target -> (x'=x) & (y'=y) & (z'=z);
+
+  // ----- FRONT -----
+  // low altitude
+  [front] !target & z<=3 ->
+     aLow*pFL0 : (x' = min(x + 1, MAXX)) & (y' = max(y - 1, 1)) & (z'=z) +
+     aLow*pFR0 : (x' = min(x + 1, MAXX)) & (y' = min(y + 1, MAXY)) & (z'=z) +
+     aLow*pFS0 : (x' = x)                 & (y' = max(y - 2, 1))   & (z'=z) +
+     (1 - aLow*(pFL0+pFR0+pFS0)) : (x' = min(x + 1, MAXX)) & (y' = y) & (z'=z);
+
+  // mid altitude
+  [front] !target & z>=4 & z<=6 ->
+     aMid*pFL0 : (x' = min(x + 1, MAXX)) & (y' = max(y - 1, 1)) & (z'=z) +
+     aMid*pFR0 : (x' = min(x + 1, MAXX)) & (y' = min(y + 1, MAXY)) & (z'=z) +
+     aMid*pFS0 : (x' = x)                 & (y' = max(y - 2, 1))   & (z'=z) +
+     (1 - aMid*(pFL0+pFR0+pFS0)) : (x' = min(x + 1, MAXX)) & (y' = y) & (z'=z);
+
+  // high altitude
+  [front] !target  & z>=7 ->
+     aHigh*pFL0 : (x' = min(x + 1, MAXX)) & (y' = max(y - 1, 1)) & (z'=z) +
+     aHigh*pFR0 : (x' = min(x + 1, MAXX)) & (y' = min(y + 1, MAXY)) & (z'=z) +
+     aHigh*pFS0 : (x' = x)                 & (y' = max(y - 2, 1))   & (z'=z) +
+     (1 - aHigh*(pFL0+pFR0+pFS0)) : (x' = min(x + 1, MAXX)) & (y' = y) & (z'=z);
+
+  // ----- BACK -----
+  [back] !target  & z<=3 ->
+     aLow*pBL0 : (x' = max(x - 1, 1)) & (y' = max(y - 1, 1)) & (z'=z) +
+     aLow*pBR0 : (x' = max(x - 1, 1)) & (y' = min(y + 1, MAXY)) & (z'=z) +
+     aLow*pBS0 : (x' = x)             & (y' = max(y - 2, 1)) & (z'=z) +
+     (1 - aLow*(pBL0+pBR0+pBS0)) : (x' = max(x - 1, 1)) & (y' = y) & (z'=z);
+
+  [back] !target  & z>=4 & z<=6 ->
+     aMid*pBL0 : (x' = max(x - 1, 1)) & (y' = max(y - 1, 1)) & (z'=z) +
+     aMid*pBR0 : (x' = max(x - 1, 1)) & (y' = min(y + 1, MAXY)) & (z'=z) +
+     aMid*pBS0 : (x' = x)             & (y' = max(y - 2, 1)) & (z'=z) +
+     (1 - aMid*(pBL0+pBR0+pBS0)) : (x' = max(x - 1, 1)) & (y' = y) & (z'=z);
+
+  [back] !target  & z>=7 ->
+     aHigh*pBL0 : (x' = max(x - 1, 1)) & (y' = max(y - 1, 1)) & (z'=z) +
+     aHigh*pBR0 : (x' = max(x - 1, 1)) & (y' = min(y + 1, MAXY)) & (z'=z) +
+     aHigh*pBS0 : (x' = x)             & (y' = max(y - 2, 1)) & (z'=z) +
+     (1 - aHigh*(pBL0+pBR0+pBS0)) : (x' = max(x - 1, 1)) & (y' = y) & (z'=z);
+
+  // ----- RIGHT -----
+  [right] !target  & z<=3 ->
+     aLow*pRO0 : (x'=x) & (y' = min(y + 2, MAXY)) & (z'=z) +
+     aLow*pRB0 : (x'=x) & (y' = max(y - 1, 1))    & (z'=z) +
+     (1 - aLow*(pRO0+pRB0)) : (x'=x) & (y' = min(y + 1, MAXY)) & (z'=z);
+
+  [right] !target  & z>=4 & z<=6 ->
+     aMid*pRO0 : (x'=x) & (y' = min(y + 2, MAXY)) & (z'=z) +
+     aMid*pRB0 : (x'=x) & (y' = max(y - 1, 1))    & (z'=z) +
+     (1 - aMid*(pRO0+pRB0)) : (x'=x) & (y' = min(y + 1, MAXY)) & (z'=z);
+
+  [right] !target  & z>=7 ->
+     aHigh*pRO0 : (x'=x) & (y' = min(y + 2, MAXY)) & (z'=z) +
+     aHigh*pRB0 : (x'=x) & (y' = max(y - 1, 1))    & (z'=z) +
+     (1 - aHigh*(pRO0+pRB0)) : (x'=x) & (y' = min(y + 1, MAXY)) & (z'=z);
+
+  // ----- LEFT -----
+  [left] !target  & z<=3 ->
+     aLow*pLO0 : (x'=x) & (y' = max(y - 2, 1))    & (z'=z) +
+     aLow*pLB0 : (x'=x) & (y' = min(y + 1, MAXY)) & (z'=z) +
+     (1 - aLow*(pLO0+pLB0)) : (x'=x) & (y' = max(y - 1, 1)) & (z'=z);
+
+  [left] !target  & z>=4 & z<=6 ->
+     aMid*pLO0 : (x'=x) & (y' = max(y - 2, 1))    & (z'=z) +
+     aMid*pLB0 : (x'=x) & (y' = min(y + 1, MAXY)) & (z'=z) +
+     (1 - aMid*(pLO0+pLB0)) : (x'=x) & (y' = max(y - 1, 1)) & (z'=z);
+
+  [left] !target & z>=7 ->
+     aHigh*pLO0 : (x'=x) & (y' = max(y - 2, 1))    & (z'=z) +
+     aHigh*pLB0 : (x'=x) & (y' = min(y + 1, MAXY)) & (z'=z) +
+     (1 - aHigh*(pLO0+pLB0)) : (x'=x) & (y' = max(y - 1, 1)) & (z'=z);
+
+  // ----- UP / DOWN (same pattern as front/back with aLow/aMid/aHigh) -----
+  [up] !target  & z<=3 ->
+     aLow*pUL0 : (z' = min(z + 1, MAXZ)) & (y' = max(y - 1, 1)) & (x'=x) +
+     aLow*pUR0 : (z' = min(z + 1, MAXZ)) & (y' = min(y + 1, MAXY)) & (x'=x) +
+     aLow*pUS0 : (z' = z)                & (y' = max(y - 2, 1)) & (x'=x) +
+     (1 - aLow*(pUL0+pUR0+pUS0)) : (z' = min(z + 1, MAXZ)) & (y' = y) & (x'=x);
+
+  [up] !target  & z>=4 & z<=6 ->
+     aMid*pUL0 : (z' = min(z + 1, MAXZ)) & (y' = max(y - 1, 1)) & (x'=x) +
+     aMid*pUR0 : (z' = min(z + 1, MAXZ)) & (y' = min(y + 1, MAXY)) & (x'=x) +
+     aMid*pUS0 : (z' = z)                & (y' = max(y - 2, 1)) & (x'=x) +
+     (1 - aMid*(pUL0+pUR0+pUS0)) : (z' = min(z + 1, MAXZ)) & (y' = y) & (x'=x);
+
+  [up] !target  & z>=7 ->
+     aHigh*pUL0 : (z' = min(z + 1, MAXZ)) & (y' = max(y - 1, 1)) & (x'=x) +
+     aHigh*pUR0 : (z' = min(z + 1, MAXZ)) & (y' = min(y + 1, MAXY)) & (x'=x) +
+     aHigh*pUS0 : (z' = z)                & (y' = max(y - 2, 1)) & (x'=x) +
+     (1 - aHigh*(pUL0+pUR0+pUS0)) : (z' = min(z + 1, MAXZ)) & (y' = y) & (x'=x);
+
+  [down] !target & z<=3 ->
+     aLow*pDL0 : (z' = max(z - 1, 1)) & (y' = max(y - 1, 1)) & (x'=x) +
+     aLow*pDR0 : (z' = max(z - 1, 1)) & (y' = min(y + 1, MAXY)) & (x'=x) +
+     aLow*pDS0 : (z' = z)             & (y' = max(y - 2, 1)) & (x'=x) +
+     (1 - aLow*(pDL0+pDR0+pDS0)) : (z' = max(z - 1, 1)) & (y' = y) & (x'=x);
+
+  [down] !target  & z>=4 & z<=6 ->
+     aMid*pDL0 : (z' = max(z - 1, 1)) & (y' = max(y - 1, 1)) & (x'=x) +
+     aMid*pDR0 : (z' = max(z - 1, 1)) & (y' = min(y + 1, MAXY)) & (x'=x) +
+     aMid*pDS0 : (z' = z)             & (y' = max(y - 2, 1)) & (x'=x) +
+     (1 - aMid*(pDL0+pDR0+pDS0)) : (z' = max(z - 1, 1)) & (y' = y) & (x'=x);
+
+  [down] !target  & z>=7 ->
+     aHigh*pDL0 : (z' = max(z - 1, 1)) & (y' = max(y - 1, 1)) & (x'=x) +
+     aHigh*pDR0 : (z' = max(z - 1, 1)) & (y' = min(y + 1, MAXY)) & (x'=x) +
+     aHigh*pDS0 : (z' = z)             & (y' = max(y - 2, 1)) & (x'=x) +
+     (1 - aHigh*(pDL0+pDR0+pDS0)) : (z' = max(z - 1, 1)) & (y' = y) & (x'=x);
+endmodule
+
+label "goal" = target;
+label "bad"  = crash;
+
+rewards
+ !target & !crash : 1;
+ crash: 10;
+ target: 0;
+ endrewards

@@ -190,7 +190,7 @@ public class MAPEstimator extends Estimator {
         MDPExplicit<Double> mdp = (MDPExplicit<Double>) this.prism.getBuiltModelExplicit();
         DTMC<Double> dtmc = (DTMC<Double>) mdp.constructInducedModel(strat);
         DTMCModelChecker mc = new DTMCModelChecker(this.prism);
-        //mc.setPrecomp(false); //TODO: here
+        mc.setPrecomp(false); //TODO: here
         mc.setErrorOnNonConverge(true);
         mc.setMaxIters(ex.maxVIIters);
         mc.setTermCritParam(1e-4);

@@ -1,0 +1,83 @@
+mdp
+
+// --- engagement ladder and terminals ---
+const int L = 12;                  // engagement levels 0..L (0=churn, L=purchase)
+label "churn" = (e = 0);
+label "purchase" = (e = L);
+
+// --- mixture weights (unknown; pass via -const) ---
+const double theta1;               // type 1: responsive but fragile
+const double theta2;               // type 2: stubborn but safe
+formula theta3 = 1 - theta1 - theta2;
+
+// ---------- type-specific kernels (all sums < 1) ----------
+// LIGHT action: gentle push, low churn
+const double uL1 = 0.10;  const double dL1 = 0.02;
+const double uL2 = 0.06;  const double dL2 = 0.01;
+const double uL3 = 0.04;  const double dL3 = 0.02;
+
+// MEDIUM action: stronger push, moderate churn
+const double uM1 = 0.18;  const double dM1 = 0.06;
+const double uM2 = 0.12;  const double dM2 = 0.03;
+const double uM3 = 0.08;  const double dM3 = 0.08;
+
+// AGGRESSIVE action: big lift, big churn risk (type 3 hates it)
+const double uA1 = 0.28;  const double dA1 = 0.20;
+const double uA2 = 0.20;  const double dA2 = 0.10;
+const double uA3 = 0.12;  const double dA3 = 0.25;
+
+// --- mixture transition probabilities (affine in theta) ---
+formula pU_L = theta1*uL1 + theta2*uL2 + theta3*uL3;
+formula pD_L = theta1*dL1 + theta2*dL2 + theta3*dL3;
+formula pS_L = 1 - (pU_L + pD_L);
+
+formula pU_M = theta1*uM1 + theta2*uM2 + theta3*uM3;
+formula pD_M = theta1*dM1 + theta2*dM2 + theta3*dM3;
+formula pS_M = 1 - (pU_M + pD_M);
+
+formula pU_A = theta1*uA1 + theta2*uA2 + theta3*uA3;
+formula pD_A = theta1*dA1 + theta2*dA2 + theta3*dA3;
+formula pS_A = 1 - (pU_A + pD_A);
+
+// --- action costs & time cost ---
+const double cost_light = 0.05;
+const double cost_med   = 0.10;
+const double cost_aggr  = 0.30;
+const double time_cost  = 1.0;     // per-step "delay" cost until purchase
+const double churn_pen  = 5.0;     // per-step penalty if stuck churned (absorbing)
+
+// --- state ---
+module engage
+  e : [0..L] init 2;               // start mildly engaged (1); change if you like
+
+  // absorbing terminals
+  [] (e=0) -> (e'=e);
+  [] (e=L) -> (e'=e);
+
+  // LIGHT
+  [light] e>0 & e<L ->
+     pU_L : (e' = min(e+1, L)) +
+     pD_L : (e' = max(e-1, 0)) +
+     pS_L : (e' = e);
+
+  // MEDIUM
+  [medium] e>0 & e<L ->
+     pU_M : (e' = min(e+1, L)) +
+     pD_M : (e' = max(e-1, 0)) +
+     pS_M : (e' = e);
+
+  // AGGRESSIVE
+  [aggr] e>0 & e<L ->
+     pU_A : (e' = min(e+1, L)) +
+     pD_A : (e' = max(e-1, 0)) +
+     pS_A : (e' = e);
+endmodule
+
+// --- rewards: time + action costs; churn is painful per step ---
+rewards "eng_cost"
+  (e>0 & e<L) : time_cost;           // pay time until purchase
+  [light]  true : cost_light;
+  [medium] true : cost_med;
+  [aggr]   true : cost_aggr;
+  (e=0) : churn_pen;                 // per-step penalty if churned
+endrewards

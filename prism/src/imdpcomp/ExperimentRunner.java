@@ -265,7 +265,7 @@ public class ExperimentRunner implements Callable<Integer> {
         System.out.println("Building DTMC");
         DTMCModelChecker mc = new DTMCModelChecker(this.prism);
         mc.setPrecomp(false);
-        mc.setErrorOnNonConverge(false);
+        mc.setErrorOnNonConverge(true);
         mc.setTermCritParam(1e-5);
 
         PropertiesFile pf = prism.parsePropertiesString(experiment.dtmcSpec);

@@ -1,0 +1,54 @@
+mdp
+
+// capacities
+const int CH = 15;   // high-priority buffer
+const int CL = 15;   // low-priority buffer
+
+// mixture weights (K=5)
+const double theta1; const double theta2; const double theta3; const double theta4;
+formula theta5 = 1 - (theta1 + theta2 + theta3 + theta4);
+
+// per-mode arrival/service (keep sums moderate)
+const double laH1=0.08; const double laH2=0.12; const double laH3=0.06; const double laH4=0.10; const double laH5=0.07;
+const double laL1=0.10; const double laL2=0.06; const double laL3=0.12; const double laL4=0.08; const double laL5=0.09;
+const double mu1 =0.22; const double mu2 =0.16; const double mu3 =0.18; const double mu4 =0.14; const double mu5 =0.20;
+
+// mixture-combined rates (affine in θ)
+formula laH = theta1*laH1 + theta2*laH2 + theta3*laH3 + theta4*laH4 + theta5*laH5;
+formula laL = theta1*laL1 + theta2*laL2 + theta3*laL3 + theta4*laL4 + theta5*laL5;
+formula mu  = theta1*mu1  + theta2*mu2  + theta3*mu3  + theta4*mu4  + theta5*mu5;
+
+// action multipliers for service (priority control)
+const double mH=1.0;  // serve high
+const double mL=1.0;  // serve low
+const double mF=0.6;  // fair: weaker service to either class (keeps sums small)
+
+module buf
+  nH : [0..CH] init 0;
+  nL : [0..CL] init 0;
+
+  // SERVE HIGH: arrivals+service+stay
+  [serveH] true ->
+     laH : (nH'=min(nH+1,CH)) & (nL'=nL) +
+     laL : (nH'=nH)           & (nL'=min(nL+1,CL)) +
+     mH*mu : (nH'=max(nH-1,0)) & (nL'=nL) +
+     (1 - laH - laL - mH*mu) : (nH'=nH) & (nL'=nL);
+
+  // SERVE LOW
+  [serveL] true ->
+     laH : (nH'=min(nH+1,CH)) & (nL'=nL) +
+     laL : (nH'=nH)           & (nL'=min(nL+1,CL)) +
+     mL*mu : (nH'=nH) & (nL'=max(nL-1,0)) +
+     (1 - laH - laL - mL*mu) : (nH'=nH) & (nL'=nL);
+
+  // FAIR (slower service)
+  [fair] true ->
+     laH : (nH'=min(nH+1,CH)) & (nL'=nL) +
+     laL : (nH'=nH)           & (nL'=min(nL+1,CL)) +
+     mF*mu/2 : (nH'=max(nH-1,0)) & (nL'=nL) +
+     mF*mu/2 : (nH'=nH) & (nL'=max(nL-1,0)) +
+     (1 - laH - laL - mF*mu) : (nH'=nH) & (nL'=nL);
+endmodule
+
+label "overflow" = (nH=CH) | (nL=CL);
+rewards "hold" nH+nL>0 : 1; endrewards

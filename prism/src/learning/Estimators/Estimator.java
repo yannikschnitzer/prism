@@ -100,6 +100,7 @@ public class Estimator {
     }
 
     public Double round(double value) {
+        System.out.println("Value:" + value);
         return round(value, 8);
     }
 

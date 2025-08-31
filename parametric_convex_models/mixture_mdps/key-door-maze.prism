@@ -1,0 +1,145 @@
+mdp
+
+// ===== GRID & SITES =====
+const int M = 6;                 // width  (0..M-1)
+const int N = 6;                 // height (0..N-1)
+const int Gx = 5;                // goal x
+const int Gy = 5;                // goal y
+const int Kx = 2;                 // key x
+const int Ky = 3;                // key y
+
+// ===== MIXTURE WEIGHTS (K=3) =====
+const double theta1;
+const double theta2;
+formula theta3 = 1 - theta1 - theta2;
+
+// ===== BASE REGIME DRIFTS (per mode; each sum < 1) =====
+// mode 1: east-ish
+const double de1 = 0.18; const double dw1 = 0.08; const double dn1 = 0.12; const double ds1 = 0.12; // sum 0.50
+// mode 2: west-ish
+const double de2 = 0.10; const double dw2 = 0.20; const double dn2 = 0.10; const double ds2 = 0.10; // sum 0.50
+// mode 3: north-ish
+const double de3 = 0.12; const double dw3 = 0.10; const double dn3 = 0.18; const double ds3 = 0.08; // sum 0.48
+
+// mixture-combined base drift (affine in θ) — no state vars referenced here
+formula pE0 = theta1*de1 + theta2*de2 + theta3*de3;
+formula pW0 = theta1*dw1 + theta2*dw2 + theta3*dw3;
+formula pN0 = theta1*dn1 + theta2*dn2 + theta3*dn3;
+formula pS0 = theta1*ds1 + theta2*ds2 + theta3*ds3;
+
+// ===== ZONE MULTIPLIERS (known; max multiplier <= 1.6 so total drift <= 0.8) =====
+// Left zone  x ∈ [0..6]    : east corridor
+const double aEL = 1.6; const double aWL = 0.8; const double aNL = 0.8; const double aSL = 0.8;
+// Centre     x ∈ [7..12]   : east wind tunnel
+const double aEC = 1.5; const double aWC = 0.7; const double aNC = 0.7; const double aSC = 0.7;
+// Right zone x ∈ [13..19]  : west corridor
+const double aER = 0.7; const double aWR = 1.6; const double aNR = 0.8; const double aSR = 0.8;
+
+// ===== STATE =====
+module maze
+  x : [0..M-1] init 0;
+  y : [0..N-1] init 0;
+  hasKey : [0..1] init 0;
+
+  // pick up key explicitly (scheduler can choose this when on key cell)
+  [pickup] (x=Kx & y=Ky & hasKey=0) -> (hasKey'=1) & (x'=x) & (y'=y);
+
+  // ---------- NORTH (y -> max(y-1,0)) ----------
+  // Left zone: x<=6
+  [north] x<=6 ->
+     aEL*pE0 : (x'=min(x+1,M-1)) & (y'=y) +
+     aWL*pW0 : (x'=max(x-1,0))   & (y'=y) +
+     aNL*pN0 : (x'=x)            & (y'=max(y-1,0)) +
+     aSL*pS0 : (x'=x)            & (y'=min(y+1,N-1)) +
+     (1 - (aEL*pE0 + aWL*pW0 + aNL*pN0 + aSL*pS0)) : (x'=x) & (y'=max(y-1,0));
+
+  // Centre: 7<=x<=12
+  [north] x>=7 & x<=12 ->
+     aEC*pE0 : (x'=min(x+1,M-1)) & (y'=y) +
+     aWC*pW0 : (x'=max(x-1,0))   & (y'=y) +
+     aNC*pN0 : (x'=x)            & (y'=max(y-1,0)) +
+     aSC*pS0 : (x'=x)            & (y'=min(y+1,N-1)) +
+     (1 - (aEC*pE0 + aWC*pW0 + aNC*pN0 + aSC*pS0)) : (x'=x) & (y'=max(y-1,0));
+
+  // Right: x>=13
+  [north] x>=13 ->
+     aER*pE0 : (x'=min(x+1,M-1)) & (y'=y) +
+     aWR*pW0 : (x'=max(x-1,0))   & (y'=y) +
+     aNR*pN0 : (x'=x)            & (y'=max(y-1,0)) +
+     aSR*pS0 : (x'=x)            & (y'=min(y+1,N-1)) +
+     (1 - (aER*pE0 + aWR*pW0 + aNR*pN0 + aSR*pS0)) : (x'=x) & (y'=max(y-1,0));
+
+  // ---------- SOUTH (y -> min(y+1,N-1)) ----------
+  [south] x<=6 ->
+     aEL*pE0 : (x'=min(x+1,M-1)) & (y'=y) +
+     aWL*pW0 : (x'=max(x-1,0))   & (y'=y) +
+     aNL*pN0 : (x'=x)            & (y'=max(y-1,0)) +
+     aSL*pS0 : (x'=x)            & (y'=min(y+1,N-1)) +
+     (1 - (aEL*pE0 + aWL*pW0 + aNL*pN0 + aSL*pS0)) : (x'=x) & (y'=min(y+1,N-1));
+
+  [south] x>=7 & x<=12 ->
+     aEC*pE0 : (x'=min(x+1,M-1)) & (y'=y) +
+     aWC*pW0 : (x'=max(x-1,0))   & (y'=y) +
+     aNC*pN0 : (x'=x)            & (y'=max(y-1,0)) +
+     aSC*pS0 : (x'=x)            & (y'=min(y+1,N-1)) +
+     (1 - (aEC*pE0 + aWC*pW0 + aNC*pN0 + aSC*pS0)) : (x'=x) & (y'=min(y+1,N-1));
+
+  [south] x>=13 ->
+     aER*pE0 : (x'=min(x+1,M-1)) & (y'=y) +
+     aWR*pW0 : (x'=max(x-1,0))   & (y'=y) +
+     aNR*pN0 : (x'=x)            & (y'=max(y-1,0)) +
+     aSR*pS0 : (x'=x)            & (y'=min(y+1,N-1)) +
+     (1 - (aER*pE0 + aWR*pW0 + aNR*pN0 + aSR*pS0)) : (x'=x) & (y'=min(y+1,N-1));
+
+  // ---------- EAST (x -> min(x+1,M-1)) ----------
+  [east] x<=6 ->
+     aEL*pE0 : (x'=min(x+1,M-1)) & (y'=y) +
+     aWL*pW0 : (x'=max(x-1,0))   & (y'=y) +
+     aNL*pN0 : (x'=x)            & (y'=max(y-1,0)) +
+     aSL*pS0 : (x'=x)            & (y'=min(y+1,N-1)) +
+     (1 - (aEL*pE0 + aWL*pW0 + aNL*pN0 + aSL*pS0)) : (x'=min(x+1,M-1)) & (y'=y);
+
+  [east] x>=7 & x<=12 ->
+     aEC*pE0 : (x'=min(x+1,M-1)) & (y'=y) +
+     aWC*pW0 : (x'=max(x-1,0))   & (y'=y) +
+     aNC*pN0 : (x'=x)            & (y'=max(y-1,0)) +
+     aSC*pS0 : (x'=x)            & (y'=min(y+1,N-1)) +
+     (1 - (aEC*pE0 + aWC*pW0 + aNC*pN0 + aSC*pS0)) : (x'=min(x+1,M-1)) & (y'=y);
+
+  [east] x>=13 ->
+     aER*pE0 : (x'=min(x+1,M-1)) & (y'=y) +
+     aWR*pW0 : (x'=max(x-1,0))   & (y'=y) +
+     aNR*pN0 : (x'=x)            & (y'=max(y-1,0)) +
+     aSR*pS0 : (x'=x)            & (y'=min(y+1,N-1)) +
+     (1 - (aER*pE0 + aWR*pW0 + aNR*pN0 + aSR*pS0)) : (x'=min(x+1,M-1)) & (y'=y);
+
+  // ---------- WEST (x -> max(x-1,0)) ----------
+  [west] x<=6 ->
+     aEL*pE0 : (x'=min(x+1,M-1)) & (y'=y) +
+     aWL*pW0 : (x'=max(x-1,0))   & (y'=y) +
+     aNL*pN0 : (x'=x)            & (y'=max(y-1,0)) +
+     aSL*pS0 : (x'=x)            & (y'=min(y+1,N-1)) +
+     (1 - (aEL*pE0 + aWL*pW0 + aNL*pN0 + aSL*pS0)) : (x'=max(x-1,0)) & (y'=y);
+
+  [west] x>=7 & x<=12 ->
+     aEC*pE0 : (x'=min(x+1,M-1)) & (y'=y) +
+     aWC*pW0 : (x'=max(x-1,0))   & (y'=y) +
+     aNC*pN0 : (x'=x)            & (y'=max(y-1,0)) +
+     aSC*pS0 : (x'=x)            & (y'=min(y+1,N-1)) +
+     (1 - (aEC*pE0 + aWC*pW0 + aNC*pN0 + aSC*pS0)) : (x'=max(x-1,0)) & (y'=y);
+
+  [west] x>=13 ->
+     aER*pE0 : (x'=min(x+1,M-1)) & (y'=y) +
+     aWR*pW0 : (x'=max(x-1,0))   & (y'=y) +
+     aNR*pN0 : (x'=x)            & (y'=max(y-1,0)) +
+     aSR*pS0 : (x'=x)            & (y'=min(y+1,N-1)) +
+     (1 - (aER*pE0 + aWR*pW0 + aNR*pN0 + aSR*pS0)) : (x'=max(x-1,0)) & (y'=y);
+endmodule
+
+// goal requires key
+label "goal" = (x = Gx & y = Gy & hasKey = 1);
+
+// (optional) per-step time cost until goal
+rewards "steps"
+  (x != Gx | y != Gy | hasKey = 0) : 1;
+endrewards

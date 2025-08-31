@@ -25,7 +25,7 @@ public class Experiment {
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
-    public int iterations = 1_000_000;
+    public int iterations = 1_00_000;
     public int max_episode_length = 50;
     public int multiplier = 5;
     public int maxVIIters = 20000;
@@ -75,6 +75,14 @@ public class Experiment {
         SYSADMIN_CONVEX,
         GRID_MIXTURE_1,
         GRID_MIXTURE_STORM,
+        GRID_MIXTURE_LAVA,
+        ENGAGEMENT,
+        KEY_DOOR_MAZE,
+        ROUTER,
+        DRONE_MIXTURE,
+        DRONE_MIXTURE_STEPS,
+        SAV2,
+        SAV2_ADAPTIVE,
     }
 
     public enum Type {
@@ -127,14 +135,14 @@ public class Experiment {
                 // Set Parameter Values
                 this.parameterValues.addValue("eps", 0.02);
                 this.parameterValues.addValue("r", 0.80);
-                this.parameterValues.addValue("p",0.2);
-                this.parameterValues.addValue("maxX",15);
-                this.parameterValues.addValue("maxY",15);
-                this.parameterValues.addValue("d2",0.1);
-                this.parameterValues.addValue("d3",0.05);
-                this.parameterValues.addValue("drift1",0.05);
-                this.parameterValues.addValue("drift2",0.05);
-                this.parameterValues.addValue("drift3",0.05);
+                this.parameterValues.addValue("p", 0.2);
+                this.parameterValues.addValue("maxX", 15);
+                this.parameterValues.addValue("maxY", 15);
+                this.parameterValues.addValue("d2", 0.1);
+                this.parameterValues.addValue("d3", 0.05);
+                this.parameterValues.addValue("drift1", 0.05);
+                this.parameterValues.addValue("drift2", 0.05);
+                this.parameterValues.addValue("drift3", 0.05);
             }
 
             case AIRCRAFT_MULTI_SLIP -> {
@@ -149,9 +157,9 @@ public class Experiment {
                 // Set Parameter Values
                 this.parameterValues.addValue("eps", 0.02);
                 this.parameterValues.addValue("r", 0.80);
-                this.parameterValues.addValue("p",0.2);
-                this.parameterValues.addValue("maxX",15);
-                this.parameterValues.addValue("maxY",10);
+                this.parameterValues.addValue("p", 0.2);
+                this.parameterValues.addValue("maxX", 15);
+                this.parameterValues.addValue("maxY", 10);
             }
 
             case LAKE_SWARM -> {
@@ -262,8 +270,8 @@ public class Experiment {
                 int N = 10;
                 int T = 8;
 
-                this.modelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_T%s.pm",N, T);
-                this.certainModelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_T%s.pm",N, T);
+                this.modelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_T%s.pm", N, T);
+                this.certainModelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_T%s.pm", N, T);
                 this.robustSpec = "Rmaxmin=? [ F (t_0 = T) ]";
                 this.optimisticSpec = "Rmaxmax=? [ F (t_0 = T) ]";
                 this.dtmcSpec = "R=? [ F (t_0 = T) ]";
@@ -473,6 +481,136 @@ public class Experiment {
                 // Set Parameter Values
                 this.parameterValues.addValue("theta1", 0.3);
                 this.parameterValues.addValue("theta2", 0.4);
+            }
+
+            case GRID_MIXTURE_LAVA -> {
+                this.modelFile = "../parametric_convex_models/mixture_mdps/grid_mixture_lava.prism";
+                this.certainModelFile = "../parametric_convex_models/mixture_mdps/grid_mixture_lava.prism";
+                this.robustSpec = "R{\"total_cost\"}minmax=? [ F \"goal\" ]";
+                this.optimisticSpec = "R{\"total_cost\"}minmin=? [ F \"goal\" ]";
+                this.dtmcSpec = "R{\"total_cost\"}=? [ F \"goal\" ]";
+                this.spec = "R{\"total_cost\"}min=? [ F \"goal\" ]";
+                this.type = Type.REWARD;
+
+                this.multiplier = 2;
+                this.max_episode_length = 25;
+                this.maxVIIters = 20000;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("theta1", 0.3);
+                this.parameterValues.addValue("theta2", 0.4);
+            }
+
+            case ENGAGEMENT -> {
+                this.modelFile = "../parametric_convex_models/mixture_mdps/engagement.prism";
+                this.certainModelFile = "../parametric_convex_models/mixture_mdps/engagement.prism";
+                this.robustSpec = "Pmaxmin = ? [ F \"purchase\" ]";
+                this.optimisticSpec = "Pmaxmax = ? [ F \"purchase\" ]";
+                this.dtmcSpec = "P = ? [ F \"purchase\" ]";
+                this.spec = "Pmax = ? [ F\"purchase\" ]";
+                this.type = Type.REWARD;
+
+                this.multiplier = 2;
+                this.max_episode_length = 30;
+                this.maxVIIters = 20000;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("theta1", 0.3);
+                this.parameterValues.addValue("theta2", 0.4);
+            }
+
+            case KEY_DOOR_MAZE -> {
+                this.modelFile = "../parametric_convex_models/mixture_mdps/key-door-maze.prism";
+                this.certainModelFile = "../parametric_convex_models/mixture_mdps/key-door-maze.prism";
+                this.robustSpec = "Rminmax = ? [ F \"goal\" ]";
+                this.optimisticSpec = "Rminmin = ? [ F \"goal\" ]";
+                this.dtmcSpec = "R=? [ F \"goal\" ]";
+                this.spec = "Rmin = ? [ F\"goal\" ]";
+                this.type = Type.REWARD;
+
+                this.multiplier = 2;
+                this.max_episode_length = 100;
+                this.maxVIIters = 1000000;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("theta1", 0.1);
+                this.parameterValues.addValue("theta2", 0.2);
+                this.parameterValues.addValue("theta3", 0.15);
+                this.parameterValues.addValue("theta4", 0.3);
+            }
+
+            case DRONE_MIXTURE -> {
+                this.modelFile = "../parametric_convex_models/mixture_mdps/drone_mixture.prism";
+                this.certainModelFile = "../parametric_convex_models/mixture_mdps/drone_mixture.prism";
+                this.robustSpec = "Pmaxmin=? [!crash U target]";
+                this.optimisticSpec = "Pmaxmax=? [!crash U target]";
+                this.dtmcSpec = "P=? [!crash U target]";
+                this.spec = "Pmax=? [!crash U target]";
+                this.type = Type.REACH;
+
+                this.multiplier = 2;
+                this.max_episode_length = 100;
+                this.maxVIIters = 1000000;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("theta1", 0.1);
+                this.parameterValues.addValue("theta2", 0.2);
+                this.parameterValues.addValue("theta3", 0.15);
+                this.parameterValues.addValue("theta4", 0.3);
+            }
+
+            case DRONE_MIXTURE_STEPS -> {
+                this.modelFile = "../parametric_convex_models/mixture_mdps/drone_mixture_steps.prism";
+                this.certainModelFile = "../parametric_convex_models/mixture_mdps/drone_mixture_steps.prism";
+                this.robustSpec = "Rminmax=? [F target]";
+                this.optimisticSpec = "Rminmin=? [F target]";
+                this.dtmcSpec = "R=? [F target]";
+                this.spec = "Rmin=? [F target]";
+                this.type = Type.REWARD;
+
+                this.multiplier = 2;
+                this.max_episode_length = 50;
+                this.maxVIIters = 1000000;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("theta1", 0.1);
+                this.parameterValues.addValue("theta2", 0.2);
+                this.parameterValues.addValue("theta3", 0.15);
+                this.parameterValues.addValue("theta4", 0.3);
+            }
+
+            case SAV2-> {
+                this.modelFile = "../parametric_convex_models/mixture_mdps/sav_mixture.prism";
+                this.certainModelFile = "../parametric_convex_models/mixture_mdps/sav_mixture.prism";
+
+                this.spec = "Pmax=? [!(\"Crash\") U (\"Target\")]";
+                this.robustSpec = "Pmaxmin=? [!(\"Crash\") U (\"Target\")]";
+                this.optimisticSpec = "Pmaxmax=? [!(\"Crash\") U (\"Target\")]";
+                this.dtmcSpec = "P=? [!(\"Crash\") U (\"Target\")]";
+                this.modelFile = "models/sav.prism";
+                this.type = Type.REACH;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("theta1", 0.4);
+                this.parameterValues.addValue("theta2", 0.2);
+                this.parameterValues.addValue("theta3", 0.15);
+            }
+
+            case SAV2_ADAPTIVE-> {
+                this.modelFile = "../parametric_convex_models/mixture_mdps/sav_mixture_adaptive.prism";
+                this.certainModelFile = "../parametric_convex_models/mixture_mdps/sav_mixture_adaptive.prism";
+
+                this.spec = "Pmax=? [!(\"Crash\") U (\"Target\")]";
+                this.robustSpec = "Pmaxmin=? [!(\"Crash\") U (\"Target\")]";
+                this.optimisticSpec = "Pmaxmax=? [!(\"Crash\") U (\"Target\")]";
+                this.dtmcSpec = "P=? [!(\"Crash\") U (\"Target\")]";
+                this.modelFile = "models/sav.prism";
+                this.type = Type.REACH;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("theta1", 0.4);
+                this.parameterValues.addValue("theta2", 0.2);
+                this.parameterValues.addValue("theta3", 0.15);
             }
 
             case DICE_2 -> {

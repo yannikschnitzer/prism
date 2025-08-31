@@ -1,0 +1,167 @@
+mdp
+
+// ===== GRID & TASK =====
+const int Xsize = 12;
+const int Ysize = 12;
+const int MAXTRIES = 6;
+const int B = 4;  // max moves without a successful send
+
+formula T = (xLoc = Xsize & yLoc = Ysize);
+
+// ===== MIXTURE WEIGHTS (K=4) =====
+const double theta1;
+const double theta2;
+const double theta3;
+formula theta4 = 1 - (theta1 + theta2 + theta3);
+
+// ===== POSITION SCALES (0..1) =====
+formula xSc = (xLoc - 1) / (1.0 * (Xsize - 1));
+formula ySc = (yLoc - 1) / (1.0 * (Ysize - 1));
+
+// ===== MODE-SPECIFIC LINEAR CHANNEL MODELS =====
+// sendL(x) = L0_k + L1_k * xSc;  sendH(y) = H0_k + H1_k * ySc
+const double L0_1=0.10; const double L1_1=0.25;
+const double H0_1=0.12; const double H1_1=0.25;
+
+const double L0_2=0.05; const double L1_2=0.35;
+const double H0_2=0.18; const double H1_2=0.10;
+
+const double L0_3=0.20; const double L1_3=0.10;
+const double H0_3=0.06; const double H1_3=0.40;
+
+const double L0_4=0.15; const double L1_4=0.20;
+const double H0_4=0.10; const double H1_4=0.30;
+
+// ===== Linear-in-θ base success (state-free) =====
+formula sL0 = theta1*(L0_1 + L1_1*xSc)
+            + theta2*(L0_2 + L1_2*xSc)
+            + theta3*(L0_3 + L1_3*xSc)
+            + theta4*(L0_4 + L1_4*xSc);
+
+formula sH0 = theta1*(H0_1 + H1_1*ySc)
+            + theta2*(H0_2 + H1_2*ySc)
+            + theta3*(H0_3 + H1_3*ySc)
+            + theta4*(H0_4 + H1_4*ySc);
+
+// ===== ADAPTIVE ZONES (known, state-only) =====
+// Column zones for low-band (x corridors)
+formula zW = (xLoc <= 4);                 // west
+formula zC = (xLoc >= 5 & xLoc <= 8);     // centre corridor
+formula zE = (xLoc >= 9);                 // east
+
+// Row zones for high-band (y corridors)
+formula zS = (yLoc <= 4);                 // south
+formula zM = (yLoc >= 5 & yLoc <= 8);     // middle rows
+formula zN = (yLoc >= 9);                 // north
+
+// Jamming rectangles (degrade one band strongly)
+formula jamL = (xLoc >= 3 & xLoc <= 6 & yLoc >= 9 & yLoc <= 12);  // hurts low-band
+formula jamH = (xLoc >= 7 & xLoc <= 10 & yLoc >= 2 & yLoc <= 5);  // hurts high-band
+
+// Multipliers (kept <= 1.5 so probs stay <= ~0.6 < 1)
+const double mLW = 0.85;  // sL in west columns
+const double mLC = 1.45;  // sL in centre corridor (good)
+const double mLE = 0.95;  // sL in east
+
+const double mHS = 0.85;  // sH in south rows
+const double mHM = 1.50;  // sH in middle corridor (good)
+const double mHN = 0.95;  // sH in north
+
+const double jL  = 0.60;  // low-band jam factor (multiply sL)
+const double jH  = 0.60;  // high-band jam factor (multiply sH)
+
+// ===== DYNAMICS =====
+module robot
+  xLoc : [1..Xsize] init 1;
+  yLoc : [1..Ysize] init 1;
+
+  unreported : [0..B] init 0;      // steps since last successful send
+  hasSendNow : bool init false;    // just sent successfully
+  tries : [0..MAXTRIES] init 0;    // consecutive failed send attempts
+
+  // movement (resets unreported only right after a success)
+  [up]    xLoc < Xsize & !T & hasSendNow  -> 1 : (xLoc'=xLoc+1) & (unreported'=0) & (hasSendNow'=false);
+  [up]    xLoc < Xsize & !T & !hasSendNow -> 1 : (xLoc'=xLoc+1) & (unreported'=min(unreported+1,B));
+
+  [right] yLoc < Ysize & !T & hasSendNow  -> 1 : (yLoc'=yLoc+1) & (unreported'=0) & (hasSendNow'=false);
+  [right] yLoc < Ysize & !T & !hasSendNow -> 1 : (yLoc'=yLoc+1) & (unreported'=min(unreported+1,B));
+
+  // ---- sendL: split by x-zone and jamL (all affine in θ) ----
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zW & jamL ->
+     jL*mLW*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jL*mLW*sL0) : (tries'=tries+1);
+
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zW & !jamL ->
+     mLW*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mLW*sL0) : (tries'=tries+1);
+
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zC & jamL ->
+     jL*mLC*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jL*mLC*sL0) : (tries'=tries+1);
+
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zC & !jamL ->
+     mLC*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mLC*sL0) : (tries'=tries+1);
+
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zE & jamL ->
+     jL*mLE*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jL*mLE*sL0) : (tries'=tries+1);
+
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zE & !jamL ->
+     mLE*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mLE*sL0) : (tries'=tries+1);
+
+  // ---- sendH: split by y-zone and jamH ----
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zS & jamH ->
+     jH*mHS*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jH*mHS*sH0) : (tries'=tries+1);
+
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zS & !jamH ->
+     mHS*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mHS*sH0) : (tries'=tries+1);
+
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zM & jamH ->
+     jH*mHM*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jH*mHM*sH0) : (tries'=tries+1);
+
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zM & !jamH ->
+     mHM*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mHM*sH0) : (tries'=tries+1);
+
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zN & jamH ->
+     jH*mHN*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jH*mHN*sH0) : (tries'=tries+1);
+
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zN & !jamH ->
+     mHN*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mHN*sH0) : (tries'=tries+1);
+
+  // goal
+  [done] T -> 1 : true;
+endmodule
+
+// ===== LABELS =====
+label "Target" = T;
+label "Crash"  = (unreported = B);
+
+// ===== REWARDS (unchanged) =====
+rewards "sendbased"
+  [up]    true : 0.03;
+  [right] true : 0.03;
+  [sendL] true : max(10, min(11 + xLoc - yLoc, 20));
+  [sendH] true : min(13 + xLoc + yLoc, 24);
+endrewards
+
+rewards "sendbased_lower"
+  [up]    true : 0.03;
+  [right] true : 0.03;
+  [sendL] true : 10;
+  [sendH] true : 12;
+endrewards
+
+rewards "sendbased_upper"
+  [up]    true : 0.03;
+  [right] true : 0.03;
+  [sendL] true : 20;
+  [sendH] true : 24;
+endrewards
