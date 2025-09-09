@@ -1,7 +1,8 @@
 mdp
 
 // --- engagement ladder and terminals ---
-const int L = 12;                  // engagement levels 0..L (0=churn, L=purchase)
+const int L = 50;                  // engagement levels 0..L (0=churn, L=purchase)
+const int start = 2;
 label "churn" = (e = 0);
 label "purchase" = (e = L);
 
@@ -44,11 +45,11 @@ const double cost_light = 0.05;
 const double cost_med   = 0.10;
 const double cost_aggr  = 0.30;
 const double time_cost  = 1.0;     // per-step "delay" cost until purchase
-const double churn_pen  = 5.0;     // per-step penalty if stuck churned (absorbing)
+const double churn_pen  = 50.0;     // per-step penalty if stuck churned (absorbing)
 
 // --- state ---
 module engage
-  e : [0..L] init 2;               // start mildly engaged (1); change if you like
+  e : [0..L] init start;               // start mildly engaged (1); change if you like
 
   // absorbing terminals
   [] (e=0) -> (e'=e);

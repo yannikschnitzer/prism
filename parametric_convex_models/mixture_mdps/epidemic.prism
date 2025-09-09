@@ -1,0 +1,175 @@
+mdp
+
+// ===== POPULATIONS & OUTBREAK =====
+const int NA = 5;            // region A population
+const int NB = 5;            // region B population
+const int BREAKOUT = 8;      // outbreak threshold on total infected
+
+// ===== CLOSURE TIMING =====
+const int TMAX = 5;          // closure lasts TMAX steps
+const double rho = 0.25;     // cross-infection multiplier while closed (0<rho<1)
+
+// ===== MIXTURE WEIGHTS (K=3) =====
+const double theta1;
+const double theta2;
+formula theta3 = 1 - theta1 - theta2;   // θ3 ≥ 0 assumed via how you set θ in analysis
+
+// ===== BASE CONTACT/INFECTION RATES (per regime; chosen to break θ-collinearity) =====
+// Local A
+const double bA1 = 0.045;
+const double bA2 = 0.025;
+const double bA3 = 0.070;   // diffs vs k=3: (-0.025, -0.045)  ratio 1.8
+// Local B
+const double bB1 = 0.030;
+const double bB2 = 0.050;
+const double bB3 = 0.040;   // diffs: (-0.010, 0.010)         ratio -1.0
+// Cross A<->B
+const double bX1 = 0.020;
+const double bX2 = 0.035;
+const double bX3 = 0.015;   // diffs: (0.005, 0.020)          ratio 4.0
+
+// Recovery bases
+const double gA = 0.20;
+const double gB = 0.20;
+
+// Effective (affine in θ)
+formula betaA = theta1*bA1 + theta2*bA2 + theta3*bA3;
+formula betaB = theta1*bB1 + theta2*bB2 + theta3*bB3;
+formula betaX = theta1*bX1 + theta2*bX2 + theta3*bX3;
+
+// ===== FEASIBILITY SAFETY (keep total mass < 1 with slack) =====
+const double baseStay = 0.30;  // fixed "do nothing" mass every step
+
+// Open-period scalers
+const double kLocA_o = 0.50;
+const double kLocB_o = 0.55;
+const double kCross_o = 0.50;
+const double kRecA_o = 0.40;
+const double kRecB_o = 0.40;
+
+// Closed-period scalers (closing helps cross, harms locals/recovery a bit)
+const double kLocA_c = 0.62;
+const double kLocB_c = 0.62;
+const double kCross_c = 0.50;  // keep same, but cross is additionally multiplied by rho
+const double kRecA_c = 0.30;
+const double kRecB_c = 0.30;
+
+// ===== STATE =====
+module epi_close
+  iA : [0..NA] init 1;   // infected A
+  iB : [0..NB] init 0;   // infected B
+  vA : [0..NA] init 0;   // vaccinated A
+  vB : [0..NB] init 0;   // vaccinated B
+  t  : [0..TMAX] init 0; // closure timer (0=open; >0 closed and counts down)
+
+  // ---------- WAIT (open): one epidemic “event” (or none) ----------
+  [wait] t=0 ->
+     baseStay : (iA'=iA) & (iB'=iB) & (vA'=vA) & (vB'=vB) & (t'=t)
+
+   + ( kLocA_o*betaA * (iA*(NA - vA - iA))/(1.0*NA)
+     + kCross_o*betaX * (iB*(NA - vA - iA))/(1.0*NA) ) :
+       (iA' = min(iA+1, NA - vA)) & (iB'=iB) & (vA'=vA) & (vB'=vB) & (t'=t)
+
+   + ( kRecA_o*gA * iA/(1.0*NA) ) :
+       (iA' = max(iA-1, 0)) & (iB'=iB) & (vA'=vA) & (vB'=vB) & (t'=t)
+
+   + ( kLocB_o*betaB * (iB*(NB - vB - iB))/(1.0*NB)
+     + kCross_o*betaX * (iA*(NB - vB - iB))/(1.0*NB) ) :
+       (iB' = min(iB+1, NB - vB)) & (iA'=iA) & (vA'=vA) & (vB'=vB) & (t'=t)
+
+   + ( kRecB_o*gB * iB/(1.0*NB) ) :
+       (iB' = max(iB-1, 0)) & (iA'=iA) & (vA'=vA) & (vB'=vB) & (t'=t)
+
+   + ( 1
+       - baseStay
+       - ( kLocA_o*betaA*(iA*(NA - vA - iA))/(1.0*NA)
+           + kCross_o*betaX*(iB*(NA - vA - iA))/(1.0*NA) )
+       - ( kRecA_o*gA*iA/(1.0*NA) )
+       - ( kLocB_o*betaB*(iB*(NB - vB - iB))/(1.0*NB)
+           + kCross_o*betaX*(iA*(NB - vB - iB))/(1.0*NB) )
+       - ( kRecB_o*gB*iB/(1.0*NB) )
+     ) :
+       (iA'=iA) & (iB'=iB) & (vA'=vA) & (vB'=vB) & (t'=t);
+
+  // ---------- WAIT (closed): same shape, cross × rho, locals/recovery use *_c, t counts down ----------
+  [wait] t>0 ->
+     baseStay : (iA'=iA) & (iB'=iB) & (vA'=vA) & (vB'=vB) & (t'=max(t-1,0))
+
+   + ( kLocA_c*betaA * (iA*(NA - vA - iA))/(1.0*NA)
+     + kCross_c*rho*betaX * (iB*(NA - vA - iA))/(1.0*NA) ) :
+       (iA' = min(iA+1, NA - vA)) & (iB'=iB) & (vA'=vA) & (vB'=vB) & (t'=max(t-1,0))
+
+   + ( kRecA_c*gA * iA/(1.0*NA) ) :
+       (iA' = max(iA-1, 0)) & (iB'=iB) & (vA'=vA) & (vB'=vB) & (t'=max(t-1,0))
+
+   + ( kLocB_c*betaB * (iB*(NB - vB - iB))/(1.0*NB)
+     + kCross_c*rho*betaX * (iA*(NB - vB - iB))/(1.0*NB) ) :
+       (iB' = min(iB+1, NB - vB)) & (iA'=iA) & (vA'=vA) & (vB'=vB) & (t'=max(t-1,0))
+
+   + ( kRecB_c*gB * iB/(1.0*NB) ) :
+       (iB' = max(iB-1, 0)) & (iA'=iA) & (vA'=vA) & (vB'=vB) & (t'=max(t-1,0))
+
+   + ( 1
+       - baseStay
+       - ( kLocA_c*betaA*(iA*(NA - vA - iA))/(1.0*NA)
+           + kCross_c*rho*betaX*(iB*(NA - vA - iA))/(1.0*NA) )
+       - ( kRecA_c*gA*iA/(1.0*NA) )
+       - ( kLocB_c*betaB*(iB*(NB - vB - iB))/(1.0*NB)
+           + kCross_c*rho*betaX*(iA*(NB - vB - iB))/(1.0*NB) )
+       - ( kRecB_c*gB*iB/(1.0*NB) )
+     ) :
+       (iA'=iA) & (iB'=iB) & (vA'=vA) & (vB'=vB) & (t'=max(t-1,0));
+
+  // ---------- VACCINATE (deterministic; consumes step; t counts down if closed) ----------
+  [vaccA] (NA - vA - iA) > 0 & t=0 -> (vA' = vA + 1) & (iA' = iA) & (iB' = iB) & (vB' = vB) & (t'=t);
+  [vaccA] (NA - vA - iA) > 0 & t>0 -> (vA' = vA + 1) & (iA' = iA) & (iB' = iB) & (vB' = vB) & (t'=max(t-1,0));
+
+  [vaccB] (NB - vB - iB) > 0 & t=0 -> (vB' = vB + 1) & (iA' = iA) & (iB' = iB) & (vA' = vA) & (t'=t);
+  [vaccB] (NB - vB - iB) > 0 & t>0 -> (vB' = vB + 1) & (iA' = iA) & (iB' = iB) & (vA' = vA) & (t'=max(t-1,0));
+
+  // ---------- CLOSE BORDER (only when open): one epidemic step under "closed" dynamics, then t=TMAX ----------
+  [close] t=0 ->
+     baseStay : (iA'=iA) & (iB'=iB) & (vA'=vA) & (vB'=vB) & (t'=TMAX)
+
+   + ( kLocA_c*betaA * (iA*(NA - vA - iA))/(1.0*NA)
+     + kCross_c*rho*betaX * (iB*(NA - vA - iA))/(1.0*NA) ) :
+       (iA' = min(iA+1, NA - vA)) & (iB'=iB) & (vA'=vA) & (vB'=vB) & (t'=TMAX)
+
+   + ( kRecA_c*gA * iA/(1.0*NA) ) :
+       (iA' = max(iA-1, 0)) & (iB'=iB) & (vA'=vA) & (vB'=vB) & (t'=TMAX)
+
+   + ( kLocB_c*betaB * (iB*(NB - vB - iB))/(1.0*NB)
+     + kCross_c*rho*betaX * (iA*(NB - vB - iB))/(1.0*NB) ) :
+       (iB' = min(iB+1, NB - vB)) & (iA'=iA) & (vA'=vA) & (vB'=vB) & (t'=TMAX)
+
+   + ( kRecB_c*gB * iB/(1.0*NB) ) :
+       (iB' = max(iB-1, 0)) & (iA'=iA) & (vA'=vA) & (vB'=vB) & (t'=TMAX)
+
+   + ( 1
+       - baseStay
+       - ( kLocA_c*betaA*(iA*(NA - vA - iA))/(1.0*NA)
+           + kCross_c*rho*betaX*(iB*(NA - vA - iA))/(1.0*NA) )
+       - ( kRecA_c*gA*iA/(1.0*NA) )
+       - ( kLocB_c*betaB*(iB*(NB - vB - iB))/(1.0*NB)
+           + kCross_c*rho*betaX*(iA*(NB - vB - iB))/(1.0*NB) )
+       - ( kRecB_c*gB*iB/(1.0*NB) )
+     ) :
+       (iA'=iA) & (iB'=iB) & (vA'=vA) & (vB'=vB) & (t'=TMAX);
+endmodule
+
+// ===== LABELS =====
+label "eradicated" = (iA=0 & iB=0);
+label "outbreak"   = (iA + iB >= BREAKOUT);
+
+// ===== OPTIONAL REWARDS =====
+rewards "infected"     // infection burden per step
+  true : (iA + iB);
+endrewards
+
+const double cVacc = 1.0;
+const double cClose = 3.0;
+rewards "costs"
+  [vaccA] true : cVacc;
+  [vaccB] true : cVacc;
+  [close] true : cClose;
+endrewards

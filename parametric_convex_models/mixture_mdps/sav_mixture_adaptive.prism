@@ -6,6 +6,7 @@ const int Ysize = 12;
 const int MAXTRIES = 6;
 const int B = 4;  // max moves without a successful send
 
+// goal cell
 formula T = (xLoc = Xsize & yLoc = Ysize);
 
 // ===== MIXTURE WEIGHTS (K=4) =====
@@ -19,18 +20,26 @@ formula xSc = (xLoc - 1) / (1.0 * (Xsize - 1));
 formula ySc = (yLoc - 1) / (1.0 * (Ysize - 1));
 
 // ===== MODE-SPECIFIC LINEAR CHANNEL MODELS =====
-// sendL(x) = L0_k + L1_k * xSc;  sendH(y) = H0_k + H1_k * ySc
-const double L0_1=0.10; const double L1_1=0.25;
-const double H0_1=0.12; const double H1_1=0.25;
+// sendL(x) = L0_k + L1_k * xSc      sendH(y) = H0_k + H1_k * ySc
+const double L0_1 = 0.10;
+const double L1_1 = 0.25;
+const double H0_1 = 0.12;
+const double H1_1 = 0.25;
 
-const double L0_2=0.05; const double L1_2=0.35;
-const double H0_2=0.18; const double H1_2=0.10;
+const double L0_2 = 0.05;
+const double L1_2 = 0.35;
+const double H0_2 = 0.18;
+const double H1_2 = 0.10;
 
-const double L0_3=0.20; const double L1_3=0.10;
-const double H0_3=0.06; const double H1_3=0.40;
+const double L0_3 = 0.20;
+const double L1_3 = 0.10;
+const double H0_3 = 0.06;
+const double H1_3 = 0.40;
 
-const double L0_4=0.15; const double L1_4=0.20;
-const double H0_4=0.10; const double H1_4=0.30;
+const double L0_4 = 0.15;
+const double L1_4 = 0.20;
+const double H0_4 = 0.10;
+const double H1_4 = 0.30;
 
 // ===== Linear-in-θ base success (state-free) =====
 formula sL0 = theta1*(L0_1 + L1_1*xSc)
@@ -43,34 +52,47 @@ formula sH0 = theta1*(H0_1 + H1_1*ySc)
             + theta3*(H0_3 + H1_3*ySc)
             + theta4*(H0_4 + H1_4*ySc);
 
-// ===== ADAPTIVE ZONES (known, state-only) =====
-// Column zones for low-band (x corridors)
-formula zW = (xLoc <= 4);                 // west
-formula zC = (xLoc >= 5 & xLoc <= 8);     // centre corridor
-formula zE = (xLoc >= 9);                 // east
+// ===== ADAPTIVE ZONES =====
+// 3×3 column/row bands
+formula zW = (xLoc <= 4);
+formula zC = (xLoc >= 5 & xLoc <= 8);
+formula zE = (xLoc >= 9);
 
-// Row zones for high-band (y corridors)
-formula zS = (yLoc <= 4);                 // south
-formula zM = (yLoc >= 5 & yLoc <= 8);     // middle rows
-formula zN = (yLoc >= 9);                 // north
+formula zS = (yLoc <= 4);
+formula zM = (yLoc >= 5 & yLoc <= 8);
+formula zN = (yLoc >= 9);
 
-// Jamming rectangles (degrade one band strongly)
-formula jamL = (xLoc >= 3 & xLoc <= 6 & yLoc >= 9 & yLoc <= 12);  // hurts low-band
-formula jamH = (xLoc >= 7 & xLoc <= 10 & yLoc >= 2 & yLoc <= 5);  // hurts high-band
+// jam rectangles (two per band)
+formula jamL = (xLoc >= 3 & xLoc <= 6 & yLoc >= 9 & yLoc <= 12)
+             | (xLoc >= 8 & xLoc <= 12 & yLoc >= 6 & yLoc <= 8);
+formula jamH = (xLoc >= 2 & xLoc <= 5 & yLoc >= 3 & yLoc <= 6)
+             | (xLoc >= 7 & xLoc <= 10 & yLoc >= 2 & yLoc <= 4);
 
-// Multipliers (kept <= 1.5 so probs stay <= ~0.6 < 1)
-const double mLW = 0.85;  // sL in west columns
-const double mLC = 1.45;  // sL in centre corridor (good)
-const double mLE = 0.95;  // sL in east
+// per-zone multipliers (kept ≤~1.55 so probs stay < 1 after scaling)
+const double mL_WS = 0.85;
+const double mL_WM = 0.95;
+const double mL_WN = 0.75;
+const double mL_CS = 1.10;
+const double mL_CM = 1.55;
+const double mL_CN = 1.00;
+const double mL_ES = 0.90;
+const double mL_EM = 1.20;
+const double mL_EN = 1.05;
 
-const double mHS = 0.85;  // sH in south rows
-const double mHM = 1.50;  // sH in middle corridor (good)
-const double mHN = 0.95;  // sH in north
+const double mH_WS = 0.85;
+const double mH_WM = 1.20;
+const double mH_WN = 0.95;
+const double mH_CS = 0.90;
+const double mH_CM = 1.50;
+const double mH_CN = 1.10;
+const double mH_ES = 0.80;
+const double mH_EM = 1.25;
+const double mH_EN = 1.00;
 
-const double jL  = 0.60;  // low-band jam factor (multiply sL)
-const double jH  = 0.60;  // high-band jam factor (multiply sH)
+const double jL = 0.60;   // low-band jam factor
+const double jH = 0.60;   // high-band jam factor
 
-// ===== DYNAMICS =====
+// ===== ROBOT DYNAMICS =====
 module robot
   xLoc : [1..Xsize] init 1;
   yLoc : [1..Ysize] init 1;
@@ -79,62 +101,158 @@ module robot
   hasSendNow : bool init false;    // just sent successfully
   tries : [0..MAXTRIES] init 0;    // consecutive failed send attempts
 
-  // movement (resets unreported only right after a success)
+  // movement (reset unreported only right after a success)
   [up]    xLoc < Xsize & !T & hasSendNow  -> 1 : (xLoc'=xLoc+1) & (unreported'=0) & (hasSendNow'=false);
   [up]    xLoc < Xsize & !T & !hasSendNow -> 1 : (xLoc'=xLoc+1) & (unreported'=min(unreported+1,B));
 
   [right] yLoc < Ysize & !T & hasSendNow  -> 1 : (yLoc'=yLoc+1) & (unreported'=0) & (hasSendNow'=false);
   [right] yLoc < Ysize & !T & !hasSendNow -> 1 : (yLoc'=yLoc+1) & (unreported'=min(unreported+1,B));
 
-  // ---- sendL: split by x-zone and jamL (all affine in θ) ----
-  [sendL] !hasSendNow & !T & tries < MAXTRIES & zW & jamL ->
-     jL*mLW*sL0 : (hasSendNow'=true) & (tries'=0)
-   + (1 - jL*mLW*sL0) : (tries'=tries+1);
+  // ---------- sendL: 3×3 zones × {jam, !jam} ----------
+  // west-south
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zW & zS & jamL ->
+     jL*mL_WS*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jL*mL_WS*sL0) : (tries'=tries+1);
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zW & zS & !jamL ->
+     mL_WS*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mL_WS*sL0) : (tries'=tries+1);
 
-  [sendL] !hasSendNow & !T & tries < MAXTRIES & zW & !jamL ->
-     mLW*sL0 : (hasSendNow'=true) & (tries'=0)
-   + (1 - mLW*sL0) : (tries'=tries+1);
+  // west-middle
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zW & zM & jamL ->
+     jL*mL_WM*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jL*mL_WM*sL0) : (tries'=tries+1);
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zW & zM & !jamL ->
+     mL_WM*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mL_WM*sL0) : (tries'=tries+1);
 
-  [sendL] !hasSendNow & !T & tries < MAXTRIES & zC & jamL ->
-     jL*mLC*sL0 : (hasSendNow'=true) & (tries'=0)
-   + (1 - jL*mLC*sL0) : (tries'=tries+1);
+  // west-north
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zW & zN & jamL ->
+     jL*mL_WN*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jL*mL_WN*sL0) : (tries'=tries+1);
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zW & zN & !jamL ->
+     mL_WN*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mL_WN*sL0) : (tries'=tries+1);
 
-  [sendL] !hasSendNow & !T & tries < MAXTRIES & zC & !jamL ->
-     mLC*sL0 : (hasSendNow'=true) & (tries'=0)
-   + (1 - mLC*sL0) : (tries'=tries+1);
+  // centre-south
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zC & zS & jamL ->
+     jL*mL_CS*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jL*mL_CS*sL0) : (tries'=tries+1);
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zC & zS & !jamL ->
+     mL_CS*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mL_CS*sL0) : (tries'=tries+1);
 
-  [sendL] !hasSendNow & !T & tries < MAXTRIES & zE & jamL ->
-     jL*mLE*sL0 : (hasSendNow'=true) & (tries'=0)
-   + (1 - jL*mLE*sL0) : (tries'=tries+1);
+  // centre-middle
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zC & zM & jamL ->
+     jL*mL_CM*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jL*mL_CM*sL0) : (tries'=tries+1);
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zC & zM & !jamL ->
+     mL_CM*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mL_CM*sL0) : (tries'=tries+1);
 
-  [sendL] !hasSendNow & !T & tries < MAXTRIES & zE & !jamL ->
-     mLE*sL0 : (hasSendNow'=true) & (tries'=0)
-   + (1 - mLE*sL0) : (tries'=tries+1);
+  // centre-north
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zC & zN & jamL ->
+     jL*mL_CN*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jL*mL_CN*sL0) : (tries'=tries+1);
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zC & zN & !jamL ->
+     mL_CN*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mL_CN*sL0) : (tries'=tries+1);
 
-  // ---- sendH: split by y-zone and jamH ----
-  [sendH] !hasSendNow & !T & tries < MAXTRIES & zS & jamH ->
-     jH*mHS*sH0 : (hasSendNow'=true) & (tries'=0)
-   + (1 - jH*mHS*sH0) : (tries'=tries+1);
+  // east-south
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zE & zS & jamL ->
+     jL*mL_ES*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jL*mL_ES*sL0) : (tries'=tries+1);
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zE & zS & !jamL ->
+     mL_ES*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mL_ES*sL0) : (tries'=tries+1);
 
-  [sendH] !hasSendNow & !T & tries < MAXTRIES & zS & !jamH ->
-     mHS*sH0 : (hasSendNow'=true) & (tries'=0)
-   + (1 - mHS*sH0) : (tries'=tries+1);
+  // east-middle
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zE & zM & jamL ->
+     jL*mL_EM*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jL*mL_EM*sL0) : (tries'=tries+1);
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zE & zM & !jamL ->
+     mL_EM*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mL_EM*sL0) : (tries'=tries+1);
 
-  [sendH] !hasSendNow & !T & tries < MAXTRIES & zM & jamH ->
-     jH*mHM*sH0 : (hasSendNow'=true) & (tries'=0)
-   + (1 - jH*mHM*sH0) : (tries'=tries+1);
+  // east-north
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zE & zN & jamL ->
+     jL*mL_EN*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jL*mL_EN*sL0) : (tries'=tries+1);
+  [sendL] !hasSendNow & !T & tries < MAXTRIES & zE & zN & !jamL ->
+     mL_EN*sL0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mL_EN*sL0) : (tries'=tries+1);
 
-  [sendH] !hasSendNow & !T & tries < MAXTRIES & zM & !jamH ->
-     mHM*sH0 : (hasSendNow'=true) & (tries'=0)
-   + (1 - mHM*sH0) : (tries'=tries+1);
+  // ---------- sendH: 3×3 zones × {jam, !jam} ----------
+  // west-south
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zW & zS & jamH ->
+     jH*mH_WS*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jH*mH_WS*sH0) : (tries'=tries+1);
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zW & zS & !jamH ->
+     mH_WS*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mH_WS*sH0) : (tries'=tries+1);
 
-  [sendH] !hasSendNow & !T & tries < MAXTRIES & zN & jamH ->
-     jH*mHN*sH0 : (hasSendNow'=true) & (tries'=0)
-   + (1 - jH*mHN*sH0) : (tries'=tries+1);
+  // west-middle
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zW & zM & jamH ->
+     jH*mH_WM*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jH*mH_WM*sH0) : (tries'=tries+1);
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zW & zM & !jamH ->
+     mH_WM*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mH_WM*sH0) : (tries'=tries+1);
 
-  [sendH] !hasSendNow & !T & tries < MAXTRIES & zN & !jamH ->
-     mHN*sH0 : (hasSendNow'=true) & (tries'=0)
-   + (1 - mHN*sH0) : (tries'=tries+1);
+  // west-north
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zW & zN & jamH ->
+     jH*mH_WN*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jH*mH_WN*sH0) : (tries'=tries+1);
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zW & zN & !jamH ->
+     mH_WN*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mH_WN*sH0) : (tries'=tries+1);
+
+  // centre-south
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zC & zS & jamH ->
+     jH*mH_CS*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jH*mH_CS*sH0) : (tries'=tries+1);
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zC & zS & !jamH ->
+     mH_CS*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mH_CS*sH0) : (tries'=tries+1);
+
+  // centre-middle
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zC & zM & jamH ->
+     jH*mH_CM*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jH*mH_CM*sH0) : (tries'=tries+1);
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zC & zM & !jamH ->
+     mH_CM*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mH_CM*sH0) : (tries'=tries+1);
+
+  // centre-north
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zC & zN & jamH ->
+     jH*mH_CN*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jH*mH_CN*sH0) : (tries'=tries+1);
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zC & zN & !jamH ->
+     mH_CN*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mH_CN*sH0) : (tries'=tries+1);
+
+  // east-south
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zE & zS & jamH ->
+     jH*mH_ES*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jH*mH_ES*sH0) : (tries'=tries+1);
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zE & zS & !jamH ->
+     mH_ES*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mH_ES*sH0) : (tries'=tries+1);
+
+  // east-middle
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zE & zM & jamH ->
+     jH*mH_EM*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jH*mH_EM*sH0) : (tries'=tries+1);
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zE & zM & !jamH ->
+     mH_EM*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mH_EM*sH0) : (tries'=tries+1);
+
+  // east-north
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zE & zN & jamH ->
+     jH*mH_EN*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - jH*mH_EN*sH0) : (tries'=tries+1);
+  [sendH] !hasSendNow & !T & tries < MAXTRIES & zE & zN & !jamH ->
+     mH_EN*sH0 : (hasSendNow'=true) & (tries'=0)
+   + (1 - mH_EN*sH0) : (tries'=tries+1);
 
   // goal
   [done] T -> 1 : true;
@@ -144,7 +262,7 @@ endmodule
 label "Target" = T;
 label "Crash"  = (unreported = B);
 
-// ===== REWARDS (unchanged) =====
+// ===== REWARDS =====
 rewards "sendbased"
   [up]    true : 0.03;
   [right] true : 0.03;

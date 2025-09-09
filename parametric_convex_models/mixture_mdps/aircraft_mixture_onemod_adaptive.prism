@@ -1,0 +1,280 @@
+mdp
+
+// ===== Dimensions =====
+const int maxX = 100;
+const int maxY = 5;
+
+// ===== Mixture weights (K=4) =====
+const double theta1;
+const double theta2;
+const double theta3;
+formula theta4 = 1 - (theta1 + theta2 + theta3);
+
+// ===== Updated base-mode constants =====
+// Ensure 2*p_k <= 1 for all k
+const double r1 = 0.35;
+const double r2 = 0.25;
+const double r3 = 0.40;
+const double r4 = 0.15;
+
+const double p1 = 0.41;
+const double p2 = 0.40;
+const double p3 = 0.30;
+const double p4 = 0.32;
+
+// ===== Derived affine-in-θ probabilities (base, state-free) =====
+formula r_eff = theta1*r1 + theta2*r2 + theta3*r3 + theta4*r4;
+
+// Joint outcome probs when ax>0 and action is [up]/[down]
+// respond & adv-up / adv-down / adv-stay
+formula qRU = theta1*(r1*p1) + theta2*(r2*p2) + theta3*(r3*p3) + theta4*(r4*p4);
+formula qRD = qRU; // symmetric up/down prob p_k
+formula qRS = theta1*(r1*(1 - 2*p1))
+            + theta2*(r2*(1 - 2*p2))
+            + theta3*(r3*(1 - 2*p3))
+            + theta4*(r4*(1 - 2*p4));
+// no-respond & adv-up / adv-down / adv-stay
+formula qNU = theta1*((1 - r1)*p1) + theta2*((1 - r2)*p2) + theta3*((1 - r3)*p3) + theta4*((1 - r4)*p4);
+formula qND = qNU; // symmetric
+formula qNS = theta1*((1 - r1)*(1 - 2*p1))
+            + theta2*((1 - r2)*(1 - 2*p2))
+            + theta3*((1 - r3)*(1 - 2*p3))
+            + theta4*((1 - r4)*(1 - 2*p4));
+
+// Adversary-only mixture when aircraft chooses [stay] and ax>0:
+formula aU = theta1*p1 + theta2*p2 + theta3*p3 + theta4*p4;           // adv up
+formula aD = aU;                                                        // adv down
+formula aS = theta1*(1 - 2*p1) + theta2*(1 - 2*p2) + theta3*(1 - 2*p3) + theta4*(1 - 2*p4); // adv stay
+
+// ===== Proximity / collision (unchanged) =====
+formula xclose = ((x-ax >= 0) & (x-ax < 3)) | ((ax-x >= 0) & (ax-x < 3));
+formula yclose = ((y-ay >= 0) & (y-ay < 2)) | ((ay-y >= 0) & (ay-y < 2));
+formula collision = xclose & yclose;
+
+// ===== Adaptive zones (by aircraft x) =====
+formula zL = (x <= 3);                   // left
+formula zC = (x >= 4 & x <= 6);          // centre corridor (turbulent)
+formula zR = (x >= 7);                   // right
+
+// Relative vertical position (to pick “toward” direction)
+formula below = (y < ay);
+formula above = (y > ay);
+formula level = (y = ay);
+
+// ===== Zone multipliers (<= 1.0 to keep leftover >= 0) =====
+// These scale specific base branches; leftover mass goes to a chosen "intended" branch.
+const double mRU_L = 0.90;  // respond + adv up   (zone L)
+const double mRD_L = 0.90;  // respond + adv down
+const double mRS_L = 1.00;  // respond + adv stay
+const double mNU_L = 0.70;  // noresp + adv up
+const double mND_L = 0.70;  // noresp + adv down
+const double mNS_L = 0.60;  // noresp + adv stay
+
+const double mRU_C = 1.00;  // centre corridor: keep adv vertical strong
+const double mRD_C = 1.00;
+const double mRS_C = 0.85;  // reduce respond+stay
+const double mNU_C = 0.95;  // mild reduction
+const double mND_C = 0.95;
+const double mNS_C = 0.75;  // reduce noresp+stay
+
+const double mRU_R = 0.80;  // right: damp adv vertical
+const double mRD_R = 0.80;
+const double mRS_R = 0.95;
+const double mNU_R = 0.80;
+const double mND_R = 0.80;
+const double mNS_R = 0.90;
+
+// [stay] multipliers per zone
+const double mU_L = 0.75;
+const double mD_L = 0.75;
+const double mS_L = 1.00;
+
+const double mU_C = 1.00;
+const double mD_C = 1.00;
+const double mS_C = 0.80;
+
+const double mU_R = 0.85;
+const double mD_R = 0.85;
+const double mS_R = 0.95;
+
+// ===== Single module with both aircraft and adversary state =====
+module scene
+  // aircraft
+  x : [0..maxX] init 0;
+  y : [0..maxY] init 1;
+  // adversary
+  ax : [0..maxX] init maxX;
+  ay : [0..maxY] init 1;
+
+  // ===================== UP =====================
+  // --- ax>0 & zone L: leftover -> respond & adv stay (safer)
+  [up] (x < maxX) & (ax > 0) & zL ->
+     mRU_L*qRU : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mRD_L*qRD : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mRS_L*qRS : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = ay) +
+     mNU_L*qNU : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mND_L*qND : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mNS_L*qNS : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = ay) +
+     (1 - (mRU_L*qRU + mRD_L*qRD + mRS_L*qRS + mNU_L*qNU + mND_L*qND + mNS_L*qNS))
+                : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = ay);
+
+  // --- ax>0 & zone C: leftover -> no-respond & adv moves TOWARD aircraft
+  [up] (x < maxX) & (ax > 0) & zC & below ->
+     mRU_C*qRU : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mRD_C*qRD : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mRS_C*qRS : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = ay) +
+     mNU_C*qNU : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mND_C*qND : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mNS_C*qNS : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = ay) +
+     (1 - (mRU_C*qRU + mRD_C*qRD + mRS_C*qRS + mNU_C*qNU + mND_C*qND + mNS_C*qNS))
+                : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = max(ay-1,0));
+
+  [up] (x < maxX) & (ax > 0) & zC & above ->
+     mRU_C*qRU : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mRD_C*qRD : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mRS_C*qRS : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = ay) +
+     mNU_C*qNU : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mND_C*qND : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mNS_C*qNS : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = ay) +
+     (1 - (mRU_C*qRU + mRD_C*qRD + mRS_C*qRS + mNU_C*qNU + mND_C*qND + mNS_C*qNS))
+                : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = min(ay+1,maxY));
+
+  [up] (x < maxX) & (ax > 0) & zC & level ->
+     mRU_C*qRU : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mRD_C*qRD : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mRS_C*qRS : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = ay) +
+     mNU_C*qNU : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mND_C*qND : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mNS_C*qNS : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = ay) +
+     (1 - (mRU_C*qRU + mRD_C*qRD + mRS_C*qRS + mNU_C*qNU + mND_C*qND + mNS_C*qNS))
+                : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = ay);
+
+  // --- ax>0 & zone R: leftover -> respond & adv stay
+  [up] (x < maxX) & (ax > 0) & zR ->
+     mRU_R*qRU : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mRD_R*qRD : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mRS_R*qRS : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = ay) +
+     mNU_R*qNU : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mND_R*qND : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mNS_R*qNS : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = ay) +
+     (1 - (mRU_R*qRU + mRD_R*qRD + mRS_R*qRS + mNU_R*qNU + mND_R*qND + mNS_R*qNS))
+                : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = ay);
+
+  // --- ax=0: only aircraft response remains
+  [up] (x < maxX) & (ax = 0) ->
+     r_eff       : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax) & (ay' = ay) +
+     (1 - r_eff) : (x' = x+1) & (y' = y)             & (ax' = ax) & (ay' = ay);
+
+  // ===================== DOWN (mirrors UP; same zone logic) =====================
+  [down] (x < maxX) & (ax > 0) & zL ->
+     mRU_L*qRU : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mRD_L*qRD : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mRS_L*qRS : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = ay) +
+     mNU_L*qNU : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mND_L*qND : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mNS_L*qNS : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = ay) +
+     (1 - (mRU_L*qRU + mRD_L*qRD + mRS_L*qRS + mNU_L*qNU + mND_L*qND + mNS_L*qNS))
+                : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = ay);
+
+  [down] (x < maxX) & (ax > 0) & zC & below ->
+     mRU_C*qRU : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mRD_C*qRD : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mRS_C*qRS : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = ay) +
+     mNU_C*qNU : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mND_C*qND : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mNS_C*qNS : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = ay) +
+     (1 - (mRU_C*qRU + mRD_C*qRD + mRS_C*qRS + mNU_C*qNU + mND_C*qND + mNS_C*qNS))
+                : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = max(ay-1,0));
+
+  [down] (x < maxX) & (ax > 0) & zC & above ->
+     mRU_C*qRU : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mRD_C*qRD : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mRS_C*qRS : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = ay) +
+     mNU_C*qNU : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mND_C*qND : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mNS_C*qNS : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = ay) +
+     (1 - (mRU_C*qRU + mRD_C*qRD + mRS_C*qRS + mNU_C*qNU + mND_C*qND + mNS_C*qNS))
+                : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = min(ay+1,maxY));
+
+  [down] (x < maxX) & (ax > 0) & zC & level ->
+     mRU_C*qRU : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mRD_C*qRD : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mRS_C*qRS : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = ay) +
+     mNU_C*qNU : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mND_C*qND : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mNS_C*qNS : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = ay) +
+     (1 - (mRU_C*qRU + mRD_C*qRD + mRS_C*qRS + mNU_C*qNU + mND_C*qND + mNS_C*qNS))
+                : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = ay);
+
+  [down] (x < maxX) & (ax > 0) & zR ->
+     mRU_R*qRU : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mRD_R*qRD : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mRS_R*qRS : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = ay) +
+     mNU_R*qNU : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mND_R*qND : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mNS_R*qNS : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = ay) +
+     (1 - (mRU_R*qRU + mRD_R*qRD + mRS_R*qRS + mNU_R*qNU + mND_R*qND + mNS_R*qNS))
+                : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = ay);
+
+  [down] (x < maxX) & (ax = 0) ->
+     r_eff       : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax) & (ay' = ay) +
+     (1 - r_eff) : (x' = x+1) & (y' = y)          & (ax' = ax) & (ay' = ay);
+
+  // ===================== STAY =====================
+  // ax>0, zone L: leftover -> adv stay (safer)
+  [stay] (x < maxX) & (ax > 0) & zL ->
+     mU_L*aU : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mD_L*aD : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mS_L*aS : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = ay) +
+     (1 - (mU_L*aU + mD_L*aD + mS_L*aS))
+              : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = ay);
+
+  // ax>0, zone C: leftover -> adv moves toward aircraft
+  [stay] (x < maxX) & (ax > 0) & zC & below ->
+     mU_C*aU : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mD_C*aD : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mS_C*aS : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = ay) +
+     (1 - (mU_C*aU + mD_C*aD + mS_C*aS))
+              : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = max(ay-1,0));
+
+  [stay] (x < maxX) & (ax > 0) & zC & above ->
+     mU_C*aU : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mD_C*aD : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mS_C*aS : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = ay) +
+     (1 - (mU_C*aU + mD_C*aD + mS_C*aS))
+              : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = min(ay+1,maxY));
+
+  [stay] (x < maxX) & (ax > 0) & zC & level ->
+     mU_C*aU : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mD_C*aD : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mS_C*aS : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = ay) +
+     (1 - (mU_C*aU + mD_C*aD + mS_C*aS))
+              : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = ay);
+
+  // ax>0, zone R: leftover -> adv stay (safer)
+  [stay] (x < maxX) & (ax > 0) & zR ->
+     mU_R*aU : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     mD_R*aD : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     mS_R*aS : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = ay) +
+     (1 - (mU_R*aU + mD_R*aD + mS_R*aS))
+              : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = ay);
+
+  // ax=0: no adversary movement; stay keeps y
+  [stay] (x < maxX) & (ax = 0) ->
+     1 : (x' = x+1) & (y' = y) & (ax' = ax) & (ay' = ay);
+
+  // absorb when x=maxX
+  [up]   (x = maxX) -> true;
+  [down] (x = maxX) -> true;
+  [stay] (x = maxX) -> true;
+endmodule
+
+// ===== Labels & rewards =====
+label "goal"      = (x = maxX);
+label "collision" = collision;
+
+rewards
+  [up]   true : 1;
+  [down] true : 1;
+  [stay] true : 1;
+endrewards

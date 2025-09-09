@@ -1,0 +1,121 @@
+mdp
+
+// ===== Dimensions & params =====
+const int maxX = 100;
+const int maxY = 5;
+
+// ===== Mixture weights (K=4) =====
+const double theta1;
+const double theta2;
+const double theta3;
+formula theta4 = 1 - (theta1 + theta2 + theta3);
+
+// ===== Base-mode constants (per-mode pilot response r_k and adversary p_k) =====
+// Ensure 2*p_k <= 1 for all k.
+const double r1 = 0.35;
+const double r2 = 0.25;
+const double r3 = 0.40;
+const double r4 = 0.15;
+
+const double p1 = 0.41;   // adversary up/down prob in mode 1
+const double p2 = 0.4;   // mode 2
+const double p3 = 0.3;   // mode 3
+const double p4 = 0.32;   // mode 4  (2*0.22 = 0.44 <= 1)
+
+// ===== Derived affine-in-θ probabilities =====
+// Aircraft response (for [up]/[down]) when adversary is done (ax=0)
+formula r_eff = theta1*r1 + theta2*r2 + theta3*r3 + theta4*r4;
+
+// Joint outcome probs when ax>0 and action is [up] or [down]:
+// respond & adv-up / adv-down / adv-stay
+formula qRU = theta1*(r1*p1) + theta2*(r2*p2) + theta3*(r3*p3) + theta4*(r4*p4);
+formula qRD = qRU; // symmetric up/down prob p_k
+formula qRS = theta1*(r1*(1 - 2*p1))
+            + theta2*(r2*(1 - 2*p2))
+            + theta3*(r3*(1 - 2*p3))
+            + theta4*(r4*(1 - 2*p4));
+// no-respond & adv-up / adv-down / adv-stay
+formula qNU = theta1*((1 - r1)*p1) + theta2*((1 - r2)*p2) + theta3*((1 - r3)*p3) + theta4*((1 - r4)*p4);
+formula qND = qNU; // symmetric
+formula qNS = theta1*((1 - r1)*(1 - 2*p1))
+            + theta2*((1 - r2)*(1 - 2*p2))
+            + theta3*((1 - r3)*(1 - 2*p3))
+            + theta4*((1 - r4)*(1 - 2*p4));
+
+// Adversary-only movement mixture when aircraft chooses [stay] and ax>0:
+formula aU = theta1*p1 + theta2*p2 + theta3*p3 + theta4*p4; // adv up
+formula aD = aU;                                            // adv down
+formula aS = theta1*(1 - 2*p1) + theta2*(1 - 2*p2) + theta3*(1 - 2*p3) + theta4*(1 - 2*p4); // adv stay
+
+// ===== Proximity/collision labels =====
+formula xclose = ((x-ax >= 0) & (x-ax < 3)) | ((ax-x >= 0) & (ax-x < 3));
+formula yclose = ((y-ay >= 0) & (y-ay < 2)) | ((ay-y >= 0) & (ay-y < 2));
+formula collision = xclose & yclose;
+
+// ===== Single module with both aircraft and adversary state =====
+module scene
+  // aircraft
+  x : [0..maxX] init 0;
+  y : [0..maxY] init 1;
+  // adversary
+  ax : [0..maxX] init maxX;
+  ay : [0..maxY] init 1;
+
+  // ---------- UP ----------
+  // joint evolution while adversary still moving (ax>0)
+  [up] (x < maxX) & (ax > 0) ->
+     // respond & adv up
+     qRU : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     // respond & adv down
+     qRD : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     // respond & adv stay
+     qRS : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = ay) +
+     // no-respond & adv up
+     qNU : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     // no-respond & adv down
+     qND : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     // no-respond & adv stay
+     qNS : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = ay);
+
+  // when adversary is done (ax=0): only aircraft response remains
+  [up] (x < maxX) & (ax = 0) ->
+     r_eff       : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax) & (ay' = ay) +
+     (1 - r_eff) : (x' = x+1) & (y' = y)             & (ax' = ax) & (ay' = ay);
+
+  // ---------- DOWN ----------
+  [down] (x < maxX) & (ax > 0) ->
+     qRU : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     qRD : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     qRS : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = ay) +
+     qNU : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     qND : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     qNS : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = ay);
+
+  [down] (x < maxX) & (ax = 0) ->
+     r_eff       : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax) & (ay' = ay) +
+     (1 - r_eff) : (x' = x+1) & (y' = y)          & (ax' = ax) & (ay' = ay);
+
+  // ---------- STAY ----------
+  [stay] (x < maxX) & (ax > 0) ->
+     aU : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     aD : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     aS : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = ay);
+
+  [stay] (x < maxX) & (ax = 0) ->
+     1 : (x' = x+1) & (y' = y) & (ax' = ax) & (ay' = ay);
+
+  // absorb when x=maxX (keep actions enabled as no-ops)
+  [up]   (x = maxX) -> true;
+  [down] (x = maxX) -> true;
+  [stay] (x = maxX) -> true;
+endmodule
+
+// ===== Labels & rewards =====
+label "goal"      = (x = maxX);
+label "collision" = collision;
+
+rewards
+  [up]   true : 1;
+  [down] true : 1;
+  [stay] true : 1;
+endrewards
