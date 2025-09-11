@@ -26,11 +26,7 @@
 
 package explicit;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import parser.State;
 import prism.PrismComponent;
@@ -47,6 +43,29 @@ public class Bisimulation<Value> extends PrismComponent
 	protected int[] partition;
 	protected int numBlocks;
 	protected MDPSimple<Value> mdp;
+
+	private static final class ChoiceSig<V> {
+		final Object action;
+		final Distribution<V> distr;
+		ChoiceSig(Object action, Distribution<V> distr) { this.action = action; this.distr = distr; }
+		@Override public boolean equals(Object o) {
+			if (this == o) return true;
+			if (!(o instanceof ChoiceSig<?> other)) return false;
+            return Objects.equals(action, other.action) && Objects.equals(distr, other.distr);
+		}
+		@Override public int hashCode() { return Objects.hash(action, distr); }
+	}
+
+	private static final class Signature<V> {
+		final List<ChoiceSig<V>> items; // sorted canonical list
+		Signature(List<ChoiceSig<V>> items) { this.items = items; }
+		@Override public boolean equals(Object o) {
+			if (this == o) return true;
+			if (!(o instanceof Signature<?> other)) return false;
+            return Objects.equals(items, other.items);
+		}
+		@Override public int hashCode() { return Objects.hash(items); }
+	}
 
 	/**
 	 * Construct a new Bisimulation object.
@@ -69,6 +88,8 @@ public class Bisimulation<Value> extends PrismComponent
 			return minimiseDTMC((DTMC<Value>) model, propNames, propBSs);
 		case CTMC:
 			return minimiseCTMC((CTMC<Value>) model, propNames, propBSs);
+		case MDP:
+			return minimiseMDP((MDP<Value>) model, propNames, propBSs);
 		default:
 			throw new PrismNotSupportedException("Bisimulation minimisation not yet supported for " + model.getModelType() + "s");
 		}
@@ -134,6 +155,55 @@ public class Bisimulation<Value> extends PrismComponent
 		attachStatesAndLabels(ctmc, ctmcNew, propNames, propBSs);
 
 		return ctmcNew;
+	}
+
+	/**
+	 * Perform bisimulation minimisation on an MDP.
+	 * States in the quotient share (multi)sets of action-labelled, partition-lifted distributions.
+	 */
+	private MDP<Value> minimiseMDP(MDP<Value> mdpIn, List<String> propNames, List<BitSet> propBSs)
+	{
+		// Initial partition by propositions
+		initialisePartitionInfo(mdpIn, propBSs);
+
+		// Refine until stable
+		boolean changed = true;
+		while (changed)
+			changed = splitMDP(mdpIn);
+		mainLog.println("Minimisation: " + numStates + " to " + numBlocks + " States");
+
+		// Build reduced MDP from a representative of each block
+		MDPSimple<Value> mdpNew = new MDPSimple<>(numBlocks);
+		mdpNew.setEvaluator(mdpIn.getEvaluator());
+
+		int[] rep = new int[numBlocks];
+		java.util.Arrays.fill(rep, -1);
+		for (int s = 0; s < numStates; s++) {
+			int b = partition[s];
+			if (rep[b] == -1) rep[b] = s;
+		}
+
+		for (int b = 0; b < numBlocks; b++) {
+			int s = rep[b];
+			int numChoices = mdpIn.getNumChoices(s);
+			for (int i = 0; i < numChoices; i++) {
+				Distribution<Value> distrNew = new Distribution<>(mdpIn.getEvaluator());
+				for (Iterator<Map.Entry<Integer, Value>> it = mdpIn.getTransitionsIterator(s, i); it.hasNext();) {
+					Map.Entry<Integer, Value> e = it.next();
+					int tBlock = partition[e.getKey()];
+					distrNew.add(tBlock, e.getValue());
+				}
+				Object action = mdpIn.getAction(s, i);
+				if (action != null) {
+					mdpNew.addActionLabelledChoice(b, distrNew, action);
+				} else {
+					mdpNew.addChoice(b, distrNew);
+				}
+			}
+		}
+
+		attachStatesAndLabels(mdpIn, mdpNew, propNames, propBSs);
+		return mdpNew;
 	}
 
 	/**
@@ -214,9 +284,9 @@ public class Bisimulation<Value> extends PrismComponent
 			partitionNew[s] = (Integer) mdp.getAction(a, i);
 		}
 		// Debug info
-		//mainLog.println("New partition: " + java.util.Arrays.toString(partitionNew));
-		//mainLog.println("Signatures MDP: " + mdp.infoString());
-		//mainLog.println("Signatures MDP: " + mdp);
+		System.out.println("New partition: " + java.util.Arrays.toString(partitionNew));
+		System.out.println("Signatures MDP: " + mdp.infoString());
+		System.out.println("Signatures MDP: " + mdp);
 		//try { mdp.exportToDotFile("mdp.dot"); } catch (PrismException e) {}
 		// Update info
 		boolean changed = numBlocks != numBlocksNew;
@@ -228,6 +298,74 @@ public class Bisimulation<Value> extends PrismComponent
 		}
 
 		return changed;
+	}
+
+	/**
+	 * Perform a split of the current partition for an MDP, if possible.
+	 * States are equivalent w.r.t. the current partition if the (multi)set of
+	 * action-labelled, partition-lifted successor distributions is identical.
+	 * @return whether or not the partition was split
+	 */
+	private boolean splitMDP(MDP<Value> mdpIn)
+	{
+		int[] partitionNew = new int[numStates];
+		int numBlocksNew = 0;
+
+		// For each old block, map canonical signatures to fresh block IDs
+		List<Map<Signature<Value>, Integer>> perBlockMaps = new ArrayList<>(numBlocks);
+		for (int b = 0; b < numBlocks; b++) perBlockMaps.add(new HashMap<>());
+
+		for (int s = 0; s < numStates; s++) {
+			int oldB = partition[s];
+			Signature<Value> sig = buildSignatureForState(mdpIn, s);
+			Map<Signature<Value>, Integer> m = perBlockMaps.get(oldB);
+			Integer id = m.get(sig);
+			if (id == null) { id = numBlocksNew++; m.put(sig, id); }
+			partitionNew[s] = id;
+		}
+
+		// Debug info (mirrors DTMC path)
+		System.out.println("New partition (MDP): " + java.util.Arrays.toString(partitionNew));
+
+		boolean changed = numBlocks != numBlocksNew;
+		if (changed) {
+			partition = partitionNew;
+			numBlocks = numBlocksNew;
+		}
+		return changed;
+	}
+
+	/**
+	 * Build the canonical signature of a state in an MDP given the current partition.
+	 * For each choice, lift its distribution to partition blocks and pair it with the action label.
+	 * The list of (action, lifted-distribution) pairs is sorted to make it order-insensitive.
+	 */
+	private Signature<Value> buildSignatureForState(MDP<Value> mdpIn, int s)
+	{
+		final prism.Evaluator<Value> eval = mdpIn.getEvaluator();
+		final List<ChoiceSig<Value>> items = new ArrayList<>();
+		int numChoices = mdpIn.getNumChoices(s);
+		for (int i = 0; i < numChoices; i++) {
+			Distribution<Value> distrLift = new Distribution<>(eval);
+			for (Iterator<Map.Entry<Integer, Value>> it = mdpIn.getTransitionsIterator(s, i); it.hasNext();) {
+				Map.Entry<Integer, Value> e = it.next();
+				int blk = partition[e.getKey()];
+				distrLift.add(blk, e.getValue()); // sums duplicates by block
+			}
+			Object action = mdpIn.getAction(s, i);
+			items.add(new ChoiceSig<>(action, distrLift));
+		}
+		// Canonical order: first by action string (null -> ""), then by distribution string
+		Collections.sort(items, new Comparator<ChoiceSig<Value>>() {
+			@Override public int compare(ChoiceSig<Value> a, ChoiceSig<Value> b) {
+				String as = (a.action == null) ? "" : a.action.toString();
+				String bs = (b.action == null) ? "" : b.action.toString();
+				int c = as.compareTo(bs);
+				if (c != 0) return c;
+				return a.distr.toString().compareTo(b.distr.toString());
+			}
+		});
+		return new Signature<>(items);
 	}
 
 	/**
@@ -284,5 +422,9 @@ public class Bisimulation<Value> extends PrismComponent
 				propBSnew.set(partition[j]);
 			modelNew.addLabel(propName, propBSnew);
 		}
+	}
+
+	public int[] getPartition() {
+		return partition;
 	}
 }

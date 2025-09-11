@@ -1,0 +1,61 @@
+mdp
+
+// === Parameters (leave symbolic here; assign values at run time) ===
+// Validity constraints (informal):
+//   0 <= p <= 0.5   (because we use 1-2p)
+//   0 <= q <= 1
+//   0 <= r <= 1
+const double p;
+const double q;
+const double r;
+
+// States (int-coded):
+// 0: start; 1: region A preprocess; 2: region B preprocess
+// 3,4: caches in A; 6,7: caches in B
+// 5: miss in A; 8: miss in B
+// 9,10: backend servers; 11: success (absorbing)
+
+module cdn
+  s : [0..11] init 0;
+
+  // Start: route to A or B
+  [a] s=0 -> r:(s'=1) + (1-r):(s'=2);
+
+  // Region A preprocess: two cache hits (p each), or miss (1-2p)
+  [a] s=1 -> p:(s'=3) + p:(s'=4) + (1-2*p):(s'=5);
+
+  // Region B preprocess: structurally identical to A
+  [a] s=2 -> p:(s'=6) + p:(s'=7) + (1-2*p):(s'=8);
+
+  // Caches lead directly to success
+  [a] s=3 -> 1:(s'=11);
+  [a] s=4 -> 1:(s'=11);
+  [a] s=6 -> 1:(s'=11);
+  [a] s=7 -> 1:(s'=11);
+
+  // Misses go to backends (q / 1-q)
+  [a] s=5 -> q:(s'=9) + (1-q):(s'=10);
+  [a] s=8 -> q:(s'=9) + (1-q):(s'=10);
+
+  // Backends complete successfully
+  [a] s=9  -> 1:(s'=11);
+  [a] s=10 -> 1:(s'=11);
+
+  // Success absorbing
+  [a] s=11 -> 1:(s'=11);
+endmodule
+
+// Convenient labels (for lumping intuition / reward scoping)
+label "start"   = s=0;
+label "region"  = s=1 | s=2;
+label "cache"   = s=3 | s=4 | s=6 | s=7;
+label "miss"    = s=5 | s=8;
+label "backend" = s=9 | s=10;
+label "success" = s=11;
+
+// Optional: simple cost model (miss/backends cost more than cache hit)
+rewards "cost"
+  s=3 | s=4 | s=6 | s=7 : 1;   // cache service cost
+  s=5 | s=8             : 2;   // miss handling cost
+  s=9 | s=10            : 5;   // backend cost
+endrewards

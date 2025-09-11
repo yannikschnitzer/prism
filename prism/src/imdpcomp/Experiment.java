@@ -86,7 +86,9 @@ public class Experiment {
         SAV2_ADAPTIVE,
         AIRCRAFT_MIXTURE_ONEMOD,
         AIRCRAFT_MIXTURE_ONEMOD_ADAPTIVE,
-        EPIDEMIC
+        EPIDEMIC,
+        SIMPLE_BISIM,
+        SIMPLE_BISIM_MDP,
     }
 
     public enum Type {
@@ -521,6 +523,44 @@ public class Experiment {
                 // Set Parameter Values
                 this.parameterValues.addValue("theta1", 0.3);
                 this.parameterValues.addValue("theta2", 0.4);
+            }
+
+            case SIMPLE_BISIM -> {
+                this.modelFile = "../parametric_convex_models/bisimulation_models/simple_bisim.prism";
+                this.certainModelFile = "../parametric_convex_models/bisimulation_models/simple_bisim.prism";
+                this.robustSpec = "Pmaxmin = ? [ F \"cache\"]";
+                this.optimisticSpec = "Pmaxmax = ? [ F \"cache\"]";
+                this.dtmcSpec = "P = ? [ F \"cache\"]";
+                this.spec = "P min= ? [ F \"cache\"]";
+                this.type = Type.REACH;
+
+                this.multiplier = 2;
+                this.max_episode_length = 50;
+                this.maxVIIters = 20000;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("p", 0.2);
+                this.parameterValues.addValue("q", 0.3);
+                this.parameterValues.addValue("r", 0.4);
+            }
+
+            case SIMPLE_BISIM_MDP -> {
+                this.modelFile = "../parametric_convex_models/bisimulation_models/simple_mdp_bisim.prism";
+                this.certainModelFile = "../parametric_convex_models/bisimulation_models/simple_mdp_bisim.prism";
+                this.robustSpec = "Pmaxmin = ? [ F \"drop\" ]";
+                this.optimisticSpec = "Pmaxmax = ? [ F \"drop\"]";
+                this.dtmcSpec = "P = ? [ F \"drop\"]";
+                this.spec = "P max= ? [ F \"drop\"]";
+                this.type = Type.REACH;
+
+                this.multiplier = 2;
+                this.max_episode_length = 50;
+                this.maxVIIters = 20000;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("p", 0.35);
+                this.parameterValues.addValue("q", 0.65);
+                this.parameterValues.addValue("r", 0.4);
             }
 
             case ENGAGEMENT_ADAPTIVE -> {

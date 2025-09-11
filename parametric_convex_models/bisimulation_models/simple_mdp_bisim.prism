@@ -1,0 +1,42 @@
+mdp
+
+// -------- parameters (symbolic) --------
+// Validity: p>=0, q>=0, r in [0,1], and 2p <= 1, p+q <= 1.
+const double p;
+const double q;
+const double r;
+
+// -------- states --------
+// 0: Dispatcher A (two equal probs p -> server1 & p -> server2)
+// 5: Dispatcher B (p -> replica1, q -> replica2)
+// 1: S1 idle   2: S2 idle     6: R1 idle   7: R2 idle
+// 3: DROP (absorbing)          4: DONE (absorbing)
+
+module LB
+  s : [0..7] init 0;
+
+  // ---- Dispatcher A: produces "2p" after merging {1,2} ----
+  // send to server1 with p, server2 with p, else drop
+  [sendA] s=0 -> p:(s'=1) + p:(s'=2) + (1-2*p):(s'=3);
+
+  // ---- Dispatcher B: produces "p+q" after merging {6,7} ----
+  // send to replica1 with p, replica2 with q, else drop
+  [sendB] s=0 -> p:(s'=6) + q:(s'=7) + (1-p-q):(s'=3);
+
+  // ---- Identical servers (S1/S2) ----
+  // process succeeds with prob r, else retry (stay idle)
+  [proc] s=1 -> r:(s'=4) + (1-r):(s'=1);
+  [proc] s=2 -> r:(s'=4) + (1-r):(s'=2);
+
+  // ---- Identical replicas (R1/R2) ----
+  [proc] s=6 -> r:(s'=4) + (1-r):(s'=6);
+  [proc] s=7 -> r:(s'=4) + (1-r):(s'=7);
+
+  // ---- absorbing outcomes ----
+  [] s=3 -> (s'=3);  // DROP
+  [] s=4 -> (s'=4);  // DONE
+endmodule
+
+// labels (kept identical across symmetric states so they merge)
+label "drop" = s=3;
+label "done" = s=4;

@@ -92,6 +92,7 @@ public class PACConvexEstimator extends MAPEstimator {
     public double[] getCurrentResults() throws PrismException {
         updatePriors();
         UMDP<Double> imdp = buildPointIMDP(mdp);
+        System.out.println("IMDP: " + imdp);
 
         Result resultRobustConvex;
         Result resultOptimisticConvex;
