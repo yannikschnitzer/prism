@@ -1,7 +1,7 @@
 mdp
 
 // ===== Dimensions & params =====
-const int maxX = 100;
+const int maxX = 50;
 const int maxY = 5;
 
 // ===== Mixture weights (K=4) =====

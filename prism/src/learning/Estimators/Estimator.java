@@ -53,6 +53,13 @@ public class Estimator {
     private int numLearnableTransitions = 0;
     private MRStrategy uniformStrat;
 
+    // Bisimulation fields
+    protected boolean useBisim = false;
+    protected boolean tieAbstractExpressions = true;
+
+    protected MDPSimple<Function> pmdpBisim = null;
+    protected int[] bisimPartition = null;
+
     Estimator(Prism prism, Experiment ex) {
         this.prism = prism;
         this.ex = ex;
@@ -125,7 +132,7 @@ public class Estimator {
         setSamplesMap(samplesMap);
     }
 
-    public String getActionString(MDP<Double> mdp, int s, int i) {
+    public String getActionString(MDP mdp, int s, int i) {
         String action = (String) mdp.getAction(s, i);
         if (action == null) {
             action = "_empty";
@@ -405,5 +412,16 @@ public class Estimator {
     public int getNumLearnableComponents() {
         return -1;
     }
+
+    public void setUseBisimAggregation(boolean flag) { this.useBisim = flag; }
+
+    public void setTieAbstractExpressions(boolean flag) { this.tieAbstractExpressions = flag; }
+
+    /** Provide the bisimulation topology to aggregate counts/labelling. */
+    public void setBisimulationTopology(MDPSimple<param.Function> abstractMDP, int[] partition) {
+        this.pmdpBisim = abstractMDP;
+        this.bisimPartition = partition;
+    }
+
 }
 

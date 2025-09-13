@@ -108,6 +108,18 @@ public class DTMCFromMDPAndMDStrategy<Value> extends DTMCExplicit<Value>
 		return mdp.getConstantValues();
 	}
 
+	public Set<String> getLabels() { return mdp.getLabels(); }
+
+	@Override
+	public BitSet getLabelStates(String name) {
+		return mdp.getLabelStates(name);
+	}
+
+	@Override
+	public Map<String, BitSet> getLabelToStatesMap() {
+		return mdp.getLabelToStatesMap();
+	}
+
 	public int getNumTransitions(int s)
 	{
 		return strat.isChoiceDefined(s) ? mdp.getNumTransitions(s, strat.getChoiceIndex(s)) : 0;

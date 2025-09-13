@@ -356,15 +356,13 @@ public class Bisimulation<Value> extends PrismComponent
 			items.add(new ChoiceSig<>(action, distrLift));
 		}
 		// Canonical order: first by action string (null -> ""), then by distribution string
-		Collections.sort(items, new Comparator<ChoiceSig<Value>>() {
-			@Override public int compare(ChoiceSig<Value> a, ChoiceSig<Value> b) {
-				String as = (a.action == null) ? "" : a.action.toString();
-				String bs = (b.action == null) ? "" : b.action.toString();
-				int c = as.compareTo(bs);
-				if (c != 0) return c;
-				return a.distr.toString().compareTo(b.distr.toString());
-			}
-		});
+		items.sort((a, b) -> {
+            String as = (a.action == null) ? "" : a.action.toString();
+            String bs = (b.action == null) ? "" : b.action.toString();
+            int c = as.compareTo(bs);
+            if (c != 0) return c;
+            return a.distr.toString().compareTo(b.distr.toString());
+        });
 		return new Signature<>(items);
 	}
 

@@ -129,6 +129,10 @@ public class MDStrategyArray<Value> extends StrategyExplicit<Value> implements M
 		choices = null;
 	}
 
+	public int[] getChoices() {
+		return choices;
+	}
+
 	@Override
 	public String toString()
 	{

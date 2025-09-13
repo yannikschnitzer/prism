@@ -12,6 +12,8 @@ import learning.Estimators.*;
 import learning.ParameterTyer;
 import learning.Simulation.ObservationSampler;
 import learning.Simulation.TransitionTriple;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import param.Function;
 import param.FunctionFactory;
 import parser.Values;
@@ -147,26 +149,10 @@ public class ParametricConvexLearner {
         ParametricConvexLearner parametricConvexLearner = new ParametricConvexLearner(new Prism(new PrismDevNullLog()));
         parametricConvexLearner.initializePrism();
 
-        Experiment ex = new Experiment(Experiment.Model.SIMPLE_BISIM_MDP).setParametricConvex(true);
+        Experiment ex = new Experiment(Experiment.Model.SIMPLE_BISIM_MDP).setParametricConvex(false);
 
         MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
         System.out.println(pmdp);
-
-        PropertiesFile pf;
-        pf = parametricConvexLearner.prism.parsePropertiesString(ex.robustSpec);
-        Expression expr = pf.getProperty(0);
-        System.out.println("Prism properties: " + pf.getProperty(0));
-
-        StateModelChecker mc = new StateModelChecker(null);
-
-        ArrayList<String> propNames = new ArrayList<String>();
-        ArrayList<BitSet> propBSs = new ArrayList<BitSet>();
-        Expression exprNew = mc.checkMaximalPropositionalFormulas(pmdp, expr.deepCopy(), propNames, propBSs);
-        System.out.println(exprNew);
-        Bisimulation<Function> bisim = new Bisimulation<>(mc);
-        MDPSimple<Function> bisimdtmc = (MDPSimple<Function>) bisim.minimise(pmdp, propNames, propBSs);
-        System.out.println(bisimdtmc);
-        System.out.println(Arrays.toString(bisim.getPartition()));
 
         parametricConvexLearner.learnIMDP(ex,
                 ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
@@ -208,6 +194,42 @@ public class ParametricConvexLearner {
         }
     }
 
+    public Triple<MDPSimple<Function>,int[], Expression> constructParamBisimulation(MDPSimple<Function> pmdp, Experiment experiment) throws PrismException {
+        // Parse specs to bisimulation specs
+        PropertiesFile pf;
+        Expression expr;
+        ArrayList<String> propNames = new ArrayList<>();
+        ArrayList<BitSet> propBSs = new ArrayList<>();
+        StateModelChecker mc = new StateModelChecker(null);
+        Expression exprNew;
+
+        pf = prism.parsePropertiesString(experiment.dtmcSpec);
+        expr = pf.getProperty(0);
+        exprNew = mc.checkMaximalPropositionalFormulas(pmdp, expr.deepCopy(), propNames, propBSs);
+        experiment.dtmcSpec_bisim = exprNew;
+
+        pf = prism.parsePropertiesString(experiment.spec);
+        expr = pf.getProperty(0);
+        exprNew = mc.checkMaximalPropositionalFormulas(pmdp, expr.deepCopy(), propNames, propBSs);
+        experiment.spec_bism = exprNew;
+
+        pf = prism.parsePropertiesString(experiment.robustSpec);
+        expr = pf.getProperty(0);
+        exprNew = mc.checkMaximalPropositionalFormulas(pmdp, expr.deepCopy(), propNames, propBSs);
+        experiment.robustSpec_bisim = exprNew;
+
+        pf = prism.parsePropertiesString(experiment.optimisticSpec);
+        expr = pf.getProperty(0);
+        exprNew = mc.checkMaximalPropositionalFormulas(pmdp, expr.deepCopy(), propNames, propBSs);
+        experiment.optimisticSpec_bisim = exprNew;
+
+
+        Bisimulation<Function> bisim = new Bisimulation<>(mc);
+        MDPSimple<Function> pmdpBisim = (MDPSimple<Function>) bisim.minimise(pmdp, propNames, propBSs);
+
+        return new ImmutableTriple<>(pmdpBisim, bisim.getPartition(), exprNew);
+    }
+
     // Resets the PRISM engine and sets the simulator seed
     public void resetAll(int seed) {
         try {
@@ -244,6 +266,19 @@ public class ParametricConvexLearner {
             estimator.setFunctionMap(functionMap);
             estimator.setSimilarTransitions(similarTransitions);
             estimator.set_experiment(ex);
+
+            // Do bisimulation if requested
+            if(ex.doBisim) {
+                estimator.setUseBisimAggregation(true);
+                estimator.setUseBisimAggregation(true);
+
+                Triple<MDPSimple<Function>, int[], Expression> bisimRes = constructParamBisimulation(pmdp, ex);
+                System.out.println(bisimRes.getLeft());
+                System.out.println(Arrays.toString(bisimRes.getMiddle()));
+                System.out.println(bisimRes.getRight());
+
+                estimator.setBisimulationTopology(bisimRes.getLeft(), bisimRes.getMiddle());
+            }
 
             long startTime = System.nanoTime();
             // Iterate and run experiments for each of the sampled parameter vectors

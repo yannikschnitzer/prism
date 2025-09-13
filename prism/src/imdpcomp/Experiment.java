@@ -1,6 +1,7 @@
 package imdpcomp;
 
 import parser.Values;
+import parser.ast.Expression;
 
 import java.util.ArrayList;
 
@@ -17,6 +18,10 @@ public class Experiment {
     public String spec;
     public String robustSpec;
     public String optimisticSpec;
+    public Expression dtmcSpec_bisim;
+    public Expression spec_bism;
+    public Expression robustSpec_bisim;
+    public Expression optimisticSpec_bisim;
     public Values parameterValues = new Values();
     public Values exactValues = new Values();
     public ParameterTying tieParameters = FULL_TYING;
@@ -31,6 +36,7 @@ public class Experiment {
     public int maxVIIters = 20000;
     public ArrayList<Integer> resultIterations = new ArrayList<>();
     public boolean useParametricConvex = true;
+    public boolean doBisim = true;
 
     public enum ParameterTying {
         NO_TYING,

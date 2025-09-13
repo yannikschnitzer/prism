@@ -2,15 +2,19 @@ package learning.Estimators;
 
 import common.Interval;
 import explicit.*;
+import explicit.Model;
 import imdpcomp.Experiment;
 import learning.Simulation.StateActionPair;
 import learning.Simulation.TransitionTriple;
 import org.apache.commons.lang3.NotImplementedException;
+import param.Function;
+import parser.ast.Expression;
 import parser.ast.ModulesFile;
 import parser.ast.PropertiesFile;
 import prism.*;
 import simulator.ModulesFileModelGenerator;
 import strat.MDStrategy;
+import strat.MDStrategyArray;
 import strat.Strategy;
 
 import java.util.*;
@@ -24,7 +28,6 @@ public class MAPEstimator extends Estimator {
 
     // Cache for MAP mode denominator: sum of Dirichlet priors minus one per transition
     private final TransitionTriple keyTriple = new TransitionTriple(0, "", 0);
-
 
     public MAPEstimator(Prism prism, Experiment ex) {
         super(prism, ex);
@@ -159,8 +162,8 @@ public class MAPEstimator extends Estimator {
         }
 
         double resultRobustMDP = round((Double) resultRobust.getResult());
-        MDStrategy<Double> robustStrat = (MDStrategy<Double>) resultRobust.getStrategy();
-        MDStrategy<Double> optimisticStrat = (MDStrategy<Double>) resultOptimistic.getStrategy();
+        MDStrategy<Double> robustStrat = ex.doBisim ? liftStrategy((MDStrategyArray<Double>) resultRobust.getStrategy(), mdp) : (MDStrategy<Double>) resultRobust.getStrategy();
+        MDStrategy<Double> optimisticStrat = ex.doBisim ? liftStrategy((MDStrategyArray<Double>) resultOptimistic.getStrategy(), mdp) : (MDStrategy<Double>) resultOptimistic.getStrategy();
         this.currentStrat = optimisticStrat;
 
         startTime = System.nanoTime();
@@ -188,6 +191,8 @@ public class MAPEstimator extends Estimator {
 
     public Result checkDTMC(MDStrategy strat) throws PrismException {
         MDPExplicit<Double> mdp = (MDPExplicit<Double>) this.prism.getBuiltModelExplicit();
+
+        //System.out.println("MDP: " + mdp + " Strat: " + strat );
         DTMC<Double> dtmc = (DTMC<Double>) mdp.constructInducedModel(strat);
         DTMCModelChecker mc = new DTMCModelChecker(this.prism);
         mc.setPrecomp(false); //TODO: here
@@ -207,7 +212,6 @@ public class MAPEstimator extends Estimator {
         Result result = mc.check(dtmc, pf.getProperty(0));
         return result;
     }
-
 
     public Result getInitialResult(boolean verbose) throws PrismException {
         buildPointIMDP(mdp);
@@ -251,8 +255,8 @@ public class MAPEstimator extends Estimator {
         }
 
         double resultRobustMDP = round((Double) resultRobust.getResult());
-        MDStrategy<Double> robustStrat = (MDStrategy<Double>) resultRobust.getStrategy();
-        MDStrategy<Double> optimisticStrat = (MDStrategy<Double>) resultOptimistic.getStrategy();
+        MDStrategy<Double> robustStrat = ex.doBisim ? liftStrategy((MDStrategyArray<Double>) resultRobust.getStrategy(), mdp) : (MDStrategy<Double>) resultRobust.getStrategy();
+        MDStrategy<Double> optimisticStrat = ex.doBisim ? liftStrategy((MDStrategyArray<Double>) resultOptimistic.getStrategy(), mdp) : (MDStrategy<Double>) resultOptimistic.getStrategy();
         this.currentStrat = optimisticStrat;
 
         startTime = System.nanoTime();
@@ -262,6 +266,16 @@ public class MAPEstimator extends Estimator {
         double resultOptimisticDTMC = round((Double) checkDTMC(optimisticStrat).getResult());
 
         return new double[]{resultRobustMDP, resultRobustDTMC, resultOptimisticDTMC, modelBuildingTime, modelCheckingTimeRobust, modelCheckingTimeOptimistic, modelCheckingTimeDTMC};
+    }
+
+    public MDStrategy<Double> liftStrategy(MDStrategyArray<Double> abstractStrategy, NondetModel<Double> model) throws PrismException {
+        int[] choices = new int[model.getNumStates()];
+
+        for (int i = 0; i < choices.length; i++) {
+            choices[i] = abstractStrategy.getChoiceIndex(bisimPartition[i]);
+        }
+
+        return new MDStrategyArray<>(model, choices);
     }
 
     /**
@@ -330,6 +344,10 @@ public class MAPEstimator extends Estimator {
      * @throws PrismException
      */
     public Result modelCheckPointEstimate(boolean robust, boolean verbose) throws PrismException {
+        if (ex.doBisim) {
+            return modelCheckPointEstimateBisim(robust, verbose);
+        }
+
         UMDPModelChecker mc = new UMDPModelChecker(this.prism);
         mc.setGenStrat(true);
         mc.setPrecomp(true);
@@ -354,6 +372,23 @@ public class MAPEstimator extends Estimator {
         return result;
     }
 
+    public Result modelCheckPointEstimateBisim(boolean robust, boolean verbose) throws PrismException {
+        UMDPModelChecker mc = new UMDPModelChecker(this.prism);
+        mc.setGenStrat(true);
+        mc.setPrecomp(true);
+        mc.setMaxIters(ex.maxVIIters);
+        mc.setTermCritParam(1e-4);
+        mc.setErrorOnNonConverge(true);
+
+        Result result = mc.check(this.estimate, robust ? ex.robustSpec_bisim : ex.optimisticSpec_bisim);
+        if (verbose) {
+            System.out.println("\nModel checking point estimate MDP:");
+            System.out.println((robust ? ex.robustSpec : ex.optimisticSpec) + " : " + result.getResultAndAccuracy());
+        }
+
+        return result;
+    }
+
     /**
      * Model check the point estimate stored in the class
      *
@@ -368,10 +403,11 @@ public class MAPEstimator extends Estimator {
         mc.setErrorOnNonConverge(true);
 
         PropertiesFile pf;
-        if (robust)
+        if (robust) {
             pf = prism.parsePropertiesString(ex.robustSpec);
-        else
+        } else {
             pf = prism.parsePropertiesString(ex.optimisticSpec);
+        }
 
         ModulesFileModelGenerator<?> modelGen = ModulesFileModelGenerator.create(modulesFileIMDP, this.prism);
         modelGen.setSomeUndefinedConstants(estimate.getConstantValues());
