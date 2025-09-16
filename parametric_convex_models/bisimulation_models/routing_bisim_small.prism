@@ -1,0 +1,93 @@
+mdp
+
+// ---------------- parameters ----------------
+const int    L = 10;    // number of layers (distance steps to goal), L >= 3 suggested
+const int    M = 20;    // width per layer (copies per layer), M >= 8..20 to amplify symmetry
+const double h;    // per-step hazard to FAIL, keeps reachability < 1
+
+// Action parameters: toward-goal (p*) and backslide (r*) per action
+const double pL;
+const double rL;
+
+const double pM;
+const double rM;
+
+const double pN;
+const double rN;
+
+// ---------------- single-module state ----------------
+// loc = 0          : GOAL
+// loc = 1..L*M     : regular states, grouped into L layers of size M
+//                    layer ℓ (1..L) is indices ((ℓ-1)*M + 1) .. (ℓ*M)
+// loc = L*M + 1    : FAIL
+module layers
+  loc : [0 .. L*M + 1] init (L*M);  // start from last state's index in the farthest layer
+
+  // --- helper: absorbing goal/fail ---
+  [] (loc = 0)           -> (loc' = 0);
+  [] (loc = L*M + 1)     -> (loc' = L*M + 1);
+
+  // ========== ACTION [lo] ==========
+  // layer 1 (adjacent to GOAL)
+  [lo] (loc > 0 & loc <= M) ->
+        h               : (loc' = L*M + 1) +              // FAIL
+        pL              : (loc' = 0) +                    // GOAL
+        rL              : (loc' = M + 1) +                // backslide to rep(layer 2)
+        (1 - h - pL - rL) : (loc' = 1);                   // stay at rep(layer 1)
+
+  // layers 2..(L-1)
+  [lo] (loc > M & loc <= (L-1)*M) ->
+        h               : (loc' = L*M + 1) +
+        pL              : (loc' = 1) +                    // rep(layer ℓ-1) = 1
+        rL              : (loc' = (2*M) + 1) +            // rep(layer ℓ+1) = (2*M)+1  (see note below)
+        (1 - h - pL - rL) : (loc' = M + 1);               // rep(layer ℓ)   = M+1
+
+  // layer L (farthest): no further backslide; redirect backslide to stay
+  [lo] (loc > (L-1)*M & loc <= L*M) ->
+        h               : (loc' = L*M + 1) +
+        pL              : (loc' = M + 1) +                // to rep(L-1)
+        rL              : (loc' = (L-1)*M + 1) +          // (safe fallback: treat backslide as “stay in far layer”)
+        (1 - h - pL - rL) : (loc' = (L-1)*M + 1);         // rep(layer L)
+
+  // ========== ACTION [med] ==========
+  [med] (loc > 0 & loc <= M) ->
+        h               : (loc' = L*M + 1) +
+        pM              : (loc' = 0) +
+        rM              : (loc' = M + 1) +
+        (1 - h - pM - rM) : (loc' = 1);
+
+  [med] (loc > M & loc <= (L-1)*M) ->
+        h               : (loc' = L*M + 1) +
+        pM              : (loc' = 1) +
+        rM              : (loc' = (2*M) + 1) +
+        (1 - h - pM - rM) : (loc' = M + 1);
+
+  [med] (loc > (L-1)*M & loc <= L*M) ->
+        h               : (loc' = L*M + 1) +
+        pM              : (loc' = M + 1) +
+        rM              : (loc' = (L-1)*M + 1) +
+        (1 - h - pM - rM) : (loc' = (L-1)*M + 1);
+
+  // ========== ACTION [hi] ==========
+  [hi] (loc > 0 & loc <= M) ->
+        h               : (loc' = L*M + 1) +
+        pN              : (loc' = 0) +
+        rN              : (loc' = M + 1) +
+        (1 - h - pN - rN) : (loc' = 1);
+
+  [hi] (loc > M & loc <= (L-1)*M) ->
+        h               : (loc' = L*M + 1) +
+        pN              : (loc' = 1) +
+        rN              : (loc' = (2*M) + 1) +
+        (1 - h - pN - rN) : (loc' = M + 1);
+
+  [hi] (loc > (L-1)*M & loc <= L*M) ->
+        h               : (loc' = L*M + 1) +
+        pN              : (loc' = M + 1) +
+        rN              : (loc' = (L-1)*M + 1) +
+        (1 - h - pN - rN) : (loc' = (L-1)*M + 1);
+endmodule
+
+// ---------------- labels (only these appear in the property) ----------------
+label "goal" = (loc = 0);
+label "fail" = (loc = L*M + 1);

@@ -30,7 +30,7 @@ public class Experiment {
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
-    public int iterations = 1_000_000;
+    public int iterations = 1_00_000;
     public int max_episode_length = 50;
     public int multiplier = 5;
     public int maxVIIters = 20000;
@@ -95,6 +95,9 @@ public class Experiment {
         EPIDEMIC,
         SIMPLE_BISIM,
         SIMPLE_BISIM_MDP,
+        ROUTING_BISIM,
+        PNUELI_ZUCK,
+        TEST_BISIM,
     }
 
     public enum Type {
@@ -567,6 +570,65 @@ public class Experiment {
                 this.parameterValues.addValue("p", 0.35);
                 this.parameterValues.addValue("q", 0.65);
                 this.parameterValues.addValue("r", 0.4);
+            }
+
+            case ROUTING_BISIM -> {
+                this.modelFile = "../parametric_convex_models/bisimulation_models/routing_bisim.prism";
+                this.certainModelFile = "../parametric_convex_models/bisimulation_models/routing_bisim.prism";
+                this.robustSpec = "Pmaxmin = ? [ !\"fail\" U \"goal\" ]";
+                this.optimisticSpec = "Pmaxmax = ? [ !\"fail\" U \"goal\" ]";
+                this.dtmcSpec = "P = ? [ !\"fail\" U \"goal\" ]";
+                this.spec = "Pmax = ? [ !\"fail\" U \"goal\" ]";
+                this.type = Type.REACH;
+
+                this.multiplier = 2;
+                this.max_episode_length = 50;
+                this.maxVIIters = 20000;
+
+                this.parameterValues.addValue("h",  0.012);
+                this.parameterValues.addValue("s",  0.85);
+
+                this.parameterValues.addValue("pL", 0.08);
+                this.parameterValues.addValue("pM", 0.11);
+                this.parameterValues.addValue("pN", 0.16);
+            }
+
+            case TEST_BISIM -> {
+                this.modelFile = "../parametric_convex_models/bisimulation_models/test_bisim.prism";
+                this.certainModelFile = "../parametric_convex_models/bisimulation_models/test_bisim.prism";
+                this.robustSpec = "Pmaxmin = ? [ !\"fail\" U \"goal\" ]";
+                this.optimisticSpec = "Pmaxmax = ? [ !\"fail\" U \"goal\" ]";
+                this.dtmcSpec = "P = ? [ !\"fail\" U \"goal\" ]";
+                this.spec = "Pmax = ? [ !\"fail\" U \"goal\" ]";
+                this.type = Type.REACH;
+
+                this.multiplier = 2;
+                this.max_episode_length = 50;
+                this.maxVIIters = 20000;
+
+                this.parameterValues.addValue("h",  0.02);
+                this.parameterValues.addValue("pL", 0.08);
+                this.parameterValues.addValue("pM", 0.06);
+                this.parameterValues.addValue("pN", 0.07);
+                this.parameterValues.addValue("rL", 0.05);
+                this.parameterValues.addValue("rM", 0.03);
+            }
+
+            case PNUELI_ZUCK -> {
+                this.modelFile = "../parametric_convex_models/bisimulation_models/pnueli-zuck.prism";
+                this.certainModelFile = "../parametric_convex_models/bisimulation_models/pnueli-zuck.prism";
+                this.robustSpec = "Pmaxmin = ? [ !\"cs\" U \"contend\" ]";
+                this.optimisticSpec = "Pmaxmax = ? [ !\"cs\" U \"contend\" ]";
+                this.dtmcSpec = "P = ? [ !\"cs\" U \"contend\" ]";
+                this.spec = "Pmax = ? [ !\"cs\" U \"contend\" ]";
+                this.type = Type.REACH;
+
+                this.multiplier = 2;
+                this.max_episode_length = 50;
+                this.maxVIIters = 20000;
+
+                this.parameterValues.addValue("p_fast",  0.3);
+
             }
 
             case ENGAGEMENT_ADAPTIVE -> {

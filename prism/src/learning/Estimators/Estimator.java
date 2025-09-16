@@ -43,6 +43,7 @@ public class Estimator {
     protected HashSet<Integer> prob01States;
     protected HashSet<Integer> rew0InfStates;
     protected UMDP<Double> estimate;
+    protected UMDP<Double> bisimEstimate;
     protected UMDP<Double> marginalEstimate;
     protected UMDP<Double> convex_estimate;
     protected HashMap<TransitionTriple, Double> trueProbabilitiesMap;

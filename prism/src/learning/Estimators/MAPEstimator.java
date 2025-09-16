@@ -147,6 +147,18 @@ public class MAPEstimator extends Estimator {
             this.marginalEstimate = null;
             Executors.newSingleThreadExecutor().submit(System::gc);
 
+        } else if (ex.doBisim) {
+            startTime = System.nanoTime();
+            buildPointIMDP_Bisim(mdp);
+            modelBuildingTime = System.nanoTime() - startTime;
+
+            startTime = System.nanoTime();
+            resultRobust = modelCheckPointEstimateBisim(true, true);
+            modelCheckingTimeRobust = System.nanoTime() - startTime;
+
+            startTime = System.nanoTime();
+            resultOptimistic = modelCheckPointEstimateBisim(false, true);
+            modelCheckingTimeOptimistic = System.nanoTime() - startTime;
         } else {
             startTime = System.nanoTime();
             buildPointIMDP(mdp);
@@ -239,6 +251,18 @@ public class MAPEstimator extends Estimator {
 
             startTime = System.nanoTime();
             resultOptimistic = modelCheckMarginalEstimate(false, true);
+            modelCheckingTimeOptimistic = System.nanoTime() - startTime;
+        } else if (ex.doBisim) {
+            startTime = System.nanoTime();
+            buildPointIMDP_Bisim(mdp);
+            modelBuildingTime = System.nanoTime() - startTime;
+
+            startTime = System.nanoTime();
+            resultRobust = modelCheckPointEstimateBisim(true, true);
+            modelCheckingTimeRobust = System.nanoTime() - startTime;
+
+            startTime = System.nanoTime();
+            resultOptimistic = modelCheckPointEstimateBisim(false, true);
             modelCheckingTimeOptimistic = System.nanoTime() - startTime;
         } else {
             startTime = System.nanoTime();
@@ -345,7 +369,8 @@ public class MAPEstimator extends Estimator {
      */
     public Result modelCheckPointEstimate(boolean robust, boolean verbose) throws PrismException {
         if (ex.doBisim) {
-            return modelCheckPointEstimateBisim(robust, verbose);
+            System.out.println("Here");
+            //return modelCheckPointEstimateBisim(robust, verbose);
         }
 
         UMDPModelChecker mc = new UMDPModelChecker(this.prism);
@@ -380,7 +405,7 @@ public class MAPEstimator extends Estimator {
         mc.setTermCritParam(1e-4);
         mc.setErrorOnNonConverge(true);
 
-        Result result = mc.check(this.estimate, robust ? ex.robustSpec_bisim : ex.optimisticSpec_bisim);
+        Result result = mc.check(this.bisimEstimate, robust ? ex.robustSpec_bisim : ex.optimisticSpec_bisim);
         if (verbose) {
             System.out.println("\nModel checking point estimate MDP:");
             System.out.println((robust ? ex.robustSpec : ex.optimisticSpec) + " : " + result.getResultAndAccuracy());
@@ -422,6 +447,23 @@ public class MAPEstimator extends Estimator {
         return result;
     }
 
+    public Result modelCheckPointEstimateBisim(UMDP<Double> estimate ,boolean robust, boolean verbose) throws PrismException {
+        UMDPModelChecker mc = new UMDPModelChecker(this.prism);
+        mc.setGenStrat(true);
+        mc.setPrecomp(true);
+        mc.setMaxIters(ex.maxVIIters);
+        mc.setTermCritParam(1e-4);
+        mc.setErrorOnNonConverge(true);
+
+        Result result = mc.check(estimate, robust ? ex.robustSpec_bisim : ex.optimisticSpec_bisim);
+        if (verbose) {
+            System.out.println("\nModel checking point estimate MDP:");
+            System.out.println((robust ? ex.robustSpec : ex.optimisticSpec) + " : " + result.getResultAndAccuracy());
+        }
+
+        return result;
+    }
+
     /**
      * Model check the marginal estimate stored in the class
      */
@@ -451,6 +493,225 @@ public class MAPEstimator extends Estimator {
 
     public Strategy buildStrategy() throws PrismException {
         return super.buildUniformStrat();
+    }
+
+     protected UMDP<Double> buildPointIMDP_Bisim(MDP<Double> groundMdp){
+        return null;
+     }
+
+      /*
+      Bisimulation Aggregations
+     */
+
+    /**
+     * Aggregate trials for the abstract (sAbs, action) by summing ground state-action counts
+     * over all ground states that map to sAbs and share the same action label.
+     */
+    protected int aggregateAbstractEdgeTrials(int sAbs, String action) {
+        int N = 0;
+        // iterate ground states that are in this abstract block
+        for (int s = 0; s < mdp.getNumStates(); s++) {
+            if (bisimPartition[s] != sAbs) continue;
+            StateActionPair sa = new StateActionPair(s, action);
+            N += sampleSizeMap.getOrDefault(sa, 0);
+        }
+        return N;
+    }
+
+    /**
+     * Aggregate successes for the abstract edge (sAbs, action, tAbs) by summing ground
+     * transition counts from all ground states in sAbs with 'action' to any ground state in tAbs.
+     */
+    protected int aggregateAbstractEdgeSuccesses(int sAbs, String action, int tAbs) {
+        int K = 0;
+        for (int s = 0; s < mdp.getNumStates(); s++) {
+            if (bisimPartition[s] != sAbs) continue;
+            // for this ground state/action, sum successes to all ground successors that map to tAbs
+            HashSet<Integer> succs = successorStatesMap.get(new StateActionPair(s, action));
+            if (succs == null) continue;
+            for (int t : succs) {
+                if (bisimPartition[t] != tAbs) continue;
+                K += samplesMap.getOrDefault(new learning.Simulation.TransitionTriple(s, action, t), 0);
+            }
+        }
+        return K;
+    }
+
+    // robust key for Functions (fallback to string if equals/hashCode not well-defined)
+    protected static final class FuncKey {
+        final param.Function f;
+        final String s;
+        FuncKey(param.Function f) { this.f = f; this.s = (f == null) ? "<null>" : f.toString(); }
+        @Override public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof FuncKey k)) return false;
+            // prefer equals if present; otherwise fallback to string
+            if (f != null && k.f != null && f.equals(k.f)) return true;
+            return Objects.equals(s, k.s);
+        }
+        @Override public int hashCode() { return (f != null) ? f.hashCode() : s.hashCode(); }
+
+        @Override public String toString() { return "(" + s + ")"; }
+    }
+
+    // pack (sAbs, actionLabel, tAbs) into one long
+    protected long packEdgeKey(int sAbs, String action, int tAbs) {
+        int ah24 = (action == null ? 0 : action.hashCode()) & 0x00FFFFFF;
+        return (((long)(sAbs & 0xFFFFF)) << 44) | (((long)(tAbs & 0xFFFFF)) << 24) | (long)ah24;
+    }
+
+    // ===================== DEBUG DUMPERS =====================
+
+    /** Pretty print the ground-level counts (N per (s,a) and K per (s,a,t))
+     *  and show the param expression for each ground transition from pmdp. */
+    public void debugDumpGroundCounts(boolean includeZeroEdges) {
+        System.out.println("\n========== GROUND COUNTS ==========");
+        if (mdp == null || pmdp == null) {
+            System.out.println("(mdp/pmdp not set)");
+            return;
+        }
+
+        for (int s = 0; s < mdp.getNumStates(); s++) {
+            int numChoices = mdp.getNumChoices(s);
+            if (numChoices == 0) continue;
+            System.out.printf("State s=%d%n", s);
+            for (int i = 0; i < numChoices; i++) {
+                final String action = getActionString(mdp, s, i);
+                StateActionPair sa = new StateActionPair(s, action);
+                int N = sampleSizeMap.getOrDefault(sa, 0);
+
+                // Build a map succ->Function (expression) from param model
+                Map<Integer, Function> exprBySucc = new HashMap<>();
+                for (Iterator<Map.Entry<Integer, Function>> it = pmdp.getTransitionsIterator(s, i); it.hasNext();) {
+                    Map.Entry<Integer, Function> e = it.next();
+                    exprBySucc.put(e.getKey(), e.getValue());
+                }
+
+                // Get successors we know about at the ground level
+                HashSet<Integer> succs = successorStatesMap.get(sa);
+                if (succs == null || succs.isEmpty()) {
+                    if (includeZeroEdges) {
+                        System.out.printf("  action=%s  N=%d  (no successors)%n", action, N);
+                    }
+                    continue;
+                }
+
+                System.out.printf("  action=%s  N=%d%n", action, N);
+                // Header
+                System.out.printf("    %-8s  %-8s  %s%n", "t", "K", "expr");
+                System.out.printf("    %-8s  %-8s  %s%n", "--------", "--------", "----------------");
+
+                // Rows
+                for (int t : succs) {
+                    int K = samplesMap.getOrDefault(new TransitionTriple(s, action, t), 0);
+                    if (!includeZeroEdges && K == 0) continue;
+                    Function f = exprBySucc.get(t);
+                    String fStr = (f == null) ? "-" : f.toString();
+                    System.out.printf("    %-8d  %-8d  %s%n", t, K, fStr);
+                }
+            }
+        }
+        System.out.println("===================================\n");
+    }
+
+    /** Pretty print the abstract (bisim) counts: N per (block,action), K per (block,action,block).
+     *  Also prints the pooled tying table across identical expressions if enabled and available. */
+    public void debugDumpAbstractCountsAndTies(boolean includeZeroEdges) {
+        System.out.println("\n========== ABSTRACT (BISIM) COUNTS ==========");
+        if (pmdpBisim == null || bisimPartition == null) {
+            System.out.println("(bisim topology not set; call setBisimulationTopology(...))");
+            return;
+        }
+        if (mdp == null) {
+            System.out.println("(mdp not set)");
+            return;
+        }
+
+        // ----- recompute edgeCounts and exprCounts identically to buildPointIMDP_Bisim -----
+        final int numAbsStates = pmdpBisim.getNumStates();
+        Map<Long, int[]> edgeCounts = new HashMap<>();           // (sAbs,action,tAbs) -> [K,N]
+        Map<FuncKey, int[]> exprCounts = new HashMap<>();         // expr -> [Ksum, Nsum]
+        Map<FuncKey, List<String>> exprEdgeList = new HashMap<>();// expr -> list of "sAbs --a--> tAbs [K/N]"
+
+        for (int sAbs = 0; sAbs < numAbsStates; sAbs++) {
+            int numChoices = pmdpBisim.getNumChoices(sAbs);
+            for (int iAbs = 0; iAbs < numChoices; iAbs++) {
+                final String action = getActionString(pmdpBisim, sAbs, iAbs);
+
+                // N for the group (sAbs, action)
+                final int N_group = aggregateAbstractEdgeTrials(sAbs, action);
+
+                for (Iterator<Map.Entry<Integer, param.Function>> it = pmdpBisim.getTransitionsIterator(sAbs, iAbs); it.hasNext();) {
+                    Map.Entry<Integer, param.Function> e = it.next();
+                    int tAbs = e.getKey();
+                    param.Function f = e.getValue();
+
+                    final int K_edge = aggregateAbstractEdgeSuccesses(sAbs, action, tAbs);
+
+                    long ek = packEdgeKey(sAbs, action, tAbs);
+                    edgeCounts.put(ek, new int[]{K_edge, N_group});
+
+                    FuncKey key = new FuncKey(f);
+                    int[] kn = exprCounts.computeIfAbsent(key, k -> new int[]{0, 0});
+                    kn[0] += K_edge;
+                    kn[1] += N_group;
+
+                    exprEdgeList
+                            .computeIfAbsent(key, k -> new ArrayList<>())
+                            .add(String.format("(%d) --%s--> (%d)  [%d/%d]", sAbs, action, tAbs, K_edge, N_group));
+                }
+            }
+        }
+
+        // ----- print abstract per-(sAbs,action,tAbs) table -----
+        for (int sAbs = 0; sAbs < numAbsStates; sAbs++) {
+            int numChoices = pmdpBisim.getNumChoices(sAbs);
+            if (numChoices == 0) continue;
+            System.out.printf("Block B=%d%n", sAbs);
+            for (int iAbs = 0; iAbs < numChoices; iAbs++) {
+                final String action = getActionString(pmdpBisim, sAbs, iAbs);
+                // read one N_group by peeking any successor (or recompute)
+                int N_group = aggregateAbstractEdgeTrials(sAbs, action);
+                System.out.printf("  action=%s  N=%d%n", action, N_group);
+
+                System.out.printf("    %-8s  %-8s  %-12s  %s%n", "toBlk", "K", "expr", "edgeKey");
+                System.out.printf("    %-8s  %-8s  %-12s  %s%n", "--------", "--------", "------------", "----------------");
+
+                for (Iterator<Map.Entry<Integer, param.Function>> it = pmdpBisim.getTransitionsIterator(sAbs, iAbs); it.hasNext();) {
+                    Map.Entry<Integer, param.Function> e = it.next();
+                    int tAbs = e.getKey();
+                    param.Function f = e.getValue();
+                    long ek = packEdgeKey(sAbs, action, tAbs);
+                    int[] kn = edgeCounts.get(ek);
+                    if (kn == null) continue;
+                    int K = kn[0], N = kn[1];
+                    if (!includeZeroEdges && K == 0) continue;
+                    System.out.printf("    %-8d  %-8d  %-12s  %d%n", tAbs, K, (f == null ? "-" : f.toString()), ek);
+                }
+            }
+        }
+
+        // ----- print tying summary (pooled by expression) -----
+        System.out.println("\n----- Abstract tying by identical expressions -----");
+        if (exprCounts.isEmpty()) {
+            System.out.println("(no abstract edges found)");
+        } else {
+            System.out.printf("  %-16s  %-10s  %-10s  %s%n", "expression", "K_total", "N_total", "contributing edges [K/N]");
+            System.out.printf("  %-16s  %-10s  %-10s  %s%n", "----------------", "----------", "----------", "-------------------------");
+            for (Map.Entry<FuncKey,int[]> e : exprCounts.entrySet()) {
+                FuncKey fk = e.getKey();
+                int[] kn = e.getValue();
+                List<String> edges = exprEdgeList.getOrDefault(fk, Collections.emptyList());
+                System.out.printf("  %-16s  %-10d  %-10d  %s%n", fk.s, kn[0], kn[1], edges);
+            }
+        }
+        System.out.println("===============================================\n");
+    }
+
+    /** Convenience: dump both ground and abstract tables together. */
+    public void debugDumpCounts(boolean includeZeroEdges) {
+        debugDumpGroundCounts(includeZeroEdges);
+        debugDumpAbstractCountsAndTies(includeZeroEdges);
     }
 }
 

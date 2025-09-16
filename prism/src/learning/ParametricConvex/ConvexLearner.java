@@ -95,8 +95,8 @@ public class ConvexLearner {
         udist.add(2, new Interval<>(0.7,1.0));
         umdp.addActionLabelledChoice(4, new UDistributionIntervals<>(udist), "a");
 
-        System.out.println("MDP: " + mdp);
-        System.out.println("IMDP: " + umdp);
+//        System.out.println("MDP: " + mdp);
+//        System.out.println("IMDP: " + umdp);
 
         GRBEnv env = new GRBEnv(true);
         env.set(GRB.IntParam.OutputFlag, 0);
@@ -167,6 +167,48 @@ public class ConvexLearner {
                 if (udist instanceof UDistributionIntervals<Double> dist) {
                     Distribution<Interval<Double>> idist = dist.getIntervals();
                     Distribution<Function> pdist = mdpParam.getDistribution(s, a);
+
+                    for (int i : idist.getSupport()) {
+                        GRBLinExpr exp = trans.translateLinearExpression(pdist.get(i).asExpression());
+                        //model.addRange(exp, idist.get(i).getLower(), idist.get(i).getUpper(), null);
+
+//                        model.addConstr(exp, GRB.GREATER_EQUAL, idist.get(i).getLower(), null);
+//                        model.addConstr(exp, GRB.LESS_EQUAL, idist.get(i).getUpper(), null);
+                        model.update();
+                        String exprString = ExpressionTranslator.formatGRBExpression(exp);
+
+                        double lower = idist.get(i).getLower();
+                        double upper = idist.get(i).getUpper();
+                        if (constrUpperBounds.containsKey(exprString)) {
+                            lower = Math.max(lower, constrLowerBounds.get(exprString).second);
+                            upper = Math.min(upper, constrUpperBounds.get(exprString).second);
+                        }
+
+                        constrLowerBounds.put(exprString, new Pair<>(exp, lower));
+                        constrUpperBounds.put(exprString, new Pair<>(exp, upper));
+                    }
+                } else {
+                    throw new PrismException("Only Interval MDPs supported.");
+                }
+            }
+        }
+
+        for (String expString : constrLowerBounds.keySet()) {
+            GRBLinExpr exp = constrLowerBounds.get(expString).first;
+
+            model.addConstr(exp, GRB.GREATER_EQUAL, constrLowerBounds.get(expString).second, null);
+            model.addConstr(exp, GRB.LESS_EQUAL, constrUpperBounds.get(expString).second, null);
+        }
+    }
+
+    public void setConstraints(MDPSimple<Function> pmdp,UMDP<Double> imdp) throws PrismException, GRBException {
+        // Iterate over IMDP
+        for (int s = 0; s < imdp.getNumStates(); s++) {
+            for (int a = 0; a < imdp.getNumChoices(s); a++) {
+                UDistribution<Double> udist = imdp.getUncertainDistribution(s,a);
+                if (udist instanceof UDistributionIntervals<Double> dist) {
+                    Distribution<Interval<Double>> idist = dist.getIntervals();
+                    Distribution<Function> pdist = pmdp.getDistribution(s, a);
 
                     for (int i : idist.getSupport()) {
                         GRBLinExpr exp = trans.translateLinearExpression(pdist.get(i).asExpression());

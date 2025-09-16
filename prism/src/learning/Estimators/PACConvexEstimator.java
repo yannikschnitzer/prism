@@ -17,6 +17,7 @@ import prism.Prism;
 import prism.PrismException;
 import prism.Result;
 import strat.MDStrategy;
+import strat.MDStrategyArray;
 
 import java.util.*;
 
@@ -27,6 +28,7 @@ public class PACConvexEstimator extends MAPEstimator {
     protected double error_tolerance;
     double precision = 1e-8;
     boolean useVertexPrecomp = true;
+    boolean verbose_bisim = false;
 
     // For parameter-tying in IMDP
     protected HashMap<TransitionTriple, Double> tiedModes = new HashMap<>();
@@ -92,7 +94,7 @@ public class PACConvexEstimator extends MAPEstimator {
     public double[] getCurrentResults() throws PrismException {
         updatePriors();
         UMDP<Double> imdp = buildPointIMDP(mdp);
-        System.out.println("IMDP: " + imdp);
+        //System.out.println("IMDP: " + imdp);
 
         Result resultRobustConvex;
         Result resultOptimisticConvex;
@@ -105,24 +107,40 @@ public class PACConvexEstimator extends MAPEstimator {
 
         // Solve Convex Parametric MDP
         try {
-            startTime = System.nanoTime();
-            System.out.println("Building Convex UMDP");
-            UMDP<Double> convex_mdp = buildConvexUMDP(imdp, this.pmdp);
-            modelBuildingTime = System.nanoTime() - startTime;
+            if (ex.doBisim) {
+                UMDP<Double> imdpBisim = buildPointIMDP_Bisim(mdp);
 
-            startTime = System.nanoTime();
-            resultRobustConvex = modelCheckPointEstimate(convex_mdp,true,false);
-            modelCheckingTimeRobust = System.nanoTime() - startTime;
+                startTime = System.nanoTime();
+                UMDP<Double> convex_mdp = buildConvexUMDPCombinedBisim(imdp, pmdp, imdpBisim, pmdpBisim);
+                modelBuildingTime = System.nanoTime() - startTime;
 
-            startTime = System.nanoTime();
-            resultOptimisticConvex = modelCheckPointEstimate(convex_mdp,false,false);
-            modelCheckingTimeOptimistic = System.nanoTime() - startTime;
+                startTime = System.nanoTime();
+                resultRobustConvex = modelCheckPointEstimateBisim(convex_mdp, true, false);
+                modelCheckingTimeRobust = System.nanoTime() - startTime;
+
+                startTime = System.nanoTime();
+                resultOptimisticConvex = modelCheckPointEstimateBisim(convex_mdp, false, false);
+                modelCheckingTimeOptimistic = System.nanoTime() - startTime;
+
+            } else {
+                startTime = System.nanoTime();
+                UMDP<Double> convex_mdp = buildConvexUMDP(imdp, this.pmdp);
+                modelBuildingTime = System.nanoTime() - startTime;
+
+                startTime = System.nanoTime();
+                resultRobustConvex = modelCheckPointEstimate(convex_mdp, true, false);
+                modelCheckingTimeRobust = System.nanoTime() - startTime;
+
+                startTime = System.nanoTime();
+                resultOptimisticConvex = modelCheckPointEstimate(convex_mdp, false, false);
+                modelCheckingTimeOptimistic = System.nanoTime() - startTime;
+            }
         } catch (GRBException e) {
             throw new RuntimeException(e);
         }
         double resconvexMDP = round((Double) resultRobustConvex.getResult());
-        MDStrategy<Double> robustStrat = (MDStrategy<Double>) resultRobustConvex.getStrategy();
-        MDStrategy<Double> optimisticStrat = (MDStrategy<Double>) resultOptimisticConvex.getStrategy();
+        MDStrategy<Double> robustStrat = ex.doBisim ? liftStrategy((MDStrategyArray<Double>) resultRobustConvex.getStrategy(), mdp) : (MDStrategy<Double>) resultRobustConvex.getStrategy();
+        MDStrategy<Double> optimisticStrat = ex.doBisim ? liftStrategy((MDStrategyArray<Double>) resultOptimisticConvex.getStrategy(), mdp) : (MDStrategy<Double>) resultOptimisticConvex.getStrategy();
         this.currentStrat = optimisticStrat;
 
         startTime = System.nanoTime();
@@ -131,14 +149,7 @@ public class PACConvexEstimator extends MAPEstimator {
 
         double resultConvexOptimisticDTMC = round((Double) checkDTMC(optimisticStrat).getResult());
 
-        // Model Check IMDP for comparison. TODO: delete and move to proper comparison
-//        Result resultRobustIMDP = modelCheckPointEstimate(imdp,true, false);
-//        double resRobustIMDP = round((Double) resultRobustIMDP.getResult());
-//        MDStrategy<Double> robustIMDPStrat = (MDStrategy<Double>) resultRobustIMDP.getStrategy();
-//        double resultRobustDTMC = round((Double) checkDTMC(robustIMDPStrat).getResult());
-
         System.out.println("Convex Guarantee: " + resconvexMDP + ", Convex Performance: " + resconvexDTMC);
-       // System.out.println("IMDP Guarantee: " + resRobustIMDP + ", IMDP Performance: " + resultRobustDTMC);
 
         return new double[]{resconvexMDP, resconvexDTMC, resultConvexOptimisticDTMC, modelBuildingTime, modelCheckingTimeRobust, modelCheckingTimeOptimistic, modelCheckingTimeDTMC};
     }
@@ -146,13 +157,61 @@ public class PACConvexEstimator extends MAPEstimator {
     // TODO : Update
     @Override
     public double[] getInitialResults() throws PrismException {
-        double[] res = super.getInitialResults();
-        try {
-            buildConvexUMDP(this.estimate, this.pmdp);
-        } catch (GRBException e) {
-            throw new RuntimeException(e);
+        if (ex.doBisim) {
+            Result resultRobust;
+            Result resultOptimistic;
+
+            long startTime;
+            long modelBuildingTime;
+            long modelCheckingTimeRobust;
+            long modelCheckingTimeOptimistic;
+            long modelCheckingTimeDTMC;
+
+            // Build and Model Check IMDP
+            UMDP<Double> imdpGround = buildPointIMDP(mdp);
+            resultRobust = modelCheckPointEstimate(true, true);
+            resultOptimistic = modelCheckPointEstimate(false, true);
+
+            startTime = System.nanoTime();
+            UMDP<Double> imdpBisim = buildPointIMDP_Bisim(mdp);
+            modelBuildingTime = System.nanoTime() - startTime;
+
+            startTime = System.nanoTime();
+            resultRobust = modelCheckPointEstimateBisim(true, true);
+            modelCheckingTimeRobust = System.nanoTime() - startTime;
+
+            startTime = System.nanoTime();
+            resultOptimistic = modelCheckPointEstimateBisim(false, true);
+            modelCheckingTimeOptimistic = System.nanoTime() - startTime;
+
+            double resultRobustMDP = round((Double) resultRobust.getResult());
+            MDStrategy<Double> robustStrat = ex.doBisim ? liftStrategy((MDStrategyArray<Double>) resultRobust.getStrategy(), mdp) : (MDStrategy<Double>) resultRobust.getStrategy();
+            MDStrategy<Double> optimisticStrat = ex.doBisim ? liftStrategy((MDStrategyArray<Double>) resultOptimistic.getStrategy(), mdp) : (MDStrategy<Double>) resultOptimistic.getStrategy();
+            this.currentStrat = optimisticStrat;
+
+            startTime = System.nanoTime();
+            double resultRobustDTMC = round((Double) checkDTMC(robustStrat).getResult());
+            modelCheckingTimeDTMC = System.nanoTime() - startTime;
+
+            double resultOptimisticDTMC = round((Double) checkDTMC(optimisticStrat).getResult());
+
+            System.out.println("IMDP Ground: " + imdpGround);
+            System.out.println("IMDP Bisim: " + imdpBisim);
+            try {
+                buildConvexUMDP(imdpGround, this.pmdp);
+            } catch (GRBException e) {
+                throw new RuntimeException(e);
+            }
+            return new double[]{resultRobustMDP, resultRobustDTMC, resultOptimisticDTMC, modelBuildingTime, modelCheckingTimeRobust, modelCheckingTimeOptimistic, modelCheckingTimeDTMC};
+        } else {
+            double[] res = super.getInitialResults();
+            try {
+                buildConvexUMDP(this.estimate, this.pmdp);
+            } catch (GRBException e) {
+                throw new RuntimeException(e);
+            }
+            return res;
         }
-        return res;
     }
 
     @Override
@@ -198,6 +257,124 @@ public class PACConvexEstimator extends MAPEstimator {
         return imdp;
     }
 
+    /**
+     * Build an IMDP on the *abstract* (bisim) topology by:
+     *  1) lumping ground counts onto abstract edges;
+     *  2) optionally tying identical expressions (Functions) across all abstract edges.
+     */
+    protected UMDP<Double> buildPointIMDP_Bisim(MDP<Double> groundMdp) {
+        if (pmdpBisim == null || bisimPartition == null) {
+            throw new IllegalStateException("Bisim topology/partition not set. Call setBisimulationTopology(...) first.");
+        }
+
+        final int numAbsStates = pmdpBisim.getNumStates();
+        UMDPSimple<Double> imdp = new UMDPSimple<>(numAbsStates);
+        // map the concrete initial state to its abstract block
+        final int s0 = groundMdp.getFirstInitialState();
+        final int b0 = bisimPartition[s0];
+        imdp.addInitialState(b0);
+
+        imdp.setStatesList(pmdpBisim.getStatesList());
+        imdp.setConstantValues(pmdpBisim.getConstantValues());
+
+        // ----- PASS 1: collect counts -----
+        // per abstract edge: (sAbs, action, tAbs) -> [K, N]
+        Map<Long, int[]> edgeCounts = new HashMap<>();
+        // pooled over identical expressions (if enabled): FuncKey -> [K_total, N_total]
+        Map<FuncKey, int[]> exprCounts = new HashMap<>();
+
+        for (int sAbs = 0; sAbs < numAbsStates; sAbs++) {
+            int numChoices = pmdpBisim.getNumChoices(sAbs);
+            for (int iAbs = 0; iAbs < numChoices; iAbs++) {
+                final String action = getActionString(pmdpBisim, sAbs, iAbs);
+
+                // trials for all edges from (sAbs, action)
+                final int N_group = aggregateAbstractEdgeTrials(sAbs, action);
+
+                for (Iterator<Map.Entry<Integer, param.Function>> it = pmdpBisim.getTransitionsIterator(sAbs, iAbs); it.hasNext();) {
+                    Map.Entry<Integer, param.Function> e = it.next();
+                    int tAbs = e.getKey();
+                    param.Function f = e.getValue();
+
+                    // successes for this abstract edge
+                    final int K_edge = aggregateAbstractEdgeSuccesses(sAbs, action, tAbs);
+
+                    long ek = packEdgeKey(sAbs, action, tAbs);
+                    edgeCounts.put(ek, new int[]{K_edge, N_group});
+
+                    if (tieAbstractExpressions) {
+                        FuncKey key = new FuncKey(f);
+                        int[] kn = exprCounts.computeIfAbsent(key, k -> new int[]{0, 0});
+                        kn[0] += K_edge;  // sum successes
+                        kn[1] += N_group; // sum trials
+                    }
+                }
+            }
+        }
+
+        //System.out.println("Tied expressions in abstract model: " + exprCounts.keySet().stream().toList());
+
+        // alpha split: per unique CI constructed
+        final int mCIs = Math.max(1, tieAbstractExpressions ? exprCounts.size() : edgeCounts.size());
+        final double alphaPerCI = (1.0 - error_tolerance) / (double) mCIs;
+
+        // ----- PASS 2: build distributions with chosen tying policy -----
+        for (int sAbs = 0; sAbs < numAbsStates; sAbs++) {
+            int numChoices = pmdpBisim.getNumChoices(sAbs);
+            for (int iAbs = 0; iAbs < numChoices; iAbs++) {
+                final String action = getActionString(pmdpBisim, sAbs, iAbs);
+                Distribution<Interval<Double>> distrNew = new Distribution<>(Evaluator.forDoubleInterval());
+
+                for (Iterator<Map.Entry<Integer, param.Function>> it = pmdpBisim.getTransitionsIterator(sAbs, iAbs); it.hasNext();) {
+                    Map.Entry<Integer, param.Function> e = it.next();
+                    int tAbs = e.getKey();
+                    param.Function f = e.getValue();
+
+                    Interval<Double> interval;
+                    if (tieAbstractExpressions) {
+                        int[] kn = exprCounts.get(new FuncKey(f));
+                        int K = kn[0], N = kn[1];
+                        if (f.isOne()) {
+                            interval = new Interval<>(1.0, 1.0);
+                        } else {
+                            interval = (N == 0)
+                                    ? new Interval<>(precision, 1.0 - precision)
+                                    : computeClopperPearson(N, K, alphaPerCI);
+                        }
+                    } else {
+                        int[] kn = edgeCounts.get(packEdgeKey(sAbs, action, tAbs));
+                        int K = kn[0], N = kn[1];
+                        if (f.isOne()) {
+                            interval = new Interval<>(1.0, 1.0);
+                        } else {
+                            interval = (N == 0)
+                                    ? new Interval<>(precision, 1.0 - precision)
+                                    : computeClopperPearson(N, K, alphaPerCI);
+                        }
+                    }
+
+                    distrNew.add(tAbs, interval);
+
+                    // (optional) stash for debugging on abstract edge IDs:
+                    // intervalsMap.put(new TransitionTriple(-1, action, (sAbs<<16) ^ tAbs), interval);
+                }
+                UDistributionIntervals<Double> udist = new UDistributionIntervals<>(distrNew);
+                imdp.addActionLabelledChoice(sAbs, udist, action);
+            }
+        }
+
+        // labels (carried over by pmdpBisim already)
+        for (Map.Entry<String, BitSet> e : pmdpBisim.getLabelToStatesMap().entrySet())
+            imdp.addLabel(e.getKey(), e.getValue());
+
+        if (verbose_bisim) {
+            this.debugDumpCounts(false);
+        }
+
+        this.bisimEstimate = imdp;
+        return imdp;
+    }
+
 
     public UMDP<Double> buildConvexUMDP(UMDP<Double> imdp, MDPSimple<Function> pmdp) throws GRBException, PrismException {
         GRBEnv env = new GRBEnv(true);
@@ -227,6 +404,41 @@ public class PACConvexEstimator extends MAPEstimator {
         }
 
         this.convex_estimate = convex_mdp;
+
+        return convex_mdp;
+    }
+
+    public UMDP<Double> buildConvexUMDPCombinedBisim(UMDP<Double> imdpGround, MDPSimple<Function> pmdpGround, UMDP<Double> imdpBisim, MDPSimple<Function> pmdpBisim) throws GRBException, PrismException {
+        GRBEnv env = new GRBEnv(true);
+        env.set(GRB.IntParam.OutputFlag, 0);
+        env.start();
+        ConvexLearner cxl = new ConvexLearner(env);
+        cxl.resetModel();
+
+        // Set both constraints, from ground and abstract model, setConstraints() only keeps tighter constraints
+        cxl.setConstraints(pmdpGround, imdpGround);
+        cxl.setConstraints(pmdpBisim, imdpBisim);
+        cxl.setParamModel(pmdpBisim);
+
+        cxl.getModel().update();
+
+        if (useVertexPrecomp) {
+            cxl.setVertexCap(10000);
+            cxl.precomputeVertices();
+        }
+
+        // Printing Model
+        ConvexLearner.printModel(cxl.getModel());
+
+        UMDPSimple<Double> convex_mdp = cxl.getUMDP();
+        convex_mdp.addInitialState(imdpBisim.getFirstInitialState());
+        convex_mdp.setStatesList(imdpBisim.getStatesList());
+        convex_mdp.setConstantValues(imdpBisim.getConstantValues());
+
+        Map<String, BitSet> labels = imdpBisim.getLabelToStatesMap();
+        for (Map.Entry<String, BitSet> entry : labels.entrySet()) {
+            convex_mdp.addLabel(entry.getKey(), entry.getValue());
+        }
 
         return convex_mdp;
     }

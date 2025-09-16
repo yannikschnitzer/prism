@@ -1,0 +1,135 @@
+mdp
+
+// ---------------- parameters (set by your Java/PRISM driver) ----------------
+const int L = 10;
+const int K = 100;
+const double h;         // per-step hazard to FAIL
+
+// forward options that can combine/sum in the abstract model
+const double pL;
+const double pM;
+const double pN;
+
+// "stay/back" mass that also combine in abstract model
+const double rL;
+const double rM;
+
+// ---------------- index plan ----------------
+//
+// We use a single variable 'loc' with these regions (no modulo):
+//   0               : GOAL
+//   1..(L*K)        : NEAR band   (L layers, each of size K)
+//   (L*K + 1)..(2*L*K)            : MID band
+//   (2*L*K + 1)..(3*L*K)          : FAR band
+//   3*L*K + 1       : FAIL
+//
+// Within each band, we will *always* jump to a small set of band "representatives":
+//   repN1 = 1, repN2 = 2, repN3 = 3                 // NEAR reps
+//   repM1 = L*K + 1, repM2 = L*K + 2                // MID reps
+//   repF1 = 2*L*K + 1, repF2 = 2*L*K + 2            // FAR reps
+//
+// This ensures many ground transitions target different states
+// of the *same band*, which bisimulation merges, summing probabilities.
+//
+
+// ---------------- single-module state ----------------
+  // helpers
+  formula NEAR = (loc >= 1) & (loc <= L*K);
+  formula MID  = (loc >= L*K + 1) & (loc <= 2*L*K);
+  formula FAR  = (loc >= 2*L*K + 1) & (loc <= 3*L*K);
+
+  // representatives
+  formula repN1 = 1;
+  formula repN2 = 2;
+  formula repN3 = 3;
+
+  formula repM1 = L*K + 1;
+  formula repM2 = L*K + 2;
+
+  formula repF1 = 2*L*K + 1;
+  formula repF2 = 2*L*K + 2;
+
+module funnel
+  // start far away
+  loc : [0 .. 3*L*K + 1] init (3*L*K);
+
+
+
+  // absorbing
+  [] (loc = 0)              -> (loc' = 0);
+  [] (loc = 3*L*K + 1)      -> (loc' = 3*L*K + 1);
+
+  // ================== AKTION: [burst] ==================
+  // many distinct edges to the *same band*, which will sum after bisimulation
+
+  // FAR band: try to move to MID (three distinct targets in MID),
+  //           or stay/back among FAR reps; hazard to FAIL.
+  [burst] FAR ->
+        h                   : (loc' = 3*L*K + 1) +
+        pL                  : (loc' = repM1) +      // MID rep 1
+        pM                  : (loc' = repM2) +      // MID rep 2
+        pN                  : (loc' = repM1) +      // MID rep 1 again (=> sums with pL later)
+        rL                  : (loc' = repF2) +      // FAR rep 2
+        rM                  : (loc' = repF1) +      // FAR rep 1
+        (1 - h - (pL + pM + pN) - (rL + rM)) : (loc' = repF1);  // extra "stay" mass
+
+  // MID band: try to move to NEAR (three distinct NEAR reps),
+  //           or drift to FAR reps; hazard to FAIL.
+  [burst] MID ->
+        h                   : (loc' = 3*L*K + 1) +
+        pL                  : (loc' = repN1) +      // NEAR rep 1
+        pM                  : (loc' = repN2) +      // NEAR rep 2
+        pN                  : (loc' = repN3) +      // NEAR rep 3
+        rL                  : (loc' = repF1) +      // FAR rep 1
+        rM                  : (loc' = repF2) +      // FAR rep 2
+        (1 - h - (pL + pM + pN) - (rL + rM)) : (loc' = repM1);  // MID rep 1
+
+  // NEAR band: can reach GOAL directly via multiple distinct goal-branches that will *sum*,
+  //            or bounce in NEAR, or back to MID; hazard to FAIL.
+  [burst] NEAR ->
+        h                   : (loc' = 3*L*K + 1) +
+        pL                  : (loc' = 0) +          // GOAL
+        pM                  : (loc' = 0) +          // GOAL (sums with pL later)
+        rL                  : (loc' = repM1) +      // back to MID
+        rM                  : (loc' = repN2) +      // NEAR rep 2
+        (1 - h - (pL + pM) - (rL + rM)) : (loc' = repN1);  // NEAR rep 1
+
+  // ================== AKTION: [focus] ==================
+  // fewer forward branches (more conservative), still creates summations.
+
+  [focus] FAR ->
+        h                   : (loc' = 3*L*K + 1) +
+        pN                  : (loc' = repM1) +
+        rL                  : (loc' = repF2) +
+        (1 - h - pN - rL)   : (loc' = repF1);
+
+  [focus] MID ->
+        h                   : (loc' = 3*L*K + 1) +
+        pN                  : (loc' = repN1) +
+        rL                  : (loc' = repF1) +
+        (1 - h - pN - rL)   : (loc' = repM1);
+
+  [focus] NEAR ->
+        h                   : (loc' = 3*L*K + 1) +
+        pN                  : (loc' = 0) +
+        rM                  : (loc' = repN1) +
+        (1 - h - pN - rM)   : (loc' = repN2);
+
+  // ================== AKTION: [wait] ==================
+  // safe-ish baseline; still can FAIL via h, otherwise stay in-band
+  [wait] FAR ->
+        h                   : (loc' = 3*L*K + 1) +
+        (1 - h)             : (loc' = repF1);
+
+  [wait] MID ->
+        h                   : (loc' = 3*L*K + 1) +
+        (1 - h)             : (loc' = repM1);
+
+  [wait] NEAR ->
+        h                   : (loc' = 3*L*K + 1) +
+        (1 - h)             : (loc' = repN1);
+endmodule
+
+// ---------------- labels (drive bisimulation) ----------------
+label "goal" = (loc = 0);
+label "fail" = (loc = 3*L*K + 1);

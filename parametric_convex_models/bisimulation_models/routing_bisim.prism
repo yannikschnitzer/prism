@@ -1,0 +1,93 @@
+mdp
+
+// ---------- parameters ----------
+const int    L = 15;       // number of layers, e.g., 10..15
+const int    M = 500;       // copies per layer, e.g., 40..100  (controls ground size)
+const double h;       // per-step fail hazard (keeps reachability < 1)
+const double s;       // shuffle prob within a layer (makes all copies reachable)
+
+// forward probs per action (purely linear, no products)
+const double pL;      // "lo"
+const double pM;      // "med"
+const double pN;      // "hi"
+
+// ---------- state space ----------
+// loc = 0            : GOAL
+// loc = 1..L*M       : regular states, grouped by layers of size M
+//                      layer k (1..L) = indices ((k-1)*M + 1) .. (k*M)
+// loc = L*M + 1      : FAIL
+module layered_shuffle
+  // Start at farthest layer, last copy (big ground, but abstract collapses)
+  loc : [0 .. L*M + 1] init (L*M);
+
+  // Absorbing
+  [] (loc = 0)           -> (loc' = 0);
+  [] (loc = L*M + 1)     -> (loc' = L*M + 1);
+
+  // ---------- helper predicates ----------
+  // (We compute targets inline using mod(), no formulas inside module.)
+
+  // ========== [lo] ==========
+  // layer 1: forward -> GOAL; else stay; with hazard
+  [lo] (loc > 0 & loc <= M) ->
+        h                 : (loc' = L*M + 1) +
+        pL                : (loc' = 0) +
+        (1 - h - pL)      : (loc' = loc);
+
+  // layers 2..L-1: forward to fixed representative of previous layer (index 1)
+  [lo] (loc > M & loc <= (L-1)*M) ->
+        h                 : (loc' = L*M + 1) +
+        pL                : (loc' = 1) +
+        (1 - h - pL)      : (loc' = loc);
+
+  // layer L: forward to representative of layer L-1 ((L-2)*M + 1)
+  [lo] (loc > (L-1)*M & loc <= L*M) ->
+        h                 : (loc' = L*M + 1) +
+        pL                : (loc' = (L-2)*M + 1) +
+        (1 - h - pL)      : (loc' = loc);
+
+  // ========== [med] ==========
+  [med] (loc > 0 & loc <= M) ->
+        h                 : (loc' = L*M + 1) +
+        pM                : (loc' = 0) +
+        (1 - h - pM)      : (loc' = loc);
+
+  [med] (loc > M & loc <= (L-1)*M) ->
+        h                 : (loc' = L*M + 1) +
+        pM                : (loc' = 1) +
+        (1 - h - pM)      : (loc' = loc);
+
+  [med] (loc > (L-1)*M & loc <= L*M) ->
+        h                 : (loc' = L*M + 1) +
+        pM                : (loc' = (L-2)*M + 1) +
+        (1 - h - pM)      : (loc' = loc);
+
+  // ========== [hi] ==========
+  [hi] (loc > 0 & loc <= M) ->
+        h                 : (loc' = L*M + 1) +
+        pN                : (loc' = 0) +
+        (1 - h - pN)      : (loc' = loc);
+
+  [hi] (loc > M & loc <= (L-1)*M) ->
+        h                 : (loc' = L*M + 1) +
+        pN                : (loc' = 1) +
+        (1 - h - pN)      : (loc' = loc);
+
+  [hi] (loc > (L-1)*M & loc <= L*M) ->
+        h                 : (loc' = L*M + 1) +
+        pN                : (loc' = (L-2)*M + 1) +
+        (1 - h - pN)      : (loc' = loc);
+
+  // ========== [shuffle] ==========
+  // Cycles to the "next" copy within the *same* layer with prob s; else stay.
+  // This ensures all M copies per layer are *reachable* in the ground model.
+  // Let base := loc - mod(loc-1, M)   (start index of current layer)
+  // Let nxt  := base + mod(mod(loc-1, M) + 1, M)
+  [shuffle] (loc > 0 & loc <= L*M) ->
+        s                 : (loc' = (loc - mod(loc-1, M)) + mod(mod(loc-1, M) + 1, M)) +
+        (1 - s)           : (loc' = loc);
+endmodule
+
+// ---------- labels used in the property (drive bisimulation) ----------
+label "goal" = (loc = 0);
+label "fail" = (loc = L*M + 1);

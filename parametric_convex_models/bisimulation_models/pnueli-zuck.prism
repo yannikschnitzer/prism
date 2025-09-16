@@ -1,0 +1,25 @@
+// pnueli_zuck_mdp.prism
+mdp
+
+const int N = 10;
+const double p_fast;  // success prob for single trier vs. backoff (0,1)
+
+module pz
+  i : [0..N] init N;  // idle
+  t : [0..N] init 0;  // trying
+  c : [0..1] init 0;  // in CS
+
+  [step]  i>0 -> (i'=i-1) & (t'=t+1);
+  [enter] t=1 & c=0 -> p_fast : (t'=0) & (c'=1)
+                       + (1-p_fast) : (i'=i+1) & (t'=0);
+  [exit]  c=1 -> (c'=0) & (i'=i+1);
+
+  // contention: either one remains trying, or all back off
+  [contend] t>=2 & c=0 -> 0.5 : (i'=i+t-1) & (t'=1)
+                               + 0.5 : (i'=i+t) & (t'=0);
+endmodule
+
+label "cs"      = (c=1);
+label "contend" = (t>=2);
+
+rewards "steps" true : 1; endrewards

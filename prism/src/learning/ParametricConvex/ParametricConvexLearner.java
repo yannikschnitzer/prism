@@ -149,7 +149,7 @@ public class ParametricConvexLearner {
         ParametricConvexLearner parametricConvexLearner = new ParametricConvexLearner(new Prism(new PrismDevNullLog()));
         parametricConvexLearner.initializePrism();
 
-        Experiment ex = new Experiment(Experiment.Model.SIMPLE_BISIM_MDP).setParametricConvex(false);
+        Experiment ex = new Experiment(Experiment.Model.ROUTING_BISIM).setParametricConvex(false);
 
         MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
         System.out.println(pmdp);
@@ -270,7 +270,7 @@ public class ParametricConvexLearner {
             // Do bisimulation if requested
             if(ex.doBisim) {
                 estimator.setUseBisimAggregation(true);
-                estimator.setUseBisimAggregation(true);
+                estimator.setTieAbstractExpressions(true);
 
                 Triple<MDPSimple<Function>, int[], Expression> bisimRes = constructParamBisimulation(pmdp, ex);
                 System.out.println(bisimRes.getLeft());
@@ -371,7 +371,7 @@ public class ParametricConvexLearner {
     }
 
     public String makeLabel(Experiment ex) {
-        return String.format("%s_%s_%s", ex.model.toString(), ex.useParametricConvex ? "PARCONVEX" : "IMDP", ex.tieParameters);
+        return String.format("%s_%s_%s_%s", ex.model.toString(), ex.useParametricConvex ? "PARCONVEX" : "IMDP", ex.tieParameters, ex.doBisim ? "BISIM": "NOBISIM");
     }
 
     // Creates the directory path for dumping experimental results
