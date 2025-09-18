@@ -149,7 +149,7 @@ public class ParametricConvexLearner {
         ParametricConvexLearner parametricConvexLearner = new ParametricConvexLearner(new Prism(new PrismDevNullLog()));
         parametricConvexLearner.initializePrism();
 
-        Experiment ex = new Experiment(Experiment.Model.ROUTING_BISIM).setParametricConvex(false);
+        Experiment ex = new Experiment(Experiment.Model.ENGAGEMENT).setParametricConvex(true);
 
         MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
         System.out.println(pmdp);

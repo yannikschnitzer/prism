@@ -334,7 +334,7 @@ public class PACConvexEstimator extends MAPEstimator {
                     if (tieAbstractExpressions) {
                         int[] kn = exprCounts.get(new FuncKey(f));
                         int K = kn[0], N = kn[1];
-                        if (f.isOne()) {
+                        if (f.isOne() || pmdpBisim.getDistribution(sAbs, iAbs).getSupport().size() == 1) {
                             interval = new Interval<>(1.0, 1.0);
                         } else {
                             interval = (N == 0)
@@ -344,7 +344,7 @@ public class PACConvexEstimator extends MAPEstimator {
                     } else {
                         int[] kn = edgeCounts.get(packEdgeKey(sAbs, action, tAbs));
                         int K = kn[0], N = kn[1];
-                        if (f.isOne()) {
+                        if (f.isOne() || pmdpBisim.getDistribution(sAbs, iAbs).getSupport().size() == 1) {
                             interval = new Interval<>(1.0, 1.0);
                         } else {
                             interval = (N == 0)
@@ -419,6 +419,7 @@ public class PACConvexEstimator extends MAPEstimator {
         cxl.setConstraints(pmdpGround, imdpGround);
         cxl.setConstraints(pmdpBisim, imdpBisim);
         cxl.setParamModel(pmdpBisim);
+        cxl.commitConstraints();
 
         cxl.getModel().update();
 

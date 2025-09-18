@@ -5,6 +5,7 @@ import common.Interval;
 import explicit.*;
 import param.Function;
 import param.FunctionFactory;
+import parser.ast.Expression;
 import prism.Evaluator;
 import prism.Pair;
 import prism.PrismException;
@@ -24,6 +25,7 @@ public class ConvexLearner {
 
     private HashMap<String, Pair<GRBLinExpr, Double>> constrLowerBounds = new HashMap<>();
     private HashMap<String, Pair<GRBLinExpr, Double>> constrUpperBounds = new HashMap<>();
+    private HashMap<String, Expression> sumExps = new HashMap<>();
 
     // add at top with other fields:
     private SharedVertexSet sharedVertices;     // null if not precomputed or cap exceeded
@@ -168,12 +170,10 @@ public class ConvexLearner {
                     Distribution<Interval<Double>> idist = dist.getIntervals();
                     Distribution<Function> pdist = mdpParam.getDistribution(s, a);
 
+
                     for (int i : idist.getSupport()) {
                         GRBLinExpr exp = trans.translateLinearExpression(pdist.get(i).asExpression());
-                        //model.addRange(exp, idist.get(i).getLower(), idist.get(i).getUpper(), null);
 
-//                        model.addConstr(exp, GRB.GREATER_EQUAL, idist.get(i).getLower(), null);
-//                        model.addConstr(exp, GRB.LESS_EQUAL, idist.get(i).getUpper(), null);
                         model.update();
                         String exprString = ExpressionTranslator.formatGRBExpression(exp);
 
@@ -187,18 +187,26 @@ public class ConvexLearner {
                         constrLowerBounds.put(exprString, new Pair<>(exp, lower));
                         constrUpperBounds.put(exprString, new Pair<>(exp, upper));
                     }
+
+                    // Enforce normalization: sum of successor probabilities for (s,a) equals 1
+                    if (pdist.getSupport().size() > 1) {
+                        Function sumFunc = pdist.get(pdist.getSupport().iterator().next()).getFactory().getZero();
+                        for (int iSucc : pdist.getSupport()) {
+                            sumFunc = sumFunc.add(pdist.get(iSucc));
+                        }
+                        String sumString = sumFunc.toString();
+
+                        if (!sumExps.containsKey(sumString) && !sumFunc.isOne()) {
+                            sumExps.put(sumString, sumFunc.asExpression());
+                        }
+                    }
                 } else {
                     throw new PrismException("Only Interval MDPs supported.");
                 }
             }
         }
 
-        for (String expString : constrLowerBounds.keySet()) {
-            GRBLinExpr exp = constrLowerBounds.get(expString).first;
-
-            model.addConstr(exp, GRB.GREATER_EQUAL, constrLowerBounds.get(expString).second, null);
-            model.addConstr(exp, GRB.LESS_EQUAL, constrUpperBounds.get(expString).second, null);
-        }
+        this.commitConstraints();
     }
 
     public void setConstraints(MDPSimple<Function> pmdp,UMDP<Double> imdp) throws PrismException, GRBException {
@@ -229,17 +237,39 @@ public class ConvexLearner {
                         constrLowerBounds.put(exprString, new Pair<>(exp, lower));
                         constrUpperBounds.put(exprString, new Pair<>(exp, upper));
                     }
+
+                    // Enforce normalization: sum of successor probabilities for (s,a) equals 1
+                    if (pdist.getSupport().size() > 1) {
+                        Function sumFunc = pdist.get(pdist.getSupport().iterator().next()).getFactory().getZero();
+                        for (int iSucc : pdist.getSupport()) {
+                            sumFunc = sumFunc.add(pdist.get(iSucc));
+                        }
+                        String sumString = sumFunc.toString();
+
+                        if (!sumExps.containsKey(sumString) && !sumFunc.isOne()) {
+                            sumExps.put(sumString, sumFunc.asExpression());
+                        }
+                    }
+
                 } else {
                     throw new PrismException("Only Interval MDPs supported.");
                 }
             }
         }
+    }
 
+    public void commitConstraints() throws GRBException, PrismException {
         for (String expString : constrLowerBounds.keySet()) {
             GRBLinExpr exp = constrLowerBounds.get(expString).first;
 
             model.addConstr(exp, GRB.GREATER_EQUAL, constrLowerBounds.get(expString).second, null);
             model.addConstr(exp, GRB.LESS_EQUAL, constrUpperBounds.get(expString).second, null);
+        }
+
+        // Enforce normalization: sum of successor probabilities for (s,a) equals 1
+        for (String expString : sumExps.keySet()) {
+            GRBLinExpr exp = trans.translateLinearExpression(sumExps.get(expString));
+            model.addConstr(exp, GRB.EQUAL, 1, null);
         }
     }
 

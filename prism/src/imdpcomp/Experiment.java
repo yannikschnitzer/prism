@@ -36,7 +36,7 @@ public class Experiment {
     public int maxVIIters = 20000;
     public ArrayList<Integer> resultIterations = new ArrayList<>();
     public boolean useParametricConvex = true;
-    public boolean doBisim = true;
+    public boolean doBisim = false;
 
     public enum ParameterTying {
         NO_TYING,
@@ -98,6 +98,8 @@ public class Experiment {
         ROUTING_BISIM,
         PNUELI_ZUCK,
         TEST_BISIM,
+        CROWDS,
+        CROWDS_PARAM
     }
 
     public enum Type {
@@ -628,6 +630,52 @@ public class Experiment {
                 this.maxVIIters = 20000;
 
                 this.parameterValues.addValue("p_fast",  0.3);
+
+            }
+
+            case CROWDS -> {
+                this.modelFile = "../parametric_convex_models/bisimulation_models/crowd.prism";
+                this.certainModelFile = "../parametric_convex_models/bisimulation_models/crowd.prism";
+                this.robustSpec = "Pmaxmin = ? [ F (observe0 > 1) ]";
+                this.optimisticSpec = "Pmaxmax = ? [ F (observe0 > 1) ]";
+                this.dtmcSpec = "P = ? [ F (observe0 > 1) ]";
+                this.spec = "Pmax = ? [ F (observe0 > 1) ]";
+                this.type = Type.REACH;
+
+                this.multiplier = 2;
+                this.max_episode_length = 50;
+                this.maxVIIters = 100000;
+
+                this.parameterValues.addValue("PF",  0.8);
+                this.parameterValues.addValue("badC",  0.091);
+
+            }
+
+            case CROWDS_PARAM -> {
+                this.modelFile = "../parametric_convex_models/bisimulation_models/crowd_param.prism";
+                this.certainModelFile = "../parametric_convex_models/bisimulation_models/crowd_param.prism";
+                this.robustSpec = "Pmaxmin = ? [ F (observe0 > 1) ]";
+                this.optimisticSpec = "Pmaxmax = ? [ F (observe0 > 1) ]";
+                this.dtmcSpec = "P = ? [ F (observe0 > 1) ]";
+                this.spec = "Pmax = ? [ F (observe0 > 1) ]";
+                this.type = Type.REACH;
+
+                this.multiplier = 2;
+                this.max_episode_length = 50;
+                this.maxVIIters = 1000000;
+
+                this.parameterValues.addValue("PF",  0.8);
+                this.parameterValues.addValue("badC",  0.091);
+                this.parameterValues.addValue("p_half_1",  1.0/2.0);
+                this.parameterValues.addValue("p_half_2",  1.0/2.0);
+                this.parameterValues.addValue("p_third_1",  1.0/3.0);
+                this.parameterValues.addValue("p_third_2",  1.0/3.0);
+                this.parameterValues.addValue("p_third_3",  1.0/3.0);
+                this.parameterValues.addValue("p_fourth",  1.0/4.0);
+                this.parameterValues.addValue("p_fith",  1.0/5.0);
+                this.parameterValues.addValue("p_tenth",  1.0/10.0);
+                this.parameterValues.addValue("p_fifteenth",  1.0/15.0);
+                this.parameterValues.addValue("p_twenty",  1.0/20.0);
 
             }
 

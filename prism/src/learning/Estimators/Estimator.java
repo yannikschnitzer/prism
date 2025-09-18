@@ -164,7 +164,7 @@ public class Estimator {
         }
 
         this.prism.setStoreVector(true);
-        this.prism.setMaxIters(1000000);
+        this.prism.setMaxIters(ex.maxVIIters);
 
         Result result = this.prism.modelCheck(ex.spec);
         System.out.println("result : " + result);
