@@ -30,7 +30,7 @@ public class Experiment {
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
-    public int iterations = 1_00_000;
+    public int iterations = 1_0_000;
     public int max_episode_length = 50;
     public int multiplier = 5;
     public int maxVIIters = 20000;
@@ -99,7 +99,10 @@ public class Experiment {
         PNUELI_ZUCK,
         TEST_BISIM,
         CROWDS,
-        CROWDS_PARAM
+        CROWDS_PARAM,
+        BRP,
+        EGL,
+        NAND
     }
 
     public enum Type {
@@ -129,6 +132,11 @@ public class Experiment {
 
     public Experiment setParametricConvex(boolean useParametricConvex) {
         this.useParametricConvex = useParametricConvex;
+        return this;
+    }
+
+    public Experiment useBisimulation(boolean useBisimulation) {
+        this.doBisim = useBisimulation;
         return this;
     }
 
@@ -587,33 +595,82 @@ public class Experiment {
                 this.max_episode_length = 50;
                 this.maxVIIters = 20000;
 
-                this.parameterValues.addValue("h",  0.012);
-                this.parameterValues.addValue("s",  0.85);
+// sizes
+                this.parameterValues.addValue("L", 15);
+                this.parameterValues.addValue("M", 500);
+                this.parameterValues.addValue("B", 6);
 
-                this.parameterValues.addValue("pL", 0.08);
-                this.parameterValues.addValue("pM", 0.11);
-                this.parameterValues.addValue("pN", 0.16);
+// dynamics
+                this.parameterValues.addValue("h",  0.01);
+                this.parameterValues.addValue("s",  0.15);
+
+// upper-layer forward (same as your original spirit)
+                this.parameterValues.addValue("pL", 0.20);
+                this.parameterValues.addValue("pM", 0.12);
+                this.parameterValues.addValue("pN", 0.08);
+
+// bottom-layer bucket vectors (sumRL=0.18, sumRM=0.12, sumRN=0.08)
+                this.parameterValues.addValue("rL1", 0.060);
+                this.parameterValues.addValue("rL2", 0.040);
+                this.parameterValues.addValue("rL3", 0.030);
+                this.parameterValues.addValue("rL4", 0.025);
+                this.parameterValues.addValue("rL5", 0.015);
+                this.parameterValues.addValue("rL6", 0.010);
+
+                this.parameterValues.addValue("rM1", 0.045);
+                this.parameterValues.addValue("rM2", 0.030);
+                this.parameterValues.addValue("rM3", 0.020);
+                this.parameterValues.addValue("rM4", 0.015);
+                this.parameterValues.addValue("rM5", 0.005);
+                this.parameterValues.addValue("rM6", 0.005);
+
+                this.parameterValues.addValue("rN1", 0.030);
+                this.parameterValues.addValue("rN2", 0.020);
+                this.parameterValues.addValue("rN3", 0.015);
+                this.parameterValues.addValue("rN4", 0.010);
+                this.parameterValues.addValue("rN5", 0.003);
+                this.parameterValues.addValue("rN6", 0.002);
             }
 
             case TEST_BISIM -> {
                 this.modelFile = "../parametric_convex_models/bisimulation_models/test_bisim.prism";
                 this.certainModelFile = "../parametric_convex_models/bisimulation_models/test_bisim.prism";
-                this.robustSpec = "Pmaxmin = ? [ !\"fail\" U \"goal\" ]";
-                this.optimisticSpec = "Pmaxmax = ? [ !\"fail\" U \"goal\" ]";
-                this.dtmcSpec = "P = ? [ !\"fail\" U \"goal\" ]";
-                this.spec = "Pmax = ? [ !\"fail\" U \"goal\" ]";
+                this.robustSpec = "Pmaxmin = ? [ F (\"goal\") ]";
+                this.optimisticSpec = "Pmaxmax = ? [ F (\"goal\") ]";
+                this.dtmcSpec = "P = ? [ F (\"goal\") ]";
+                this.spec = "Pmax = ? [ F (\"goal\") ]";
                 this.type = Type.REACH;
 
                 this.multiplier = 2;
                 this.max_episode_length = 50;
                 this.maxVIIters = 20000;
+// ===== (1) web_3tier_Kfe6_Kapp6_Kdb4.prism =====
+// Sum(fe*) = 0.86  -> 0.14 fallback-to-fail at FE hub
+                this.parameterValues.addValue("fe1", 0.17);
+                this.parameterValues.addValue("fe2", 0.16);
+                this.parameterValues.addValue("fe3", 0.15);
+                this.parameterValues.addValue("fe4", 0.14);
+                this.parameterValues.addValue("fe5", 0.13);
+                this.parameterValues.addValue("fe6", 0.11);
 
-                this.parameterValues.addValue("h",  0.02);
-                this.parameterValues.addValue("pL", 0.08);
-                this.parameterValues.addValue("pM", 0.06);
-                this.parameterValues.addValue("pN", 0.07);
-                this.parameterValues.addValue("rL", 0.05);
-                this.parameterValues.addValue("rM", 0.03);
+// Sum(ap*) = 0.78  -> 0.22 fallback-to-fail at App hub
+                this.parameterValues.addValue("ap1", 0.16);
+                this.parameterValues.addValue("ap2", 0.15);
+                this.parameterValues.addValue("ap3", 0.14);
+                this.parameterValues.addValue("ap4", 0.12);
+                this.parameterValues.addValue("ap5", 0.11);
+                this.parameterValues.addValue("ap6", 0.10);
+
+// Sum(db*) = 0.78  -> 0.22 fallback-to-fail at DB hub
+                this.parameterValues.addValue("db1", 0.24);
+                this.parameterValues.addValue("db2", 0.22);
+                this.parameterValues.addValue("db3", 0.18);
+                this.parameterValues.addValue("db4", 0.14);
+
+// Within-tier success once a node is picked (high but < 1)
+                this.parameterValues.addValue("qFe", 0.97);
+                this.parameterValues.addValue("qAp", 0.96);
+                this.parameterValues.addValue("qDb", 0.95);
             }
 
             case PNUELI_ZUCK -> {
@@ -664,6 +721,7 @@ public class Experiment {
                 this.max_episode_length = 50;
                 this.maxVIIters = 1000000;
 
+                this.parameterValues.addValue("CrowdSize", 2);
                 this.parameterValues.addValue("PF",  0.8);
                 this.parameterValues.addValue("badC",  0.091);
                 this.parameterValues.addValue("p_half_1",  1.0/2.0);
@@ -678,6 +736,59 @@ public class Experiment {
                 this.parameterValues.addValue("p_twenty",  1.0/20.0);
 
             }
+
+            case BRP -> {
+                this.modelFile = "../parametric_convex_models/bisimulation_models/brp.prism";
+                this.certainModelFile = "../parametric_convex_models/bisimulation_models/brp.prism";
+                this.robustSpec = "Pmaxmin = ? [ F s=5 & srep=2 ]";
+                this.optimisticSpec = "Pmaxmax = ? [ F s=5 & srep=2 ]";
+                this.dtmcSpec = "P = ? [ F s=5 & srep=2 ]";
+                this.spec = "Pmax = ? [ F s=5 & srep=2 ]";
+                this.type = Type.REACH;
+
+                this.multiplier = 2;
+                this.max_episode_length = 50;
+                this.maxVIIters = 100000;
+
+                this.parameterValues.addValue("pL",  0.69);
+                this.parameterValues.addValue("pK",  0.6);
+
+            }
+
+            case EGL -> {
+                this.modelFile = "../parametric_convex_models/bisimulation_models/egl.prism";
+                this.certainModelFile = "../parametric_convex_models/bisimulation_models/egl.prism";
+                this.robustSpec = "Pmaxmin = ? [ F !\"knowA\" & \"knowB\" ]";
+                this.optimisticSpec = "Pmaxmax = ? [ F !\"knowA\" & \"knowB\" ]";
+                this.dtmcSpec = "P = ? [F !\"knowA\" & \"knowB\" ]";
+                this.spec = "Pmax = ? [ F !\"knowA\" & \"knowB\" ]";
+                this.type = Type.REACH;
+
+                this.multiplier = 2;
+                this.max_episode_length = 50;
+                this.maxVIIters = 100000;
+
+                this.parameterValues.addValue("p_1",  0.5);
+                this.parameterValues.addValue("p_2",  0.5);
+            }
+
+            case NAND -> {
+                this.modelFile = "../parametric_convex_models/bisimulation_models/nand.prism";
+                this.certainModelFile = "../parametric_convex_models/bisimulation_models/nand.prism";
+                this.robustSpec = "Pmaxmin = ? [ F s=4 & z/5<0.1 ]";
+                this.optimisticSpec = "Pmaxmax = ? [ F s=4 & z/5<0.1 ]";
+                this.dtmcSpec = "P = ? [ F s=4 & z/5<0.1 ]";
+                this.spec = "Pmax = ? [ F s=4 & z/5<0.1 ]";
+                this.type = Type.REACH;
+
+                this.multiplier = 2;
+                this.max_episode_length = 50;
+                this.maxVIIters = 100000;
+
+                this.parameterValues.addValue("prob1",  0.9);
+                this.parameterValues.addValue("perr",  0.02);
+            }
+
 
             case ENGAGEMENT_ADAPTIVE -> {
                 this.modelFile = "../parametric_convex_models/mixture_mdps/engagement_adaptive.prism";
@@ -737,7 +848,7 @@ public class Experiment {
                 this.maxVIIters = 20000;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("theta1", 0.48);
+                this.parameterValues.addValue("theta1", 0.45);
                 this.parameterValues.addValue("theta2", 0.3);
             }
 

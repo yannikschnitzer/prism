@@ -323,6 +323,34 @@ public class IMDPSimple<Value> extends ModelExplicit<Value> implements NondetMod
 	{
 		return mdp.getTransitionsIterator(s, i);
 	}
+	@Override
+	public String toString()
+	{
+		String s = "";
+		s = "[ ";
+
+		for (int i = 0; i < getNumStates(); i++) {
+			if (i > 0) {
+				s += ", ";
+			}
+			s += i + ": ";
+			s += "[";
+			int n = getNumChoices(i);
+			for (int j = 0; j < n; j++) {
+				if (j > 0) {
+					s += ",";
+				}
+				Object o = getAction(i, n);
+				if (o != null) {
+					s += o + ":";
+				}
+				s += getUncertainDistribution(i, j).toString();
+			}
+			s += "]";
+		}
+		s += " ]\n";
+		return s;
+	}
 
 	@Override
 	public MDP<Interval<Value>> getIntervalModel()

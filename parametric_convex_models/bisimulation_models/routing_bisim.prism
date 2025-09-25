@@ -1,56 +1,75 @@
 mdp
 
-// ---------- parameters ----------
-const int    L = 15;       // number of layers, e.g., 10..15
-const int    M = 500;       // copies per layer, e.g., 40..100  (controls ground size)
-const double h;       // per-step fail hazard (keeps reachability < 1)
-const double s;       // shuffle prob within a layer (makes all copies reachable)
+// ---------- size params ----------
+const int    L = 15;            // e.g., 15
+const int    M = 500;            // e.g., 500
+const int    B = 10;            // number of goal-proxies, e.g., 6
 
-// forward probs per action (purely linear, no products)
-const double pL;      // "lo"
-const double pM;      // "med"
-const double pN;      // "hi"
+// ---------- dynamics ----------
+const double h;            // per-step hazard to FAIL
+const double s;            // shuffle probability within a layer
 
-// ---------- state space ----------
-// loc = 0            : GOAL
-// loc = 1..L*M       : regular states, grouped by layers of size M
-//                      layer k (1..L) = indices ((k-1)*M + 1) .. (k*M)
-// loc = L*M + 1      : FAIL
-module layered_shuffle
-  // Start at farthest layer, last copy (big ground, but abstract collapses)
-  loc : [0 .. L*M + 1] init (L*M);
+// forward probs for upper layers (kept simple & linear, like your original)
+const double pL;           // "lo"
+const double pM;           // "med"
+const double pN;           // "hi"
 
-  // Absorbing
+// bottom-layer forward vectors split across B *identical* proxies (per action)
+const double rL1; const double rL2; const double rL3; const double rL4; const double rL5; const double rL6; // extend if B>6
+const double rM1; const double rM2; const double rM3; const double rM4; const double rM5; const double rM6;
+const double rN1; const double rN2; const double rN3; const double rN4; const double rN5; const double rN6;
+
+// sums for residuals (use only first B terms)
+formula sumRL = rL1 + rL2 + rL3 + rL4 + rL5 + rL6;
+formula sumRM = rM1 + rM2 + rM3 + rM4 + rM5 + rM6;
+formula sumRN = rN1 + rN2 + rN3 + rN4 + rN5 + rN6;
+
+// ---------- state layout ----------
+// 0                 : GOAL
+// 1 .. L*M          : regular states (M copies per layer; layer k := ((k-1)*M+1)..(k*M))
+// L*M + 1           : FAIL
+// L*M + 1 + b (b=1..B) : B identical goal-proxies (each goes deterministically to GOAL)
+module layered_shuffle_buckets
+  loc : [0 .. L*M + 1 + B] init (L*M);
+
+  // absorbing
   [] (loc = 0)           -> (loc' = 0);
   [] (loc = L*M + 1)     -> (loc' = L*M + 1);
 
-  // ---------- helper predicates ----------
-  // (We compute targets inline using mod(), no formulas inside module.)
-
-  // ========== [lo] ==========
-  // layer 1: forward -> GOAL; else stay; with hazard
+  // ---------- [lo] ----------
+  // layer 1 → split across B proxies (distinct params), hazard, else stay
   [lo] (loc > 0 & loc <= M) ->
         h                 : (loc' = L*M + 1) +
-        pL                : (loc' = 0) +
-        (1 - h - pL)      : (loc' = loc);
+        rL1               : (loc' = L*M + 1 + 1) +
+        rL2               : (loc' = L*M + 1 + 2) +
+        rL3               : (loc' = L*M + 1 + 3) +
+        rL4               : (loc' = L*M + 1 + 4) +
+        rL5               : (loc' = L*M + 1 + 5) +
+        rL6               : (loc' = L*M + 1 + 6) +
+        (1 - h - sumRL)   : (loc' = loc);
 
-  // layers 2..L-1: forward to fixed representative of previous layer (index 1)
+  // layers 2..L-1 → forward to fixed representative of previous layer (index 1), hazard, else stay
   [lo] (loc > M & loc <= (L-1)*M) ->
         h                 : (loc' = L*M + 1) +
         pL                : (loc' = 1) +
         (1 - h - pL)      : (loc' = loc);
 
-  // layer L: forward to representative of layer L-1 ((L-2)*M + 1)
+  // top layer L → forward to representative of layer L-1 ((L-2)*M + 1)
   [lo] (loc > (L-1)*M & loc <= L*M) ->
         h                 : (loc' = L*M + 1) +
         pL                : (loc' = (L-2)*M + 1) +
         (1 - h - pL)      : (loc' = loc);
 
-  // ========== [med] ==========
+  // ---------- [med] ----------
   [med] (loc > 0 & loc <= M) ->
         h                 : (loc' = L*M + 1) +
-        pM                : (loc' = 0) +
-        (1 - h - pM)      : (loc' = loc);
+        rM1               : (loc' = L*M + 1 + 1) +
+        rM2               : (loc' = L*M + 1 + 2) +
+        rM3               : (loc' = L*M + 1 + 3) +
+        rM4               : (loc' = L*M + 1 + 4) +
+        rM5               : (loc' = L*M + 1 + 5) +
+        rM6               : (loc' = L*M + 1 + 6) +
+        (1 - h - sumRM)   : (loc' = loc);
 
   [med] (loc > M & loc <= (L-1)*M) ->
         h                 : (loc' = L*M + 1) +
@@ -62,11 +81,16 @@ module layered_shuffle
         pM                : (loc' = (L-2)*M + 1) +
         (1 - h - pM)      : (loc' = loc);
 
-  // ========== [hi] ==========
+  // ---------- [hi] ----------
   [hi] (loc > 0 & loc <= M) ->
         h                 : (loc' = L*M + 1) +
-        pN                : (loc' = 0) +
-        (1 - h - pN)      : (loc' = loc);
+        rN1               : (loc' = L*M + 1 + 1) +
+        rN2               : (loc' = L*M + 1 + 2) +
+        rN3               : (loc' = L*M + 1 + 3) +
+        rN4               : (loc' = L*M + 1 + 4) +
+        rN5               : (loc' = L*M + 1 + 5) +
+        rN6               : (loc' = L*M + 1 + 6) +
+        (1 - h - sumRN)   : (loc' = loc);
 
   [hi] (loc > M & loc <= (L-1)*M) ->
         h                 : (loc' = L*M + 1) +
@@ -78,16 +102,23 @@ module layered_shuffle
         pN                : (loc' = (L-2)*M + 1) +
         (1 - h - pN)      : (loc' = loc);
 
-  // ========== [shuffle] ==========
-  // Cycles to the "next" copy within the *same* layer with prob s; else stay.
-  // This ensures all M copies per layer are *reachable* in the ground model.
-  // Let base := loc - mod(loc-1, M)   (start index of current layer)
-  // Let nxt  := base + mod(mod(loc-1, M) + 1, M)
+  // ---------- [shuffle] ----------
   [shuffle] (loc > 0 & loc <= L*M) ->
         s                 : (loc' = (loc - mod(loc-1, M)) + mod(mod(loc-1, M) + 1, M)) +
         (1 - s)           : (loc' = loc);
+
+  // ---------- goal-proxies (B identical states → bisim merges them) ----------
+  [] (loc = L*M + 1 + 1) -> (loc' = 0);
+  [] (loc = L*M + 1 + 2) -> (loc' = 0);
+  [] (loc = L*M + 1 + 3) -> (loc' = 0);
+  [] (loc = L*M + 1 + 4) -> (loc' = 0);
+  [] (loc = L*M + 1 + 5) -> (loc' = 0);
+  [] (loc = L*M + 1 + 6) -> (loc' = 0);
 endmodule
 
-// ---------- labels used in the property (drive bisimulation) ----------
 label "goal" = (loc = 0);
 label "fail" = (loc = L*M + 1);
+
+// Example properties:
+// Pmax=? [ F goal ]   // best action policy
+// Pmin=? [ F goal ]   // robust against action choice

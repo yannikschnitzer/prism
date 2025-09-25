@@ -27,7 +27,7 @@ public class PACConvexEstimator extends MAPEstimator {
 
     protected double error_tolerance;
     double precision = 1e-8;
-    boolean useVertexPrecomp = true;
+    boolean useVertexPrecomp = false;
     boolean verbose_bisim = false;
 
     // For parameter-tying in IMDP
@@ -76,12 +76,14 @@ public class PACConvexEstimator extends MAPEstimator {
         if (this.ex.tieParameters == NO_TYING) {
             n = getStateActionCount(t.getStateAction());
             k = getTransitionCount(t);
-        } else {
-            if (!this.samplesMap.containsKey(t)) {
+        }  else { // tying
+            Integer nTied = tiedStateActionCounts.get(t);
+            Integer kTied = tiedTransitionCounts.get(t);
+            if (nTied == null || nTied == 0 || kTied == null) {
                 return new Interval<>(precision, 1 - precision);
             }
-            k = tiedTransitionCounts.get(t);
-            n = tiedStateActionCounts.get(t);
+            n = nTied;
+            k = kTied;
         }
 
         int m = this.getNumLearnableTransitions();
@@ -244,6 +246,7 @@ public class PACConvexEstimator extends MAPEstimator {
                         this.intervalsMap.put(t, interval);
                     }
                 });
+                IntervalUtils.delimit(distrNew, Evaluator.forDouble());
                 UDistributionIntervals<Double> udist = new UDistributionIntervals<>(distrNew);
                 imdp.addActionLabelledChoice(s, udist, getActionString(mdp, s, i));
             }
@@ -312,11 +315,51 @@ public class PACConvexEstimator extends MAPEstimator {
             }
         }
 
+        int learnable;
+        if (tieAbstractExpressions) {
+            // mark expressions that ever occur in a learnable context
+            HashSet<FuncKey> learnableExprs = new HashSet<>();
+            for (int sAbs = 0; sAbs < numAbsStates; sAbs++) {
+                int numChoices = pmdpBisim.getNumChoices(sAbs);
+                for (int iAbs = 0; iAbs < numChoices; iAbs++) {
+                    final String action = getActionString(pmdpBisim, sAbs, iAbs);
+                    var dist = pmdpBisim.getDistribution(sAbs, iAbs);
+                    boolean multi = dist.getSupport().size() > 1;
+                    for (Iterator<Map.Entry<Integer, param.Function>> it = pmdpBisim.getTransitionsIterator(sAbs, iAbs); it.hasNext();) {
+                        Map.Entry<Integer, param.Function> e = it.next();
+                        var f = e.getValue();
+                        if (multi && !f.isOne()) {
+                            learnableExprs.add(new FuncKey(f));
+                        }
+                    }
+                }
+            }
+            learnable = Math.max(1, learnableExprs.size());
+        } else {
+            HashSet<Long> learnableEdges = new HashSet<>();
+            for (int sAbs = 0; sAbs < numAbsStates; sAbs++) {
+                int numChoices = pmdpBisim.getNumChoices(sAbs);
+                for (int iAbs = 0; iAbs < numChoices; iAbs++) {
+                    final String action = getActionString(pmdpBisim, sAbs, iAbs);
+                    var dist = pmdpBisim.getDistribution(sAbs, iAbs);
+                    boolean multi = dist.getSupport().size() > 1;
+                    for (Iterator<Map.Entry<Integer, param.Function>> it = pmdpBisim.getTransitionsIterator(sAbs, iAbs); it.hasNext();) {
+                        Map.Entry<Integer, param.Function> e = it.next();
+                        int tAbs = e.getKey();
+                        var f = e.getValue();
+                        if (multi && !f.isOne()) {
+                            learnableEdges.add(packEdgeKey(sAbs, action, tAbs));
+                        }
+                    }
+                }
+            }
+            learnable = Math.max(1, learnableEdges.size());
+        }
+
         //System.out.println("Tied expressions in abstract model: " + exprCounts.keySet().stream().toList());
 
         // alpha split: per unique CI constructed
-        final int mCIs = Math.max(1, tieAbstractExpressions ? exprCounts.size() : edgeCounts.size());
-        final double alphaPerCI = (1.0 - error_tolerance) / (double) mCIs;
+        final double alphaPerCI = (1.0 - error_tolerance) / (double) learnable;
 
         // ----- PASS 2: build distributions with chosen tying policy -----
         for (int sAbs = 0; sAbs < numAbsStates; sAbs++) {
@@ -325,13 +368,17 @@ public class PACConvexEstimator extends MAPEstimator {
                 final String action = getActionString(pmdpBisim, sAbs, iAbs);
                 Distribution<Interval<Double>> distrNew = new Distribution<>(Evaluator.forDoubleInterval());
 
+                boolean multi = pmdpBisim.getDistribution(sAbs, iAbs).getSupport().size() > 1;
+
                 for (Iterator<Map.Entry<Integer, param.Function>> it = pmdpBisim.getTransitionsIterator(sAbs, iAbs); it.hasNext();) {
                     Map.Entry<Integer, param.Function> e = it.next();
                     int tAbs = e.getKey();
                     param.Function f = e.getValue();
 
                     Interval<Double> interval;
-                    if (tieAbstractExpressions) {
+                    if (!multi || f.isOne()) {
+                        interval = new Interval<>(1.0, 1.0);
+                    } else if (tieAbstractExpressions) {
                         int[] kn = exprCounts.get(new FuncKey(f));
                         int K = kn[0], N = kn[1];
                         if (f.isOne() || pmdpBisim.getDistribution(sAbs, iAbs).getSupport().size() == 1) {
@@ -358,6 +405,8 @@ public class PACConvexEstimator extends MAPEstimator {
                     // (optional) stash for debugging on abstract edge IDs:
                     // intervalsMap.put(new TransitionTriple(-1, action, (sAbs<<16) ^ tAbs), interval);
                 }
+
+                IntervalUtils.delimit(distrNew, Evaluator.forDouble());
                 UDistributionIntervals<Double> udist = new UDistributionIntervals<>(distrNew);
                 imdp.addActionLabelledChoice(sAbs, udist, action);
             }

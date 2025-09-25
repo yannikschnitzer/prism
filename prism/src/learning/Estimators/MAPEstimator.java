@@ -338,6 +338,7 @@ public class MAPEstimator extends Estimator {
                         this.intervalsMap.put(t, interval);
                     }
                 });
+                IntervalUtils.delimit(distrNew, Evaluator.forDouble());
                 imdp.addActionLabelledChoice(s, distrNew, getActionString(mdp, s, i));
             }
         }
@@ -368,11 +369,6 @@ public class MAPEstimator extends Estimator {
      * @throws PrismException
      */
     public Result modelCheckPointEstimate(boolean robust, boolean verbose) throws PrismException {
-        if (ex.doBisim) {
-            System.out.println("Here");
-            //return modelCheckPointEstimateBisim(robust, verbose);
-        }
-
         UMDPModelChecker mc = new UMDPModelChecker(this.prism);
         mc.setGenStrat(true);
         mc.setPrecomp(true);

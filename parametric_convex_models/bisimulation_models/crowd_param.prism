@@ -36,7 +36,7 @@ const double p_twenty;
 // const double goodC = 0.833;  // must be 1-badC
 
 const int CrowdSize=3; // CWDSIZ: actual number of good crowd members
-const int TotalRuns=6; // Total number of protocol runs to analyze
+const int TotalRuns=5; // Total number of protocol runs to analyze
 const int MaxGood=20; // CWDMAX: maximum number of good crowd members
 
 // Process definitions
