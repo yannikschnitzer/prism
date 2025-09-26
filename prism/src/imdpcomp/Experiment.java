@@ -830,8 +830,8 @@ public class Experiment {
                 this.maxVIIters = 20000;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("theta1", 0.3);
-                this.parameterValues.addValue("theta2", 0.4);
+                this.parameterValues.addValue("theta_h", 0.3);
+                this.parameterValues.addValue("theta_v", 0.7);
             }
 
             case KEY_DOOR_MAZE -> {
