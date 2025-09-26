@@ -27,7 +27,7 @@ public class PACConvexEstimator extends MAPEstimator {
 
     protected double error_tolerance;
     double precision = 1e-8;
-    boolean useVertexPrecomp = false;
+    boolean useVertexPrecomp = true;
     boolean verbose_bisim = false;
 
     // For parameter-tying in IMDP
@@ -429,9 +429,16 @@ public class PACConvexEstimator extends MAPEstimator {
         GRBEnv env = new GRBEnv(true);
         env.set(GRB.IntParam.OutputFlag, 0);
         env.start();
+
         ConvexLearner cxl = new ConvexLearner(env);
+        cxl.enableOBBT(ex.obbtMaxIters, ex.obbtEps);
         cxl.setParamModel(pmdp);
         cxl.setConstraints(imdp);
+        if ((ex.obbtMaxIters > 0)) {
+            cxl.runObbtLoopAndRebuild();
+        } else {
+            cxl.commitConstraints();
+        }
         cxl.getModel().update();
 
         if (useVertexPrecomp) {
@@ -461,14 +468,19 @@ public class PACConvexEstimator extends MAPEstimator {
         GRBEnv env = new GRBEnv(true);
         env.set(GRB.IntParam.OutputFlag, 0);
         env.start();
-        ConvexLearner cxl = new ConvexLearner(env);
-        cxl.resetModel();
 
+        ConvexLearner cxl = new ConvexLearner(env);
         // Set both constraints, from ground and abstract model, setConstraints() only keeps tighter constraints
+        cxl.resetModel();
+        cxl.enableOBBT(ex.obbtMaxIters, ex.obbtEps);
         cxl.setConstraints(pmdpGround, imdpGround);
         cxl.setConstraints(pmdpBisim, imdpBisim);
         cxl.setParamModel(pmdpBisim);
-        cxl.commitConstraints();
+        if (ex.obbtMaxIters > 0) {
+            cxl.runObbtLoopAndRebuild();
+        } else {
+            cxl.commitConstraints();
+        }
 
         cxl.getModel().update();
 

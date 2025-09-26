@@ -7,301 +7,334 @@ import parser.ast.ExpressionConstant;
 import parser.ast.ExpressionLiteral;
 import parser.ast.ExpressionUnaryOp;
 import prism.PrismException;
-import prism.PrismLangException;
 
 import java.math.BigInteger;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
- * The ExpressionTranslator class translates PRISM-style linear expressions
- * into Gurobi Expressions, which can be used to define constraints and
- * objectives in a Gurobi optimization model.
+ * Translates PRISM expressions to GRB linear expressions.
+ * Adds McCormick envelopes for bilinear terms (p*q) and quadratic terms (p^2).
+ *
+ * IMPORTANT:
+ * - We never call GRBVar.get(...) inside this class (robust).
+ * - Bounds for McCormick are taken from the local bounds map (default [0.001,0.999]).
+ *   If you know tighter bounds, call setVarBounds("p", lb, ub) BEFORE adding any
+ *   constraints that mention products/squares of "p".
+ * - Products must be monomials (scalar * var, scalar * var*var, or scalar * var^2).
+ *   We do not distribute over sums like (a+b)*c; such forms should be pre-expanded
+ *   into sums of monomials by the caller/generator.
  */
 public class ExpressionTranslator {
 
-    private final GRBModel model; // Gurobi model to which constraints are added
-    private final Map<String, GRBVar> variableMap; // Map to store or retrieve variables by name
-    private final Map<Double, GRBVar> constantMap;
-    private final Map<String, GRBVar> replacementMap; // Store replacement variables for non-linear sub-expressions
+    private final GRBModel model;
+    // base variables by symbol name
+    private final Map<String, GRBVar> variableMap = new HashMap<>();
+    // fixed-value "constants" (lb=ub=value)
+    private final Map<Double, GRBVar> constantMap = new HashMap<>();
+    // cache for auxiliary variables (bilinear/quadratic)
+    private final Map<String, GRBVar> auxCache = new HashMap<>();
+    // optional per-symbol bounds for McCormick (default [0.001, 0.999])
+    private final Map<String, double[]> varBounds = new HashMap<>();
 
-    /**
-     * Constructor for ExpressionTranslator.
-     *
-     * @param model The Gurobi model to which constraints and variables are added.
-     */
     public ExpressionTranslator(GRBModel model) {
         this.model = model;
-        this.variableMap = new HashMap<>();
-        this.constantMap = new HashMap<>();
-        this.replacementMap = new HashMap<>();
     }
 
-    /**
-     * Retrieves the Gurobi optimization model being used.
-     *
-     * @return The ExpressionsBasedModel instance.
-     */
     public GRBModel getModel() {
         return model;
     }
 
-    /**
-     * Retrieves or creates a variable in the Gurobi model.
-     * If the variable does not exist, it is created and stored in the variableMap.
-     *
-     * @param name The name of the variable to retrieve or create.
-     * @return The Variable instance corresponding to the given name.
-     */
+    /** Provide tighter bounds for a parameter symbol used in products/squares. */
+    public void setVarBounds(String varName, double lb, double ub) {
+        varBounds.put(varName, new double[]{lb, ub});
+    }
+    private double[] getBounds(String varName) {
+        return varBounds.getOrDefault(varName, new double[]{0.001, 0.999});
+    }
+
+    /** Create/get a base decision variable for symbol name. */
     public GRBVar getOrCreateVariable(String name) {
         return variableMap.computeIfAbsent(name, key -> {
             try {
-                return model.addVar(-GRB.INFINITY, GRB.INFINITY, 0.0, GRB.CONTINUOUS, name);
-            } catch (GRBException e) {
-                throw new RuntimeException(e);
-            }
-        }); // Default lower bound is 0
-    }
-
-    public GRBVar getOrCreateConstant(Double value) {
-        return constantMap.computeIfAbsent(value, key -> {
-            try {
-                return model.addVar(value, value, 0.0, GRB.CONTINUOUS, null);
+                // Unbounded here; McCormick uses getBounds(name) instead
+                return model.addVar(-GRB.INFINITY, GRB.INFINITY, 0.0, GRB.CONTINUOUS, key);
             } catch (GRBException e) {
                 throw new RuntimeException(e);
             }
         });
     }
 
-    public GRBVar getOrCreateReplacement(String name) {
-        return variableMap.computeIfAbsent(name, key -> {
+    /** Fixed value variable (lb=ub=value) to carry literals into GRBLinExpr. */
+    public GRBVar getOrCreateConstant(Double value) {
+        return constantMap.computeIfAbsent(value, key -> {
             try {
-                return model.addVar(-GRB.INFINITY, GRB.INFINITY, 0.0, GRB.CONTINUOUS, name);
+                return model.addVar(value, value, 0.0, GRB.CONTINUOUS, "c_" + value);
             } catch (GRBException e) {
                 throw new RuntimeException(e);
             }
-        }); // Default lower bound is 0
+        });
     }
 
-    /**
-     * Translates a PRISM-style linear expression into a Gurobi Expression.
-     *
-     * @param prismExpression The PRISM expression to translate.
-     * @return The Gurobi Expression object representing the constraint.
-     * @throws PrismLangException If unsupported or non-linear constructs are encountered.
-     */
+    /** Public entry: translate expression to GRBLinExpr, adding constraints as needed. */
     public GRBLinExpr translateLinearExpression(parser.ast.Expression prismExpression) throws PrismException {
-        GRBLinExpr linearConstraint = new GRBLinExpr(); // Create a new Gurobi Expression
- //       System.out.println("Translating linear expression: " + prismExpression);
-        doTranslate(prismExpression, linearConstraint, 1.0); // Translate the PRISM expression recursively
-//        try {
-//            model.update();
-//        } catch (GRBException e) {
-//            throw new RuntimeException(e);
-//        }
-//        try {
-//            System.out.println("Linear expression translated to: " + formatGRBExpression(linearConstraint));
-//        } catch (GRBException e) {
-//            throw new RuntimeException(e);
-//        }
-
-        return linearConstraint;
+        GRBLinExpr linear = new GRBLinExpr();
+        doTranslate(prismExpression, linear, 1.0);
+        return linear;
     }
 
-    /**
-     * Translates a PRISM-style linear expression into a Gurobi Expression with initial multiplier.
-     *
-     * @param prismExpression The PRISM expression to translate.
-     * @return The Gurobi Expression object representing the constraint.
-     * @throws PrismLangException If unsupported or non-linear constructs are encountered.
-     */
+    /** Overload with multiplier. */
     public GRBLinExpr translateLinearExpression(parser.ast.Expression prismExpression, double multiplier) throws PrismException {
-        GRBLinExpr linearConstraint = new GRBLinExpr(); // Create a new Gurobi Expression
-        doTranslate(prismExpression, linearConstraint, multiplier); // Translate the PRISM expression recursively
-        return linearConstraint;
+        GRBLinExpr linear = new GRBLinExpr();
+        doTranslate(prismExpression, linear, multiplier);
+        return linear;
     }
 
+    // ==================== core recursive translator ====================
 
-    /**
-     * Recursive helper method to translate a PRISM expression into an Gurobi Expression.
-     *
-     * @param prismExpression The PRISM expression to process.
-     * @param linearConstraint The Gurobi Expression being constructed.
-     * @param multiplier Multiplier for the coefficients (for handling negation).
-     * @throws PrismLangException If unsupported constructs are encountered.
-     */
-    private void doTranslate(parser.ast.Expression prismExpression, GRBLinExpr linearConstraint, double multiplier) throws PrismException {
-        if (prismExpression instanceof ExpressionBinaryOp op) {
-            if (op.getOperator() == ExpressionBinaryOp.TIMES) {
-                if (op.getOperand1() instanceof ExpressionLiteral left && op.getOperand2() instanceof ExpressionConstant right) {
-                    double coefficient = multiplier;
-
-                    if (left.getValue() instanceof BigRational val) {
-                        coefficient *= val.doubleValue();
-                    } else if (left.getValue() instanceof BigInteger val) {
-                        coefficient *= val.doubleValue();
-                    } else {
-                        throw new PrismException("Unsupported value type:" + left.getType());
-                    }
-
-                    GRBVar variable = getOrCreateVariable(right.getName());
-                    linearConstraint.addTerm(coefficient, variable);
-                } else if (op.getOperand1() instanceof ExpressionConstant left && op.getOperand2() instanceof ExpressionConstant right) {
-//                    GRBVar variable = getOrCreateReplacement(left.getName() + "_" + right.getName());
-//                    linearConstraint.addTerm(multiplier, variable);
-                    throw new PrismException("Unsupported constraint type"); // TODO: handle this with McCormick
-                } else if (op.getOperand1() instanceof ExpressionBinaryOp left || op.getOperand2() instanceof ExpressionBinaryOp right) {
-                    doTranslate(op.getOperand1(), linearConstraint, multiplier);
-                    doTranslate(op.getOperand2(), linearConstraint, multiplier);
-                } else {
-                    throw new PrismException("Unsupported constraint type");
+    private void doTranslate(parser.ast.Expression expr, GRBLinExpr acc, double mult) throws PrismException {
+        try {
+            if (expr instanceof ExpressionBinaryOp op) {
+                // ---- Addition/Subtraction ----
+                if (op.getOperator() == ExpressionBinaryOp.PLUS) {
+                    doTranslate(op.getOperand1(), acc, mult);
+                    doTranslate(op.getOperand2(), acc, mult);
+                    return;
                 }
-            } else if (op.getOperator() == ExpressionBinaryOp.PLUS) {
-                doTranslate(op.getOperand1(), linearConstraint, multiplier);
-                doTranslate(op.getOperand2(), linearConstraint, multiplier);
-            } else if (op.getOperator() == ExpressionBinaryOp.MINUS) {
-                doTranslate(op.getOperand1(), linearConstraint, multiplier);
-                doTranslate(op.getOperand2(), linearConstraint, -multiplier);
-            } else if (op.getOperator() == ExpressionBinaryOp.POW) {
-//                GRBVar variable = getOrCreateReplacement(op.getOperand1().toString() + "_" + op.getOperand2().toString());
-//                linearConstraint.addTerm(multiplier, variable);
-                throw new PrismException("Unsupported constraint type"); // TODO: handle this with McCormick
-            } else if (op.getOperator() == ExpressionBinaryOp.DIVIDE) {
-                if (op.getOperand1() instanceof ExpressionLiteral left && op.getOperand2() instanceof ExpressionLiteral right) {
-                    double leftval;
-                    double rightval;
+                if (op.getOperator() == ExpressionBinaryOp.MINUS) {
+                    doTranslate(op.getOperand1(), acc, mult);
+                    doTranslate(op.getOperand2(), acc, -mult);
+                    return;
+                }
 
-                    if (left.getValue() instanceof BigRational val) {
-                        leftval = val.doubleValue();
-                    } else if (left.getValue() instanceof BigInteger val) {
-                        leftval = val.doubleValue();
-                    } else {
-                        throw new PrismException("Unsupported value type:" + left.getType());
+                // ---- Multiplication (monomials only) ----
+                if (op.getOperator() == ExpressionBinaryOp.TIMES) {
+                    Monomial m = flattenProduct(op);
+                    addMonomial(acc, m, mult);
+                    return;
+                }
+
+                // ---- Division ----
+                if (op.getOperator() == ExpressionBinaryOp.DIVIDE) {
+                    // (literal)/literal -> constant
+                    if (op.getOperand1() instanceof ExpressionLiteral l1 && op.getOperand2() instanceof ExpressionLiteral l2) {
+                        double val = literalToDouble(l1) / literalToDouble(l2);
+                        acc.addTerm(mult, getOrCreateConstant(val));
+                        return;
                     }
-
-                    if (right.getValue() instanceof BigRational val) {
-                        rightval = val.doubleValue();
-                    } else if (right.getValue() instanceof BigInteger val) {
-                        rightval = val.doubleValue();
-                    } else {
-                        throw new PrismException("Unsupported value type:" + right.getType());
+                    // (linear)/literal -> scale
+                    if (op.getOperand2() instanceof ExpressionLiteral denom) {
+                        double d = literalToDouble(denom);
+                        doTranslate(op.getOperand1(), acc, mult / d);
+                        return;
                     }
+                    throw new PrismException("Unsupported division form (denominator must be literal)");
+                }
 
-                    double value = leftval / rightval;
-                    GRBVar constant = getOrCreateConstant(value);
-                    linearConstraint.addTerm(multiplier, constant);
-                } else if (op.getOperand2() instanceof ExpressionLiteral right) {
-                        double denom;
-
-                        if (right.getValue() instanceof BigRational val) {
-                            denom = val.doubleValue();
-                        } else if (right.getValue() instanceof BigInteger val) {
-                            denom = val.doubleValue();
-                        } else {
-                            throw new PrismException("Unsupported value type:" + right.getType());
+                // ---- Power (only variable^2) ----
+                if (op.getOperator() == ExpressionBinaryOp.POW) {
+                    if (op.getOperand1() instanceof ExpressionConstant base
+                            && op.getOperand2() instanceof ExpressionLiteral lit) {
+                        double d = literalToDouble(lit);
+                        int n = (int) Math.round(d);
+                        if (Math.abs(d - n) > 1e-12 || n != 2) {
+                            throw new PrismException("Only variable^2 is supported in POW");
                         }
-
-                        doTranslate(op.getOperand1(), linearConstraint, multiplier / denom);
-                } else {
-//                    GRBVar variable = getOrCreateReplacement(op.getOperand1().toString() + "_" + op.getOperand2().toString());
-//                    linearConstraint.addTerm(multiplier, variable);
-                    throw new PrismException("Unsupported constraint type"); // TODO: handle this
+                        GRBVar z = squareVarByName(base.getName());
+                        acc.addTerm(mult, z);
+                        return;
+                    }
+                    throw new PrismException("POW only supported as variable^2");
                 }
-            }
-            else {
-                throw new PrismException("Unsupported operand type: " + op.getOperatorSymbol());
-            }
-        } else if (prismExpression instanceof ExpressionUnaryOp op) {
-            if (op.getOperator() == ExpressionUnaryOp.MINUS) {
-                doTranslate(op.getOperand(), linearConstraint, -multiplier);
-            }
-        } else if (prismExpression instanceof ExpressionConstant c) {
-            // Handle constants, i.e. free variables
-            GRBVar variable = getOrCreateVariable(c.getName());
-            linearConstraint.addTerm(multiplier, variable);
-        } else if (prismExpression instanceof ExpressionLiteral lit) {
-            // Handle literal values, i.e., constants
-            double value;
 
-            if (lit.getValue() instanceof BigRational val) {
-                value = val.doubleValue();
-            } else if (lit.getValue() instanceof BigInteger val) {
-                value = val.doubleValue();
-            } else {
-                throw new PrismException("Unsupported value type:" + lit.getType());
+                throw new PrismException("Unsupported binary operator: " + op.getOperatorSymbol());
+            }
+            else if (expr instanceof ExpressionUnaryOp uop) {
+                if (uop.getOperator() == ExpressionUnaryOp.MINUS) {
+                    doTranslate(uop.getOperand(), acc, -mult);
+                    return;
+                }
+                throw new PrismException("Unsupported unary operator");
+            }
+            else if (expr instanceof ExpressionConstant c) {
+                acc.addTerm(mult, getOrCreateVariable(c.getName()));
+                return;
+            }
+            else if (expr instanceof ExpressionLiteral lit) {
+                acc.addTerm(mult, getOrCreateConstant(literalToDouble(lit)));
+                return;
             }
 
-            // Create a fixed-value variable to represent the literal
-            GRBVar constant = getOrCreateConstant(value);
-            linearConstraint.addTerm(multiplier, constant);
-        } else {
-            throw new PrismException("Unsupported prism expression type");
+            throw new PrismException("Unsupported PRISM expression type: " + expr.getClass());
+        } catch (GRBException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    /**
-     * Formats a GRBLinExpr into a human-readable string.
-     *
-     * @param expr The linear expression to format.
-     * @return A string representing the linear expression.
-     * @throws GRBException If there is an issue accessing variable info from Gurobi.
-     */
+    // ==================== Monomial flattening for TIMES ====================
+
+    private static final class Monomial {
+        double scalar = 1.0;
+        // store up to 2 variables' names (degree ≤ 2 supported)
+        final ArrayList<String> vars = new ArrayList<>(2);
+    }
+
+    /** Flatten TIMES node into scalar * (var)^a * (var)^b with degree ≤ 2. */
+    private Monomial flattenProduct(parser.ast.Expression e) throws PrismException {
+        Monomial m = new Monomial();
+        collectProduct(e, m);
+        if (m.vars.size() > 2)
+            throw new PrismException("Only degree-2 monomials supported (saw degree " + m.vars.size() + ")");
+        return m;
+    }
+
+    private void collectProduct(parser.ast.Expression e, Monomial m) throws PrismException {
+        if (e instanceof ExpressionLiteral lit) {
+            m.scalar *= literalToDouble(lit);
+            return;
+        }
+        if (e instanceof ExpressionConstant c) {
+            m.vars.add(c.getName());
+            return;
+        }
+        if (e instanceof ExpressionBinaryOp bop && bop.getOperator() == ExpressionBinaryOp.TIMES) {
+            collectProduct(bop.getOperand1(), m);
+            collectProduct(bop.getOperand2(), m);
+            return;
+        }
+        if (e instanceof ExpressionBinaryOp bop && bop.getOperator() == ExpressionBinaryOp.POW) {
+            if (bop.getOperand1() instanceof ExpressionConstant base && bop.getOperand2() instanceof ExpressionLiteral lit) {
+                double d = literalToDouble(lit);
+                int n = (int) Math.round(d);
+                if (Math.abs(d - n) > 1e-12 || (n != 2))
+                    throw new PrismException("Only variable^2 supported in monomials");
+                // add the base variable twice
+                m.vars.add(base.getName());
+                m.vars.add(base.getName());
+                return;
+            }
+            throw new PrismException("POW must be var^2 inside products");
+        }
+        // we do not distribute over sums
+        throw new PrismException("Non-monomial product term encountered; expand beforehand");
+    }
+
+    private void addMonomial(GRBLinExpr acc, Monomial m, double mult) throws GRBException, PrismException {
+        double coef = mult * m.scalar;
+        if (m.vars.isEmpty()) {
+            // pure numeric
+            acc.addTerm(coef, getOrCreateConstant(1.0)); // keep constants uniform
+            return;
+        }
+        if (m.vars.size() == 1) {
+            GRBVar v = getOrCreateVariable(m.vars.get(0));
+            acc.addTerm(coef, v);
+            return;
+        }
+        // degree 2
+        String v1 = m.vars.get(0);
+        String v2 = m.vars.get(1);
+        GRBVar z = bilinearVarByName(v1, v2); // square if same name
+        acc.addTerm(coef, z);
+    }
+
+    // ==================== McCormick helpers (by symbol name) ====================
+
+    private GRBVar bilinearVarByName(String aName, String bName) throws GRBException {
+        final String key = aName + "*" + bName;
+        GRBVar z = auxCache.get(key);
+        if (z != null) return z;
+
+        GRBVar a = getOrCreateVariable(aName);
+        GRBVar b = getOrCreateVariable(bName);
+        double[] ba = getBounds(aName);
+        double[] bb = getBounds(bName);
+
+        z = ensureBilinearVar(key, a, b, ba[0], ba[1], bb[0], bb[1]);
+        auxCache.put(key, z);
+        return z;
+    }
+
+    private GRBVar squareVarByName(String baseName) throws GRBException {
+        final String key = baseName + "^2";
+        GRBVar z = auxCache.get(key);
+        if (z != null) return z;
+
+        GRBVar x = getOrCreateVariable(baseName);
+        double[] bx = getBounds(baseName);
+
+        z = ensureBilinearVar(key, x, x, bx[0], bx[1], bx[0], bx[1]);
+        auxCache.put(key, z);
+        return z;
+    }
+
+    /** Add McCormick envelope constraints for z = a*b over [La,Ua]×[Lb,Ub]. */
+    private GRBVar ensureBilinearVar(String name,
+                                     GRBVar a, GRBVar b,
+                                     double La, double Ua, double Lb, double Ub) throws GRBException {
+        GRBVar z = model.addVar(-GRB.INFINITY, GRB.INFINITY, 0.0, GRB.CONTINUOUS, name);
+
+        // z >= La*b + Lb*a - La*Lb
+        { GRBLinExpr e = new GRBLinExpr();
+            e.addTerm(1.0, z); e.addTerm(-La, b); e.addTerm(-Lb, a); e.addConstant(La*Lb);
+            model.addConstr(e, GRB.GREATER_EQUAL, 0.0, name+"_mcc1"); }
+
+        // z >= Ua*b + Ub*a - Ua*Ub
+        { GRBLinExpr e = new GRBLinExpr();
+            e.addTerm(1.0, z); e.addTerm(-Ua, b); e.addTerm(-Ub, a); e.addConstant(Ua*Ub);
+            model.addConstr(e, GRB.GREATER_EQUAL, 0.0, name+"_mcc2"); }
+
+        // z <= Ua*b + Lb*a - Ua*Lb   (as >= 0 with -z)
+        { GRBLinExpr e = new GRBLinExpr();
+            e.addTerm(Ua, b); e.addTerm(Lb, a); e.addConstant(-Ua*Lb); e.addTerm(-1.0, z);
+            model.addConstr(e, GRB.GREATER_EQUAL, 0.0, name+"_mcc3"); }
+
+        // z <= La*b + Ub*a - La*Ub   (as >= 0 with -z)
+        { GRBLinExpr e = new GRBLinExpr();
+            e.addTerm(La, b); e.addTerm(Ub, a); e.addConstant(-La*Ub); e.addTerm(-1.0, z);
+            model.addConstr(e, GRB.GREATER_EQUAL, 0.0, name+"_mcc4"); }
+
+        return z;
+    }
+
+    // ==================== small utilities ====================
+
+    private static double literalToDouble(ExpressionLiteral lit) throws PrismException {
+        if (lit.getValue() instanceof BigRational br) return br.doubleValue();
+        if (lit.getValue() instanceof BigInteger bi)  return bi.doubleValue();
+        if (lit.getValue() instanceof Double dbl)     return dbl;
+        if (lit.getValue() instanceof Integer i)      return i.doubleValue();
+        throw new PrismException("Unsupported literal type: " + lit.getType());
+    }
+
+    // Debug formatting (safe to keep; call only after model.update())
     public static String formatGRBExpression(GRBLinExpr expr) throws GRBException {
         StringBuilder sb = new StringBuilder();
-
-        int numTerms = expr.size(); // number of variable terms
-        for (int i = 0; i < numTerms; i++) {
-            double coef = expr.getCoeff(i);
-            GRBVar var = expr.getVar(i);
-
-            if (i > 0) {
-                sb.append(" + ");
-            }
-
-            sb.append(coef).append("*").append(var.get(GRB.StringAttr.VarName));
+        int n = expr.size();
+        for (int i = 0; i < n; i++) {
+            if (i > 0) sb.append(" + ");
+            sb.append(expr.getCoeff(i)).append("*").append(expr.getVar(i).get(GRB.StringAttr.VarName));
         }
-
-        // Add constant term if nonzero
-        double constant = expr.getConstant();
-        if (constant != 0.0) {
-            if (numTerms > 0) {
-                sb.append(" + ");
-            }
-            sb.append(constant);
+        double c = expr.getConstant();
+        if (Math.abs(c) > 0) {
+            if (n > 0) sb.append(" + ");
+            sb.append(c);
         }
-
-        // If there's nothing in the expression (empty), return "0" instead of empty
-        if (sb.isEmpty()) {
-            sb.append("0");
-        }
-
+        if (sb.isEmpty()) sb.append("0");
         return sb.toString();
     }
 
     public static String formatGBRConstraint(GRBModel model, GRBConstr constr) throws GRBException {
-        // 1) Get the LHS as a GRBLinExpr
         GRBLinExpr lhs = model.getRow(constr);
-
-        // 2) Get the sense character (<=, >=, =)
-        char sense = constr.get(GRB.CharAttr.Sense);
-
-        // 3) Get the RHS numeric value
+        char s = constr.get(GRB.CharAttr.Sense);
         double rhs = constr.get(GRB.DoubleAttr.RHS);
-
-        // 4) Format the LHS expression
-        String lhsString = formatGRBExpression(lhs);
-
-        // 5) Convert the sense character to a string
-        String senseString = switch (sense) {
+        String ss = switch (s) {
             case GRB.LESS_EQUAL -> "<=";
             case GRB.GREATER_EQUAL -> ">=";
             case GRB.EQUAL -> "=";
             default -> "?";
         };
-
-        // 6) Combine into a single string
-        return lhsString + " " + senseString + " " + rhs;
+        return formatGRBExpression(lhs) + " " + ss + " " + rhs;
     }
 }

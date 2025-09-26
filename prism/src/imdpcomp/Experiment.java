@@ -37,6 +37,8 @@ public class Experiment {
     public ArrayList<Integer> resultIterations = new ArrayList<>();
     public boolean useParametricConvex = true;
     public boolean doBisim = false;
+    public int obbtMaxIters = 10;
+    public double obbtEps = 10e-6;
 
     public enum ParameterTying {
         NO_TYING,
@@ -102,7 +104,8 @@ public class Experiment {
         CROWDS_PARAM,
         BRP,
         EGL,
-        NAND
+        NAND,
+        GLIDER
     }
 
     public enum Type {
@@ -137,6 +140,11 @@ public class Experiment {
 
     public Experiment useBisimulation(boolean useBisimulation) {
         this.doBisim = useBisimulation;
+        return this;
+    }
+
+    public Experiment useOBBT(int obbtMaxIters){
+        this.obbtMaxIters = obbtMaxIters;
         return this;
     }
 
@@ -797,6 +805,24 @@ public class Experiment {
                 this.optimisticSpec = "Rminmin = ? [ F (\"purchase\" | \"churn\") ]";
                 this.dtmcSpec = "R = ? [ F (\"purchase\" | \"churn\") ]";
                 this.spec = "Rmin = ? [ F (\"purchase\" | \"churn\") ]";
+                this.type = Type.REWARD;
+
+                this.multiplier = 2;
+                this.max_episode_length = 50;
+                this.maxVIIters = 20000;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("theta1", 0.3);
+                this.parameterValues.addValue("theta2", 0.4);
+            }
+
+            case GLIDER -> {
+                this.modelFile = "../parametric_convex_models/polynomial_mdps/glider.prism";
+                this.certainModelFile = "../parametric_convex_models/polynomial_mdps/glider.prism";
+                this.robustSpec = "Rminmax = ? [ F \"goal\"]";
+                this.optimisticSpec = "Rminmin = ? [ F \"goal\"]";
+                this.dtmcSpec = "R = ? [ F \"goal\"]";
+                this.spec = "Rmin = ? [ F \"goal\"]";
                 this.type = Type.REWARD;
 
                 this.multiplier = 2;

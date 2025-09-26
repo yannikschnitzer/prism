@@ -149,10 +149,10 @@ public class ParametricConvexLearner {
         ParametricConvexLearner parametricConvexLearner = new ParametricConvexLearner(new Prism(new PrismDevNullLog()));
         parametricConvexLearner.initializePrism();
 
-        Experiment ex = new Experiment(Experiment.Model.ROUTING_BISIM).setParametricConvex(true).useBisimulation(true);
+        Experiment ex = new Experiment(Experiment.Model.GLIDER).setParametricConvex(true).useBisimulation(false).useOBBT(0);
 
         MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
-        System.out.println(pmdp);
+        //System.out.println(pmdp);
 
         parametricConvexLearner.learnIMDP(ex,
                 ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
