@@ -1,4 +1,3 @@
-// explicit/SharedVertexSet.java
 package learning.ParametricConvex;
 
 import com.gurobi.gurobi.*;
@@ -51,12 +50,12 @@ public final class SharedVertexSet {
         Arrays.fill(colMap, -1);
         for (int j = 0, k = 0; j < nAll; j++) if (!fixed[j]) { colMap[j] = k; freeCols[k++] = j; }
 
-        // short-circuit: no free vars → single “vertex” (degenerate polytope)
+        // short-circuit: no free vars → single “vertex”
         if (nFree == 0) {
             return new SharedVertexSet(new double[0], 1, 0, new int[0], colMap, fixedVal, true);
         }
 
-        // Build A_free x_free <= b'   (substitute fixed variables into RHS)
+        // Build A_free x_free <= b' (substitute fixed vars into RHS)
         ArrayList<double[]> rows = new ArrayList<>();
         ArrayList<Double> rhs = new ArrayList<>();
 
@@ -66,7 +65,7 @@ public final class SharedVertexSet {
             double r = c.get(GRB.DoubleAttr.RHS);
 
             double[] aFree = new double[nFree];
-            double shift = 0.0; // contribution of fixed vars to RHS
+            double shift = 0.0;
 
             int sz = row.size();
             for (int k = 0; k < sz; k++) {
@@ -107,32 +106,40 @@ public final class SharedVertexSet {
         double[] b = new double[rhs.size()];
         for (int i = 0; i < b.length; i++) b[i] = rhs.get(i);
 
-        // scale rows for numeric stability of tightness checks
+        // scale rows (cheap normalization used only for comparisons)
         double[] rowNorm = new double[A.length];
         for (int i = 0; i < A.length; i++) {
             double s = 0; for (double v : A[i]) s += v*v;
             double inv = 1.0 / Math.sqrt(Math.max(1e-30, s));
             for (int j = 0; j < nFree; j++) A[i][j] *= inv;
             b[i] *= inv;
-            rowNorm[i] = 1.0;
+            rowNorm[i] = 1.0; // keep semantics identical to before
         }
 
         // enumerate vertices over nFree
         ArrayList<double[]> verts = new ArrayList<>(Math.min(cap, 1024));
         int m = A.length;
         int[] comb = firstComb(nFree);
-        double[][] AS = new double[nFree][nFree];
-        double[] bS = new double[nFree];
         final double TOL_SING = 1e-12;
 
+        // Reusable linear-solve workspace
+        LinWS ws = new LinWS(nFree);
+
         while (comb != null) {
-            for (int r = 0; r < nFree; r++) { System.arraycopy(A[comb[r]], 0, AS[r], 0, nFree); bS[r] = b[comb[r]]; }
-            double[] x = solve(AS, bS, TOL_SING);
-            if (x != null && feasible(A, b, x, tolFeas) && tight(A, b, x, comb, tolFeas, rowNorm)) {
-                if (!exists(verts, x, 1e-9)) {
-                    verts.add(x.clone());
-                    if (verts.size() > cap) {
-                        return new SharedVertexSet(null, verts.size(), nFree, freeCols, colMap, fixedVal, false);
+            // Fill workspace from active rows (no AS/bS allocations)
+            for (int r = 0; r < nFree; r++) {
+                System.arraycopy(A[comb[r]], 0, ws.M[r], 0, nFree);
+                ws.rhs[r] = b[comb[r]];
+            }
+
+            if (solveInPlace(nFree, ws, TOL_SING)) {
+                double[] x = ws.x;
+                if (feasible(A, b, x, tolFeas) && tight(A, b, x, comb, tolFeas, rowNorm)) {
+                    if (!exists(verts, x, 1e-9)) {
+                        verts.add(x.clone()); // copy before next iteration overwrites ws.x
+                        if (verts.size() > cap) {
+                            return new SharedVertexSet(null, verts.size(), nFree, freeCols, colMap, fixedVal, false);
+                        }
                     }
                 }
             }
@@ -146,7 +153,8 @@ public final class SharedVertexSet {
         return new SharedVertexSet(Vflat, V, nFree, freeCols, colMap, fixedVal, true);
     }
 
-    // helpers
+    // ---------- helpers ----------
+
     private static boolean feasible(double[][] A, double[] b, double[] x, double tol) {
         int m = A.length, n = A[0].length;
         for (int i = 0; i < m; i++) {
@@ -155,6 +163,7 @@ public final class SharedVertexSet {
         }
         return true;
     }
+
     private static boolean tight(double[][] A, double[] b, double[] x, int[] act, double tol, double[] rowNorm) {
         int n = A[0].length;
         for (int idx : act) {
@@ -163,6 +172,7 @@ public final class SharedVertexSet {
         }
         return true;
     }
+
     private static boolean exists(ArrayList<double[]> list, double[] x, double tol) {
         outer: for (double[] y : list) {
             if (y.length != x.length) continue;
@@ -171,20 +181,59 @@ public final class SharedVertexSet {
         }
         return false;
     }
+
     private static int[] firstComb(int k){ int[] c=new int[k]; for(int i=0;i<k;i++) c[i]=i; return c; }
-    private static int[] nextComb(int[] c,int m,int k){ int i=k-1; while(i>=0 && c[i]==m-k+i) i--; if(i<0) return null; c[i]++; for(int j=i+1;j<k;j++) c[j]=c[j-1]+1; return c; }
-    private static double[] solve(double[][] A, double[] b, double eps) {
-        int n=b.length; double[][] M=new double[n][n]; double[] rhs=new double[n];
-        for(int i=0;i<n;i++){ System.arraycopy(A[i],0,M[i],0,n); rhs[i]=b[i]; }
-        for(int k=0;k<n;k++){ int sel=k; double best=Math.abs(M[k][k]);
-            for(int i=k+1;i<n;i++){ double v=Math.abs(M[i][k]); if(v>best){best=v; sel=i;} }
-            if(best<eps) return null;
-            if(sel!=k){ double[] tmp=M[k]; M[k]=M[sel]; M[sel]=tmp; double t=rhs[k]; rhs[k]=rhs[sel]; rhs[sel]=t; }
-            double piv=M[k][k];
-            for(int i=k+1;i<n;i++){ double f=M[i][k]/piv; if(f==0) continue; rhs[i]-=f*rhs[k]; for(int j=k;j<n;j++) M[i][j]-=f*M[k][j]; }
+    private static int[] nextComb(int[] c,int m,int k){
+        int i=k-1; while(i>=0 && c[i]==m-k+i) i--;
+        if(i<0) return null;
+        c[i]++; for(int j=i+1;j<k;j++) c[j]=c[j-1]+1;
+        return c;
+    }
+
+    // ---------- Linear solve (workspace-based, in-place) ----------
+
+    private static final class LinWS {
+        final double[][] M;   // n x n work matrix
+        final double[] rhs;   // n work rhs
+        final double[] x;     // n solution buffer (reused)
+        LinWS(int n) { M = new double[n][n]; rhs = new double[n]; x = new double[n]; }
+    }
+
+    /**
+     * Solve M x = rhs in-place using partial-pivot Gaussian elimination.
+     * The matrix and rhs must be pre-filled in the workspace. Returns true if solved; false if singular.
+     */
+    private static boolean solveInPlace(int n, LinWS ws, double eps) {
+        // Forward elimination
+        for (int k = 0; k < n; k++) {
+            int sel = k; double best = Math.abs(ws.M[k][k]);
+            for (int i = k + 1; i < n; i++) { double v = Math.abs(ws.M[i][k]); if (v > best) { best = v; sel = i; } }
+            if (best < eps) return false; // singular / ill-conditioned
+
+            if (sel != k) {
+                double[] tmp = ws.M[k]; ws.M[k] = ws.M[sel]; ws.M[sel] = tmp;
+                double t = ws.rhs[k];   ws.rhs[k] = ws.rhs[sel]; ws.rhs[sel] = t;
+            }
+
+            double piv = ws.M[k][k];
+            double invPiv = 1.0 / piv;
+            for (int i = k + 1; i < n; i++) {
+                double f = ws.M[i][k] * invPiv;
+                if (f == 0.0) continue;
+                ws.rhs[i] -= f * ws.rhs[k];
+                ws.M[i][k] = 0.0; // exact zero; saves one multiply below
+                for (int j = k + 1; j < n; j++) ws.M[i][j] -= f * ws.M[k][j];
+            }
         }
-        double[] x=new double[n];
-        for(int i=n-1;i>=0;i--){ double s=rhs[i]; for(int j=i+1;j<n;j++) s-=M[i][j]*x[j]; double d=M[i][i]; if(Math.abs(d)<eps) return null; x[i]=s/d; }
-        return x;
+
+        // Back substitution
+        for (int i = n - 1; i >= 0; i--) {
+            double s = ws.rhs[i];
+            for (int j = i + 1; j < n; j++) s -= ws.M[i][j] * ws.x[j];
+            double d = ws.M[i][i];
+            if (Math.abs(d) < eps) return false; // extra guard
+            ws.x[i] = s / d;
+        }
+        return true;
     }
 }
