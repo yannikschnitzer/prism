@@ -1,9 +1,9 @@
 mdp
 
 // ===== POPULATIONS & OUTBREAK =====
-const int NA = 6;            // region A population
-const int NB = 6;            // region B population
-const int BREAKOUT = 11;      // outbreak threshold on total infected
+const int NA = 8;            // region A population
+const int NB = 8;            // region B population
+const int BREAKOUT = 15;      // outbreak threshold on total infected
 
 // ===== CLOSURE TIMING =====
 const int TMAX = 8;          // closure lasts TMAX steps

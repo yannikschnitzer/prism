@@ -274,15 +274,16 @@ public class ConvexLearner {
 
     // Call this after the final build (after OBBT if enabled)
     public void precomputeVertices() throws GRBException {
-        model.update(); // ensure model is finalized
+        model.update();
         System.out.println("Enumerating Vertices");
-        SharedVertexSet sv = SharedVertexSet.fromModel(model, 1e-9, vertexCap);
+        SharedVertexSet.RowCache cache = SharedVertexSet.buildRowCache(model);
+        SharedVertexSet sv = SharedVertexSet.fromModel(model, cache, 1e-9, vertexCap, "_mcc");
         if (sv.complete) {
             System.out.println("Precomputed vertices: " + sv.vertexCount);
             this.sharedVertices = sv;
         } else {
             System.out.println("Vertex enumeration exceeded cap (" + vertexCap + "); using LP mode.");
-            this.sharedVertices = null; // fall back to LP in the distributions
+            this.sharedVertices = null; // fall back to LP mode if cap exceeded
         }
     }
 
@@ -319,5 +320,13 @@ public class ConvexLearner {
             System.out.println(ExpressionTranslator.formatGBRConstraint(model, con) + " " + con.get(GRB.StringAttr.ConstrName));
         }
         System.out.println("-------------");
+    }
+
+    public ExpressionTranslator getTranslator() {
+        return this.trans;
+    }
+
+    public GRBEnv getEnv() {
+        return this.env;
     }
 }

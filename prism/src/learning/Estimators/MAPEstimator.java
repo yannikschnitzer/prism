@@ -420,7 +420,7 @@ public class MAPEstimator extends Estimator {
         UMDPModelChecker mc = new UMDPModelChecker(this.prism);
         mc.setGenStrat(true);
         mc.setMaxIters(ex.maxVIIters);
-        mc.setTermCritParam(1e-4);
+        mc.setTermCritParam(1e-8);
         mc.setErrorOnNonConverge(true);
 
         PropertiesFile pf;

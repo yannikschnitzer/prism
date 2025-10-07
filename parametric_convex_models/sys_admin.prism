@@ -5,7 +5,7 @@ const double p;      // fail prob per healthy machine per slot
 const double q;      // repair prob per failed machine per slot
 
 module sysadmin
-  x : [0..N] init 0; // number failed
+  x : [0..N] init 3; // number failed
 
   [a] true ->
      (N - x)*p : (x' = min(x+1, N))
@@ -18,3 +18,4 @@ rewards
 endrewards
 
 label "fail" = x >= 6;
+label "goal" = x = 0;

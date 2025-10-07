@@ -1,0 +1,39 @@
+mdp
+
+// --- unknown parameters (PRISM will treat them as parametric; you set [0,1] in Java) ---
+const double theta1;   // sensitivity 1
+const double theta2;   // sensitivity 2
+
+module toy_dtmc
+  // states: 0 = start, 1 = goal (absorbing), 2 = intermediate
+  s : [0..3] init 0;
+
+  // ----- state 0 (single choice => DTMC) -----
+  // p(0->1) = 0.2 + 0.3*theta1    in [0.2, 0.5]
+  // p(0->2) = 0.1 + 0.2*theta2    in [0.1, 0.3]
+  // p(0->0) = 1 - above           in [0.2, 0.7]
+  [a] s=0 ->
+      (0.2 + 0.3*theta1) : (s'=1) +
+      (0.1 + 0.2*theta2) : (s'=2) +
+      (1 - (0.2 + 0.3*theta1) - (0.1 + 0.2*theta2)) : (s'=0);
+
+  // ----- state 1: absorbing goal -----
+  [a] s=1 -> 1 : (s'=1);
+  [a] s=3 -> 1 : (s'=3);
+
+  // ----- state 2 (single choice) -----
+  // p(2->1) = 0.1 + 0.4*theta2    in [0.1, 0.5]
+  // p(2->2) = 0.05 + 0.25*theta1  in [0.05, 0.30]
+  // p(2->0) = 1 - above           in [0.20, 0.85]
+  [a] s=2 ->
+      (0.1 + 0.4*theta2)   : (s'=1) +
+      (0.05 + 0.25*theta1) : (s'=3) +
+      (1 - (0.1 + 0.4*theta2) - (0.05 + 0.25*theta1)) : (s'=0);
+endmodule
+
+label "goal" = s=1;
+
+// optional: count steps until goal
+rewards "time"
+  s!=1 : 1;
+endrewards

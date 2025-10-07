@@ -112,6 +112,9 @@ public class Estimator {
     }
 
     public Double round(double value, int precision) {
+//        if (value > 9000.0) {
+//            return Double.POSITIVE_INFINITY;
+//        }
         if (value == Double.POSITIVE_INFINITY) {
             return 1.0;
         }
