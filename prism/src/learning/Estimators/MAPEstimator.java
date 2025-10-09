@@ -208,7 +208,7 @@ public class MAPEstimator extends Estimator {
         DTMC<Double> dtmc = (DTMC<Double>) mdp.constructInducedModel(strat);
         DTMCModelChecker mc = new DTMCModelChecker(this.prism);
         mc.setPrecomp(false); //TODO: here
-        mc.setErrorOnNonConverge(true);
+        mc.setErrorOnNonConverge(ex.errorOnNonConvergence);
         mc.setMaxIters(ex.maxVIIters);
         mc.setTermCritParam(1e-4);
         mc.setGenStrat(true);
@@ -374,7 +374,7 @@ public class MAPEstimator extends Estimator {
         mc.setPrecomp(true);
         mc.setMaxIters(ex.maxVIIters);
         mc.setTermCritParam(1e-4);
-        mc.setErrorOnNonConverge(true);
+        mc.setErrorOnNonConverge(ex.errorOnNonConvergence);
 
         PropertiesFile pf;
         if (robust)
@@ -399,7 +399,7 @@ public class MAPEstimator extends Estimator {
         mc.setPrecomp(true);
         mc.setMaxIters(ex.maxVIIters);
         mc.setTermCritParam(1e-4);
-        mc.setErrorOnNonConverge(true);
+        mc.setErrorOnNonConverge(ex.errorOnNonConvergence);
 
         Result result = mc.check(this.bisimEstimate, robust ? ex.robustSpec_bisim : ex.optimisticSpec_bisim);
         if (verbose) {
@@ -420,8 +420,8 @@ public class MAPEstimator extends Estimator {
         UMDPModelChecker mc = new UMDPModelChecker(this.prism);
         mc.setGenStrat(true);
         mc.setMaxIters(ex.maxVIIters);
-        mc.setTermCritParam(1e-8);
-        mc.setErrorOnNonConverge(true);
+        mc.setTermCritParam(1e-4);
+        mc.setErrorOnNonConverge(ex.errorOnNonConvergence);
 
         PropertiesFile pf;
         if (robust) {
@@ -449,7 +449,7 @@ public class MAPEstimator extends Estimator {
         mc.setPrecomp(true);
         mc.setMaxIters(ex.maxVIIters);
         mc.setTermCritParam(1e-4);
-        mc.setErrorOnNonConverge(true);
+        mc.setErrorOnNonConverge(ex.errorOnNonConvergence);
 
         Result result = mc.check(estimate, robust ? ex.robustSpec_bisim : ex.optimisticSpec_bisim);
         if (verbose) {
@@ -468,7 +468,7 @@ public class MAPEstimator extends Estimator {
         mc.setGenStrat(true);
         mc.setPrecomp(true);
         mc.setMaxIters(ex.maxVIIters);
-        mc.setErrorOnNonConverge(true);
+        mc.setErrorOnNonConverge(ex.errorOnNonConvergence);
 
         PropertiesFile pf;
         if (robust)

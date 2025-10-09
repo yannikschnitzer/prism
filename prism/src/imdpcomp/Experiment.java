@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import static explicit.ConstructModel.*;
 import static explicit.ConstructModel.CompositionType.*;
+import static imdpcomp.Experiment.IntervalAbstractionMode.*;
 import static imdpcomp.Experiment.ParameterTying.*;
 
 public class Experiment {
@@ -30,20 +31,30 @@ public class Experiment {
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
-    public int iterations = 1_0_000;
+    public int iterations = 1_000_000;
     public int max_episode_length = 50;
     public int multiplier = 5;
     public int maxVIIters = 20000;
+    public boolean errorOnNonConvergence = true;
     public ArrayList<Integer> resultIterations = new ArrayList<>();
     public boolean useParametricConvex = true;
     public boolean doBisim = false;
-    public int obbtMaxIters = 10;
+    public int obbtMaxIters = 0;
     public double obbtEps = 10e-6;
+    public boolean useDTMCLP = true;
+    public boolean useLPToIntervals = false;
+    public IntervalAbstractionMode intervalAbstractionMode = FAST;
+
 
     public enum ParameterTying {
         NO_TYING,
         FULL_TYING,
         DEPENDENCY_TYING // Only relevant for factored
+    }
+
+    public enum IntervalAbstractionMode {
+        EXACT,
+        FAST
     }
 
     public Experiment(Model model){
@@ -105,7 +116,9 @@ public class Experiment {
         BRP,
         EGL,
         NAND,
-        GLIDER
+        GLIDER,
+        BETTING_GAME_PARALLEL,
+        TEST_DTMC
     }
 
     public enum Type {
@@ -145,6 +158,11 @@ public class Experiment {
 
     public Experiment useOBBT(int obbtMaxIters){
         this.obbtMaxIters = obbtMaxIters;
+        return this;
+    }
+
+    public Experiment useLPToIMDP(boolean useLPToIMDP) {
+        this.useLPToIntervals = useLPToIMDP;
         return this;
     }
 
@@ -229,6 +247,7 @@ public class Experiment {
                 this.parameterValues.addValue("N", 10);
                 this.parameterValues.addValue("M", 6);
                 this.parameterValues.addValue("p", 0.45);
+
             }
 
             case STOCK_TRADING_2_2 -> {
@@ -300,8 +319,8 @@ public class Experiment {
             }
 
             case SYSADMIN -> {
-                int N = 10;
-                int T = 8;
+                int N = 5;
+                int T = 20;
 
                 this.modelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_T%s.pm", N, T);
                 this.certainModelFile = String.format("../models/sysadmin/sysadmin_ring_N%s_T%s.pm", N, T);
@@ -325,10 +344,10 @@ public class Experiment {
 
                 this.modelFile = String.format("../parametric_convex_models/sys_admin.prism");
                 this.certainModelFile = String.format("../parametric_convex_models/sys_admin.prism");
-                this.robustSpec = "Rmaxmin=? [ F \"fail\" ]";
-                this.optimisticSpec = "Rmaxmax=? [ F \"fail\" ]";
-                this.dtmcSpec = "R=? [ F \"fail\" ]";
-                this.spec = "Rmax=? [ F \"fail\" ]";
+                this.robustSpec = "Pmaxmin=? [ !\"fail\" U \"goal\" ]";
+                this.optimisticSpec = "Pmaxmax=? [ !\"fail\" U \"goal\" ]";
+                this.dtmcSpec = "P=? [ !\"fail\" U \"goal\" ]";
+                this.spec = "Pmax=? [ !\"fail\" U \"goal\" ]";
                 this.type = Type.REWARD;
 
                 this.max_episode_length = 10;
@@ -545,7 +564,7 @@ public class Experiment {
 
                 this.multiplier = 2;
                 this.max_episode_length = 50;
-                this.maxVIIters = 20000;
+                this.maxVIIters = 100000;
 
                 // Set Parameter Values
                 this.parameterValues.addValue("theta1", 0.3);
@@ -830,8 +849,34 @@ public class Experiment {
                 this.maxVIIters = 20000;
 
                 // Set Parameter Values
+                this.parameterValues.addValue("w", 21);
+                this.parameterValues.addValue("h", 17);
                 this.parameterValues.addValue("theta_h", 0.3);
                 this.parameterValues.addValue("theta_v", 0.7);
+            }
+
+            case BETTING_GAME_PARALLEL -> {
+                this.modelFile = "../parametric_convex_models/polynomial_mdps/bet_parallel.prism";
+                this.certainModelFile = "../parametric_convex_models/polynomial_mdps/bet_parallel.prism";
+                this.robustSpec = "Rmaxmin=? [F \"done\"]";
+                this.optimisticSpec = "Rmaxmax=? [F \"done\"]";
+                this.dtmcSpec = "R=? [F \"done\"]";
+                this.spec = "Rmax=? [F \"done\"]";
+                this.type = Type.REWARD;
+
+//                this.robustSpec = "Pmaxmin=? [F money + money2 >= 25]";
+//                this.optimisticSpec = "Pmaxmax=? [F money + money2 >= 25]";
+//                this.dtmcSpec = "P=? [F money + money2 >= 25]";
+//                this.spec = "Pmax=? [F money + money2 >= 25]";
+//                this.type = Type.REACH;
+
+                this.multiplier = 2;
+                this.max_episode_length = 10;
+                this.maxVIIters = 20000;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("p_1", 0.55);
+                this.parameterValues.addValue("p_2", 0.53);
             }
 
             case KEY_DOOR_MAZE -> {
@@ -875,8 +920,30 @@ public class Experiment {
 
                 // Set Parameter Values
                 this.parameterValues.addValue("theta1", 0.45);
-                this.parameterValues.addValue("theta2", 0.3);
+                this.parameterValues.addValue("theta2", 0.2);
+                this.parameterValues.addValue("theta3", 0.1);
+                this.parameterValues.addValue("theta4", 0.15);
+
             }
+
+            case TEST_DTMC -> {
+                this.modelFile = "../parametric_convex_models/mixture_mdps/test_dtmc.prism";
+                this.certainModelFile = "../parametric_convex_models/mixture_mdps/test_dtmc.prism";
+                this.robustSpec = "Pmaxmin = ? [ F (\"goal\") ]";
+                this.optimisticSpec = "Pmaxmax = ? [ F (\"goal\") ]";
+                this.dtmcSpec = "P = ? [ F (\"goal\") ]";
+                this.spec = "Pmax = ? [ F (\"goal\") ]";
+                this.type = Type.REACH;
+
+                this.multiplier = 2;
+                this.max_episode_length = 3;
+                this.maxVIIters = 20000;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("theta1", 0.6);
+                this.parameterValues.addValue("theta2", 0.2);
+            }
+
 
             case DRONE_MIXTURE -> {
                 this.modelFile = "../parametric_convex_models/mixture_mdps/drone_mixture.prism";
@@ -929,7 +996,7 @@ public class Experiment {
                 this.type = Type.REACH;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("theta1", 0.4);
+                this.parameterValues.addValue("theta1", 0.39);
                 this.parameterValues.addValue("theta2", 0.2);
                 this.parameterValues.addValue("theta3", 0.15);
             }
@@ -961,9 +1028,15 @@ public class Experiment {
                 this.type = Type.REACH;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("theta1", 0.4);
-                this.parameterValues.addValue("theta2", 0.2);
-                this.parameterValues.addValue("theta3", 0.15);
+                this.parameterValues.addValue("theta1", 0.08);
+                this.parameterValues.addValue("theta2", 0.1);
+                this.parameterValues.addValue("theta3", 0.05);
+                this.parameterValues.addValue("theta4", 0.06);
+                this.parameterValues.addValue("theta5", 0.09);
+                this.parameterValues.addValue("theta6", 0.04);
+                this.parameterValues.addValue("theta7", 0.01);
+                this.parameterValues.addValue("theta8", 0.14);
+                this.parameterValues.addValue("theta9", 0.15);
             }
 
             case AIRCRAFT_MIXTURE_ONEMOD_ADAPTIVE -> {

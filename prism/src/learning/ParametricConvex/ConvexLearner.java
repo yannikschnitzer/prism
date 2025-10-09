@@ -63,6 +63,8 @@ public class ConvexLearner {
             // simplex tends to be nicer for repeated objective changes
             this.model.set(GRB.IntParam.Method, 1);
             this.model.set(GRB.IntParam.OutputFlag, 0);
+            this.model.set(GRB.DoubleParam.FeasibilityTol, 1e-9);
+            this.model.set(GRB.DoubleParam.OptimalityTol, 1e-9);
         } catch (GRBException e) {
             throw new RuntimeException(e);
         }
@@ -81,6 +83,8 @@ public class ConvexLearner {
         this.model = new GRBModel(env);
         this.model.set(GRB.IntParam.Method, 1);
         this.model.set(GRB.IntParam.OutputFlag, 0);
+        this.model.set(GRB.DoubleParam.FeasibilityTol, 1e-9);
+        this.model.set(GRB.DoubleParam.OptimalityTol, 1e-9);
         this.trans = new ExpressionTranslator(model);
 
         this.constrLowerBounds.clear();

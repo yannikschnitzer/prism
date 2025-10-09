@@ -46,6 +46,7 @@ public class DataProcessor {
             writer.write("NumStates: " + numStates + System.lineSeparator());
             writer.write("NumTransitions: " + numTransitions + System.lineSeparator());
             writer.write("NumLearnableComponents: " + numLearnableComponents + System.lineSeparator());
+            writer.write("NumParameters: " + ex.parameterValues.getNames().size() + System.lineSeparator());
             writer.write("Seed: " + ex.seed + System.lineSeparator());
             writer.write("Type: " + ex.type + System.lineSeparator());
             writer.write("Factored: " + ex.factored + System.lineSeparator());

@@ -6,12 +6,14 @@ import explicit.*;
 import imdpcomp.Experiment;
 import learning.ParametricConvex.ConvexLearner;
 import learning.ParametricConvex.ExpressionTranslator;
+import learning.ParametricConvex.RobustDTMCOneShotLP;
 import learning.Simulation.StateActionPair;
 import learning.Simulation.TransitionTriple;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.solvers.BrentSolver;
 import org.apache.commons.math3.special.Beta;
 import param.Function;
+import param.Point;
 import prism.Evaluator;
 import prism.Prism;
 import prism.PrismException;
@@ -152,6 +154,7 @@ public class PACConvexEstimator extends MAPEstimator {
         double resultConvexOptimisticDTMC = round((Double) checkDTMC(optimisticStrat).getResult());
 
         System.out.println("Convex Guarantee: " + resconvexMDP + ", Convex Performance: " + resconvexDTMC);
+        System.out.println("Optimistic Guarantee: " + resultOptimisticConvex.getResult());
 
         return new double[]{resconvexMDP, resconvexDTMC, resultConvexOptimisticDTMC, modelBuildingTime, modelCheckingTimeRobust, modelCheckingTimeOptimistic, modelCheckingTimeDTMC};
     }
@@ -197,8 +200,8 @@ public class PACConvexEstimator extends MAPEstimator {
 
             double resultOptimisticDTMC = round((Double) checkDTMC(optimisticStrat).getResult());
 
-            System.out.println("IMDP Ground: " + imdpGround);
-            System.out.println("IMDP Bisim: " + imdpBisim);
+//            System.out.println("IMDP Ground: " + imdpGround);
+//            System.out.println("IMDP Bisim: " + imdpBisim);
             try {
                 buildConvexUMDP(imdpGround, this.pmdp);
             } catch (GRBException e) {
@@ -441,27 +444,48 @@ public class PACConvexEstimator extends MAPEstimator {
         }
         cxl.getModel().update();
 
-        if (useVertexPrecomp) {
-            cxl.setVertexCap(10000);
-            cxl.precomputeVertices();
-        }
+//        if (RobustDTMCOneShotLP.isDTMC(pmdp) && ex.useDTMCLP) {
+//            BitSet goal = pmdp.getLabelToStatesMap().getOrDefault("goal", new BitSet());
+//
+//            RobustDTMCOneShotLP.Result rReach = RobustDTMCOneShotLP.solve(cxl, pmdp, goal, RobustDTMCOneShotLP.Objective.REACH_PROB_MIN);
+//            System.out.println("One-shot robust reach (init): " + rReach.x0);
+//        }
 
         // Printing Model
         ConvexLearner.printModel(cxl.getModel());
 
-        UMDPSimple<Double> convex_mdp = cxl.getUMDP();
-        convex_mdp.addInitialState(pmdp.getFirstInitialState());
-        convex_mdp.setStatesList(pmdp.getStatesList());
-        convex_mdp.setConstantValues(pmdp.getConstantValues());
+        // 2) Build intervals by optimizing each unique function once
+        if (ex.useLPToIntervals) {
+            UMDPSimple<Double> LPimdp = buildIntervalizedUMDPFromLP(cxl, pmdp);
+            LPimdp.addInitialState(pmdp.getFirstInitialState());
+            LPimdp.setStatesList(pmdp.getStatesList());
+            LPimdp.setConstantValues(pmdp.getConstantValues());
 
-        Map<String, BitSet> labels = pmdp.getLabelToStatesMap();
-        for (Map.Entry<String, BitSet> entry : labels.entrySet()) {
-            convex_mdp.addLabel(entry.getKey(), entry.getValue());
+            for (Map.Entry<String, BitSet> entry : pmdp.getLabelToStatesMap().entrySet())
+                LPimdp.addLabel(entry.getKey(), entry.getValue());
+                this.convex_estimate = LPimdp;
+
+            return LPimdp;
+        } else {
+            if (useVertexPrecomp) {
+                cxl.setVertexCap(10000);
+                cxl.precomputeVertices();
+            }
+
+            UMDPSimple<Double> convex_mdp = cxl.getUMDP();
+            convex_mdp.addInitialState(pmdp.getFirstInitialState());
+            convex_mdp.setStatesList(pmdp.getStatesList());
+            convex_mdp.setConstantValues(pmdp.getConstantValues());
+
+            Map<String, BitSet> labels = pmdp.getLabelToStatesMap();
+            for (Map.Entry<String, BitSet> entry : labels.entrySet()) {
+                convex_mdp.addLabel(entry.getKey(), entry.getValue());
+            }
+
+            this.convex_estimate = convex_mdp;
+
+            return convex_mdp;
         }
-
-        this.convex_estimate = convex_mdp;
-
-        return convex_mdp;
     }
 
     public UMDP<Double> buildConvexUMDPCombinedBisim(UMDP<Double> imdpGround, MDPSimple<Function> pmdpGround, UMDP<Double> imdpBisim, MDPSimple<Function> pmdpBisim) throws GRBException, PrismException {
@@ -504,6 +528,103 @@ public class PACConvexEstimator extends MAPEstimator {
 
         return convex_mdp;
     }
+
+    /** Build an IMDP by solving min/max for each unique Function over the committed LP. */
+    private UMDPSimple<Double> buildIntervalizedUMDPFromLP(ConvexLearner cxl, MDPSimple<Function> pmdp)
+            throws GRBException, PrismException {
+        final GRBModel model = cxl.getModel();
+        final ExpressionTranslator trans = cxl.getTranslator();
+
+        // If you tightened bounds (OBBT), reflect them in the translator for McCormick
+        // (uncomment if you have the helper in this class)
+        refreshTranslatorBoundsFromModel(trans, model);
+
+        final int n = pmdp.getNumStates();
+        UMDPSimple<Double> out = new UMDPSimple<>(n);
+
+        // IMPORTANT: cache raw bounds only, NOT Interval objects (they are mutated by delimit()).
+        Map<String, double[]> exprCache = new HashMap<>();
+
+        for (int s = 0; s < n; s++) {
+            int numChoices = pmdp.getNumChoices(s);
+            for (int i = 0; i < numChoices; i++) {
+                final String action = getActionString(pmdp, s, i);
+                Distribution<Interval<Double>> distrNew = new Distribution<>(Evaluator.forDoubleInterval());
+
+                boolean singleSucc = pmdp.getDistribution(s, i).getSupport().size() == 1;
+
+                for (Iterator<Map.Entry<Integer, Function>> it = pmdp.getTransitionsIterator(s, i); it.hasNext();) {
+                    Map.Entry<Integer, Function> e = it.next();
+                    int t = e.getKey();
+                    Function f = e.getValue();
+
+                    Interval<Double> interval;
+                    if (singleSucc || f.isOne()) {
+                        interval = new Interval<>(1.0, 1.0);
+                    } else {
+                        String key = f.toString(); // same expression -> same bounds
+                        double[] bounds = exprCache.get(key);
+                        if (bounds == null) {
+                            if (f.isConstant()) {
+                                double val = f.asBigRational().doubleValue();
+                                bounds = new double[]{val, val};
+                            } else {
+                                // Translate f into current model (adds aux for bilinear/quadratic via McCormick)
+                                GRBLinExpr lin = trans.translateLinearExpression(f.asExpression());
+                                model.update();
+
+                                double lo = optimize(model, lin, GRB.MINIMIZE);
+                                double hi = optimize(model, lin, GRB.MAXIMIZE);
+
+                                // clamp numerically to [0,1] and keep tiny interior gap
+                                lo = Math.max(precision, Math.min(1.0 - precision, lo));
+                                hi = Math.max(precision, Math.min(1.0 - precision, hi));
+                                if (hi < lo) { double tmp = lo; lo = hi; hi = tmp; }
+
+                                bounds = new double[]{lo, hi};
+                            }
+                            exprCache.put(key, bounds);
+                        }
+                        // Create a fresh Interval so delimit() can safely mutate per-choice copies
+                        interval = new Interval<>(bounds[0], bounds[1]);
+                    }
+
+                    distrNew.add(t, interval);
+                }
+
+                // Ensure each choice is a feasible interval distribution (mutates the per-choice intervals)
+                IntervalUtils.delimit(distrNew, Evaluator.forDouble());
+                out.addActionLabelledChoice(s, new UDistributionIntervals<>(distrNew), action);
+            }
+        }
+
+        return out;
+    }
+
+    /** Update the translator's McCormick bounds from the *current* model bounds (after OBBT). */
+    private void refreshTranslatorBoundsFromModel(ExpressionTranslator trans, GRBModel model) throws GRBException {
+        for (GRBVar v : model.getVars()) {
+            String name = v.get(GRB.StringAttr.VarName);
+            double lb = v.get(GRB.DoubleAttr.LB);
+            double ub = v.get(GRB.DoubleAttr.UB);
+            if (!Double.isNaN(lb) && !Double.isNaN(ub)) {
+                trans.setVarBounds(name, lb, ub);
+            }
+        }
+    }
+
+    /** Optimize a linear objective (possibly including translator's aux vars). */
+    private static double optimize(GRBModel model, GRBLinExpr obj, int sense) throws GRBException {
+        model.setObjective(obj);
+        model.set(GRB.IntAttr.ModelSense, sense);
+        model.optimize();
+        int status = model.get(GRB.IntAttr.Status);
+        if (status != GRB.Status.OPTIMAL) {
+            throw new GRBException("Expression bound solve not optimal, status=" + status);
+        }
+        return model.get(GRB.DoubleAttr.ObjVal);
+    }
+
 
     protected Interval<Double> getClopperPearsonInterval(int count, int sacount) {
         if (sacount == 0) {

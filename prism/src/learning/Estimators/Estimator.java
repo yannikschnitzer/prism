@@ -361,7 +361,7 @@ public class Estimator {
         UMDPModelChecker mc = new UMDPModelChecker(this.prism);
         mc.setGenStrat(true);
         mc.setPrecomp(true);
-        mc.setErrorOnNonConverge(true);
+        mc.setErrorOnNonConverge(ex.errorOnNonConvergence);
         mc.setMaxIters(ex.maxVIIters);
 
         PropertiesFile pf = robust
