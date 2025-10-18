@@ -23,6 +23,7 @@ import strat.MDStrategy;
 import strat.MDStrategyArray;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 import static imdpcomp.Experiment.IntervalAbstractionMode.*;
 import static imdpcomp.Experiment.ParameterTying.NO_TYING;
@@ -534,28 +535,178 @@ public class PACConvexEstimator extends MAPEstimator {
         return convex_mdp;
     }
 
-    /** Build an IMDP by solving min/max for each unique Function over the committed LP. */
-    private UMDPSimple<Double> buildIntervalizedUMDPFromLP(ConvexLearner cxl, MDPSimple<Function> pmdp)
+    /**
+     * Build an IMDP by solving min/max for each unique Function over the committed LP.
+     * Parallelism is controlled by ex.parallelizeBounds(): when true, create one GRBEnv+GRBModel copy per worker (no files).
+     */
+    private UMDPSimple<Double> buildIntervalizedUMDPFromLP(ConvexLearner cxl,
+                                                           MDPSimple<Function> pmdp)
             throws GRBException, PrismException {
-        final GRBModel model = cxl.getModel();
+
+        final GRBModel baseModel = cxl.getModel();
         final ExpressionTranslator trans = cxl.getTranslator();
 
         // If you tightened bounds (OBBT), reflect them in the translator for McCormick
-        // (uncomment if you have the helper in this class)
-        refreshTranslatorBoundsFromModel(trans, model);
+        refreshTranslatorBoundsFromModel(trans, baseModel);
 
         final int n = pmdp.getNumStates();
         UMDPSimple<Double> out = new UMDPSimple<>(n);
 
-        // IMPORTANT: cache raw bounds only, NOT Interval objects (they are mutated by delimit()).
-        Map<String, double[]> exprCache = new HashMap<>();
+        // Cache numeric bounds [lo, hi] per unique expression (use f.toString()).
+        final Map<String, double[]> exprCache = new ConcurrentHashMap<>();
 
+        // ---- 1) Collect & translate all unique non-constant Functions ONCE (serial) ----
+        final LinkedHashMap<String, ObjSpec> todoSpecs = new LinkedHashMap<>();
+        for (int s = 0; s < n; s++) {
+            int numChoices = pmdp.getNumChoices(s);
+            for (int i = 0; i < numChoices; i++) {
+                boolean singleSucc = pmdp.getDistribution(s, i).getSupport().size() == 1;
+                for (Iterator<Map.Entry<Integer, Function>> it = pmdp.getTransitionsIterator(s, i); it.hasNext();) {
+                    Map.Entry<Integer, Function> e = it.next();
+                    Function f = e.getValue();
+
+                    if (singleSucc || f.isOne()) continue; // fixed 1.0
+
+                    final String key = f.toString();
+                    if (exprCache.containsKey(key) || todoSpecs.containsKey(key)) continue;
+
+                    if (f.isConstant()) {
+                        double v = f.asBigRational().doubleValue();
+                        exprCache.put(key, new double[]{v, v});
+                        continue;
+                    }
+
+                    // Translate now (may add aux vars/cons); no worker mutates the model.
+                    GRBLinExpr lin = trans.translateLinearExpression(f.asExpression());
+                    baseModel.update();
+
+                    // Extract objective spec (names + coeffs + constant) for rebuild in worker copies
+                    final int terms = lin.size();
+                    final String[] names = new String[terms];
+                    final double[] coeffs = new double[terms];
+                    for (int k = 0; k < terms; k++) {
+                        names[k]  = lin.getVar(k).get(GRB.StringAttr.VarName);
+                        coeffs[k] = lin.getCoeff(k);
+                    }
+                    final double constant = lin.getConstant();
+                    todoSpecs.put(key, new ObjSpec(names, coeffs, constant));
+                }
+            }
+        }
+
+        if (!todoSpecs.isEmpty()) {
+            baseModel.update(); // freeze before copying to other envs
+
+            if (ex.exprBoundWorkers > 1) {
+                // ---- 2a) PARALLEL: one env+model copy per worker, no files ----
+                final int workerCount = ex.exprBoundWorkers;
+                final int threadsPerWorker = 1; // safest default; adjust if desired
+
+                final ExecutorService pool = Executors.newFixedThreadPool(workerCount);
+
+// Precreate worker envs+model copies on the main thread (silent)
+                final List<WorkerHandle> workers = new ArrayList<>(workerCount);
+                for (int w = 0; w < workerCount; w++) {
+                    // 1) Empty env -> set silence -> start
+                    GRBEnv env = new GRBEnv(true);                 // empty env (nothing printed yet)
+                    env.set(GRB.IntParam.LogToConsole, 0);         // silence console
+                    env.set(GRB.IntParam.OutputFlag, 0);           // belt & braces
+                    env.start();                                   // now the license banner won't print
+
+                    // 2) Copy model into this env and silence at model level too
+                    GRBModel m = new GRBModel(baseModel, env);
+                    m.set(GRB.IntParam.LogToConsole, 0);
+                    m.set(GRB.IntParam.OutputFlag, 0);
+
+                    // your tuning
+                    m.set(GRB.IntParam.Method, 1);
+                    m.set(GRB.IntParam.Threads, threadsPerWorker);
+
+                    workers.add(new WorkerHandle(env, m));
+                }
+
+                final List<Map.Entry<String, ObjSpec>> all = new ArrayList<>(todoSpecs.entrySet());
+                final List<List<Map.Entry<String, ObjSpec>>> chunks = partition(all, workerCount);
+
+                final List<Future<?>> futures = new ArrayList<>();
+                for (int w = 0; w < chunks.size(); w++) {
+                    final List<Map.Entry<String, ObjSpec>> chunk = chunks.get(w);
+                    final WorkerHandle wh = workers.get(w);
+                    futures.add(pool.submit(() -> {
+                        try {
+                            for (Map.Entry<String, ObjSpec> entry : chunk) {
+                                final String key = entry.getKey();
+                                final ObjSpec spec = entry.getValue();
+                                final double[] b = solveMinMaxOn(wh.model, spec);
+                                double lo = clamp(b[0], precision, 1.0 - precision);
+                                double hi = clamp(b[1], precision, 1.0 - precision);
+                                if (hi < lo) { double t = lo; lo = hi; hi = t; }
+                                exprCache.put(key, new double[]{lo, hi});
+                            }
+                        } finally {
+                            // Dispose this worker's resources
+                            try { wh.model.dispose(); } catch (Throwable ignore) {}
+                            try { wh.env.dispose(); }   catch (Throwable ignore) {}
+                        }
+                        return null;
+                    }));
+                }
+
+                // Join
+                for (Future<?> f : futures) {
+                    try { f.get(); }
+                    catch (InterruptedException ie) { Thread.currentThread().interrupt(); throw new RuntimeException("Interrupted", ie); }
+                    catch (ExecutionException ee) { throw new RuntimeException("Worker failed", ee.getCause()); }
+                }
+                pool.shutdown();
+
+            } else {
+                // ---- 2b) SERIAL: reuse ONE model; change objective; warm re-solve ----
+                final int oldMethod  = baseModel.get(GRB.IntParam.Method);
+                final int oldThreads = baseModel.get(GRB.IntParam.Threads);
+                final int oldOut     = baseModel.get(GRB.IntParam.OutputFlag);
+                try {
+                    baseModel.set(GRB.IntParam.Method, 1);        // dual simplex
+                    baseModel.set(GRB.IntParam.OutputFlag, 0);
+
+                    for (Map.Entry<String, ObjSpec> e : todoSpecs.entrySet()) {
+                        final String key = e.getKey();
+                        final ObjSpec spec = e.getValue();
+
+                        GRBLinExpr expr = new GRBLinExpr();
+                        for (int k = 0; k < spec.names.length; k++) {
+                            expr.addTerm(spec.coeffs[k], baseModel.getVarByName(spec.names[k]));
+                        }
+                        expr.addConstant(spec.constant);
+
+                        baseModel.setObjective(expr, GRB.MINIMIZE);
+                        baseModel.optimize();
+                        double lo = baseModel.get(GRB.DoubleAttr.ObjVal);
+
+                        baseModel.setObjective(expr, GRB.MAXIMIZE);
+                        baseModel.optimize();
+                        double hi = baseModel.get(GRB.DoubleAttr.ObjVal);
+
+                        lo = clamp(lo, precision, 1.0 - precision);
+                        hi = clamp(hi, precision, 1.0 - precision);
+                        if (hi < lo) { double t = lo; lo = hi; hi = t; }
+
+                        exprCache.put(key, new double[]{lo, hi});
+                    }
+                } finally {
+                    baseModel.set(GRB.IntParam.Method, oldMethod);
+                    baseModel.set(GRB.IntParam.Threads, oldThreads);
+                    baseModel.set(GRB.IntParam.OutputFlag, 0);
+                }
+            }
+        }
+
+        // ---- 3) Build the UMDP using cached bounds ----
         for (int s = 0; s < n; s++) {
             int numChoices = pmdp.getNumChoices(s);
             for (int i = 0; i < numChoices; i++) {
                 final String action = getActionString(pmdp, s, i);
                 Distribution<Interval<Double>> distrNew = new Distribution<>(Evaluator.forDoubleInterval());
-
                 boolean singleSucc = pmdp.getDistribution(s, i).getSupport().size() == 1;
 
                 for (Iterator<Map.Entry<Integer, Function>> it = pmdp.getTransitionsIterator(s, i); it.hasNext();) {
@@ -563,47 +714,81 @@ public class PACConvexEstimator extends MAPEstimator {
                     int t = e.getKey();
                     Function f = e.getValue();
 
-                    Interval<Double> interval;
+                    final Interval<Double> interval;
                     if (singleSucc || f.isOne()) {
                         interval = new Interval<>(1.0, 1.0);
                     } else {
-                        String key = f.toString(); // same expression -> same bounds
-                        double[] bounds = exprCache.get(key);
-                        if (bounds == null) {
-                            if (f.isConstant()) {
-                                double val = f.asBigRational().doubleValue();
-                                bounds = new double[]{val, val};
-                            } else {
-                                // Translate f into current model (adds aux for bilinear/quadratic via McCormick)
-                                GRBLinExpr lin = trans.translateLinearExpression(f.asExpression());
-                                model.update();
-
-                                double lo = optimize(model, lin, GRB.MINIMIZE);
-                                double hi = optimize(model, lin, GRB.MAXIMIZE);
-
-                                // clamp numerically to [0,1] and keep tiny interior gap
-                                lo = Math.max(precision, Math.min(1.0 - precision, lo));
-                                hi = Math.max(precision, Math.min(1.0 - precision, hi));
-                                if (hi < lo) { double tmp = lo; lo = hi; hi = tmp; }
-
-                                bounds = new double[]{lo, hi};
-                            }
-                            exprCache.put(key, bounds);
+                        final String key = f.toString();
+                        double[] b = exprCache.get(key);
+                        if (b == null) {
+                            double v = f.isConstant() ? f.asBigRational().doubleValue() : 0.0;
+                            b = new double[]{v, v};
                         }
-                        // Create a fresh Interval so delimit() can safely mutate per-choice copies
-                        interval = new Interval<>(bounds[0], bounds[1]);
+                        interval = new Interval<>(b[0], b[1]); // fresh per-choice
                     }
-
                     distrNew.add(t, interval);
                 }
 
-                // Ensure each choice is a feasible interval distribution (mutates the per-choice intervals)
                 IntervalUtils.delimit(distrNew, Evaluator.forDouble());
                 out.addActionLabelledChoice(s, new UDistributionIntervals<>(distrNew), action);
             }
         }
 
         return out;
+    }
+
+    /* ===== Helpers ===== */
+
+    private static final class WorkerHandle {
+        final GRBEnv env;
+        final GRBModel model;
+        WorkerHandle(GRBEnv env, GRBModel model) { this.env = env; this.model = model; }
+    }
+
+    private static final class ObjSpec {
+        final String[] names;
+        final double[] coeffs;
+        final double constant;
+        ObjSpec(String[] names, double[] coeffs, double constant) {
+            this.names = names;
+            this.coeffs = coeffs;
+            this.constant = constant;
+        }
+    }
+
+    private static double[] solveMinMaxOn(GRBModel m, ObjSpec spec) throws GRBException {
+        GRBLinExpr expr = new GRBLinExpr();
+        for (int k = 0; k < spec.names.length; k++) {
+            expr.addTerm(spec.coeffs[k], m.getVarByName(spec.names[k]));
+        }
+        expr.addConstant(spec.constant);
+
+        m.setObjective(expr, GRB.MINIMIZE);
+        m.optimize();
+        double lo = m.get(GRB.DoubleAttr.ObjVal);
+
+        m.setObjective(expr, GRB.MAXIMIZE);
+        m.optimize();
+        double hi = m.get(GRB.DoubleAttr.ObjVal);
+
+        return new double[]{lo, hi};
+    }
+
+    private static double clamp(double x, double lo, double hi) {
+        return Math.max(lo, Math.min(hi, x));
+    }
+
+    private static <T> List<List<T>> partition(List<T> items, int parts) {
+        final int n = items.size();
+        final int k = Math.max(1, Math.min(parts, n));
+        final List<List<T>> chunks = new ArrayList<>(k);
+        int base = n / k, rem = n % k, idx = 0;
+        for (int i = 0; i < k; i++) {
+            int sz = base + (i < rem ? 1 : 0);
+            chunks.add(items.subList(idx, idx + sz));
+            idx += sz;
+        }
+        return chunks;
     }
 
     /** Build an IMDP by solving min/max for each unique Function over the committed LP. */

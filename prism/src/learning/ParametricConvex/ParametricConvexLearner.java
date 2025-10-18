@@ -47,11 +47,11 @@ public class ParametricConvexLearner {
         this.prism = prism;
     }
 
-    public static void main_2(String[] args) throws GRBException, PrismException {
+    public static void main(String[] args) throws GRBException, PrismException {
         ParametricConvexLearner parametricConvexLearner = new ParametricConvexLearner(new Prism(new PrismDevNullLog()));
         parametricConvexLearner.initializePrism();
 
-        Experiment ex = new Experiment(Model.AIRCRAFT_MIXTURE_ONEMOD).setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(FAST).useBisimulation(false).useOBBT(10);
+        Experiment ex = new Experiment(Model.BETTING_GAME_CONVEX_ADAPTIVE).setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).useBisimulation(false).useOBBT(10);
 
         MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
         System.out.println(pmdp);
@@ -63,7 +63,7 @@ public class ParametricConvexLearner {
                 true);
     }
 
-    public static void main(String[] args) throws GRBException, PrismException {
+    public static void main2(String[] args) throws GRBException, PrismException {
         ParametricConvexLearner parametricConvexLearner = new ParametricConvexLearner(new Prism(new PrismDevNullLog()));
         parametricConvexLearner.initializePrism();
 
@@ -73,33 +73,33 @@ public class ParametricConvexLearner {
         Experiment ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(NO_TYING);
         MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
 
-//        parametricConvexLearner.learnIMDP(ex,
-//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-//                pmdp,
-//                ex.parameterValues,
-//                true);
-//
-//
-//        // Parameter Tying
-//        ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(FULL_TYING);
-//        pmdp = parametricConvexLearner.buildParamModel(ex);
-//
-//        parametricConvexLearner.learnIMDP(ex,
-//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-//                pmdp,
-//                ex.parameterValues,
-//                true);
-//
-//
-//        // Parametric Convex
-//        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(false).setTieParameters(FULL_TYING).useOBBT(10);
-//        pmdp = parametricConvexLearner.buildParamModel(ex);
-//
-//        parametricConvexLearner.learnIMDP(ex,
-//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-//                pmdp,
-//                ex.parameterValues,
-//                true);
+        parametricConvexLearner.learnIMDP(ex,
+                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+                pmdp,
+                ex.parameterValues,
+                true);
+
+
+        // Parameter Tying
+        ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(FULL_TYING);
+        pmdp = parametricConvexLearner.buildParamModel(ex);
+
+        parametricConvexLearner.learnIMDP(ex,
+                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+                pmdp,
+                ex.parameterValues,
+                true);
+
+
+        // Parametric Convex
+        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(false).setTieParameters(FULL_TYING).useOBBT(10);
+        pmdp = parametricConvexLearner.buildParamModel(ex);
+
+        parametricConvexLearner.learnIMDP(ex,
+                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+                pmdp,
+                ex.parameterValues,
+                true);
 
 
         // LP to Interval - Expression-wise

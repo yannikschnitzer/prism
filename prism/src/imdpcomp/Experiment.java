@@ -44,6 +44,7 @@ public class Experiment {
     public boolean useDTMCLP = true;
     public boolean useLPToIntervals = false;
     public IntervalAbstractionMode intervalAbstractionMode = FAST;
+    public int exprBoundWorkers = 8;
 
 
     public enum ParameterTying {
@@ -507,7 +508,7 @@ public class Experiment {
                 this.maxVIIters = 20000;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("n", 50);
+                this.parameterValues.addValue("n", 10);
                 this.parameterValues.addValue("p", 0.55);
             }
 
