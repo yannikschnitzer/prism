@@ -38,6 +38,9 @@ public class ExpressionTranslator {
     // optional per-symbol bounds for McCormick (default [0.001, 0.999])
     private final Map<String, double[]> varBounds = new HashMap<>();
 
+    private final double lowerBoundVar = 0.0;
+    private final double upperBoundVar = 1.0;
+
     public ExpressionTranslator(GRBModel model) {
         this.model = model;
     }
@@ -59,7 +62,7 @@ public class ExpressionTranslator {
         return variableMap.computeIfAbsent(name, key -> {
             try {
                 // Unbounded here; McCormick uses getBounds(name) instead
-                return model.addVar(-GRB.INFINITY, GRB.INFINITY, 0.0, GRB.CONTINUOUS, key);
+                return model.addVar(lowerBoundVar, upperBoundVar, 0.0, GRB.CONTINUOUS, key);
             } catch (GRBException e) {
                 throw new RuntimeException(e);
             }
@@ -273,7 +276,7 @@ public class ExpressionTranslator {
     private GRBVar ensureBilinearVar(String name,
                                      GRBVar a, GRBVar b,
                                      double La, double Ua, double Lb, double Ub) throws GRBException {
-        GRBVar z = model.addVar(-GRB.INFINITY, GRB.INFINITY, 0.0, GRB.CONTINUOUS, name);
+        GRBVar z = model.addVar(lowerBoundVar, upperBoundVar, 0.0, GRB.CONTINUOUS, name);
 
         // z >= La*b + Lb*a - La*Lb
         { GRBLinExpr e = new GRBLinExpr();

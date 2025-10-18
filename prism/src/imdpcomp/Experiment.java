@@ -31,7 +31,7 @@ public class Experiment {
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
-    public int iterations = 1_000_000;
+    public int iterations = 1_00_000;
     public int max_episode_length = 50;
     public int multiplier = 5;
     public int maxVIIters = 20000;
@@ -64,6 +64,11 @@ public class Experiment {
     public Experiment(Model model, CompositionType type){
         this.setModel(model);
         this.compositionType = type;
+    }
+
+    public Experiment setIntervalAbstractionMode(IntervalAbstractionMode mode){
+        this.intervalAbstractionMode = mode;
+        return this;
     }
 
     public enum Model {
@@ -138,6 +143,11 @@ public class Experiment {
 
     public Experiment setSingleValue(String name, Object value) {
         this.parameterValues.setValue(name, value);
+        return this;
+    }
+
+    public Experiment setTieParameters(ParameterTying tieParameters) {
+        this.tieParameters = tieParameters;
         return this;
     }
 
@@ -474,11 +484,12 @@ public class Experiment {
                 this.spec = "Rmax=? [F \"done\"]";
                 this.type = Type.REWARD;
 
-                this.multiplier = 2;
+                this.multiplier = 4;
                 this.max_episode_length = 10;
                 this.maxVIIters = 20000;
 
                 // Set Parameter Values
+                this.parameterValues.addValue("n", 150);
                 this.parameterValues.addValue("p", 0.55);
             }
 
@@ -496,6 +507,7 @@ public class Experiment {
                 this.maxVIIters = 20000;
 
                 // Set Parameter Values
+                this.parameterValues.addValue("n", 50);
                 this.parameterValues.addValue("p", 0.55);
             }
 
@@ -1028,15 +1040,9 @@ public class Experiment {
                 this.type = Type.REACH;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("theta1", 0.08);
-                this.parameterValues.addValue("theta2", 0.1);
-                this.parameterValues.addValue("theta3", 0.05);
-                this.parameterValues.addValue("theta4", 0.06);
-                this.parameterValues.addValue("theta5", 0.09);
-                this.parameterValues.addValue("theta6", 0.04);
-                this.parameterValues.addValue("theta7", 0.01);
-                this.parameterValues.addValue("theta8", 0.14);
-                this.parameterValues.addValue("theta9", 0.15);
+                this.parameterValues.addValue("theta1", 0.369);
+                this.parameterValues.addValue("theta2", 0.2);
+                this.parameterValues.addValue("theta3", 0.3);
             }
 
             case AIRCRAFT_MIXTURE_ONEMOD_ADAPTIVE -> {

@@ -4,6 +4,7 @@ import com.gurobi.gurobi.*;
 import common.Interval;
 import explicit.*;
 import imdpcomp.Experiment;
+import imdpcomp.Experiment.IntervalAbstractionMode;
 import learning.ParametricConvex.ConvexLearner;
 import learning.ParametricConvex.ExpressionTranslator;
 import learning.ParametricConvex.RobustDTMCOneShotLP;
@@ -23,6 +24,7 @@ import strat.MDStrategyArray;
 
 import java.util.*;
 
+import static imdpcomp.Experiment.IntervalAbstractionMode.*;
 import static imdpcomp.Experiment.ParameterTying.NO_TYING;
 
 public class PACConvexEstimator extends MAPEstimator {
@@ -456,14 +458,17 @@ public class PACConvexEstimator extends MAPEstimator {
 
         // 2) Build intervals by optimizing each unique function once
         if (ex.useLPToIntervals) {
-            UMDPSimple<Double> LPimdp = buildIntervalizedUMDPFromLP(cxl, pmdp);
+            UMDPSimple<Double> LPimdp = (ex.intervalAbstractionMode == EXACT)
+                    ? buildIntervalizedUMDPFromLP(cxl, pmdp)
+                    : buildIntervalizedUMDPFromLPIntervalArithmetic(cxl, pmdp);
             LPimdp.addInitialState(pmdp.getFirstInitialState());
             LPimdp.setStatesList(pmdp.getStatesList());
             LPimdp.setConstantValues(pmdp.getConstantValues());
 
-            for (Map.Entry<String, BitSet> entry : pmdp.getLabelToStatesMap().entrySet())
+            for (Map.Entry<String, BitSet> entry : pmdp.getLabelToStatesMap().entrySet()) {
                 LPimdp.addLabel(entry.getKey(), entry.getValue());
-                this.convex_estimate = LPimdp;
+            }
+            this.convex_estimate = LPimdp;
 
             return LPimdp;
         } else {
@@ -585,6 +590,123 @@ public class PACConvexEstimator extends MAPEstimator {
                             }
                             exprCache.put(key, bounds);
                         }
+                        // Create a fresh Interval so delimit() can safely mutate per-choice copies
+                        interval = new Interval<>(bounds[0], bounds[1]);
+                    }
+
+                    distrNew.add(t, interval);
+                }
+
+                // Ensure each choice is a feasible interval distribution (mutates the per-choice intervals)
+                IntervalUtils.delimit(distrNew, Evaluator.forDouble());
+                out.addActionLabelledChoice(s, new UDistributionIntervals<>(distrNew), action);
+            }
+        }
+
+        return out;
+    }
+
+    /** Build an IMDP by solving min/max for each unique Function over the committed LP. */
+    private UMDPSimple<Double> buildIntervalizedUMDPFromLPIntervalArithmetic(ConvexLearner cxl, MDPSimple<Function> pmdp)
+            throws GRBException, PrismException {
+        final GRBModel model = cxl.getModel();
+        final ExpressionTranslator trans = cxl.getTranslator();
+
+        // If you tightened bounds (OBBT), reflect them in the translator for McCormick
+        // (uncomment if you have the helper in this class)
+        refreshTranslatorBoundsFromModel(trans, model);
+
+        final int n = pmdp.getNumStates();
+        UMDPSimple<Double> out = new UMDPSimple<>(n);
+
+        // IMPORTANT: cache raw bounds only, NOT Interval objects (they are mutated by delimit()).
+        Map<String, double[]> exprCache = new HashMap<>();
+
+        // TODO: testing parametric precomp / interval arithmetic
+        Map<GRBVar, double[]> varBounds = new HashMap<>();
+        GRBVar[] vars = model.getVars();
+        int freeVarCount = 0;
+        System.out.println("Pre-computing bounds for " + vars.length + " LP variables...");
+        for (GRBVar v : vars) {
+            double lb_attr = v.get(GRB.DoubleAttr.LB);
+            double ub_attr = v.get(GRB.DoubleAttr.UB);
+
+            // Optimization: If the variable's attributes show it's fixed, don't call the solver.
+            if (Math.abs(ub_attr - lb_attr) < 1e-9) {
+                varBounds.put(v, new double[]{lb_attr, lb_attr});
+            } else {
+                freeVarCount++;
+                GRBLinExpr v_obj = new GRBLinExpr();
+                v_obj.addTerm(1.0, v);
+
+                double lb_opt = optimize(model, v_obj, GRB.MINIMIZE);
+                double ub_opt = optimize(model, v_obj, GRB.MAXIMIZE);
+
+                varBounds.put(v, new double[]{lb_opt, ub_opt});
+            }
+        }
+        System.out.println("Pre-computed bounds for " + freeVarCount + " free variables...");
+
+        //------------
+
+        for (int s = 0; s < n; s++) {
+            int numChoices = pmdp.getNumChoices(s);
+            for (int i = 0; i < numChoices; i++) {
+                final String action = getActionString(pmdp, s, i);
+                Distribution<Interval<Double>> distrNew = new Distribution<>(Evaluator.forDoubleInterval());
+
+                boolean singleSucc = pmdp.getDistribution(s, i).getSupport().size() == 1;
+
+                for (Iterator<Map.Entry<Integer, Function>> it = pmdp.getTransitionsIterator(s, i); it.hasNext();) {
+                    Map.Entry<Integer, Function> e = it.next();
+                    int t = e.getKey();
+                    Function f = e.getValue();
+
+                    Interval<Double> interval;
+                    if (singleSucc || f.isOne()) {
+                        interval = new Interval<>(1.0, 1.0);
+                    } else {
+                        String key = f.toString(); // same expression -> same bounds
+                        double[] bounds = exprCache.get(key);
+                        if (bounds == null) {
+                            if (f.isConstant()) {
+                                double val = f.asBigRational().doubleValue();
+                                bounds = new double[]{val, val};
+                            } else {
+                                // Translate f into current model (adds aux for bilinear/quadratic via McCormick)
+                                GRBLinExpr lin = trans.translateLinearExpression(f.asExpression());
+                                model.update();
+
+                                double lower = lin.getConstant();
+                                double upper = lin.getConstant();
+
+                                for (int j = 0; j < lin.size(); j++) {
+                                    double coeff = lin.getCoeff(j);
+                                    double[] bounds_var = varBounds.get(lin.getVar(j));
+                                    if (bounds_var == null) {
+                                        // This should no longer happen after the bug fix.
+                                        System.err.println("Warning: Could not find pre-computed bounds for variable. Skipping term.");
+                                        continue;
+                                    }
+
+                                    if (coeff > 0) {
+                                        lower += coeff * bounds_var[0];
+                                        upper += coeff * bounds_var[1];
+                                    } else { // coeff < 0
+                                        lower += coeff * bounds_var[1];
+                                        upper += coeff * bounds_var[0];
+                                    }
+                                }
+
+                                lower = Math.max(0.0, Math.min(1.0, lower));
+                                upper = Math.max(0.0, Math.min(1.0, upper));
+
+                                bounds = new double[]{lower, upper};
+
+                            }
+                            exprCache.put(key, bounds);
+                        }
+
                         // Create a fresh Interval so delimit() can safely mutate per-choice copies
                         interval = new Interval<>(bounds[0], bounds[1]);
                     }

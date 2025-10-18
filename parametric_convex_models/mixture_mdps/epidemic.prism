@@ -1,41 +1,51 @@
 mdp
 
 // ===== POPULATIONS & OUTBREAK =====
-const int NA = 8;            // region A population
-const int NB = 8;            // region B population
-const int BREAKOUT = 15;      // outbreak threshold on total infected
+const int NA = 4;            // region A population
+const int NB = 4;            // region B population
+const int BREAKOUT = 7;      // outbreak threshold on total infected
 
 // ===== CLOSURE TIMING =====
 const int TMAX = 8;          // closure lasts TMAX steps
 const double rho = 0.25;     // cross-infection multiplier while closed (0<rho<1)
 
-// ===== MIXTURE WEIGHTS (K=3) =====
+// ===== MIXTURE WEIGHTS (K=5) =====
 const double theta1;
 const double theta2;
-formula theta3 = 1 - theta1 - theta2;   // θ3 ≥ 0 assumed via how you set θ in analysis
+const double theta3;
+const double theta4;
+formula theta5 = 1 - theta1 - theta2 - theta3 - theta4;   // θ5 ≥ 0 enforced by analysis-side constraints
 
-// ===== BASE CONTACT/INFECTION RATES (per regime; chosen to break θ-collinearity) =====
-// Local A
+// ===== BASE CONTACT/INFECTION RATES (per regime; spread to avoid θ-collinearity) =====
+// Local A  (keep in ~[0.015, 0.070])
 const double bA1 = 0.045;
 const double bA2 = 0.025;
-const double bA3 = 0.070;   // diffs vs k=3: (-0.025, -0.045)  ratio 1.8
-// Local B
+const double bA3 = 0.070;
+const double bA4 = 0.055;
+const double bA5 = 0.015;
+
+// Local B  (~[0.020, 0.060])
 const double bB1 = 0.030;
 const double bB2 = 0.050;
-const double bB3 = 0.040;   // diffs: (-0.010, 0.010)         ratio -1.0
-// Cross A<->B
+const double bB3 = 0.040;
+const double bB4 = 0.060;
+const double bB5 = 0.020;
+
+// Cross A<->B  (~[0.010, 0.035])
 const double bX1 = 0.020;
 const double bX2 = 0.035;
-const double bX3 = 0.015;   // diffs: (0.005, 0.020)          ratio 4.0
+const double bX3 = 0.015;
+const double bX4 = 0.028;
+const double bX5 = 0.010;
 
-// Recovery bases
+// Recovery bases (fixed)
 const double gA = 0.20;
 const double gB = 0.20;
 
 // Effective (affine in θ)
-formula betaA = theta1*bA1 + theta2*bA2 + theta3*bA3;
-formula betaB = theta1*bB1 + theta2*bB2 + theta3*bB3;
-formula betaX = theta1*bX1 + theta2*bX2 + theta3*bX3;
+formula betaA = theta1*bA1 + theta2*bA2 + theta3*bA3 + theta4*bA4 + theta5*bA5;
+formula betaB = theta1*bB1 + theta2*bB2 + theta3*bB3 + theta4*bB4 + theta5*bB5;
+formula betaX = theta1*bX1 + theta2*bX2 + theta3*bX3 + theta4*bX4 + theta5*bX5;
 
 // ===== FEASIBILITY SAFETY (keep total mass < 1 with slack) =====
 const double baseStay = 0.30;  // fixed "do nothing" mass every step
@@ -50,7 +60,7 @@ const double kRecB_o = 0.40;
 // Closed-period scalers (closing helps cross, harms locals/recovery a bit)
 const double kLocA_c = 0.62;
 const double kLocB_c = 0.62;
-const double kCross_c = 0.50;  // keep same, but cross is additionally multiplied by rho
+const double kCross_c = 0.50;  // cross also multiplied by rho when closed
 const double kRecA_c = 0.30;
 const double kRecB_c = 0.30;
 
@@ -91,7 +101,7 @@ module epi_close
      ) :
        (iA'=iA) & (iB'=iB) & (vA'=vA) & (vB'=vB) & (t'=t);
 
-  // ---------- WAIT (closed): same shape, cross × rho, locals/recovery use *_c, t counts down ----------
+  // ---------- WAIT (closed): cross × rho, locals/recovery use *_c, t counts down ----------
   [wait] t>0 ->
      baseStay : (iA'=iA) & (iB'=iB) & (vA'=vA) & (vB'=vB) & (t'=max(t-1,0))
 
@@ -127,7 +137,7 @@ module epi_close
   [vaccB] (NB - vB - iB) > 0 & t=0 -> (vB' = vB + 1) & (iA' = iA) & (iB' = iB) & (vA' = vA) & (t'=t);
   [vaccB] (NB - vB - iB) > 0 & t>0 -> (vB' = vB + 1) & (iA' = iA) & (iB' = iB) & (vA' = vA) & (t'=max(t-1,0));
 
-  // ---------- CLOSE BORDER (only when open): one epidemic step under "closed" dynamics, then t=TMAX ----------
+  // ---------- CLOSE BORDER (only when open): one epidemic step under \"closed\" dynamics, then t=TMAX ----------
   [close] t=0 ->
      baseStay : (iA'=iA) & (iB'=iB) & (vA'=vA) & (vB'=vB) & (t'=TMAX)
 
