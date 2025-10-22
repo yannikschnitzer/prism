@@ -26,15 +26,24 @@
 
 package explicit;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.BitSet;
 import java.util.PrimitiveIterator;
 
 import acceptance.AcceptanceReach;
+import acceptance.AcceptanceType;
+import com.gurobi.gurobi.*;
 import common.IntSet;
 import common.IterableStateSet;
 import explicit.rewards.MDPRewards;
 import explicit.rewards.Rewards;
 import parser.ast.Expression;
+import parser.ast.ModulesFile;
+import parser.ast.PropertiesFile;
+import parser.type.TypeDouble;
+import prism.*;
+import simulator.ModulesFileModelGenerator;
 import strat.FMDStrategyStep;
 import strat.FMDStrategyProduct;
 import strat.MDStrategy;
@@ -760,10 +769,12 @@ public class UMDPModelChecker extends ProbModelChecker
 			res = mc.computeReachProbs(umdp, target, MinMax.max().setMinUnc(false));
 			System.out.println("maxmax: " + res.soln[0]);
 
-		} catch (PrismException | GRBException e) {
+		} catch (GRBException e) {
+            throw new RuntimeException(e);
+        } catch (PrismException e) {
 			System.out.println(e);
 		}
-	}
+    }
 
 	public static void main(String[] args) {
 		Prism prism = new Prism(new PrismPrintStreamLog(System.out));

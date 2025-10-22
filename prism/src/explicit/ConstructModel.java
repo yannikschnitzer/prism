@@ -481,7 +481,7 @@ public class ConstructModel extends PrismComponent
 				}
 				// For interval models, we delimit the constructed distributions
 				if (modelType == ModelType.IDTMC) {
-					((IDTMCSimple<Value>) idtmc).delimit(src, modelGen.getEvaluator());
+					((IDTMCSimple<Value>) idtmc).delimit(src);
 				} else if (modelType == ModelType.IMDP) {
 					if (compositionType == CompositionType.INTERVAL_PRODUCT) {
 						imdp.delimit(src, ch);

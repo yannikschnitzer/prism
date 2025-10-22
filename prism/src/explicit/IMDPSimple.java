@@ -260,6 +260,13 @@ public class IMDPSimple<Value> extends ModelExplicitWrapper<Value> implements No
 			}
 		}
 	}
+
+	@Override
+	public UDistribution<Value> getUncertainDistribution(int s, int i)
+	{
+		return new UDistributionIntervals<>(mdp.getChoice(s, i));
+	}
+
 	@Override
 	public double mvMultUncSingle(int s, int k, double vect[], MinMax minMax)
 	{

@@ -80,22 +80,22 @@ public class ParametricConvexSolver {
         Experiment ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(NO_TYING);
         MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
 
-//        parametricConvexLearner.solveIMDPUniform(ex,
-//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-//                pmdp,
-//                ex.parameterValues,
-//                true);
-//
-//
-//        // Parameter Tying
-//        ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(FULL_TYING);
-//        //pmdp = parametricConvexLearner.buildParamModel(ex);
-//
-//        parametricConvexLearner.solveIMDPUniform(ex,
-//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-//                pmdp,
-//                ex.parameterValues,
-//                true);
+        parametricConvexLearner.solveIMDPUniform(ex,
+                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+                pmdp,
+                ex.parameterValues,
+                true);
+
+
+        // Parameter Tying
+        ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(FULL_TYING);
+        //pmdp = parametricConvexLearner.buildParamModel(ex);
+
+        parametricConvexLearner.solveIMDPUniform(ex,
+                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+                pmdp,
+                ex.parameterValues,
+                true);
 
 
         // Parametric Convex
