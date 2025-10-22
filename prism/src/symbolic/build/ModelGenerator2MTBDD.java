@@ -45,6 +45,7 @@ import prism.PrismException;
 import prism.PrismLangException;
 import prism.PrismLog;
 import prism.PrismNotSupportedException;
+import prism.PrismSettings;
 import prism.RewardGenerator;
 import symbolic.model.Model;
 import symbolic.model.ModelSymbolic;
@@ -222,10 +223,12 @@ public class ModelGenerator2MTBDD
 	 * allocate DD vars for system
 	 * i.e. decide on variable ordering and request variables from CUDD
 	 */
-	private void allocateDDVars() throws PrismNotSupportedException
+	private void allocateDDVars() throws PrismException
 	{
 		JDDNode vr, vc;
 		int i, j, n;
+
+		modelVariables.preallocateExtraActionVariables(prism.getSettings().getInteger(PrismSettings.PRISM_DD_EXTRA_ACTION_VARS));
 
 		// create arrays/etc. first
 
@@ -254,7 +257,7 @@ public class ModelGenerator2MTBDD
 		allDDColVars = new JDDVars();
 		for (i = 0; i < numVars; i++) {
 			DeclarationType declType = varList.getDeclarationType(i);
-			if (declType instanceof DeclarationClock || declType instanceof DeclarationIntUnbounded) {
+			if (declType.isUnbounded()) {
 				throw new PrismNotSupportedException("Cannot build a model that contains a variable with unbounded range (try the explicit engine instead)");
 			}
 			// get number of dd variables needed

@@ -35,7 +35,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import common.Interval;
 import explicit.DTMC;
+import explicit.IDTMC;
 import explicit.MDP;
 import explicit.Model;
 import explicit.NondetModel;
@@ -45,6 +47,7 @@ import parser.ast.ASTElement;
 import parser.ast.Expression;
 import parser.ast.RewardStruct;
 import prism.Evaluator;
+import prism.ModelType;
 import prism.Pair;
 import prism.PrismComponent;
 import prism.PrismException;
@@ -96,7 +99,7 @@ public class ConstructRewards extends PrismComponent
 		// If the RewardGenerator already has the rewards built, use this (after checking)
 		if (rewardGen.isRewardLookupSupported(RewardLookup.BY_REWARD_OBJECT)) {
 			Rewards<Value> rewardsObj = rewardGen.getRewardObject(r);
-			checkRewardObject(rewardsObj, rewardGen.getRewardObjectModel(), rewardGen.getRewardEvaluator());
+			rewardsObj = checkRewardObject(rewardsObj, rewardGen.getRewardObjectModel(), rewardGen.getRewardEvaluator());
 			return rewardsObj;
 		}
 		// Extract some model info
@@ -137,7 +140,7 @@ public class ConstructRewards extends PrismComponent
 					}
 				}
 				// Markov chain models (rewards on transitions)
-				else {
+				else if (model instanceof DTMC) {
 					DTMC<Value> mcModel = (DTMC<Value>) model;
 					Iterator<Map.Entry<Integer, Pair<Value, Object>>> iter = mcModel.getTransitionsAndActionsIterator(s);
 					int i = 0;
@@ -156,6 +159,26 @@ public class ConstructRewards extends PrismComponent
 						}
 						i++;
 					}
+				} else if (model.getModelType() == ModelType.IDTMC) {
+					IDTMC<Value> mcModel = (IDTMC<Value>) model;
+					Iterator<Map.Entry<Integer, Pair<Interval<Value>, Object>>> iter = mcModel.getIntervalTransitionsAndActionsIterator(s);
+					int i = 0;
+					while (iter.hasNext()) {
+						Map.Entry<Integer, Pair<Interval<Value>, Object>> e = iter.next();
+						Value rew = getAndCheckStateActionReward(s, e.getValue().second, rewardGen, r, statesList);
+						if (rewardGen.getRewardEvaluator().isZero(rew)) {
+							i++;
+							continue;
+						}
+						if (expectedRewards) {
+							throw new PrismException("Can't construct expected rewards for IDTMCs");
+						} else {
+							rewards.addToTransitionReward(s, i, rew);
+						}
+						i++;
+					}
+				} else {
+					throw new PrismException("Cannot build rewards for " + model.getModelType() + "s");
 				}
 			}
 		}
@@ -178,10 +201,10 @@ public class ConstructRewards extends PrismComponent
 		if (rewardGen.isRewardLookupSupported(RewardLookup.BY_STATE)) {
 			State state = statesList.get(s);
 			stateIndex = state;
-			rew = rewardGen.getStateReward(r, state);
+			rew = rewardGen.getStateReward(r, state, allowNegative);
 		} else if (rewardGen.isRewardLookupSupported(RewardLookup.BY_STATE_INDEX)) {
 			stateIndex = s;
-			rew = rewardGen.getStateReward(r, s);
+			rew = rewardGen.getStateReward(r, s, allowNegative);
 		} else {
 			throw new PrismException("Unknown reward lookup mechanism for reward generator");
 		}
@@ -205,10 +228,10 @@ public class ConstructRewards extends PrismComponent
 		if (rewardGen.isRewardLookupSupported(RewardLookup.BY_STATE)) {
 			State state = statesList.get(s);
 			stateIndex = state;
-			rew = rewardGen.getStateActionReward(r, state, action);
+			rew = rewardGen.getStateActionReward(r, state, action, allowNegative);
 		} else if (rewardGen.isRewardLookupSupported(RewardLookup.BY_STATE_INDEX)) {
 			stateIndex = s;
-			rew = rewardGen.getStateActionReward(r, s, action);
+			rew = rewardGen.getStateActionReward(r, s, action, allowNegative);
 		} else {
 			throw new PrismException("Unknown reward lookup mechanism for reward generator");
 		}
@@ -504,12 +527,24 @@ public class ConstructRewards extends PrismComponent
 	 * @param model The model for the rewards
 	 * @param eval Evaluator matching the type {@code Value} of the reward value
 	 */
-	private <Value> void checkRewardObject(Rewards<Value> rewards, Model<Value> model, Evaluator<Value> eval) throws PrismException
+	private <Value> Rewards<Value> checkRewardObject(Rewards<Value> rewards, Model<Value> model, Evaluator<Value> eval) throws PrismException
 	{
 		int numStates = model.getNumStates();
+		// In some cases, we need to create a new Rewards object
+		// in which (Markov chain) transition rewards are converted to expected rewards
+		RewardsExplicit<Value> rewardsRet = null;
+		boolean convertToExpected = !model.getModelType().nondeterministic() && rewards.hasTransitionRewards() && expectedRewards;
+		if (convertToExpected) {
+			rewardsRet = new RewardsSimple<>(numStates);
+			rewardsRet.setEvaluator(rewards.getEvaluator());
+		}
 		// State rewards
 		for (int s = 0; s < numStates; s++) {
-			checkStateReward(rewards.getStateReward(s), eval, s, null);
+			Value rew = rewards.getStateReward(s);
+			checkStateReward(rew, eval, s, null);
+			if (convertToExpected) {
+				rewardsRet.setStateReward(s, rew);
+			}
 		}
 		// Transition rewards (nondet models)
 		if (model.getModelType().nondeterministic()) {
@@ -523,12 +558,31 @@ public class ConstructRewards extends PrismComponent
 		// Transition rewards (Markov chain like models)
 		else {
 			for (int s = 0; s < numStates; s++) {
-				int numTrans = model.getNumTransitions(s);
-				for (int i = 0; i < numTrans; i++) {
-					checkTransitionReward(rewards.getTransitionReward(s, i), eval, s, null);
+				if (!convertToExpected) {
+					int numTrans = model.getNumTransitions(s);
+					for (int i = 0; i < numTrans; i++) {
+						checkTransitionReward(rewards.getTransitionReward(s, i), eval, s, null);
+					}
+				} else {
+					DTMC<Value> mcModel = (DTMC<Value>) model;
+					Iterator<Map.Entry<Integer, Value>> iter = mcModel.getTransitionsIterator(s);
+					int i = 0;
+					while (iter.hasNext()) {
+						Map.Entry<Integer, Value> e = iter.next();
+						Value rew = rewards.getTransitionReward(s, i);
+						checkTransitionReward(rew, eval, s, null);
+						if (rewards.getEvaluator().isZero(rew)) {
+							i++;
+							continue;
+						}
+						Value rewWeighted = rewards.getEvaluator().multiply(e.getValue(), rew);
+						rewardsRet.addToStateReward(s, rewWeighted);
+						i++;
+					}
 				}
 			}
 		}
+		return convertToExpected ? rewardsRet : rewards;
 	}
 
 	/**

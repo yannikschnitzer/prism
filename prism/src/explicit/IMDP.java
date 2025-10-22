@@ -37,12 +37,12 @@ import prism.PrismException;
 /**
  * Interface for classes that provide (read) access to an explicit-state interval MDP.
  */
-public interface IMDP<Value> extends UMDP<Value>
+public interface IMDP<Value> extends UMDP<Value>, IntervalModel<Value>
 {
 	// Accessors (for Model) - default implementations
 	
 	@Override
-	public default ModelType getModelType()
+	default ModelType getModelType()
 	{
 		return ModelType.IMDP;
 	}

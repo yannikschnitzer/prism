@@ -1,43 +1,56 @@
 This file contains details of the changes in each new version of PRISM.
 
 -----------------------------------------------------------------------------
-Changes since last release (up to ed80e0ed7)
+Version 4.9 (first released 11/8/2025)
 -----------------------------------------------------------------------------
 
 * Explicit engine improvements
-  - support for transition rewards in Markov chains
-  - storage (and export) of actions for Markov chains
+  - support for actions and transition rewards in Markov chains
 
-* Export functionality (explicit engine)
-  - export of exact (arbitrary precision) models
+* Export functionality
+  - export of exact and parametric models
   - preliminary DRN (Storm) output
-  - actions=true/false option
-  - remove old options (MRMC format, unordered)
+  - multiple -exportmodel switches allowed
+  - options for -exportmodel: format/actions/header/precision
+  - export of Markov chain actions
+  - remove old options (MRMC format, unordered, spy)
+  - align -exportstrat and -exportadv switches
 
-* Import functionality (from explicit files)
+* Model import functionality (from explicit files)
   - import of transition rewards
   - import for exact mode, LTSs
   - import progress display (symbolic engine)
+  - import directly to sparse classes in explicit engine
+    (now assume ascending states/choices in .tra files)
 
 * Minor modelling language updates
   - new power operator a^b, equivalent to pow(a,b)
   - fix: implication (=>) is right-associative
 
-* Simulator can take a random seed (API only)
+* New/improved functionality
+  - simplified/updated LTL-to-automaton scripts
+  - simulator can take a random seed (API only)
+  - exact model checking supported from GUI
+  - optimal strategy synthesis for Rmax=? [ C ] (explicit)
+
+* Various bugfixes
 
 * Development and code-level changes
-  - prism.Prism API: new model export methods
+  - prism.Prism API: new/updated model export methods
   - prism.Prism API: remove some old deprecated methods
   - prism.Prism: refactored storage/access for model info
   - prism.Prism: integration of exact model building/checking
+  - improved access to actions and their indices in models
   - redesign/refactoring of explicit engine reward classes
   - refactoring of explicit engine model import/export code
     (centralised in io package, export moved from model classes)
   - parametric engine refactored to use explicit models/rewards
+  - refactoring of (explicit engine) interval model storage
   - symbolic code rearranged (new symbolic package)
   - symbolic model storage refactored, simplified, documented
-
-* Various bugfixes
+  - extension of strategy classes, especially for induced models
+  - Java-based symbolic-to-explicit model conversion
+  - prism-auto: --errors-only switch
 
 * [More minor development and code-level changes]
 
@@ -49,6 +62,7 @@ Changes since last release (up to ed80e0ed7)
   - VarList aware of EvaluationContext/EvalMode
   - parametric engine: improved error reporting and formatting
   - prism.API: exportprism moved from setting to API call
+  - model export refactoring, including ModelExportTask
 
 -----------------------------------------------------------------------------
 Version 4.8.1 (first released 13/1/2024)

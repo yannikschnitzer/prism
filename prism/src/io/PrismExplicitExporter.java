@@ -28,6 +28,8 @@ package io;
 
 import common.IteratorTools;
 import explicit.DTMC;
+import explicit.IDTMC;
+import explicit.IntervalModel;
 import explicit.Model;
 import explicit.NondetModel;
 import explicit.PartiallyObservableModel;
@@ -47,7 +49,7 @@ import java.util.List;
 /**
  * Class to manage export of built models to PRISM's explicit file formats.
  */
-public class PrismExplicitExporter<Value> extends Exporter<Value>
+public class PrismExplicitExporter<Value> extends ModelExporter<Value>
 {
 	public PrismExplicitExporter()
 	{
@@ -59,15 +61,20 @@ public class PrismExplicitExporter<Value> extends Exporter<Value>
 		super(modelExportOptions);
 	}
 
+	@Override
+	public void exportModel(Model<Value> model, PrismLog out) throws PrismException
+	{
+		exportTransitions(model, out);
+	}
+
 	/**
 	 * Export a model in PRISM's .tra format.
 	 * @param model Model to export
 	 * @param out PrismLog to export to
 	 */
-	public void exportTransitions(Model<Value> model, PrismLog out)
+	public <ValueM> void exportTransitions(Model<ValueM> model, PrismLog out) throws PrismException
 	{
 		// Get model info and exportOptions
-		setEvaluator(model.getEvaluator());
 		ModelType modelType = model.getModelType();
 		boolean showActions = modelExportOptions.getShowActions();
 
@@ -75,11 +82,11 @@ public class PrismExplicitExporter<Value> extends Exporter<Value>
 		int numStates = model.getNumStates();
 		out.print(numStates);
 		if (modelType.nondeterministic()) {
-			out.print(" " + ((NondetModel<Value>) model).getNumChoices());
+			out.print(" " + ((NondetModel<ValueM>) model).getNumChoices());
 		}
 		out.print(" " + model.getNumTransitions());
 		if (modelType.partiallyObservable()) {
-			out.print(" " + ((PartiallyObservableModel<Value>) model).getNumObservations());
+			out.print(" " + ((PartiallyObservableModel<ValueM>) model).getNumObservations());
 		}
 		out.print("\n");
 
@@ -88,22 +95,22 @@ public class PrismExplicitExporter<Value> extends Exporter<Value>
 		for (int s = 0; s < numStates; s++) {
 			int numChoices = 1;
 			if (modelType.nondeterministic()) {
-				numChoices = ((NondetModel<Value>) model).getNumChoices(s);
+				numChoices = ((NondetModel<ValueM>) model).getNumChoices(s);
 			}
 			// Iterate through choices
 			for (int j = 0; j < numChoices; j++) {
 				// Print out (sorted) transitions
-				for (Transition<Value> transition : getSortedTransitionsIterator(model, s, j, showActions)) {
+				for (Transition<?> transition : getSortedTransitionsIterator(model, s, j, showActions)) {
 					out.print(s);
 					if (modelType.nondeterministic()) {
 						out.print(" " + j);
 					}
 					out.print(" " + transition.target);
 					if (modelType.isProbabilistic()) {
-						out.print(" " + formatValue(transition.value));
+						out.print(" " + transition.toString(modelExportOptions));
 					}
 					if (modelType.partiallyObservable()) {
-						out.print(" " + ((PartiallyObservableModel<Value>) model).getObservation(transition.target));
+						out.print(" " + ((PartiallyObservableModel<ValueM>) model).getObservation(transition.target));
 					}
 					if (showActions && transition.action != null && !"".equals(transition.action)) {
 						out.print(" " + transition.action);
@@ -199,7 +206,8 @@ public class PrismExplicitExporter<Value> extends Exporter<Value>
 					}
 				}
 			} else {
-				nonZeroRews += Math.toIntExact(IteratorTools.count(getSortedTransitionRewardsIterator(((DTMC<Value>) model), rewards, s,true), v -> !evalRewards.isZero(v.value)));
+				DTMC<?> mcModel = (model instanceof IDTMC) ? ((IDTMC<Value>) model).getIntervalModel() : (DTMC<Value>) model;
+				nonZeroRews += Math.toIntExact(IteratorTools.count(getSortedTransitionRewardsIterator(mcModel, rewards, s,true), t -> !t.isZero()));
 			}
 		}
 		// Output non-zero rewards
@@ -215,16 +223,18 @@ public class PrismExplicitExporter<Value> extends Exporter<Value>
 				for (int j = 0; j < numChoices; j++) {
 					Value d = rewards.getTransitionReward(s, j);
 					if (!evalRewards.isZero(d)) {
-						for (SuccessorsIterator succ = ((NondetModel<Value>) model).getSuccessors(s, j); succ.hasNext();) {
-							int s2 = succ.nextInt();
-							out.println(s + " " + j + " " + s2 + " " + formatValue(d, evalRewards));
+						// For nondet models, the choice reward is displayed by all transitions
+						// (which we sort, in order to match the output for the model)
+						for (Transition<?> transition : getSortedTransitionsIterator(model, s, j, modelExportOptions.getShowActions())) {
+							out.println(s + " " + j + " " + transition.target + " " + formatValue(d, evalRewards));
 						}
 					}
 				}
 			} else {
-				for (Transition<Value> transition : getSortedTransitionRewardsIterator(((DTMC<Value>) model), rewards, s, true)) {
-					if (!evalRewards.isZero(transition.value)) {
-						out.println(s + " " + transition.target + " " + formatValue(transition.value, evalRewards));
+				DTMC<?> mcModel = (model instanceof IDTMC) ? ((IDTMC<Value>) model).getIntervalModel() : (DTMC<Value>) model;
+				for (Transition<Value> transition : getSortedTransitionRewardsIterator(mcModel, rewards, s, true)) {
+					if (!transition.isZero()) {
+						out.println(s + " " + transition.target + " " + transition.toString(modelExportOptions));
 					}
 				}
 			}

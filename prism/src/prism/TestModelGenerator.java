@@ -29,10 +29,12 @@ package prism;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import explicit.ConstructModel;
 import explicit.DTMCModelChecker;
+import io.ModelExportFormat;
 import io.ModelExportOptions;
 import parser.State;
 import parser.ast.DeclarationInt;
@@ -84,7 +86,13 @@ public class TestModelGenerator implements ModelGenerator<Double>
 	{
 		return Arrays.asList("goal");
 	}
-	
+
+	@Override
+	public List<Object> getActions()
+	{
+		return Collections.singletonList(null);
+	}
+
 	@Override
 	public State getInitialState() throws PrismException
 	{
@@ -171,7 +179,7 @@ public class TestModelGenerator implements ModelGenerator<Double>
 				// Perform model construction/checking via Prism
 				TestModelGenerator modelGen2 = new TestModelGenerator(10);
 				prism.loadModelGenerator(modelGen2);
-				prism.exportBuiltModelTransitions(new File("test2.dot"), new ModelExportOptions(ModelExportOptions.ModelExportFormat.DOT));
+				prism.exportBuiltModelTransitions(new File("test2.dot"), new ModelExportOptions(ModelExportFormat.DOT));
 				PropertiesFile pf = prism.parsePropertiesString(modelGen2, "P=? [F x=10]");
 				Expression expr = pf.getProperty(0);
 				Result res = prism.modelCheck(pf, expr);
@@ -181,9 +189,6 @@ public class TestModelGenerator implements ModelGenerator<Double>
 			prism.closeDown(true);
 		} catch (PrismException e) {
 			System.err.println("Error: " + e.getMessage());
-		} catch (FileNotFoundException e) {
-			System.err.println("Error: " + e.getMessage());
 		}
-
 	}
 }

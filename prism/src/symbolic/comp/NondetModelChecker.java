@@ -39,6 +39,8 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Vector;
 
+import io.ModelExportFormat;
+import io.ModelExportOptions;
 import jdd.JDD;
 import jdd.JDDNode;
 import jdd.JDDVars;
@@ -341,7 +343,9 @@ public class NondetModelChecker extends NonProbModelChecker
 		// Get rewards
 		Object rs = expr.getRewardStructIndex();
 		JDDNode stateRewards = getStateRewardsByIndexObject(rs, model, constantValues);
+		checkNegativeRewards(stateRewards, "State");
 		JDDNode transRewards = getTransitionRewardsByIndexObject(rs, model, constantValues);
+		checkNegativeRewards(transRewards, "Transition");
 
 		// Compute rewards
 		StateValues rewards = null;
@@ -789,7 +793,9 @@ public class NondetModelChecker extends NonProbModelChecker
 				throw new PrismNotSupportedException("Multi-objective model checking does not support state rewards; please convert to transition rewards");
 			}
 			// Add transition rewards to list
-			transRewardsList.add(getTransitionRewardsByIndexObject(rs, model, constantValues));
+			JDDNode transRewards = getTransitionRewardsByIndexObject(rs, model, constantValues);
+			checkNegativeRewards(transRewards, "Transition");
+			transRewardsList.add(transRewards);
 		}
 		
 		// Check that the temporal/reward operator is supported, and store step bounds if present
@@ -890,9 +896,10 @@ public class NondetModelChecker extends NonProbModelChecker
 		// Output product, if required
 		if (prism.getExportProductTrans()) {
 			try {
-				int precision = getSettings().getInteger(PrismSettings.PRISM_EXPORT_MODEL_PRECISION);
+				ModelExportOptions exportOptions = new ModelExportOptions();
+				exportOptions.setModelPrecision(getSettings().getInteger(PrismSettings.PRISM_EXPORT_MODEL_PRECISION));
 				mainLog.println("\nExporting product transition matrix to file \"" + prism.getExportProductTransFilename() + "\"...");
-				modelProduct.exportToFile(Prism.EXPORT_PLAIN, true, new File(prism.getExportProductTransFilename()), precision);
+				modelProduct.exportToFile(new File(prism.getExportProductTransFilename()), exportOptions);
 			} catch (FileNotFoundException e) {
 				mainLog.printWarning("Could not export product transition matrix to file \"" + prism.getExportProductTransFilename() + "\"");
 			}
@@ -1283,9 +1290,10 @@ public class NondetModelChecker extends NonProbModelChecker
 		// Output product, if required
 		if (prism.getExportProductTrans()) {
 			try {
-				int precision = getSettings().getInteger(PrismSettings.PRISM_EXPORT_MODEL_PRECISION);
+				ModelExportOptions exportOptions = new ModelExportOptions();
+				exportOptions.setModelPrecision(getSettings().getInteger(PrismSettings.PRISM_EXPORT_MODEL_PRECISION));
 				mainLog.println("\nExporting product transition matrix to file \"" + prism.getExportProductTransFilename() + "\"...");
-				modelProduct.exportToFile(Prism.EXPORT_PLAIN, true, new File(prism.getExportProductTransFilename()), precision);
+				modelProduct.exportToFile(new File(prism.getExportProductTransFilename()), exportOptions);
 			} catch (FileNotFoundException e) {
 				mainLog.printWarning("Could not export product transition matrix to file \"" + prism.getExportProductTransFilename() + "\"");
 			}
@@ -1558,9 +1566,10 @@ public class NondetModelChecker extends NonProbModelChecker
 		// Output product, if required
 		if (prism.getExportProductTrans()) {
 			try {
-				int precision = getSettings().getInteger(PrismSettings.PRISM_EXPORT_MODEL_PRECISION);
+				ModelExportOptions exportOptions = new ModelExportOptions();
+				exportOptions.setModelPrecision(getSettings().getInteger(PrismSettings.PRISM_EXPORT_MODEL_PRECISION));
 				mainLog.println("\nExporting product transition matrix to file \"" + prism.getExportProductTransFilename() + "\"...");
-				modelProduct.getProductModel().exportToFile(Prism.EXPORT_PLAIN, true, new File(prism.getExportProductTransFilename()), precision);
+				modelProduct.getProductModel().exportToFile(new File(prism.getExportProductTransFilename()), exportOptions);
 			} catch (FileNotFoundException e) {
 				mainLog.printWarning("Could not export product transition matrix to file \"" + prism.getExportProductTransFilename() + "\"");
 			}
@@ -2026,9 +2035,10 @@ public class NondetModelChecker extends NonProbModelChecker
 
 					if (false) {
 						try {
-							int precision = getSettings().getInteger(PrismSettings.PRISM_EXPORT_MODEL_PRECISION);
-							model.exportToFile(Prism.EXPORT_DOT, true, new File("model.dot"), precision);
-							transform.getTransformedModel().exportToFile(Prism.EXPORT_DOT, true, new File("quotient.dot"), precision);
+							ModelExportOptions exportOptions = new ModelExportOptions(ModelExportFormat.DOT);
+							exportOptions.setModelPrecision(getSettings().getInteger(PrismSettings.PRISM_EXPORT_MODEL_PRECISION));
+							model.exportToFile(new File("model.dot"), exportOptions);
+							transform.getTransformedModel().exportToFile(new File("quotient.dot"), exportOptions);
 						} catch (FileNotFoundException e) {
 						}
 					}

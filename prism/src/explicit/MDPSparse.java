@@ -30,7 +30,9 @@ package explicit;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -42,6 +44,7 @@ import explicit.rewards.MDPRewards;
 import io.ExplicitModelImporter;
 import io.IOUtils;
 import parser.State;
+import prism.ActionListOwner;
 import prism.PrismException;
 import prism.PrismUtils;
 
@@ -95,7 +98,9 @@ public class MDPSparse extends MDPExplicit<Double>
 	public MDPSparse(final MDP<Double> mdp, boolean sort)
 	{
 		initialise(mdp.getNumStates());
-
+		if (mdp instanceof ActionListOwner) {
+			actionList.copyFrom(((ActionListOwner) mdp).getActionList());
+		}
 		setStatesList(mdp.getStatesList());
 		setConstantValues(mdp.getConstantValues());
 		for (String label : mdp.getLabels()) {
@@ -311,6 +316,9 @@ public class MDPSparse extends MDPExplicit<Double>
 	public MDPSparse(MDP<Double> mdp, List<Integer> states, List<List<Integer>> actions)
 	{
 		initialise(states.size());
+		if (mdp instanceof ActionListOwner) {
+			actionList.copyFrom(((ActionListOwner) mdp).getActionList());
+		}
 		for (int in : mdp.getInitialStates()) {
 			addInitialState(in);
 		}
@@ -394,18 +402,25 @@ public class MDPSparse extends MDPExplicit<Double>
 		cols = new int[numTransitions];
 		nonZeros = new double[numTransitions];
 		actions = new Object[numDistrs];
-		IOUtils.MDPTransitionConsumer<Double> cons = new IOUtils.MDPTransitionConsumer<Double>() {
+		IOUtils.MDPTransitionConsumer<Double> cons = new IOUtils.MDPTransitionConsumer<>() {
 			int sLast = -1;
 			int iLast = -1;
 			int count = 0;
 			int countCh = 0;
+
 			@Override
-			public void accept(int s, int i, int s2, Double d, Object a)
+			public void accept(int s, int i, int s2, Double d, Object a) throws PrismException
 			{
+				if (s < sLast) {
+					throw new PrismException("Imported states/transitions must be in ascending order");
+				}
 				if (s != sLast) {
 					rowStarts[s] = countCh;
 					sLast = s;
 					iLast = -1;
+				}
+				if (i < iLast) {
+					throw new PrismException("Imported states/transitions must be in ascending order");
 				}
 				if (i != iLast) {
 					choiceStarts[countCh] = count;
@@ -421,6 +436,7 @@ public class MDPSparse extends MDPExplicit<Double>
 		rowStarts[numStates] = numDistrs;
 		choiceStarts[numDistrs] = numTransitions;
 		modelImporter.extractMDPTransitions(cons);
+		actionList.markNeedsRecomputing();
 		// Compute maxNumDistrs
 		maxNumDistrs = 0;
 		for (int s = 0; s < numStates; s++) {
@@ -429,6 +445,27 @@ public class MDPSparse extends MDPExplicit<Double>
 	}
 
 	// Accessors (for Model)
+
+	@Override
+	public List<Object> findActionsUsed()
+	{
+		if (actions == null) {
+			return Collections.singletonList(null);
+		} else {
+			LinkedHashSet<Object> allActions = new LinkedHashSet<>();
+			int n = actions.length;
+			for (int i = 0; i < n; i++) {
+				allActions.add(actions[i]);
+			}
+			return new ArrayList<>(allActions);
+		}
+	}
+
+	@Override
+	public boolean onlyNullActionUsed()
+	{
+		return actions == null;
+	}
 
 	@Override
 	public int getNumTransitions()

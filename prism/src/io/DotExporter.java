@@ -31,12 +31,13 @@ import explicit.NondetModel;
 import explicit.PartiallyObservableModel;
 import explicit.graphviz.Decorator;
 import prism.ModelType;
+import prism.PrismException;
 import prism.PrismLog;
 
 /**
  * Class to manage export of built models to Dot format.
  */
-public class DotExporter<Value> extends Exporter<Value>
+public class DotExporter<Value> extends ModelExporter<Value>
 {
 	public DotExporter()
 	{
@@ -48,13 +49,19 @@ public class DotExporter<Value> extends Exporter<Value>
 		super(modelExportOptions);
 	}
 
+	@Override
+	public void exportModel(Model<Value> model, PrismLog out) throws PrismException
+	{
+		exportModel(model, out, null);
+	}
+
 	/**
 	 * Export a model in Dot format.
 	 * @param model Model to export
 	 * @param out PrismLog to export to
 	 * @param decorators Any Dot decorators to add (ignored if null)
 	 */
-	public void exportModel(Model<Value> model, PrismLog out, Iterable<explicit.graphviz.Decorator> decorators)
+	public void exportModel(Model<Value> model, PrismLog out, Iterable<explicit.graphviz.Decorator> decorators) throws PrismException
 	{
 		// Get model info and exportOptions
 		setEvaluator(model.getEvaluator());
@@ -67,7 +74,7 @@ public class DotExporter<Value> extends Exporter<Value>
 		defaults.attributes().put("shape", "box");
 
 		// Output header
-		out.println("digraph " + modelType + " {");
+		out.println("digraph " + "M" + " {");
 		out.println("node " + defaults + ";");
 
 		// Output transitions in Dot format
@@ -76,7 +83,7 @@ public class DotExporter<Value> extends Exporter<Value>
 			// Set up Dot Decoration
 			explicit.graphviz.Decoration d = new explicit.graphviz.Decoration(defaults);
 			d.setLabel(Integer.toString(s));
-			if (modelExportOptions.getShowStates()) {
+			if (modelExportOptions.getShowStates() && model.getStatesList() != null) {
 				if (modelType.partiallyObservable()) {
 					d = new explicit.graphviz.ShowStatesDecorator(model.getStatesList(), ((PartiallyObservableModel<Value>) model)::getObservationAsState).decorateState(s, d);
 				} else {
@@ -130,16 +137,16 @@ public class DotExporter<Value> extends Exporter<Value>
 				}
 
 				// Print out (sorted) transitions
-				for (Transition<Value> transition : getSortedTransitionsIterator(model, s, j, showActions && !modelType.nondeterministic())) {
+				for (Transition<?> transition : getSortedTransitionsIterator(model, s, j, showActions && !modelType.nondeterministic())) {
 					// Print a new Dot file line for the arrow for this transition
 					out.print(nodeMid + " -> " + transition.target);
 					// Annotate this arrow with the probability
 					explicit.graphviz.Decoration d3 = new explicit.graphviz.Decoration();
 					if (modelType.isProbabilistic()) {
 						if (showActions && transition.action != null && !"".equals(transition.action)) {
-							d3.setLabel(formatValue(transition.value) + ":" + transition.action);
+							d3.setLabel(transition.toString(modelExportOptions) + ":" + transition.action);
 						} else {
-							d3.setLabel(formatValue(transition.value));
+							d3.setLabel(transition.toString(modelExportOptions));
 						}
 					} else {
 						Object action = ((NondetModel<Value>) model).getAction(s, j);

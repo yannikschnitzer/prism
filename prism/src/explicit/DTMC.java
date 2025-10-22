@@ -29,11 +29,15 @@ package explicit;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.PrimitiveIterator;
 import java.util.PrimitiveIterator.OfInt;
 import java.util.TreeMap;
@@ -43,12 +47,11 @@ import common.IterableStateSet;
 import common.iterable.FunctionalIterator;
 import common.iterable.PrimitiveIterable;
 import common.iterable.Reducible;
-import explicit.graphviz.Decorator;
 import explicit.rewards.MCRewards;
+import prism.ActionList;
 import prism.ModelType;
 import prism.Pair;
 import prism.PrismException;
-import prism.PrismLog;
 
 /**
  * Interface for classes that provide (read) access to an explicit-state DTMC.
@@ -92,7 +95,25 @@ public interface DTMC<Value> extends Model<Value>
 	}
 
 	// Accessors
-	
+
+	@Override
+	default List<Object> findActionsUsed()
+	{
+		// Find unique actions across all transitions
+		if (onlyNullActionUsed()) {
+			return Collections.singletonList(null);
+		}
+		LinkedHashSet<Object> actions = new LinkedHashSet<>();
+		int numStates = getNumStates();
+		for (int s = 0; s < numStates; s++) {
+			for (Iterator<Entry<Integer, Pair<Value, Object>>> transitions = getTransitionsAndActionsIterator(s); transitions.hasNext();) {
+				final Entry<Integer, Pair<Value, Object>> transition = transitions.next();
+				actions.add(transition.getValue().second);
+			}
+		}
+		return new ArrayList<>(actions);
+	}
+
 	/**
 	 * Get an iterator over the transitions from state s.
 	 */
@@ -106,6 +127,83 @@ public interface DTMC<Value> extends Model<Value>
 		// Default implementation just adds null actions 
 		final Iterator<Entry<Integer, Value>> transitions = getTransitionsIterator(s);
 		return Reducible.extend(transitions).map(transition -> attachAction(transition, null));
+	}
+
+	/**
+	 * Get an iterator over the actions attached to transitions from state s.
+	 */
+	public default Iterator<Object> getActionsIterator(int s)
+	{
+		// Default implementation just assumes null actions
+		return Collections.nCopies(getNumTransitions(s), null).iterator();
+	}
+
+	/**
+	 * Get an iterator over the indices of actions attached to transitions from state s.
+	 * Indices are into the list given by {@link #getActions()},
+	 * which includes null if there are unlabelled choices,
+	 * so this method should always return values >= 0.
+	 */
+	public default PrimitiveIterator.OfInt getActionIndicesIterator(int s)
+	{
+		// Default implementation looks up indices from getActionsIterator
+		return new PrimitiveIterator.OfInt()
+		{
+			private final Iterator<Object> iter = getActionsIterator(s);
+
+			@Override
+			public boolean hasNext()
+			{
+				return iter.hasNext();
+			}
+
+			@Override
+			public int nextInt()
+			{
+				return actionIndex(iter.next());
+			}
+		};
+	}
+
+	/**
+	 * Get an iterator over the strings representing actions attached to transitions from state s.
+	 */
+	public default Iterator<String> getActionStringsIterator(int s)
+	{
+		// Default implementation looks up indices from getActionsIterator
+		return new Iterator<String>()
+		{
+			private final Iterator<Object> iter = getActionsIterator(s);
+
+			@Override
+			public boolean hasNext()
+			{
+				return iter.hasNext();
+			}
+
+			@Override
+			public String next()
+			{
+				return ActionList.actionString(iter.next());
+			}
+		};
+	}
+
+	/**
+	 * Get the index of the (first) transition in state {@code s} with action label {@code action}.
+	 * Action labels (which are {@link Object}s) are tested for equality using
+	 * {@link Objects#equals(Object, Object)}, i.e., including null matching null.
+	 * Returns -1 if there is no matching action.
+	 */
+	default int getTransitionByAction(int s, Object action)
+	{
+		Iterator<Object> iter = getActionsIterator(s);
+		for (int i = 0; iter.hasNext(); i++) {
+			if (Objects.equals(iter.next(), action)) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	/**
@@ -197,85 +295,6 @@ public interface DTMC<Value> extends Model<Value>
 		forEachTransition(s, sum::accept);
 
 		return sum.sum;
-	}
-
-	/**
-	 * Perform a single step of precomputation algorithm Prob0 for a single state,
-	 * i.e., for the state {@code s} returns true iff there is a transition from
-	 * {@code s} to a state in {@code u}.
-	 * <br>
-	 * <i>Default implementation</i>: Iterates using {@code getSuccessors()} and performs the check.
-	 * @param s The state in question
-	 * @param u Set of states {@code u}
-	 * @return true iff there is a transition from s to a state in u
-	 */
-	public default boolean prob0step(int s, BitSet u)
-	{
-		for (SuccessorsIterator succ = getSuccessors(s); succ.hasNext(); ) {
-			int t = succ.nextInt();
-			if (u.get(t))
-				return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Perform a single step of precomputation algorithm Prob0, i.e., for states i in {@code subset},
-	 * set bit i of {@code result} iff there is a transition to a state in {@code u}.
-	 * <br>
-	 * <i>Default implementation</i>: Iterate over {@code subset} and use {@code prob0step(s,u)}
-	 * to determine result for {@code s}.
-	 * @param subset Only compute for these states
-	 * @param u Set of states {@code u}
-	 * @param result Store results here
-	 */
-	public default void prob0step(BitSet subset, BitSet u, BitSet result)
-	{
-		for (OfInt it = new IterableStateSet(subset, getNumStates()).iterator(); it.hasNext();) {
-			int s = it.nextInt();
-			result.set(s, prob0step(s,u));
-		}
-	}
-
-	/**
-	 * Perform a single step of precomputation algorithm Prob1 for a single state,
-	 * i.e., for states s return true iff there is a transition to a state in
-	 * {@code v} and all transitions go to states in {@code u}.
-	 * @param s The state in question
-	 * @param u Set of states {@code u}
-	 * @param v Set of states {@code v}
-	 * @return true iff there is a transition from s to a state in v and all transitions go to u.
-	 */
-	public default boolean prob1step(int s, BitSet u, BitSet v)
-	{
-		boolean allTransitionsToU = true;
-		boolean hasTransitionToV = false;
-		for (SuccessorsIterator succ = getSuccessors(s); succ.hasNext(); ) {
-			int t = succ.nextInt();
-			if (!u.get(t)) {
-				allTransitionsToU = false;
-				// early abort, as overall result is false
-				break;
-			}
-			hasTransitionToV = hasTransitionToV || v.get(t);
-		}
-		return (allTransitionsToU && hasTransitionToV);
-	}
-
-	/**
-	 * Perform a single step of precomputation algorithm Prob1, i.e., for states i in {@code subset},
-	 * set bit i of {@code result} iff there is a transition to a state in {@code v} and all transitions go to states in {@code u}.
-	 * @param subset Only compute for these states
-	 * @param u Set of states {@code u}
-	 * @param v Set of states {@code v}
-	 * @param result Store results here
-	 */
-	public default void prob1step(BitSet subset, BitSet u, BitSet v, BitSet result)
-	{
-		for (OfInt it = new IterableStateSet(subset, getNumStates()).iterator(); it.hasNext();) {
-			int s = it.nextInt();
-			result.set(s, prob1step(s,u,v));
-		}
 	}
 
 	// Methods for case where Value is Double

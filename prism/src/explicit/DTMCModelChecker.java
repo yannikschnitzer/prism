@@ -46,12 +46,11 @@ import explicit.modelviews.MDPFromDTMC;
 import explicit.rewards.MCRewards;
 import explicit.rewards.MDPRewards;
 import explicit.rewards.Rewards;
-import io.ModelExportOptions;
+import io.ModelExportFormat;
 import parser.ast.Expression;
 import prism.AccuracyFactory;
 import prism.ModelType;
 import prism.OptionsIntervalIteration;
-import prism.Prism;
 import prism.PrismComponent;
 import prism.PrismException;
 import prism.PrismFileLog;
@@ -596,9 +595,7 @@ public class DTMCModelChecker extends ProbModelChecker
 			List<BitSet> labels = Arrays.asList(bsInit, target);
 			List<String> labelNames = Arrays.asList("init", "target");
 			mainLog.println("\nExporting target states info to file \"" + getExportTargetFilename() + "\"...");
-			PrismLog out = new PrismFileLog(getExportTargetFilename());
-			exportLabels(dtmc, labelNames, labels, out, ModelExportOptions.ModelExportFormat.EXPLICIT);
-			out.close();
+			exportLabels(dtmc, labelNames, labels, new File(getExportTargetFilename()), ModelExportFormat.EXPLICIT);
 		}
 
 		if (precomp && (prob0 || prob1) && preRel) {
@@ -687,7 +684,7 @@ public class DTMCModelChecker extends ProbModelChecker
 	 * @param target Target states
 	 * @param pre The predecessor relation
 	 */
-	public BitSet prob0(DTMC<?> dtmc, BitSet remain, BitSet target, PredecessorRelation pre)
+	public BitSet prob0(Model<?> dtmc, BitSet remain, BitSet target, PredecessorRelation pre)
 	{
 		BitSet canReachTarget, result;
 		long timer;
@@ -732,7 +729,7 @@ public class DTMCModelChecker extends ProbModelChecker
 	 * @param remain Remain in these states (optional: {@code null} means "all")
 	 * @param target Target states
 	 */
-	public BitSet prob0(DTMC<?> dtmc, BitSet remain, BitSet target)
+	public BitSet prob0(Model<?> dtmc, BitSet remain, BitSet target)
 	{
 		int n, iters;
 		BitSet u, soln, unknown;
@@ -803,7 +800,7 @@ public class DTMCModelChecker extends ProbModelChecker
 	 * @param target Target states
 	 * @param pre The predecessor relation of the DTMC
 	 */
-	public BitSet prob1(DTMC<?> dtmc, BitSet remain, BitSet target, PredecessorRelation pre) {
+	public BitSet prob1(Model<?> dtmc, BitSet remain, BitSet target, PredecessorRelation pre) {
 		// Implements the constrained reachability algorithm from
 		// Baier, Katoen: Principles of Model Checking (Corollary 10.31 Qualitative Constrained Reachability)
 		long timer;
@@ -872,7 +869,7 @@ public class DTMCModelChecker extends ProbModelChecker
 	 * @param remain Remain in these states (optional: {@code null} means "all")
 	 * @param target Target states
 	 */
-	public BitSet prob1(DTMC<?> dtmc, BitSet remain, BitSet target)
+	public BitSet prob1(Model<?> dtmc, BitSet remain, BitSet target)
 	{
 		int n, iters;
 		BitSet u, v, soln, unknown;

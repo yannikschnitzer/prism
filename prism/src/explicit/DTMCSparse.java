@@ -30,9 +30,13 @@
 package explicit;
 
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.PrimitiveIterator.OfInt;
 import java.util.function.Function;
@@ -42,6 +46,7 @@ import common.iterable.PrimitiveIterable;
 import explicit.rewards.MCRewards;
 import io.ExplicitModelImporter;
 import io.IOUtils;
+import prism.ActionListOwner;
 import prism.Pair;
 import prism.PrismException;
 import prism.PrismNotSupportedException;
@@ -67,6 +72,9 @@ public class DTMCSparse extends DTMCExplicit<Double>
 	public DTMCSparse(final DTMC<Double> dtmc)
 	{
 		initialise(dtmc.getNumStates());
+		if (dtmc instanceof ActionListOwner) {
+			actionList.copyFrom(((ActionListOwner) dtmc).getActionList());
+		}
 		for (Integer state : dtmc.getDeadlockStates()) {
 			deadlocks.add(state);
 		}
@@ -110,6 +118,9 @@ public class DTMCSparse extends DTMCExplicit<Double>
 	public DTMCSparse(final DTMC<Double> dtmc, int[] permut)
 	{
 		initialise(dtmc.getNumStates());
+		if (dtmc instanceof ActionListOwner) {
+			actionList.copyFrom(((ActionListOwner) dtmc).getActionList());
+		}
 		for (Integer state : dtmc.getDeadlockStates()) {
 			deadlocks.add(permut[state]);
 		}
@@ -163,6 +174,27 @@ public class DTMCSparse extends DTMCExplicit<Double>
 	//--- Model ---
 
 	@Override
+	public List<Object> findActionsUsed()
+	{
+		if (actions == null) {
+			return Collections.singletonList(null);
+		} else {
+			LinkedHashSet<Object> allActions = new LinkedHashSet<>();
+			int n = actions.length;
+			for (int i = 0; i < n; i++) {
+				allActions.add(actions[i]);
+			}
+			return new ArrayList<>(allActions);
+		}
+	}
+
+	@Override
+	public boolean onlyNullActionUsed()
+	{
+		return actions == null;
+	}
+
+	@Override
 	public int getNumTransitions()
 	{
 		return rows[numStates];
@@ -183,8 +215,7 @@ public class DTMCSparse extends DTMCExplicit<Double>
 	@Override
 	public SuccessorsIterator getSuccessors(int state)
 	{
-		// We assume here that all the successor states for a given state are distinct
-		return SuccessorsIterator.from(getSuccessorsIterator(state), true);
+		return SuccessorsIterator.from(getSuccessorsIterator(state), false);
 	}
 
 	@Override
@@ -250,17 +281,21 @@ public class DTMCSparse extends DTMCExplicit<Double>
 	public void buildFromExplicitImport(ExplicitModelImporter modelImporter) throws PrismException
 	{
 		initialise(modelImporter.getNumStates());
+		actionList.markNeedsRecomputing();
 		int numTransitions = modelImporter.getNumTransitions();
 		rows = new int[numStates + 1];
 		columns = new int[numTransitions];
 		probabilities = new double[numTransitions];
 		actions = new Object[numTransitions];
-		IOUtils.MCTransitionConsumer<Double> cons = new IOUtils.MCTransitionConsumer<Double>() {
+		IOUtils.MCTransitionConsumer<Double> cons = new IOUtils.MCTransitionConsumer<>() {
 			int sLast = -1;
 			int count = 0;
 			@Override
-			public void accept(int s, int s2, Double d, Object a)
+			public void accept(int s, int s2, Double d, Object a) throws PrismException
 			{
+				if (s < sLast) {
+					throw new PrismException("Imported states/transitions must be in ascending order");
+				}
 				if (s != sLast) {
 					rows[s] = count;
 					sLast = s;
@@ -349,6 +384,29 @@ public class DTMCSparse extends DTMCExplicit<Double>
 	}
 
 	@Override
+	public Iterator<Object> getActionsIterator(int s)
+	{
+		return new Iterator<>()
+		{
+			final int start = rows[s];
+			int col = start;
+			final int end = rows[s + 1];
+
+			@Override
+			public boolean hasNext()
+			{
+				return col < end;
+			}
+
+			@Override
+			public Object next()
+			{
+				return actions == null ? null : actions[col++];
+			}
+		};
+	}
+
+	@Override
 	public boolean prob0step(final int s, final BitSet u)
 	{
 		boolean hasTransitionToU = false;
@@ -418,6 +476,7 @@ public class DTMCSparse extends DTMCExplicit<Double>
 		for (int i=rows[state], stop=rows[state+1]; i < stop; i++) {
 			final int target = columns[i];
 			final double probability = probabilities[i];
+			//d += probability * (mcRewards.getTransitionReward(state, i-rows[state]) + vect[target]);
 			d += probability * vect[target];
 		}
 		return d;

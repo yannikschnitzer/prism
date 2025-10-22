@@ -48,7 +48,7 @@ public class IOUtils
 	 */
 	@FunctionalInterface
 	public interface MCTransitionConsumer<V> {
-		void accept(int s, int s2, V v, Object a);
+		void accept(int s, int s2, V v, Object a) throws PrismException;
 	}
 
 	/**
@@ -57,7 +57,7 @@ public class IOUtils
 	 */
 	@FunctionalInterface
 	public interface MDPTransitionConsumer<V> {
-		void accept(int s, int i, int s2, V v, Object a);
+		void accept(int s, int i, int s2, V v, Object a) throws PrismException;
 	}
 
 	/**
@@ -67,6 +67,24 @@ public class IOUtils
 	@FunctionalInterface
 	public interface LTSTransitionConsumer {
 		void accept(int s, int i, int s2, Object a) throws PrismException;
+	}
+
+	/**
+	 * Functional interface for a consumer accepting state values (s,v),
+	 * i.e., state s, value v.
+	 */
+	@FunctionalInterface
+	public interface StateValueConsumer<V> {
+		void accept(int s, V v) throws PrismException;
+	}
+
+	/**
+	 * Functional interface for a consumer accepting state rewards (s,v),
+	 * i.e., state s, value v.
+	 */
+	@FunctionalInterface
+	public interface StateRewardConsumer<V> {
+		void accept(int s, V v) throws PrismException;
 	}
 
 	/**
@@ -82,8 +100,18 @@ public class IOUtils
 	 * Functional interface for a consumer accepting transition-successor-state rewards (s,i,s2,v),
 	 * i.e., source state s, index i, target state s2, value v.
 	 */
+	// TODO REMOVE
 	@FunctionalInterface
 	public interface TransitionStateRewardConsumer<V> {
 		void accept(int s, int i, int s2, V v) throws PrismException;
+	}
+
+	/**
+	 * Functional interface for a consumer accepting transition-successor-state rewards (s,i,j,v),
+	 * i.e., source state s, index one i, index two j, target state s2, value v.
+	 */
+	@FunctionalInterface
+	public interface TransitionSuccRewardConsumer<V> {
+		void accept(int s, int i, int j, V v) throws PrismException;
 	}
 }

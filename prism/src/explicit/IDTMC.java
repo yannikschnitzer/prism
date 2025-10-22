@@ -2,8 +2,8 @@
 //	
 //	Copyright (c) 2020-
 //	Authors:
-//	* Dave Parker <d.a.parker@cs.bham.ac.uk> (University of Birmingham)
-//	
+//	* Dave Parker <david.parker@cs.oc.ac.uk> (University of Oxford)
+//
 //------------------------------------------------------------------------------
 //	
 //	This file is part of PRISM.
@@ -26,6 +26,10 @@
 
 package explicit;
 
+import common.Interval;
+import prism.ModelType;
+import prism.Pair;
+
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
@@ -47,116 +51,32 @@ import static it.unimi.dsi.fastutil.doubles.DoubleArrays.quickSortIndirect;
 /**
  * Interface for classes that provide (read) access to an explicit-state interval DTMC.
  */
-public interface IDTMC<Value> extends DTMC<Interval<Value>>
+public interface IDTMC<Value> extends UDTMC<Value>, IntervalModel<Value>
 {
 	// Accessors (for Model) - default implementations
-	
+
 	@Override
-	public default ModelType getModelType()
+	default ModelType getModelType()
 	{
 		return ModelType.IDTMC;
 	}
 
 	// Accessors
-	
-	/**
-	 * Checks that transition probability interval lower bounds are positive
-	 * and throws an exception if any are not.
-	 */
-	public default void checkLowerBoundsArePositive() throws PrismException
-	{
-		Evaluator<Interval<Value>> eval = getEvaluator();
-		int numStates = getNumStates();
-		for (int s = 0; s < numStates; s++) {
-			Iterator<Map.Entry<Integer, Interval<Value>>> iter = getTransitionsIterator(s);
-			while (iter.hasNext()) {
-				Map.Entry<Integer, Interval<Value>> e = iter.next();
-				// NB: we phrase the check as an operation on intervals, rather than
-				// accessing the lower bound directly, to make use of the evaluator
-				if (!eval.gt(e.getValue(), eval.zero())) {
-					List<State> sl = getStatesList();
-					String state = sl == null ? "" + s : sl.get(s).toString();
-					throw new PrismException("Transition probability has lower bound of 0 in state " + state);
-				}
-			}
-		}
-	}
-	
-	/**
-	 * Do a matrix-vector multiplication followed by min/max, i.e. one step of value iteration,
-	 * i.e. for each s: result[s] = min/max_P { sum_j P(s,j)*vect[j] }
-	 * @param vect Vector to multiply by
-	 * @param minMax Min/max uncertainty (via isMinUnc/isMaxUnc)
-	 * @param result Vector to store result in
-	 * @param subset Only do multiplication for these rows (ignored if null)
-	 * @param complement If true, {@code subset} is taken to be its complement (ignored if {@code subset} is null)
-	 */
-	public default void mvMultUnc(double vect[], MinMax minMax, double result[], BitSet subset, boolean complement)
-	{
-		mvMultUnc(vect, minMax, result, new IterableStateSet(subset, getNumStates(), complement).iterator());
-	}
 
 	/**
-	 * Do a matrix-vector multiplication followed by min/max, i.e. one step of value iteration,
-	 * i.e. for each s: result[s] = min/max_P { sum_j P(s,j)*vect[j] }
-	 * @param vect Vector to multiply by
-	 * @param minMax Min/max uncertainty (via isMinUnc/isMaxUnc)
-	 * @param result Vector to store result in
-	 * @param states Perform computation for these rows, in the iteration order
+	 * Get an iterator over the (interval) transitions from state {@code s}.
 	 */
-	public default void mvMultUnc(double vect[], MinMax minMax, double result[], PrimitiveIterator.OfInt states)
-	{
-		while (states.hasNext()) {
-			int s = states.nextInt();
-			result[s] = mvMultUncSingle(s, vect, minMax);
-		}
-	}
+	Iterator<Map.Entry<Integer, Interval<Value>>> getIntervalTransitionsIterator(int s);
 
 	/**
-	 * Do a single row of matrix-vector multiplication followed by min/max,
-	 * i.e. return min/max_P { sum_j P(s,j)*vect[j] }
-	 * @param s Row index
-	 * @param vect Vector to multiply by
-	 * @param minMax Min/max uncertainty (via isMinUnc/isMaxUnc)
+	 * Get an iterator over the (interval) transitions from state {@code s}, with their attached actions if present.
 	 */
-	public default double mvMultUncSingle(int s, double vect[], MinMax minMax)
-	{
-		@SuppressWarnings("unchecked")
-		DoubleIntervalDistribution did = IntervalUtils.extractDoubleIntervalDistribution(((IDTMC<Double>) this).getTransitionsIterator(s), getNumTransitions(s)); 
-		return IDTMC.mvMultUncSingle(did, vect, minMax);
-	}
-	
-	/**
-	 * Do a matrix-vector multiplication and sum of rewards followed by min/max, i.e. one step of value iteration,
-	 * i.e. for each s: result[s] = min/max_P { rew(s) + sum_j P(s,j)*vect[j] }
-	 * @param vect Vector to multiply by
-	 * @param mcRewards The rewards
-	 * @param minMax Min/max uncertainty (via isMinUnc/isMaxUnc)
-	 * @param result Vector to store result in
-	 * @param subset Only do multiplication for these rows (ignored if null)
-	 * @param complement If true, {@code subset} is taken to be its complement (ignored if {@code subset} is null)
-	 */
-	public default void mvMultRewUnc(double vect[], MCRewards<Double> mcRewards, MinMax minMax, double result[], BitSet subset, boolean complement)
-	{
-		mvMultRewUnc(vect, mcRewards, minMax, result, new IterableStateSet(subset, getNumStates(), complement).iterator());
-	}
+	Iterator<Map.Entry<Integer, Pair<Interval<Value>, Object>>> getIntervalTransitionsAndActionsIterator(int s);
 
 	/**
-	 * Do a matrix-vector multiplication and sum of rewards followed by min/max, i.e. one step of value iteration,
-	 * i.e. for each s: result[s] = min/max_P { rew(s) + sum_j P(s,j)*vect[j] }
-	 * @param vect Vector to multiply by
-	 * @param mcRewards The rewards
-	 * @param minMax Min/max uncertainty (via isMinUnc/isMaxUnc)
-	 * @param result Vector to store result in
-	 * @param states Perform computation for these rows, in the iteration order
+	 * Get the (interval) DTMC representing this IDTMC.
 	 */
-	public default void mvMultRewUnc(double vect[], MCRewards<Double> mcRewards, MinMax minMax, double result[], PrimitiveIterator.OfInt states)
-	{
-		while (states.hasNext()) {
-			int s = states.nextInt();
-			result[s] = mvMultRewUncSingle(s, vect, mcRewards, minMax);
-		}
-	}
+	DTMC<Interval<Value>> getIntervalModel();
 
 	/**
 	 * Do a single row of matrix-vector multiplication and sum of rewards followed by min/max,

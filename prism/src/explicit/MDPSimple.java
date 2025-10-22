@@ -113,8 +113,9 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 	{
 		this(dtmc.getNumStates());
 		copyFrom(dtmc);
+		// NB: actions (on transitions) from the DTMC are not copied to (choices of) the MDP
+		actionList.clear();
 		for (int s = 0; s < numStates; s++) {
-			// Note: DTMCSimple has no actions so can ignore these
 			addChoice(s, new Distribution<Value>(dtmc.getTransitions(s)));
 		}
 	}
@@ -229,6 +230,7 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 		maxNumDistrsOk = false;
 		trans.get(s).clear();
 		actions.clearState(s);
+		actionList.markNeedsRecomputing();
 	}
 
 	@Override
@@ -299,6 +301,7 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 		}
 		set = trans.get(s);
 		set.add(distr);
+		actionList.markNeedsRecomputing();
 		// Update stats
 		numDistrs++;
 		maxNumDistrs = Math.max(maxNumDistrs, set.size());
@@ -334,6 +337,7 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 		set.add(distr);
 		// Set action
 		actions.setAction(s, set.size() - 1, action);
+		actionList.markNeedsRecomputing();
 		// Update stats
 		numDistrs++;
 		maxNumDistrs = Math.max(maxNumDistrs, set.size());
@@ -350,9 +354,22 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 	public void setAction(int s, int i, Object o)
 	{
 		actions.setAction(s, i, o);
+		actionList.markNeedsRecomputing();
 	}
 
 	// Accessors (for Model)
+
+	@Override
+	public List<Object> findActionsUsed()
+	{
+		return actions.findActionsUsed(getNumStates(), this::getNumChoices);
+	}
+
+	@Override
+	public boolean onlyNullActionUsed()
+	{
+		return actions.onlyNullActionUsed();
+	}
 
 	@Override
 	public int getNumTransitions()
@@ -374,6 +391,7 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 	@Override
 	public void findDeadlocks(boolean fix) throws PrismException
 	{
+		int fixed = 0;
 		for (int i = 0; i < numStates; i++) {
 			// Note that no distributions is a deadlock, not an empty distribution
 			if (trans.get(i).isEmpty()) {
@@ -382,8 +400,13 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 					Distribution<Value> distr = new Distribution<>(getEvaluator());
 					distr.add(i, getEvaluator().one());
 					addChoice(i, distr);
+					fixed++;
 				}
 			}
+		}
+		// Add the empty action (if missing), regardless of whether actionList needs recomputing
+		if (fixed > 0) {
+			actionList.addAction(null);
 		}
 	}
 
