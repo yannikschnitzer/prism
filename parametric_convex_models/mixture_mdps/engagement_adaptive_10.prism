@@ -1,52 +1,100 @@
 mdp
 
 // ===== Engagement ladder =====
-const int L = 300;                       // levels 0..L (0=churn, L=purchase)
+const int L = 20;                       // levels 0..L (0=churn, L=purchase)
 label "churn"     = (e = 0);
 label "purchase"  = (e = L);
 
-// ===== Mixture weights (K=3) =====
+// ===== Mixture weights (K components) =====
 const double theta1;
 const double theta2;
-formula theta3 = 1 - theta1 - theta2;
+const double theta3;
+const double theta4;
+const double theta5;
+const double theta6;
+const double theta7;
+const double theta8;
+const double theta9;
+formula theta10 = 1 - theta1 + theta2 + theta3 + theta4 + theta5 + theta6 + theta7 + theta8 + theta9;
 
 // ===== Base kernels (per action, per type) =====
 // LIGHT
-const double uL1 = 0.10;
-const double dL1 = 0.02;
-const double uL2 = 0.06;
-const double dL2 = 0.01;
-const double uL3 = 0.04;
-const double dL3 = 0.02;
+const double uL1 = 0.100;
+const double dL1 = 0.020;
+const double uL2 = 0.093;
+const double dL2 = 0.019;
+const double uL3 = 0.087;
+const double dL3 = 0.018;
+const double uL4 = 0.080;
+const double dL4 = 0.017;
+const double uL5 = 0.073;
+const double dL5 = 0.016;
+const double uL6 = 0.067;
+const double dL6 = 0.014;
+const double uL7 = 0.060;
+const double dL7 = 0.013;
+const double uL8 = 0.053;
+const double dL8 = 0.012;
+const double uL9 = 0.047;
+const double dL9 = 0.011;
+const double uL10 = 0.040;
+const double dL10 = 0.010;
 
 // MEDIUM
-const double uM1 = 0.18;
-const double dM1 = 0.06;
-const double uM2 = 0.12;
-const double dM2 = 0.03;
-const double uM3 = 0.08;
-const double dM3 = 0.08;
+const double uM1 = 0.200;
+const double dM1 = 0.100;
+const double uM2 = 0.188;
+const double dM2 = 0.093;
+const double uM3 = 0.176;
+const double dM3 = 0.087;
+const double uM4 = 0.163;
+const double dM4 = 0.080;
+const double uM5 = 0.151;
+const double dM5 = 0.073;
+const double uM6 = 0.139;
+const double dM6 = 0.067;
+const double uM7 = 0.127;
+const double dM7 = 0.060;
+const double uM8 = 0.114;
+const double dM8 = 0.053;
+const double uM9 = 0.102;
+const double dM9 = 0.047;
+const double uM10 = 0.090;
+const double dM10 = 0.040;
 
 // AGGRESSIVE
-const double uA1 = 0.28;
-const double dA1 = 0.20;
-const double uA2 = 0.20;
-const double dA2 = 0.10;
-const double uA3 = 0.12;
-const double dA3 = 0.25;
+const double uA1 = 0.300;
+const double dA1 = 0.250;
+const double uA2 = 0.280;
+const double dA2 = 0.231;
+const double uA3 = 0.260;
+const double dA3 = 0.212;
+const double uA4 = 0.240;
+const double dA4 = 0.193;
+const double uA5 = 0.220;
+const double dA5 = 0.174;
+const double uA6 = 0.200;
+const double dA6 = 0.156;
+const double uA7 = 0.180;
+const double dA7 = 0.137;
+const double uA8 = 0.160;
+const double dA8 = 0.118;
+const double uA9 = 0.140;
+const double dA9 = 0.099;
+const double uA10 = 0.120;
+const double dA10 = 0.080;
 
-// ===== Mixture-combined (state-free baselines; still affine in θ) =====
-formula pU_L0 = theta1*uL1 + theta2*uL2 + theta3*uL3;
-formula pD_L0 = theta1*dL1 + theta2*dL2 + theta3*dL3;
+// ===== Mixture-combined (affine in θ) =====
+formula pU_L0 = theta1*uL1 + theta2*uL2 + theta3*uL3 + theta4*uL4 + theta5*uL5 + theta6*uL6 + theta7*uL7 + theta8*uL8 + theta9*uL9 + theta10*uL10;
+formula pD_L0 = theta1*dL1 + theta2*dL2 + theta3*dL3 + theta4*dL4 + theta5*dL5 + theta6*dL6 + theta7*dL7 + theta8*dL8 + theta9*dL9 + theta10*dL10;
 
-formula pU_M0 = theta1*uM1 + theta2*uM2 + theta3*uM3;
-formula pD_M0 = theta1*dM1 + theta2*dM2 + theta3*dM3;
+formula pU_M0 = theta1*uM1 + theta2*uM2 + theta3*uM3 + theta4*uM4 + theta5*uM5 + theta6*uM6 + theta7*uM7 + theta8*uM8 + theta9*uM9 + theta10*uM10;
+formula pD_M0 = theta1*dM1 + theta2*dM2 + theta3*dM3 + theta4*dM4 + theta5*dM5 + theta6*dM6 + theta7*dM7 + theta8*dM8 + theta9*dM9 + theta10*dM10;
 
-formula pU_A0 = theta1*uA1 + theta2*uA2 + theta3*uA3;
-formula pD_A0 = theta1*dA1 + theta2*dA2 + theta3*dA3;
+formula pU_A0 = theta1*uA1 + theta2*uA2 + theta3*uA3 + theta4*uA4 + theta5*uA5 + theta6*uA6 + theta7*uA7 + theta8*uA8 + theta9*uA9 + theta10*uA10;
+formula pD_A0 = theta1*dA1 + theta2*dA2 + theta3*dA3 + theta4*dA4 + theta5*dA5 + theta6*dA6 + theta7*dA7 + theta8*dA8 + theta9*dA9 + theta10*dA10;
 
 // ===== State-dependent structure =====
-// Zones by current engagement level
 formula zCOLD = (e <= 3);
 formula zWARM = (e >= 4 & e <= L-3);
 formula zHOT  = (e >= L-2 & e < L);
@@ -64,7 +112,7 @@ const double repL = 0.90;
 const double repM = 0.90;
 const double repA = 0.80;
 
-// Cooldown multiplier for AGGRESSIVE if cooldown < 2 steps
+// Cooldown multiplier for AGGRESSIVE if cooldown < CMAX steps
 const double coolA = 0.70;
 
 // Zone multipliers (<=~1.2; keep sums < 1 comfortably)
@@ -162,7 +210,7 @@ module engage
   [light] e>0 & e<L & zHOT & (last = A_LIGHT) ->
      (repL*mUL_hot*pU_L0 + dUL_hot) : (e' = min(e+1,L)) & (last'=A_LIGHT) & (cool'=min(cool+1,CMAX)) +
      (repL*mDL_hot*pD_L0 + dDL_hot) : (e' = max(e-1,0)) & (last'=A_LIGHT) & (cool'=min(cool+1,CMAX)) +
-     (1 - (repL*mUL_hot*pU_L0 + dUL_hot) - (repL*mDL_hot*pD_L0 + dDL_hot)) : (e'=e) & (last'=A_LIGHT) & (cool'=min(cool+1,CMAX));
+     (1 - (repL*mUL_hot*pU_L0 + dUL_hot) - (repL*mDL_hot*pD_L0 + dDL_warm)) : (e'=e) & (last'=A_LIGHT) & (cool'=min(cool+1,CMAX));
 
   // ---------- MEDIUM ----------
   [medium] e>0 & e<L & zCOLD & !(last = A_MED) ->
@@ -217,7 +265,7 @@ module engage
      (repA*mDA_cold*pD_A0 + dDA_cold) : (e'=max(e-1,0)) & (last'=A_AGGR) & (cool'=0) +
      (1 - (repA*mUA_cold*pU_A0 + dUA_cold) - (repA*mDA_cold*pD_A0 + dDA_cold)) : (e'=e) & (last'=A_AGGR) & (cool'=0);
 
-  // WARM (same structure; different multipliers)
+  // WARM
   [aggr] e>0 & e<L & zWARM & !(last = A_AGGR) & (cool < CMAX) ->
      (coolA*mUA_warm*pU_A0 + dUA_warm) : (e'=min(e+1,L)) & (last'=A_AGGR) & (cool'=0) +
      (coolA*mDA_warm*pD_A0 + dDA_warm) : (e'=max(e-1,0)) & (last'=A_AGGR) & (cool'=0) +

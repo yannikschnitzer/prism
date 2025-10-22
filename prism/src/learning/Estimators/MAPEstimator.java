@@ -174,6 +174,7 @@ public class MAPEstimator extends Estimator {
         }
 
         double resultRobustMDP = round((Double) resultRobust.getResult());
+        double resultOptimisticMDP = round((Double) resultOptimistic.getResult());
         MDStrategy<Double> robustStrat = ex.doBisim ? liftStrategy((MDStrategyArray<Double>) resultRobust.getStrategy(), mdp) : (MDStrategy<Double>) resultRobust.getStrategy();
         MDStrategy<Double> optimisticStrat = ex.doBisim ? liftStrategy((MDStrategyArray<Double>) resultOptimistic.getStrategy(), mdp) : (MDStrategy<Double>) resultOptimistic.getStrategy();
         this.currentStrat = optimisticStrat;
@@ -184,7 +185,7 @@ public class MAPEstimator extends Estimator {
 
         double resultOptimisticDTMC = round((Double) checkDTMC(optimisticStrat).getResult());
 
-        return new double[]{resultRobustMDP, resultRobustDTMC, resultOptimisticDTMC, modelBuildingTime, modelCheckingTimeRobust, modelCheckingTimeOptimistic, modelCheckingTimeDTMC};
+        return new double[]{resultRobustMDP, resultRobustDTMC, resultOptimisticDTMC, modelBuildingTime, modelCheckingTimeRobust, modelCheckingTimeOptimistic, modelCheckingTimeDTMC, resultOptimisticMDP};
     }
 
     @Override
@@ -223,6 +224,30 @@ public class MAPEstimator extends Estimator {
         mc.setModelCheckingInfo(modelGen, pf, modelGen);
         Result result = mc.check(dtmc, pf.getProperty(0));
         return result;
+    }
+
+    public Result checkUncDTMC(MDStrategy strat, UMDP<Double> umdp) throws PrismException {
+
+        //System.out.println("MDP: " + mdp + " Strat: " + strat );
+        System.out.println(umdp.constructInducedModel(strat));
+//        DTMCModelChecker mc = new DTMCModelChecker(this.prism);
+//        mc.setPrecomp(false); //TODO: here
+//        mc.setErrorOnNonConverge(ex.errorOnNonConvergence);
+//        mc.setMaxIters(ex.maxVIIters);
+//        mc.setTermCritParam(1e-4);
+//        mc.setGenStrat(true);
+//        PropertiesFile pf = prism.parsePropertiesString(ex.dtmcSpec);
+//
+//        ModulesFile modulesFileDTMC = (ModulesFile) modulesFileIMDP.deepCopy();
+//        modulesFileDTMC.setModelType(ModelType.DTMC);
+//        ModulesFileModelGenerator<?> modelGen = ModulesFileModelGenerator.create(modulesFileDTMC, this.prism);
+//        modelGen.setSomeUndefinedConstants(mdp.getConstantValues());
+//        //RewardGeneratorMDStrat<?> rewGen = new RewardGeneratorMDStrat(modelGen, mdp, strat);
+//
+//        mc.setModelCheckingInfo(modelGen, pf, modelGen);
+//        Result result = mc.check(dtmc, pf.getProperty(0));
+//        return result;
+        return null;
     }
 
     public Result getInitialResult(boolean verbose) throws PrismException {

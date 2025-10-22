@@ -146,9 +146,12 @@ public class PACConvexEstimator extends MAPEstimator {
             throw new RuntimeException(e);
         }
         double resconvexMDP = round((Double) resultRobustConvex.getResult());
+        double resconvexMDPOptimistic = round((Double) resultOptimisticConvex.getResult());
         MDStrategy<Double> robustStrat = ex.doBisim ? liftStrategy((MDStrategyArray<Double>) resultRobustConvex.getStrategy(), mdp) : (MDStrategy<Double>) resultRobustConvex.getStrategy();
         MDStrategy<Double> optimisticStrat = ex.doBisim ? liftStrategy((MDStrategyArray<Double>) resultOptimisticConvex.getStrategy(), mdp) : (MDStrategy<Double>) resultOptimisticConvex.getStrategy();
         this.currentStrat = optimisticStrat;
+
+        //checkUncDTMC(robustStrat, convex_estimate);
 
         startTime = System.nanoTime();
         double resconvexDTMC = round((Double) checkDTMC(robustStrat).getResult());
@@ -159,7 +162,7 @@ public class PACConvexEstimator extends MAPEstimator {
         System.out.println("Convex Guarantee: " + resconvexMDP + ", Convex Performance: " + resconvexDTMC);
         System.out.println("Optimistic Guarantee: " + resultOptimisticConvex.getResult());
 
-        return new double[]{resconvexMDP, resconvexDTMC, resultConvexOptimisticDTMC, modelBuildingTime, modelCheckingTimeRobust, modelCheckingTimeOptimistic, modelCheckingTimeDTMC};
+        return new double[]{resconvexMDP, resconvexDTMC, resultConvexOptimisticDTMC, modelBuildingTime, modelCheckingTimeRobust, modelCheckingTimeOptimistic, modelCheckingTimeDTMC, resconvexMDPOptimistic};
     }
 
     // TODO : Update
@@ -598,13 +601,13 @@ public class PACConvexEstimator extends MAPEstimator {
             baseModel.update(); // freeze before copying to other envs
 
             if (ex.exprBoundWorkers > 1) {
-                // ---- 2a) PARALLEL: one env+model copy per worker, no files ----
+                // ---- 2a) PARALLEL:
                 final int workerCount = ex.exprBoundWorkers;
-                final int threadsPerWorker = 1; // safest default; adjust if desired
+                final int threadsPerWorker = 1;
 
                 final ExecutorService pool = Executors.newFixedThreadPool(workerCount);
 
-// Precreate worker envs+model copies on the main thread (silent)
+                // Precreate worker envs+model copies on the main thread
                 final List<WorkerHandle> workers = new ArrayList<>(workerCount);
                 for (int w = 0; w < workerCount; w++) {
                     // 1) Empty env -> set silence -> start
@@ -613,12 +616,10 @@ public class PACConvexEstimator extends MAPEstimator {
                     env.set(GRB.IntParam.OutputFlag, 0);           // belt & braces
                     env.start();                                   // now the license banner won't print
 
-                    // 2) Copy model into this env and silence at model level too
                     GRBModel m = new GRBModel(baseModel, env);
                     m.set(GRB.IntParam.LogToConsole, 0);
                     m.set(GRB.IntParam.OutputFlag, 0);
 
-                    // your tuning
                     m.set(GRB.IntParam.Method, 1);
                     m.set(GRB.IntParam.Threads, threadsPerWorker);
 

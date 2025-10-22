@@ -6,6 +6,7 @@ public class DataPoint {
     private int episode;
     private long time;
     private double estimated_robust_value_umdp;
+    private double estimated_optimistic_value_umdp;
     private double value_umdp_robust_policy;
     private double value_umdp_optimistic_policy;
     private double modelBuildingTime;
@@ -23,6 +24,7 @@ public class DataPoint {
         this.time = time;
         this.accumulated_samples = accumulated_samples;
         this.estimated_robust_value_umdp = results[0];
+        this.estimated_optimistic_value_umdp = results[7];
         this.value_umdp_robust_policy = results[1];
         this.value_umdp_optimistic_policy = results[2];
         this.modelBuildingTime = results[3] / 1_000_000_000.0;
@@ -61,6 +63,10 @@ public class DataPoint {
 
     public double getEstimated_robust_value_umdp() {
         return estimated_robust_value_umdp;
+    }
+
+    public double getEstimated_optimistic_value_umdp() {
+        return estimated_optimistic_value_umdp;
     }
 
     public void setEstimated_robust_value_umdp(double estimated_robust_value_umdp) {

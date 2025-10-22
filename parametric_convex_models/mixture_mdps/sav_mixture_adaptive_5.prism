@@ -9,11 +9,12 @@ const int B = 6;  // max moves without a successful send
 // goal cell
 formula T = (xLoc = Xsize & yLoc = Ysize);
 
-// ===== MIXTURE WEIGHTS (K=4) =====
+// ===== MIXTURE WEIGHTS (K components) =====
 const double theta1;
 const double theta2;
 const double theta3;
-formula theta4 = 1 - (theta1 + theta2 + theta3);
+const double theta4;
+formula theta5 = 1 - (theta1 + theta2 + theta3 + theta4);
 
 // ===== POSITION SCALES (0..1) =====
 formula xSc = (xLoc - 1) / (1.0 * (Xsize - 1));
@@ -21,36 +22,31 @@ formula ySc = (yLoc - 1) / (1.0 * (Ysize - 1));
 
 // ===== MODE-SPECIFIC LINEAR CHANNEL MODELS =====
 // sendL(x) = L0_k + L1_k * xSc      sendH(y) = H0_k + H1_k * ySc
-const double L0_1 = 0.10;
-const double L1_1 = 0.25;
-const double H0_1 = 0.12;
-const double H1_1 = 0.25;
+const double L0_1 = 0.050000;
+const double L0_2 = 0.087500;
+const double L0_3 = 0.125000;
+const double L0_4 = 0.162500;
+const double L0_5 = 0.200000;
+const double L1_1 = 0.350000;
+const double L1_2 = 0.287500;
+const double L1_3 = 0.225000;
+const double L1_4 = 0.162500;
+const double L1_5 = 0.100000;
 
-const double L0_2 = 0.05;
-const double L1_2 = 0.35;
-const double H0_2 = 0.18;
-const double H1_2 = 0.10;
-
-const double L0_3 = 0.20;
-const double L1_3 = 0.10;
-const double H0_3 = 0.06;
-const double H1_3 = 0.40;
-
-const double L0_4 = 0.15;
-const double L1_4 = 0.20;
-const double H0_4 = 0.10;
-const double H1_4 = 0.30;
+const double H0_1 = 0.180000;
+const double H0_2 = 0.150000;
+const double H0_3 = 0.120000;
+const double H0_4 = 0.090000;
+const double H0_5 = 0.060000;
+const double H1_1 = 0.100000;
+const double H1_2 = 0.175000;
+const double H1_3 = 0.250000;
+const double H1_4 = 0.325000;
+const double H1_5 = 0.400000;
 
 // ===== Linear-in-θ base success (state-free) =====
-formula sL0 = theta1*(L0_1 + L1_1*xSc)
-            + theta2*(L0_2 + L1_2*xSc)
-            + theta3*(L0_3 + L1_3*xSc)
-            + theta4*(L0_4 + L1_4*xSc);
-
-formula sH0 = theta1*(H0_1 + H1_1*ySc)
-            + theta2*(H0_2 + H1_2*ySc)
-            + theta3*(H0_3 + H1_3*ySc)
-            + theta4*(H0_4 + H1_4*ySc);
+formula sL0 = theta1*(L0_1 + L1_1*xSc) + theta2*(L0_2 + L1_2*xSc) + theta3*(L0_3 + L1_3*xSc) + theta4*(L0_4 + L1_4*xSc) + theta5*(L0_5 + L1_5*xSc);
+formula sH0 = theta1*(H0_1 + H1_1*ySc) + theta2*(H0_2 + H1_2*ySc) + theta3*(H0_3 + H1_3*ySc) + theta4*(H0_4 + H1_4*ySc) + theta5*(H0_5 + H1_5*ySc);
 
 // ===== ADAPTIVE ZONES =====
 // 3×3 column/row bands

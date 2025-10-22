@@ -14,7 +14,7 @@ public class DataProcessor {
 
             FileWriter writer = new FileWriter(path, false);
 
-            writer.write("Episode,Robust Guarantee UMDP,Performance UMDP Robust Policy,Performance UMDP Optimistic Policy,Total Runtime,Model Building Time,Model Checking Time Robust,Model Checking Time Optimistic,Model Checking Time DTMC");
+            writer.write("Episode,Robust Guarantee UMDP,Performance UMDP Robust Policy,Performance UMDP Optimistic Policy,Optimistic Guarantee UMDP,Total Runtime,Model Building Time,Model Checking Time Robust,Model Checking Time Optimistic,Model Checking Time DTMC");
             writer.write(System.lineSeparator());
 
             for (DataPoint entry : dataPoints) {
@@ -22,6 +22,7 @@ public class DataProcessor {
                         + entry.getEstimated_robust_value_umdp() + ","
                         + entry.getValue_umdp_robust_policy() + ","
                         + entry.getValue_umdp_optimistic_policy() + ","
+                        + entry.getEstimated_optimistic_value_umdp() + ","
                         + entry.getTimeSeconds() + ","
                         + entry.getModelBuildingTime() + ","
                         + entry.getModelCheckingTimeRobust() + ","
