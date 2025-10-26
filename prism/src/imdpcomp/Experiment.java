@@ -16,6 +16,7 @@ public class Experiment {
     public String modelFile;
     public String certainModelFile; //TODO: replace this with UMDP
     public String dtmcSpec;
+    public String udtmcSpec;
     public String spec;
     public String robustSpec;
     public String optimisticSpec;

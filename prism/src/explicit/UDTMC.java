@@ -63,7 +63,7 @@ public interface UDTMC<Value> extends Model<Value>
 	 */
 	public default void checkLowerBoundsArePositive() throws PrismException
 	{
-		throw new UnsupportedOperationException();
+		//throw new UnsupportedOperationException();
 	}
 	
 	/**

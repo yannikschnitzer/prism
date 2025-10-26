@@ -151,7 +151,8 @@ public class PACConvexEstimator extends MAPEstimator {
         MDStrategy<Double> optimisticStrat = ex.doBisim ? liftStrategy((MDStrategyArray<Double>) resultOptimisticConvex.getStrategy(), mdp) : (MDStrategy<Double>) resultOptimisticConvex.getStrategy();
         this.currentStrat = optimisticStrat;
 
-        //checkUncDTMC(robustStrat, convex_estimate);
+        Result uncDTMCres = checkUncDTMC(robustStrat, convex_estimate);
+        double resUDTMC = round((Double) uncDTMCres.getResult());
 
         startTime = System.nanoTime();
         double resconvexDTMC = round((Double) checkDTMC(robustStrat).getResult());
@@ -161,8 +162,9 @@ public class PACConvexEstimator extends MAPEstimator {
 
         System.out.println("Convex Guarantee: " + resconvexMDP + ", Convex Performance: " + resconvexDTMC);
         System.out.println("Optimistic Guarantee: " + resultOptimisticConvex.getResult());
+        System.out.println("UDTMC Guarantee: " + uncDTMCres.getResult());
 
-        return new double[]{resconvexMDP, resconvexDTMC, resultConvexOptimisticDTMC, modelBuildingTime, modelCheckingTimeRobust, modelCheckingTimeOptimistic, modelCheckingTimeDTMC, resconvexMDPOptimistic};
+        return new double[]{resconvexMDP, resconvexDTMC, resultConvexOptimisticDTMC, modelBuildingTime, modelCheckingTimeRobust, modelCheckingTimeOptimistic, modelCheckingTimeDTMC, resUDTMC};
     }
 
     // TODO : Update

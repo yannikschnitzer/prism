@@ -233,7 +233,7 @@ public class IMDPSimple<Value> extends ModelExplicitWrapper<Value> implements No
 	@Override
 	public Model<Value> constructInducedModel(MDStrategy<Value> strat)
 	{
-		throw new UnsupportedOperationException("Not yet implemented");
+		return new UDTMCFromMDPAndMDStrategy<>(this, strat);
 	}
 
 	// Accessors (for UMDP)
