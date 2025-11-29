@@ -48,6 +48,7 @@ public class Estimator {
     protected UMDP<Double> convex_estimate;
     protected HashMap<TransitionTriple, Double> trueProbabilitiesMap;
     protected MDStrategy currentStrat;
+    protected MDStrategy optimalStrat;
     private Map<Function, List<TransitionTriple>> functionMap;
     // Contains lists of similar transitions, whose counts can be tied
     private List<List<TransitionTriple>> similarTransitions;
@@ -166,6 +167,7 @@ public class Estimator {
             this.prism.setPRISMModelConstants(ex.parameterValues);
         }
 
+        this.prism.setGenStrat(true);
         this.prism.setStoreVector(true);
         this.prism.setMaxIters(ex.maxVIIters);
 
@@ -176,6 +178,8 @@ public class Estimator {
 
         this.SULoptimum = result.getResultAndAccuracy();
         this.sulOpt = (Double) result.getResult();
+        this.optimalStrat = (MDStrategy) result.getStrategy();
+
         this.mdp = mdp;
 
         ArrayList<Integer> initialStates = (ArrayList<Integer>) this.mdp.getInitialStates();

@@ -489,8 +489,6 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 		return trans.get(s).get(i).iterator();
 	}
 
-	
-
 	// Accessors (other)
 
 	/**

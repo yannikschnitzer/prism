@@ -16,7 +16,7 @@ public class Experiment {
     public String modelFile;
     public String certainModelFile; //TODO: replace this with UMDP
     public String dtmcSpec;
-    public String udtmcSpec;
+    public String invspec;
     public String spec;
     public String robustSpec;
     public String optimisticSpec;
@@ -367,6 +367,7 @@ public class Experiment {
                 this.optimisticSpec = "Pmaxmax=? [ !\"fail\" U \"goal\" ]";
                 this.dtmcSpec = "P=? [ !\"fail\" U \"goal\" ]";
                 this.spec = "Pmax=? [ !\"fail\" U \"goal\" ]";
+                this.invspec = "Pmin=? [ !\"fail\" U \"goal\" ]";
                 this.type = Type.REACH;
 
                 this.max_episode_length = 10;
@@ -493,6 +494,7 @@ public class Experiment {
                 this.optimisticSpec = "Rmaxmax=? [F \"done\"]";
                 this.dtmcSpec = "R=? [F \"done\"]";
                 this.spec = "Rmax=? [F \"done\"]";
+                this.invspec = "Rmin=? [F \"done\"]";
                 this.type = Type.REWARD;
 
                 this.multiplier = 4;
@@ -511,6 +513,7 @@ public class Experiment {
                 this.optimisticSpec = "Rmaxmax=? [F \"done\"]";
                 this.dtmcSpec = "R=? [F \"done\"]";
                 this.spec = "Rmax=? [F \"done\"]";
+                this.invspec = "Rmin=? [F \"done\"]";
                 this.type = Type.REWARD;
 
                 this.multiplier = 2;
@@ -518,7 +521,7 @@ public class Experiment {
                 this.maxVIIters = 20000;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("n", 150);
+                this.parameterValues.addValue("n", 100);
                 this.parameterValues.addValue("p", 0.55);
             }
 
@@ -847,6 +850,7 @@ public class Experiment {
                 this.optimisticSpec = "Rminmin = ? [ F (\"purchase\" | \"churn\") ]";
                 this.dtmcSpec = "R = ? [ F (\"purchase\" | \"churn\") ]";
                 this.spec = "Rmin = ? [ F (\"purchase\" | \"churn\") ]";
+                this.invspec = "Rmax = ? [ F (\"purchase\" | \"churn\") ]";
                 this.type = Type.REWARD;
 
                 this.multiplier = 2;
@@ -854,7 +858,7 @@ public class Experiment {
                 this.maxVIIters = 20000;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("L", 300);
+                this.parameterValues.addValue("L", 20);
                 this.parameterValues.addValue("theta1", 0.3);
                 this.parameterValues.addValue("theta2", 0.4);
             }
@@ -957,6 +961,7 @@ public class Experiment {
                 this.optimisticSpec = "Rminmin = ? [ F \"goal\"]";
                 this.dtmcSpec = "R = ? [ F \"goal\"]";
                 this.spec = "Rmin = ? [ F \"goal\"]";
+                this.invspec = "Rmax = ? [ F \"goal\"]";
                 this.type = Type.REWARD;
 
                 this.multiplier = 2;
@@ -1105,6 +1110,7 @@ public class Experiment {
                 this.certainModelFile = "../parametric_convex_models/mixture_mdps/sav_mixture.prism";
 
                 this.spec = "Pmax=? [!(\"Crash\") U (\"Target\")]";
+                this.invspec = "Pmin=? [!(\"Crash\") U (\"Target\")]";
                 this.robustSpec = "Pmaxmin=? [!(\"Crash\") U (\"Target\")]";
                 this.optimisticSpec = "Pmaxmax=? [!(\"Crash\") U (\"Target\")]";
                 this.dtmcSpec = "P=? [!(\"Crash\") U (\"Target\")]";
@@ -1123,6 +1129,7 @@ public class Experiment {
                 this.certainModelFile = "../parametric_convex_models/mixture_mdps/sav_mixture_adaptive.prism";
 
                 this.spec = "Pmax=? [!(\"Crash\") U (\"Target\")]";
+                this.invspec = "Pmin=? [!(\"Crash\") U (\"Target\")]";
                 this.robustSpec = "Pmaxmin=? [!(\"Crash\") U (\"Target\")]";
                 this.optimisticSpec = "Pmaxmax=? [!(\"Crash\") U (\"Target\")]";
                 this.dtmcSpec = "P=? [!(\"Crash\") U (\"Target\")]";
@@ -1141,6 +1148,7 @@ public class Experiment {
                 this.certainModelFile = "../parametric_convex_models/mixture_mdps/sav_mixture_adaptive_5.prism";
 
                 this.spec = "Pmax=? [!(\"Crash\") U (\"Target\")]";
+                this.invspec = "Pmin=? [!(\"Crash\") U (\"Target\")]";
                 this.robustSpec = "Pmaxmin=? [!(\"Crash\") U (\"Target\")]";
                 this.optimisticSpec = "Pmaxmax=? [!(\"Crash\") U (\"Target\")]";
                 this.dtmcSpec = "P=? [!(\"Crash\") U (\"Target\")]";
@@ -1160,6 +1168,7 @@ public class Experiment {
                 this.certainModelFile = "../parametric_convex_models/mixture_mdps/sav_mixture_adaptive_100.prism";
 
                 this.spec = "Pmax=? [!(\"Crash\") U (\"Target\")]";
+                this.invspec = "Pmin=? [!(\"Crash\") U (\"Target\")]";
                 this.robustSpec = "Pmaxmin=? [!(\"Crash\") U (\"Target\")]";
                 this.optimisticSpec = "Pmaxmax=? [!(\"Crash\") U (\"Target\")]";
                 this.dtmcSpec = "P=? [!(\"Crash\") U (\"Target\")]";
@@ -1184,6 +1193,7 @@ public class Experiment {
                 this.certainModelFile = "../parametric_convex_models/mixture_mdps/aircraft_mixture_onemod.prism";
 
                 this.spec = "Pmax=? [!collision U \"goal\"]";
+                this.invspec = "Pmin=? [!collision U \"goal\"]";
                 this.robustSpec = "Pmaxmin=? [!collision U \"goal\"]";
                 this.optimisticSpec = "Pmaxmax=? [!collision U \"goal\"]";
                 this.dtmcSpec = "P=?  [!collision U \"goal\"]";

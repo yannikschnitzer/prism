@@ -151,8 +151,12 @@ public class PACConvexEstimator extends MAPEstimator {
         MDStrategy<Double> optimisticStrat = ex.doBisim ? liftStrategy((MDStrategyArray<Double>) resultOptimisticConvex.getStrategy(), mdp) : (MDStrategy<Double>) resultOptimisticConvex.getStrategy();
         this.currentStrat = optimisticStrat;
 
-        Result uncDTMCres = checkUncDTMC(robustStrat, convex_estimate);
+        Result uncDTMCres = checkUncDTMC(robustStrat, convex_estimate, false);
         double resUDTMC = round((Double) uncDTMCres.getResult());
+
+        // Check optimal strategy
+        double uncDTMCresOptRob = round((double) checkUncDTMC(optimalStrat, convex_estimate, true).getResult());
+        double uncDTMCresOptOpt = round((double) checkUncDTMC(optimalStrat, convex_estimate, false).getResult());
 
         startTime = System.nanoTime();
         double resconvexDTMC = round((Double) checkDTMC(robustStrat).getResult());
@@ -161,10 +165,12 @@ public class PACConvexEstimator extends MAPEstimator {
         double resultConvexOptimisticDTMC = round((Double) checkDTMC(optimisticStrat).getResult());
 
         System.out.println("Convex Guarantee: " + resconvexMDP + ", Convex Performance: " + resconvexDTMC);
-        System.out.println("Optimistic Guarantee: " + resultOptimisticConvex.getResult());
-        System.out.println("UDTMC Guarantee: " + uncDTMCres.getResult());
+        System.out.println("Optimistic Guarantee (from optimistic optimal policy): " + resultOptimisticConvex.getResult());
+        System.out.println("UDTMC Opimistic Guarantee for Robust: " + uncDTMCres.getResult());
+        System.out.println("UDTMC Optimal Policy Robust: " + uncDTMCresOptRob);
+        System.out.println("UDTMC Optimal Policy Optimistic " + uncDTMCresOptOpt);
 
-        return new double[]{resconvexMDP, resconvexDTMC, resultConvexOptimisticDTMC, modelBuildingTime, modelCheckingTimeRobust, modelCheckingTimeOptimistic, modelCheckingTimeDTMC, resUDTMC};
+        return new double[]{resconvexMDP, resconvexDTMC, resultConvexOptimisticDTMC, modelBuildingTime, modelCheckingTimeRobust, modelCheckingTimeOptimistic, modelCheckingTimeDTMC, resUDTMC, uncDTMCresOptRob, uncDTMCresOptOpt};
     }
 
     // TODO : Update

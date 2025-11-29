@@ -26,6 +26,9 @@ public class MAPEstimator extends Estimator {
     protected HashMap<TransitionTriple, Integer> dirichletPriorsMap;
     protected HashMap<StateActionPair, HashSet<Integer>> successorStatesMap;
 
+    // Needed for solving when we want to estimate the performance of the optimal policy
+    boolean useOptimalPolicy = false;
+
     // Cache for MAP mode denominator: sum of Dirichlet priors minus one per transition
     private final TransitionTriple keyTriple = new TransitionTriple(0, "", 0);
 
@@ -179,9 +182,13 @@ public class MAPEstimator extends Estimator {
         MDStrategy<Double> optimisticStrat = ex.doBisim ? liftStrategy((MDStrategyArray<Double>) resultOptimistic.getStrategy(), mdp) : (MDStrategy<Double>) resultOptimistic.getStrategy();
         this.currentStrat = optimisticStrat;
 
-        Result uncDTMCres = checkUncDTMC(robustStrat, estimate);
+        Result uncDTMCres = checkUncDTMC(robustStrat, estimate, false);
         double resUDTMC = round((Double) uncDTMCres.getResult());
         System.out.println("UDTMC Result: " + uncDTMCres.getResult());
+
+        // Check optimal strategy
+        double uncDTMCresOptRob = round((double) checkUncDTMC(optimalStrat, estimate, true).getResult());
+        double uncDTMCresOptOpt = round((double) checkUncDTMC(optimalStrat, estimate, false).getResult());
 
         startTime = System.nanoTime();
         double resultRobustDTMC = round((Double) checkDTMC(robustStrat).getResult());
@@ -189,7 +196,7 @@ public class MAPEstimator extends Estimator {
 
         double resultOptimisticDTMC = round((Double) checkDTMC(optimisticStrat).getResult());
 
-        return new double[]{resultRobustMDP, resultRobustDTMC, resultOptimisticDTMC, modelBuildingTime, modelCheckingTimeRobust, modelCheckingTimeOptimistic, modelCheckingTimeDTMC, resUDTMC};
+        return new double[]{resultRobustMDP, resultRobustDTMC, resultOptimisticDTMC, modelBuildingTime, modelCheckingTimeRobust, modelCheckingTimeOptimistic, modelCheckingTimeDTMC, resUDTMC, uncDTMCresOptRob, uncDTMCresOptOpt};
     }
 
     @Override
@@ -230,18 +237,21 @@ public class MAPEstimator extends Estimator {
         return result;
     }
 
-    public Result checkUncDTMC(MDStrategy strat, UMDP<Double> umdp) throws PrismException {
+    public Result checkUncDTMC(MDStrategy strat, UMDP<Double> umdp, boolean robust) throws PrismException {
 
         //System.out.println("MDP: " + mdp + " Strat: " + strat );
         //System.out.println(umdp.constructInducedModel(strat));
         UDTMC<Double> inducedUDTMC = (UDTMC<Double>) umdp.constructInducedModel(strat);
+//        System.out.println("PMDP: " + pmdp);
+//        System.out.println("UMDP: " + umdp);
+//        System.out.println("UDTMC: " + inducedUDTMC);
         UDTMCModelChecker mc = new UDTMCModelChecker(this.prism);
         mc.setPrecomp(false); //TODO: here
         mc.setErrorOnNonConverge(ex.errorOnNonConvergence);
         mc.setMaxIters(ex.maxVIIters);
         mc.setTermCritParam(1e-4);
         mc.setGenStrat(true);
-        PropertiesFile pf = prism.parsePropertiesString(ex.spec);
+        PropertiesFile pf = prism.parsePropertiesString(robust ? ex.invspec : ex.spec);
 
         ModulesFile modulesFileDTMC = (ModulesFile) modulesFileIMDP.deepCopy();
         modulesFileDTMC.setModelType(ModelType.UDTMC);

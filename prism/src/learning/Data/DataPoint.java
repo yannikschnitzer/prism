@@ -13,6 +13,8 @@ public class DataPoint {
     private double modelCheckingTimeRobust;
     private double modelCheckingTimeOptimistic;
     private double modelCheckingTimeDTMC;
+    private double uncOptimalPolicyresultRobust;
+    private double uncOptimalPolicyresultOptimistic;
 
     public DataPoint(int position, double value) {
         this.accumulated_samples = position;
@@ -31,6 +33,8 @@ public class DataPoint {
         this.modelCheckingTimeRobust = results[4] / 1_000_000_000.0;
         this.modelCheckingTimeOptimistic = results[5] / 1_000_000_000.0;
         this.modelCheckingTimeDTMC = results[6] / 1_000_000_000.0;
+        this.uncOptimalPolicyresultRobust = results[8];
+        this.uncOptimalPolicyresultOptimistic = results[9];
     }
 
     public int getAccumulatedSamples() {
@@ -131,5 +135,21 @@ public class DataPoint {
 
     public void setModelCheckingTimeDTMC(double modelCheckingTimeDTMC) {
         this.modelCheckingTimeDTMC = modelCheckingTimeDTMC;
+    }
+
+    public double getUncOptimalPolicyresultRobust() {
+        return uncOptimalPolicyresultRobust;
+    }
+
+    public void setUncOptimalPolicyresultRobust(double uncOptimalPolicyresultRobust) {
+        this.uncOptimalPolicyresultRobust = uncOptimalPolicyresultRobust;
+    }
+
+    public double getUncOptimalPolicyresultOptimistic() {
+        return uncOptimalPolicyresultOptimistic;
+    }
+
+    public void setUncOptimalPolicyresultOptimistic(double uncOptimalPolicyresultOptimistic) {
+        this.uncOptimalPolicyresultOptimistic = uncOptimalPolicyresultOptimistic;
     }
 }

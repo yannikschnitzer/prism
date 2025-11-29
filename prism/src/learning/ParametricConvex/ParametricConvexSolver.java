@@ -58,10 +58,10 @@ public class ParametricConvexSolver {
         ParametricConvexSolver parametricConvexLearner = new ParametricConvexSolver(new Prism(new PrismDevNullLog()));
         parametricConvexLearner.initializePrism();
 
-        Experiment ex = new Experiment(Model.BETTING_GAME_CONVEX_ADAPTIVE).setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).useBisimulation(false).useOBBT(10);
+        Experiment ex = new Experiment(Model.AIRCRAFT_MIXTURE_ONEMOD).setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).useBisimulation(false).useOBBT(10);
 
         MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
-        System.out.println(pmdp);
+        //System.out.println(pmdp);
 
         parametricConvexLearner.solveIMDPUniform(ex,
                 ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
@@ -74,7 +74,7 @@ public class ParametricConvexSolver {
         ParametricConvexSolver parametricConvexLearner = new ParametricConvexSolver(new Prism(new PrismDevNullLog()));
         parametricConvexLearner.initializePrism();
 
-        Model model = Model.SAV2;
+        Model model = Model.AIRCRAFT_MIXTURE_ONEMOD;
 
         // Plain Naive
         Experiment ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(NO_TYING);
