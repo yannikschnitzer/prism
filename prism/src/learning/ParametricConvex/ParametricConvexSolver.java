@@ -79,12 +79,12 @@ public class ParametricConvexSolver {
         // Plain Naive
         Experiment ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(NO_TYING);
         MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
-
-        parametricConvexLearner.solveIMDPUniform(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
+//
+//        parametricConvexLearner.solveIMDPUniform(ex,
+//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+//                pmdp,
+//                ex.parameterValues,
+//                true);
 
 
         // Parameter Tying
@@ -108,27 +108,38 @@ public class ParametricConvexSolver {
                 ex.parameterValues,
                 true);
 
-
-        // LP to Interval - Expression-wise
-        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).useOBBT(10);
-        //pmdp = parametricConvexLearner.buildParamModel(ex);
-
-        parametricConvexLearner.solveIMDPUniform(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
-
-
-        // LP to Interval - Interval Arithmetic (parameter-wise, FAST)
-        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(FAST).useOBBT(10);
-        //pmdp = parametricConvexLearner.buildParamModel(ex);
+        // Ellipsoid
+        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(false).setTieParameters(FULL_TYING).useOBBT(10);
+        ex.useApsEllipsoid = true;
+        //  pmdp = parametricConvexLearner.buildParamModel(ex);
 
         parametricConvexLearner.solveIMDPUniform(ex,
                 ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
                 pmdp,
                 ex.parameterValues,
                 true);
+
+
+//        // LP to Interval - Expression-wise
+//        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).useOBBT(10);
+//        //pmdp = parametricConvexLearner.buildParamModel(ex);
+//
+//        parametricConvexLearner.solveIMDPUniform(ex,
+//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+//                pmdp,
+//                ex.parameterValues,
+//                true);
+//
+//
+//        // LP to Interval - Interval Arithmetic (parameter-wise, FAST)
+//        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(FAST).useOBBT(10);
+//        //pmdp = parametricConvexLearner.buildParamModel(ex);
+//
+//        parametricConvexLearner.solveIMDPUniform(ex,
+//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+//                pmdp,
+//                ex.parameterValues,
+//                true);
     }
 
     @SuppressWarnings("unchecked")

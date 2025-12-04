@@ -41,6 +41,14 @@ public class ExpressionTranslator {
     private final double lowerBoundVar = 0.0;
     private final double upperBoundVar = 1.0;
 
+    // Ordered list of parameter names, in insertion order (only base vars, not aux or constants)
+    public final ArrayList<String> paramNames = new ArrayList<>();
+    // Fast reverse lookup: parameter GRBVar -> index (identity-based)
+    private final java.util.IdentityHashMap<GRBVar, Integer> paramIndex = new java.util.IdentityHashMap<>();
+
+    // reverse map for fixed-value "constant" variables
+    private final java.util.IdentityHashMap<GRBVar, Double> constantReverse = new java.util.IdentityHashMap<>();
+
     public ExpressionTranslator(GRBModel model) {
         this.model = model;
     }
@@ -59,21 +67,31 @@ public class ExpressionTranslator {
 
     /** Create/get a base decision variable for symbol name. */
     public GRBVar getOrCreateVariable(String name) {
-        return variableMap.computeIfAbsent(name, key -> {
-            try {
-                // Unbounded here; McCormick uses getBounds(name) instead
-                return model.addVar(lowerBoundVar, upperBoundVar, 0.0, GRB.CONTINUOUS, key);
-            } catch (GRBException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        GRBVar existing = variableMap.get(name);
+        if (existing != null) return existing;
+
+        try {
+            GRBVar v = model.addVar(lowerBoundVar, upperBoundVar, 0.0, GRB.CONTINUOUS, name);
+            variableMap.put(name, v);
+
+            // Register as a parameter
+            int idx = paramNames.size();
+            paramNames.add(name);
+            paramIndex.put(v, idx);
+
+            return v;
+        } catch (GRBException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /** Fixed value variable (lb=ub=value) to carry literals into GRBLinExpr. */
     public GRBVar getOrCreateConstant(Double value) {
         return constantMap.computeIfAbsent(value, key -> {
             try {
-                return model.addVar(value, value, 0.0, GRB.CONTINUOUS, "c_" + value);
+                GRBVar v = model.addVar(value, value, 0.0, GRB.CONTINUOUS, "c_" + value);
+                constantReverse.put(v, value);
+                return v;
             } catch (GRBException e) {
                 throw new RuntimeException(e);
             }
@@ -302,6 +320,37 @@ public class ExpressionTranslator {
     }
 
     // ==================== small utilities ====================
+    /** Number of parameter/base variables the translator manages. */
+    public int getNumParameters() {
+        return paramNames.size();
+    }
+
+    /** Index of parameter for this GRBVar, or -1 if it's not a parameter/base var. */
+    public int getParamIndex(GRBVar v) {
+        Integer idx = paramIndex.get(v);
+        return (idx == null) ? -1 : idx;
+    }
+
+    /** Lower bound for parameter j (uses the translator's bounds if set, else defaults). */
+    public double getParamLB(int j) {
+        if (j < 0 || j >= paramNames.size())
+            throw new IndexOutOfBoundsException("param index " + j);
+        String name = paramNames.get(j);
+        return getBounds(name)[0];  // pulls from varBounds or default [0.001, 0.999]
+    }
+
+    /** Upper bound for parameter j (uses the translator's bounds if set, else defaults). */
+    public double getParamUB(int j) {
+        if (j < 0 || j >= paramNames.size())
+            throw new IndexOutOfBoundsException("param index " + j);
+        String name = paramNames.get(j);
+        return getBounds(name)[1];
+    }
+
+    /** If v is a fixed-value constant var, return its numeric value; else null. */
+    public Double getConstantValueIfKnown(GRBVar v) {
+        return constantReverse.get(v);
+    }
 
     private static double literalToDouble(ExpressionLiteral lit) throws PrismException {
         if (lit.getValue() instanceof BigRational br) return br.doubleValue();

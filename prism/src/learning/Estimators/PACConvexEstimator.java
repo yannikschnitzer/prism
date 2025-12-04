@@ -40,7 +40,6 @@ public class PACConvexEstimator extends MAPEstimator {
     protected HashMap<TransitionTriple, Integer> tiedTransitionCounts = new HashMap<>();
     protected HashMap<TransitionTriple, Integer> tiedStateActionCounts = new HashMap<>();
 
-
     public PACConvexEstimator(Prism prism, Experiment ex) {
         super(prism, ex);
         error_tolerance = ex.error_tolerance;
@@ -131,7 +130,7 @@ public class PACConvexEstimator extends MAPEstimator {
 
             } else {
                 startTime = System.nanoTime();
-                UMDP<Double> convex_mdp = buildConvexUMDP(imdp, this.pmdp);
+                UMDP<Double> convex_mdp = ex.useApsEllipsoid ? buildApsEllipsoidUMDP(pmdp) : buildConvexUMDP(imdp, this.pmdp);
                 modelBuildingTime = System.nanoTime() - startTime;
 
                 startTime = System.nanoTime();
@@ -446,6 +445,11 @@ public class PACConvexEstimator extends MAPEstimator {
         GRBEnv env = new GRBEnv(true);
         env.set(GRB.IntParam.OutputFlag, 0);
         env.start();
+
+        double[] thetaHat = estimateThetaHatCountsLS(mdp, pmdp, ex.apsLambda > 0 ? ex.apsLambda : 1e-2);
+        System.out.println("Theta Hat: " + Arrays.toString(thetaHat));
+        System.out.println("With new function:");
+        buildApsEllipsoidUMDP(pmdp);
 
         ConvexLearner cxl = new ConvexLearner(env);
         cxl.enableOBBT(ex.obbtMaxIters, ex.obbtEps);
@@ -980,4 +984,574 @@ public class PACConvexEstimator extends MAPEstimator {
     public int getNumLearnableComponents() {
         return this.getNumLearnableTransitions();
     }
+
+    public UMDP<Double> buildApsEllipsoidUMDP(MDPSimple<Function> pmdp) throws GRBException, PrismException {
+
+        // 1) get APS (thetaHat, V, beta)
+        double lambda = (ex.apsLambda > 0 ? ex.apsLambda : 1e-2);
+
+        // pick these from Experiment (recommended), otherwise hardcode defaults:
+        double R = ex.apsR;          // noise proxy
+        double S = ex.apsS;          // ||theta_*|| bound
+        double delta = ex.apsDelta;  // confidence (NOT the same as CP’s alpha split)
+
+        ApsEllipsoid ell = estimateApsEllipsoidCountsLS(mdp, pmdp, lambda, R, S, delta);
+
+        // 2) build a *shared* convex model containing ONLY:
+        //    - param bounds (from translator / param declarations)
+        //    - simplex constraints for all (s,i)
+        //    - APS ellipsoid
+        GRBEnv env = new GRBEnv(true);
+        env.set(GRB.IntParam.OutputFlag, 0);
+        env.start();
+
+        ConvexLearner cxl = new ConvexLearner(env);
+        cxl.setParamModel(pmdp);
+        cxl.resetModel();
+        cxl.commitConstraints();
+        ExpressionTranslator trans = cxl.getTranslator();
+        GRBModel model = cxl.getModel();
+
+        // ensure all vars are created (important once you have McCormick later)
+        for (int s = 0; s < pmdp.getNumStates(); s++) {
+            int nc = pmdp.getNumChoices(s);
+            for (int i = 0; i < nc; i++) {
+                for (Iterator<Map.Entry<Integer, Function>> it = pmdp.getTransitionsIterator(s, i); it.hasNext();) {
+                    Function f = it.next().getValue();
+                    if (f.isConstant() || f.isOne()) continue;
+                    trans.translateLinearExpression(f.asExpression());
+                }
+            }
+        }
+        model.update();
+
+        // add probability-validity constraints globally (linear)
+        addGlobalSimplexConstraints(pmdp, model, trans);
+
+        // add APS ellipsoid (convex quadratic)
+        addEllipsoidConstraint(model, ell.paramNames, ell.thetaHat, ell.V, ell.beta);
+
+        model.update();
+
+        // 3) build the UMDP topology from pmdp but with ellipsoid-uncertain distributions
+        int n = pmdp.getNumStates();
+        UMDPSimple<Double> out = new UMDPSimple<>(n);
+        out.addInitialState(pmdp.getFirstInitialState());
+        out.setStatesList(pmdp.getStatesList());
+        out.setConstantValues(pmdp.getConstantValues());
+
+        for (int s = 0; s < n; s++) {
+            int numChoices = pmdp.getNumChoices(s);
+            for (int i = 0; i < numChoices; i++) {
+                String action = getActionString(pmdp, s, i);
+                Distribution<Function> pdist = pmdp.getDistribution(s, i);
+                out.addActionLabelledChoice(
+                        s,
+                        new UDistribributionParametricConvex<>(pdist, model, trans),
+                        action
+                );
+            }
+        }
+
+        for (Map.Entry<String, BitSet> entry : pmdp.getLabelToStatesMap().entrySet()) {
+            out.addLabel(entry.getKey(), entry.getValue());
+        }
+
+        // Keep a reference so it doesn't get GC’d; also mirrors your convex_estimate pattern
+        this.convex_estimate = out;
+        return out;
+    }
+
+
+    // ===============================
+    // APS center from COUNT-BASED LS
+    // ===============================
+    public double[] estimateThetaHatCountsLS(MDP<Double> mdp,
+                                             MDPSimple<Function> pmdp,
+                                             double lambda) throws GRBException, PrismException {
+        // 0) Build translator (only used to extract affine (c,a) from each Function)
+        GRBEnv env = new GRBEnv(true);
+        env.set(GRB.IntParam.OutputFlag, 0);
+        env.start();
+
+        ConvexLearner cxl = new ConvexLearner(env);
+        cxl.setParamModel(pmdp);
+        cxl.resetModel();
+        cxl.commitConstraints();
+        ExpressionTranslator trans = cxl.getTranslator();
+
+        // Warm-up: ensure translator has discovered all parameter vars that appear
+        for (int s = 0; s < pmdp.getNumStates(); s++) {
+            int nc = pmdp.getNumChoices(s);
+            for (int i = 0; i < nc; i++) {
+                boolean singleSucc = pmdp.getDistribution(s, i).getSupport().size() == 1;
+                for (Iterator<Map.Entry<Integer, Function>> it = pmdp.getTransitionsIterator(s, i); it.hasNext();) {
+                    Function f = it.next().getValue();
+                    if (singleSucc || f.isOne() || f.isConstant()) continue;
+                    trans.translateLinearExpression(f.asExpression());
+                }
+            }
+        }
+        cxl.getModel().update();
+
+        final int d = trans.getNumParameters();
+        if (d == 0) return new double[0];
+
+        // 1) CRITICAL FIX:
+        // Build mapping from pmdp state indices -> mdp state indices, based on explicit state valuation.
+        final int[] p2m = buildStateIndexMap(pmdp, mdp);
+
+        // 2) Accumulate normal equations
+        double[][] sumAtAt = new double[d][d]; // Σ n * A^T A
+        double[]  sumAtYc = new double[d];     // Σ A^T (k - n c)
+
+        for (int sP = 0; sP < pmdp.getNumStates(); sP++) {
+            int sM = p2m[sP];
+            if (sM < 0) continue;
+
+            int numChoicesP = pmdp.getNumChoices(sP);
+            for (int iP = 0; iP < numChoicesP; iP++) {
+                final String action = getActionString(pmdp, sP, iP);
+
+                final int n = getStateActionCountRaw(new StateActionPair(sM, action));
+                if (n == 0) continue;
+
+                // ---------- (A) BUILD THIS (sP,iP) ROW FIRST ----------
+                List<Integer> supp = new ArrayList<>();
+                List<double[]> aRows = new ArrayList<>();
+                List<Double> cRows = new ArrayList<>();
+                List<Integer> tMs = new ArrayList<>(); // keep mapped concrete successors for counts
+
+                for (Iterator<Map.Entry<Integer, Function>> it = pmdp.getTransitionsIterator(sP, iP); it.hasNext();) {
+                    Map.Entry<Integer, Function> e = it.next();
+                    int tP = e.getKey();
+                    int tM = (tP >= 0 && tP < p2m.length) ? p2m[tP] : -1;
+                    if (tM < 0) continue;
+
+                    Function f = e.getValue();
+                    Affine af = extractAffine(f, trans); // af.c + af.a^T theta
+
+                    supp.add(tP);
+                    tMs.add(tM);
+                    aRows.add(af.a);
+                    cRows.add(af.c);
+                }
+
+                if (supp.isEmpty()) continue;
+
+                double[] kvec = new double[supp.size()];
+                for (int j = 0; j < supp.size(); j++) {
+                    int tM = tMs.get(j);
+                    kvec[j] = getTransitionCountRaw(new TransitionTriple(sM, action, tM));
+                }
+
+                // ---------- (C) NOW ACCUMULATE INTO NORMAL EQUATIONS ----------
+                for (int j = 0; j < supp.size(); j++) {
+                    double[] a = aRows.get(j);
+                    double c = cRows.get(j);
+                    double residual = kvec[j] - ((double) n) * c;
+
+                    // sumAtAt += n * (a a^T)
+                    for (int r = 0; r < d; r++) {
+                        double ar = a[r];
+                        if (ar == 0.0) continue;
+                        for (int col = 0; col < d; col++) {
+                            sumAtAt[r][col] += ((double) n) * ar * a[col];
+                        }
+                    }
+
+                    // sumAtYc += a * residual
+                    for (int r = 0; r < d; r++) {
+                        sumAtYc[r] += a[r] * residual;
+                    }
+                }
+            }
+        }
+
+        // 3) V = lambda I + sumAtAt
+        double[][] V = new double[d][d];
+        for (int i = 0; i < d; i++) {
+            System.arraycopy(sumAtAt[i], 0, V[i], 0, d);
+            V[i][i] += lambda;
+        }
+
+        // 4) Solve V theta = sumAtYc (SPD solve via Cholesky)
+        double[] thetaHat = solveSPDCholesky(V, sumAtYc);
+
+        // (Optional) print center for sanity
+        System.out.println("Theta Order: " + trans.paramNames);
+        System.out.println("APS thetaHat (counts LS): " + java.util.Arrays.toString(thetaHat));
+
+        // Cleanup env/model (important in loops)
+        try { cxl.getModel().dispose(); } catch (Throwable ignore) {}
+        try { env.dispose(); } catch (Throwable ignore) {}
+
+        return thetaHat;
+    }
+
+    private ApsEllipsoid estimateApsEllipsoidCountsLS(MDP<Double> mdp,
+                                                      MDPSimple<Function> pmdp,
+                                                      double lambda,
+                                                      double R,
+                                                      double S,
+                                                      double delta) throws GRBException, PrismException {
+
+        GRBEnv env = new GRBEnv(true);
+        env.set(GRB.IntParam.OutputFlag, 0);
+        env.start();
+
+        ConvexLearner cxl = new ConvexLearner(env);
+        cxl.setParamModel(pmdp);
+        cxl.resetModel();
+        cxl.commitConstraints();
+        ExpressionTranslator trans = cxl.getTranslator();
+
+        // warm-up param discovery
+        for (int s = 0; s < pmdp.getNumStates(); s++) {
+            int nc = pmdp.getNumChoices(s);
+            for (int i = 0; i < nc; i++) {
+                boolean singleSucc = pmdp.getDistribution(s, i).getSupport().size() == 1;
+                for (Iterator<Map.Entry<Integer, Function>> it = pmdp.getTransitionsIterator(s, i); it.hasNext();) {
+                    Function f = it.next().getValue();
+                    if (singleSucc || f.isOne() || f.isConstant()) continue;
+                    trans.translateLinearExpression(f.asExpression());
+                }
+            }
+        }
+        cxl.getModel().update();
+
+        final int d = trans.getNumParameters();
+        if (d == 0) return new ApsEllipsoid(new double[0], new double[0][0], 0.0, List.of());
+
+        final int[] p2m = buildStateIndexMap(pmdp, mdp);
+
+        double[][] sumAtAt = new double[d][d];
+        double[] sumAtYc = new double[d];
+
+        for (int sP = 0; sP < pmdp.getNumStates(); sP++) {
+            int sM = p2m[sP];
+            if (sM < 0) continue;
+
+            int numChoicesP = pmdp.getNumChoices(sP);
+            for (int iP = 0; iP < numChoicesP; iP++) {
+                final String action = getActionString(pmdp, sP, iP);
+
+                final int n = getStateActionCountRaw(new StateActionPair(sM, action));
+                if (n == 0) continue;
+
+                List<Integer> tMs = new ArrayList<>();
+                List<double[]> aRows = new ArrayList<>();
+                List<Double> cRows = new ArrayList<>();
+
+                for (Iterator<Map.Entry<Integer, Function>> it = pmdp.getTransitionsIterator(sP, iP); it.hasNext();) {
+                    Map.Entry<Integer, Function> e = it.next();
+                    int tP = e.getKey();
+                    int tM = (tP >= 0 && tP < p2m.length) ? p2m[tP] : -1;
+                    if (tM < 0) continue;
+
+                    Affine af = extractAffine(e.getValue(), trans);
+                    tMs.add(tM);
+                    aRows.add(af.a);
+                    cRows.add(af.c);
+                }
+                if (tMs.isEmpty()) continue;
+
+                for (int j = 0; j < tMs.size(); j++) {
+                    double k = getTransitionCountRaw(new TransitionTriple(sM, action, tMs.get(j)));
+                    double[] a = aRows.get(j);
+                    double c = cRows.get(j);
+                    double residual = k - ((double) n) * c;
+
+                    for (int r = 0; r < d; r++) {
+                        double ar = a[r];
+                        if (ar == 0.0) continue;
+                        for (int col = 0; col < d; col++) {
+                            sumAtAt[r][col] += ((double) n) * ar * a[col];
+                        }
+                    }
+                    for (int r = 0; r < d; r++) sumAtYc[r] += a[r] * residual;
+                }
+            }
+        }
+
+        double[][] V = new double[d][d];
+        for (int i = 0; i < d; i++) {
+            System.arraycopy(sumAtAt[i], 0, V[i], 0, d);
+            V[i][i] += lambda;
+        }
+
+        // symmetrize defensively
+        for (int i = 0; i < d; i++) {
+            for (int j = i + 1; j < d; j++) {
+                double s = 0.5 * (V[i][j] + V[j][i]);
+                V[i][j] = s; V[j][i] = s;
+            }
+        }
+
+        double[] thetaHat = solveSPDCholesky(V, sumAtYc);
+
+        // IMPORTANT: radius uses V (with lambda) and delta
+        double beta = apsBeta(V, lambda, R, S, delta);
+
+        System.out.println("Theta Order: " + trans.paramNames);
+        System.out.println("APS thetaHat: " + Arrays.toString(thetaHat) + " beta=" + beta);
+
+        try { cxl.getModel().dispose(); } catch (Throwable ignore) {}
+        try { env.dispose(); } catch (Throwable ignore) {}
+
+        // trans.paramNames used in your existing code, so reuse it here
+        @SuppressWarnings("unchecked")
+        List<String> names = (List<String>) trans.paramNames;
+
+        return new ApsEllipsoid(thetaHat, V, beta, names);
+    }
+
+    private static void addEllipsoidConstraint(GRBModel model,
+                                               List<String> paramNames,
+                                               double[] mu,
+                                               double[][] V,
+                                               double beta) throws GRBException {
+
+        int d = mu.length;
+        GRBVar[] x = new GRBVar[d];
+        for (int j = 0; j < d; j++) {
+            x[j] = model.getVarByName(paramNames.get(j));
+            if (x[j] == null) throw new GRBException("Parameter var not found: " + paramNames.get(j));
+        }
+
+        // y = x - mu
+        GRBVar[] y = new GRBVar[d];
+        for (int j = 0; j < d; j++) {
+            y[j] = model.addVar(-GRB.INFINITY, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "d_" + paramNames.get(j));
+            GRBLinExpr eq = new GRBLinExpr();
+            eq.addTerm(1.0, x[j]);
+            eq.addTerm(-1.0, y[j]);
+            eq.addConstant(-mu[j]);
+            model.addConstr(eq, GRB.EQUAL, 0.0, "shift_" + j);
+        }
+
+        // y^T V y <= beta^2
+        GRBQuadExpr q = new GRBQuadExpr();
+        for (int i = 0; i < d; i++) {
+            q.addTerm(V[i][i], y[i], y[i]);
+            for (int j = i + 1; j < d; j++) {
+                q.addTerm(2.0 * V[i][j], y[i], y[j]);
+            }
+        }
+        model.addQConstr(q, GRB.LESS_EQUAL, beta * beta, "aps_ellipsoid");
+    }
+
+    private static void addGlobalSimplexConstraints(MDPSimple<Function> pmdp,
+                                                    GRBModel model,
+                                                    ExpressionTranslator trans) throws GRBException, PrismException {
+
+        for (int s = 0; s < pmdp.getNumStates(); s++) {
+            int nc = pmdp.getNumChoices(s);
+            for (int i = 0; i < nc; i++) {
+                boolean singleSucc = pmdp.getDistribution(s, i).getSupport().size() == 1;
+                if (singleSucc) continue;
+
+                GRBLinExpr sum = new GRBLinExpr();
+
+                for (Iterator<Map.Entry<Integer, Function>> it = pmdp.getTransitionsIterator(s, i); it.hasNext();) {
+                    Function f = it.next().getValue();
+
+                    // translate (this can introduce aux vars later for McCormick)
+                    GRBLinExpr p = trans.translateLinearExpression(f.asExpression());
+                    model.update();
+
+                    // 0 <= p <= 1
+                    model.addConstr(p, GRB.GREATER_EQUAL, 0.0, "p_ge_0_" + s + "_" + i);
+                    model.addConstr(p, GRB.LESS_EQUAL,  1.0, "p_le_1_" + s + "_" + i);
+
+                    // accumulate into sum
+                    sum.addConstant(p.getConstant());
+                    for (int k = 0; k < p.size(); k++) {
+                        sum.addTerm(p.getCoeff(k), p.getVar(k));
+                    }
+                }
+
+                model.addConstr(sum, GRB.EQUAL, 1.0, "psum_" + s + "_" + i);
+            }
+        }
+    }
+
+    /**
+     * Build a mapping pState -> mState by matching explicit state valuations from statesList.
+     * This avoids relying on "same index ordering", which is NOT guaranteed across mdp vs pmdp.
+     */
+    private static int[] buildStateIndexMap(MDP<?> pmdp, MDP<?> mdp) {
+        int nP = pmdp.getNumStates();
+        int nM = mdp.getNumStates();
+
+        // Build lookup for concrete mdp states by a stable key (string of valuation).
+        // Using toString() is usually stable for PRISM explicit State.
+        Map<String, Integer> keyToM = new HashMap<>(nM * 2);
+
+        for (int sM = 0; sM < nM; sM++) {
+            Object st = mdp.getStatesList().get(sM);
+            keyToM.put(String.valueOf(st), sM);
+        }
+
+        int[] p2m = new int[nP];
+        Arrays.fill(p2m, -1);
+
+        int matched = 0;
+        for (int sP = 0; sP < nP; sP++) {
+            Object st = pmdp.getStatesList().get(sP);
+            Integer sM = keyToM.get(String.valueOf(st));
+            if (sM != null) {
+                p2m[sP] = sM;
+                matched++;
+            }
+        }
+
+        return p2m;
+    }
+
+    /** f(θ) = c + a^T θ */
+    private static final class Affine {
+        final double c;
+        final double[] a;
+        Affine(double c, double[] a) { this.c = c; this.a = a; }
+    }
+
+    private Affine extractAffine(Function f, ExpressionTranslator trans) throws GRBException, PrismException {
+        final int d = trans.getNumParameters();
+
+        // Constant function
+        if (f.isConstant()) {
+            return new Affine(f.asBigRational().doubleValue(), new double[d]);
+        }
+
+        GRBLinExpr lin = trans.translateLinearExpression(f.asExpression());
+        double c0 = lin.getConstant();
+        double[] a = new double[d];
+
+        for (int k = 0; k < lin.size(); k++) {
+            GRBVar v = lin.getVar(k);
+            double coeff = lin.getCoeff(k);
+            if (Math.abs(coeff) < 1e-15) continue;
+
+            int j = trans.getParamIndex(v);
+            if (j >= 0) {
+                // parameter term
+                a[j] += coeff;
+                continue;
+            }
+
+            // NEW: fold fixed vars into the intercept (covers c_3.0, c_0.05, state-evaluated constants, etc.)
+            double lb = v.get(GRB.DoubleAttr.LB);
+            double ub = v.get(GRB.DoubleAttr.UB);
+            if (Double.isFinite(lb) && Double.isFinite(ub) && Math.abs(ub - lb) < 1e-12) {
+                c0 += coeff * lb;
+                continue;
+            }
+
+            // Otherwise this is genuinely not affine in parameters
+            String name = v.get(GRB.StringAttr.VarName);
+            throw new RuntimeException(
+                    "Non-parameter, non-fixed var in supposedly affine function: " + name +
+                            " coeff=" + coeff + " LB=" + lb + " UB=" + ub + " in " + f);
+        }
+
+        return new Affine(c0, a);
+    }
+
+
+    /** Solve SPD system V x = b using Cholesky (V must be symmetric positive definite). */
+    private static double[] solveSPDCholesky(double[][] V, double[] b) {
+        int n = b.length;
+        double[][] L = new double[n][n];
+
+        // Cholesky: V = L L^T
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j <= i; j++) {
+                double sum = V[i][j];
+                for (int k = 0; k < j; k++) sum -= L[i][k] * L[j][k];
+                if (i == j) {
+                    if (sum <= 0) sum = 1e-18; // defensive
+                    L[i][j] = Math.sqrt(sum);
+                } else {
+                    L[i][j] = sum / L[j][j];
+                }
+            }
+        }
+
+        // Forward solve L y = b
+        double[] y = new double[n];
+        for (int i = 0; i < n; i++) {
+            double sum = b[i];
+            for (int k = 0; k < i; k++) sum -= L[i][k] * y[k];
+            y[i] = sum / L[i][i];
+        }
+
+        // Back solve L^T x = y
+        double[] x = new double[n];
+        for (int i = n - 1; i >= 0; i--) {
+            double sum = y[i];
+            for (int k = i + 1; k < n; k++) sum -= L[k][i] * x[k];
+            x[i] = sum / L[i][i];
+        }
+        return x;
+    }
+
+    /** Raw empirical N(s,a) from simulation only (no priors). */
+    private int getStateActionCountRaw(StateActionPair sa) {
+        Integer v = sampleSizeMap.get(sa);
+        return (v == null) ? 0 : v;
+    }
+
+    /** Raw empirical K(s,a,t) from simulation only (no priors). */
+    private int getTransitionCountRaw(TransitionTriple tr) {
+        Integer v = samplesMap.get(tr);
+        return (v == null) ? 0 : v;
+    }
+
+    // Put near other helpers in PACConvexEstimator
+
+    private static final class ApsEllipsoid {
+        final double[] thetaHat;
+        final double[][] V;    // SPD
+        final double beta;
+        final List<String> paramNames; // same order as thetaHat
+        ApsEllipsoid(double[] thetaHat, double[][] V, double beta, List<String> paramNames) {
+            this.thetaHat = thetaHat; this.V = V; this.beta = beta; this.paramNames = paramNames;
+        }
+    }
+
+    /** log(det(M)) for SPD M via Cholesky. */
+    private static double logDetSPD(double[][] M) {
+        int n = M.length;
+        double[][] L = new double[n][n];
+        double logDet = 0.0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j <= i; j++) {
+                double sum = M[i][j];
+                for (int k = 0; k < j; k++) sum -= L[i][k] * L[j][k];
+                if (i == j) {
+                    if (sum <= 0) sum = 1e-18;
+                    L[i][j] = Math.sqrt(sum);
+                    logDet += 2.0 * Math.log(L[i][j]);
+                } else {
+                    L[i][j] = sum / L[j][j];
+                }
+            }
+        }
+        return logDet;
+    }
+
+    /**
+     * Standard Abbasi-Yadkori style radius:
+     * beta = R * sqrt( log(det(V)) - d log(lambda) + 2 log(1/delta) ) + sqrt(lambda) * S
+     */
+    private static double apsBeta(double[][] V, double lambda, double R, double S, double delta) {
+        int d = V.length;
+        double logdetV = logDetSPD(V);
+        double term = (logdetV - d * Math.log(lambda)) + 2.0 * Math.log(1.0 / delta);
+        term = Math.max(0.0, term);
+        return R * Math.sqrt(term) + Math.sqrt(lambda) * S;
+    }
+
+
 }

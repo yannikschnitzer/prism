@@ -47,6 +47,11 @@ public class Experiment {
     public boolean useLPToIntervals = false;
     public IntervalAbstractionMode intervalAbstractionMode = FAST;
     public int exprBoundWorkers = 8;
+    public double apsLambda = 1e-2;
+    public double apsR = 1.0;
+    public double apsS = 1;
+    public double apsDelta = 1 - error_tolerance;
+    public boolean useApsEllipsoid = false;
 
 
     public enum ParameterTying {
@@ -476,6 +481,7 @@ public class Experiment {
                 this.optimisticSpec = "Rminmin=? [F \"goal\"]";
                 this.dtmcSpec = "R=? [F \"goal\"]";
                 this.spec = "Rmin=? [F \"goal\"]";
+                this.invspec = "Rmax=? [F \"goal\"]";
                 this.type = Type.REWARD;
 
                 this.multiplier = 2;
@@ -1072,6 +1078,7 @@ public class Experiment {
                 this.optimisticSpec = "Pmaxmax=? [!crash U target]";
                 this.dtmcSpec = "P=? [!crash U target]";
                 this.spec = "Pmax=? [!crash U target]";
+                this.invspec = "Pmin=? [!crash U target]";
                 this.type = Type.REACH;
 
                 this.multiplier = 2;
@@ -1117,8 +1124,6 @@ public class Experiment {
                 this.type = Type.REACH;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("Xsize", 45);
-                this.parameterValues.addValue("Ysize", 45);
                 this.parameterValues.addValue("theta1", 0.39);
                 this.parameterValues.addValue("theta2", 0.2);
                 this.parameterValues.addValue("theta3", 0.15);
@@ -1210,6 +1215,7 @@ public class Experiment {
                 this.certainModelFile = "../parametric_convex_models/mixture_mdps/aircraft_mixture_onemod_adaptive.prism";
 
                 this.spec = "Pmax=? [!collision U \"goal\"]";
+                this.invspec = "Pmin=? [!collision U \"goal\"]";
                 this.robustSpec = "Pmaxmin=? [!collision U \"goal\"]";
                 this.optimisticSpec = "Pmaxmax=? [!collision U \"goal\"]";
                 this.dtmcSpec = "P=?  [!collision U \"goal\"]";
