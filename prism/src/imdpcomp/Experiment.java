@@ -33,7 +33,7 @@ public class Experiment {
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
-    public int iterations = 1_00_000;
+    public int iterations = 1_0_000;
     public int max_episode_length = 50;
     public int multiplier = 5;
     public int maxVIIters = 20000;
@@ -52,6 +52,7 @@ public class Experiment {
     public double apsS = 1;
     public double apsDelta = 1 - error_tolerance;
     public boolean useApsEllipsoid = false;
+    public boolean forceEllipsoidSOCP = true;
 
 
     public enum ParameterTying {

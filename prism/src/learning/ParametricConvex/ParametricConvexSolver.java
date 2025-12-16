@@ -74,17 +74,17 @@ public class ParametricConvexSolver {
         ParametricConvexSolver parametricConvexLearner = new ParametricConvexSolver(new Prism(new PrismDevNullLog()));
         parametricConvexLearner.initializePrism();
 
-        Model model = Model.AIRCRAFT_MIXTURE_ONEMOD;
+        Model model = Model.ENGAGEMENT_ADAPTIVE;
 
         // Plain Naive
         Experiment ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(NO_TYING);
         MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
-//
-//        parametricConvexLearner.solveIMDPUniform(ex,
-//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-//                pmdp,
-//                ex.parameterValues,
-//                true);
+
+        parametricConvexLearner.solveIMDPUniform(ex,
+                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+                pmdp,
+                ex.parameterValues,
+                true);
 
 
         // Parameter Tying

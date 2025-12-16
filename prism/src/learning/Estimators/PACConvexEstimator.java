@@ -994,8 +994,9 @@ public class PACConvexEstimator extends MAPEstimator {
         double R = ex.apsR;          // noise proxy
         double S = ex.apsS;          // ||theta_*|| bound
         double delta = ex.apsDelta;  // confidence (NOT the same as CP’s alpha split)
-
         ApsEllipsoid ell = estimateApsEllipsoidCountsLS(mdp, pmdp, lambda, R, S, delta);
+        UDistribributionParametricConvex.ApsEllipsoidData apsData =
+                new UDistribributionParametricConvex.ApsEllipsoidData(ell.thetaHat, ell.V, ell.beta);
 
         // 2) build a *shared* convex model containing ONLY:
         //    - param bounds (from translator / param declarations)
@@ -1047,7 +1048,7 @@ public class PACConvexEstimator extends MAPEstimator {
                 Distribution<Function> pdist = pmdp.getDistribution(s, i);
                 out.addActionLabelledChoice(
                         s,
-                        new UDistribributionParametricConvex<>(pdist, model, trans),
+                        new UDistribributionParametricConvex<>(pdist, model, trans, null, apsData),
                         action
                 );
             }
