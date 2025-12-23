@@ -1,8 +1,8 @@
 mdp
 
 // ===== Dimensions =====
-const int maxX = 100;
-const int maxY = 5;
+const int maxX = 50;
+const int maxY = 10;
 
 // ===== Mixture weights (K=4) =====
 const double theta1;

@@ -33,7 +33,7 @@ public class Experiment {
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
-    public int iterations = 1_0_000;
+    public int iterations = 1_00_000;
     public int max_episode_length = 50;
     public int multiplier = 5;
     public int maxVIIters = 20000;
@@ -48,7 +48,7 @@ public class Experiment {
     public IntervalAbstractionMode intervalAbstractionMode = FAST;
     public int exprBoundWorkers = 8;
     public double apsLambda = 1e-2;
-    public double apsR = 1.0;
+    public double apsR = 1.5;
     public double apsS = 1;
     public double apsDelta = 1 - error_tolerance;
     public boolean useApsEllipsoid = false;
@@ -148,6 +148,11 @@ public class Experiment {
 
     public Experiment setCompositonType(CompositionType type){
         this.compositionType = type;
+        return this;
+    }
+
+    public Experiment useAPSEllipsoid(boolean use) {
+        this.useApsEllipsoid = use;
         return this;
     }
 
@@ -365,7 +370,7 @@ public class Experiment {
             }
 
             case SYSADMIN_CONVEX -> {
-                int N = 30;
+                int N = 10;
 
                 this.modelFile = String.format("../parametric_convex_models/sys_admin.prism");
                 this.certainModelFile = String.format("../parametric_convex_models/sys_admin.prism");
@@ -376,7 +381,7 @@ public class Experiment {
                 this.invspec = "Pmin=? [ !\"fail\" U \"goal\" ]";
                 this.type = Type.REACH;
 
-                this.max_episode_length = 10;
+                this.max_episode_length = N;
                 this.maxVIIters = 10000000;
 
                 // Set Parameter Values
@@ -505,7 +510,7 @@ public class Experiment {
                 this.type = Type.REWARD;
 
                 this.multiplier = 4;
-                this.max_episode_length = 10;
+                this.max_episode_length = 150;
                 this.maxVIIters = 20000;
 
                 // Set Parameter Values
@@ -524,11 +529,11 @@ public class Experiment {
                 this.type = Type.REWARD;
 
                 this.multiplier = 2;
-                this.max_episode_length = 50;
+                this.max_episode_length = 150;
                 this.maxVIIters = 20000;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("n", 100);
+                this.parameterValues.addValue("n", 150);
                 this.parameterValues.addValue("p", 0.55);
             }
 
@@ -1103,7 +1108,7 @@ public class Experiment {
                 this.type = Type.REWARD;
 
                 this.multiplier = 2;
-                this.max_episode_length = 50;
+                this.max_episode_length = 100;
                 this.maxVIIters = 1000000;
 
                 // Set Parameter Values
@@ -1125,6 +1130,8 @@ public class Experiment {
                 this.type = Type.REACH;
 
                 // Set Parameter Values
+                this.parameterValues.addValue("Xsize", 25);
+                this.parameterValues.addValue("Ysize", 25);
                 this.parameterValues.addValue("theta1", 0.39);
                 this.parameterValues.addValue("theta2", 0.2);
                 this.parameterValues.addValue("theta3", 0.15);
@@ -1141,9 +1148,11 @@ public class Experiment {
                 this.dtmcSpec = "P=? [!(\"Crash\") U (\"Target\")]";
                 this.type = Type.REACH;
 
+                this.max_episode_length = 100;
+
                 // Set Parameter Values
-                this.parameterValues.addValue("Xsize", 45);
-                this.parameterValues.addValue("Ysize", 45);
+                this.parameterValues.addValue("Xsize", 25);
+                this.parameterValues.addValue("Ysize", 25);
                 this.parameterValues.addValue("theta1", 0.4);
                 this.parameterValues.addValue("theta2", 0.2);
                 this.parameterValues.addValue("theta3", 0.15);
@@ -1161,8 +1170,8 @@ public class Experiment {
                 this.type = Type.REACH;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("Xsize", 45);
-                this.parameterValues.addValue("Ysize", 45);
+                this.parameterValues.addValue("Xsize", 25);
+                this.parameterValues.addValue("Ysize", 25);
                 this.parameterValues.addValue("theta1", 0.4);
                 this.parameterValues.addValue("theta2", 0.2);
                 this.parameterValues.addValue("theta3", 0.15);
@@ -1206,6 +1215,8 @@ public class Experiment {
                 this.type = Type.REACH;
 
                 // Set Parameter Values
+                this.parameterValues.addValue("maxX", 50);
+                this.parameterValues.addValue("maxY", 10);
                 this.parameterValues.addValue("theta1", 0.369);
                 this.parameterValues.addValue("theta2", 0.2);
                 this.parameterValues.addValue("theta3", 0.3);
@@ -1223,6 +1234,8 @@ public class Experiment {
                 this.type = Type.REACH;
 
                 // Set Parameter Values
+                this.parameterValues.addValue("maxX", 50);
+                this.parameterValues.addValue("maxY", 10);
                 this.parameterValues.addValue("theta1", 0.4);
                 this.parameterValues.addValue("theta2", 0.2);
                 this.parameterValues.addValue("theta3", 0.15);

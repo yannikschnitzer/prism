@@ -446,10 +446,10 @@ public class PACConvexEstimator extends MAPEstimator {
         env.set(GRB.IntParam.OutputFlag, 0);
         env.start();
 
-        double[] thetaHat = estimateThetaHatCountsLS(mdp, pmdp, ex.apsLambda > 0 ? ex.apsLambda : 1e-2);
-        System.out.println("Theta Hat: " + Arrays.toString(thetaHat));
-        System.out.println("With new function:");
-        buildApsEllipsoidUMDP(pmdp);
+//        double[] thetaHat = estimateThetaHatCountsLS(mdp, pmdp, ex.apsLambda > 0 ? ex.apsLambda : 1e-2);
+//        System.out.println("Theta Hat: " + Arrays.toString(thetaHat));
+//        System.out.println("With new function:");
+//        buildApsEllipsoidUMDP(pmdp);
 
         ConvexLearner cxl = new ConvexLearner(env);
         cxl.enableOBBT(ex.obbtMaxIters, ex.obbtEps);
@@ -1063,133 +1063,6 @@ public class PACConvexEstimator extends MAPEstimator {
         return out;
     }
 
-
-    // ===============================
-    // APS center from COUNT-BASED LS
-    // ===============================
-    public double[] estimateThetaHatCountsLS(MDP<Double> mdp,
-                                             MDPSimple<Function> pmdp,
-                                             double lambda) throws GRBException, PrismException {
-        // 0) Build translator (only used to extract affine (c,a) from each Function)
-        GRBEnv env = new GRBEnv(true);
-        env.set(GRB.IntParam.OutputFlag, 0);
-        env.start();
-
-        ConvexLearner cxl = new ConvexLearner(env);
-        cxl.setParamModel(pmdp);
-        cxl.resetModel();
-        cxl.commitConstraints();
-        ExpressionTranslator trans = cxl.getTranslator();
-
-        // Warm-up: ensure translator has discovered all parameter vars that appear
-        for (int s = 0; s < pmdp.getNumStates(); s++) {
-            int nc = pmdp.getNumChoices(s);
-            for (int i = 0; i < nc; i++) {
-                boolean singleSucc = pmdp.getDistribution(s, i).getSupport().size() == 1;
-                for (Iterator<Map.Entry<Integer, Function>> it = pmdp.getTransitionsIterator(s, i); it.hasNext();) {
-                    Function f = it.next().getValue();
-                    if (singleSucc || f.isOne() || f.isConstant()) continue;
-                    trans.translateLinearExpression(f.asExpression());
-                }
-            }
-        }
-        cxl.getModel().update();
-
-        final int d = trans.getNumParameters();
-        if (d == 0) return new double[0];
-
-        // 1) CRITICAL FIX:
-        // Build mapping from pmdp state indices -> mdp state indices, based on explicit state valuation.
-        final int[] p2m = buildStateIndexMap(pmdp, mdp);
-
-        // 2) Accumulate normal equations
-        double[][] sumAtAt = new double[d][d]; // Σ n * A^T A
-        double[]  sumAtYc = new double[d];     // Σ A^T (k - n c)
-
-        for (int sP = 0; sP < pmdp.getNumStates(); sP++) {
-            int sM = p2m[sP];
-            if (sM < 0) continue;
-
-            int numChoicesP = pmdp.getNumChoices(sP);
-            for (int iP = 0; iP < numChoicesP; iP++) {
-                final String action = getActionString(pmdp, sP, iP);
-
-                final int n = getStateActionCountRaw(new StateActionPair(sM, action));
-                if (n == 0) continue;
-
-                // ---------- (A) BUILD THIS (sP,iP) ROW FIRST ----------
-                List<Integer> supp = new ArrayList<>();
-                List<double[]> aRows = new ArrayList<>();
-                List<Double> cRows = new ArrayList<>();
-                List<Integer> tMs = new ArrayList<>(); // keep mapped concrete successors for counts
-
-                for (Iterator<Map.Entry<Integer, Function>> it = pmdp.getTransitionsIterator(sP, iP); it.hasNext();) {
-                    Map.Entry<Integer, Function> e = it.next();
-                    int tP = e.getKey();
-                    int tM = (tP >= 0 && tP < p2m.length) ? p2m[tP] : -1;
-                    if (tM < 0) continue;
-
-                    Function f = e.getValue();
-                    Affine af = extractAffine(f, trans); // af.c + af.a^T theta
-
-                    supp.add(tP);
-                    tMs.add(tM);
-                    aRows.add(af.a);
-                    cRows.add(af.c);
-                }
-
-                if (supp.isEmpty()) continue;
-
-                double[] kvec = new double[supp.size()];
-                for (int j = 0; j < supp.size(); j++) {
-                    int tM = tMs.get(j);
-                    kvec[j] = getTransitionCountRaw(new TransitionTriple(sM, action, tM));
-                }
-
-                // ---------- (C) NOW ACCUMULATE INTO NORMAL EQUATIONS ----------
-                for (int j = 0; j < supp.size(); j++) {
-                    double[] a = aRows.get(j);
-                    double c = cRows.get(j);
-                    double residual = kvec[j] - ((double) n) * c;
-
-                    // sumAtAt += n * (a a^T)
-                    for (int r = 0; r < d; r++) {
-                        double ar = a[r];
-                        if (ar == 0.0) continue;
-                        for (int col = 0; col < d; col++) {
-                            sumAtAt[r][col] += ((double) n) * ar * a[col];
-                        }
-                    }
-
-                    // sumAtYc += a * residual
-                    for (int r = 0; r < d; r++) {
-                        sumAtYc[r] += a[r] * residual;
-                    }
-                }
-            }
-        }
-
-        // 3) V = lambda I + sumAtAt
-        double[][] V = new double[d][d];
-        for (int i = 0; i < d; i++) {
-            System.arraycopy(sumAtAt[i], 0, V[i], 0, d);
-            V[i][i] += lambda;
-        }
-
-        // 4) Solve V theta = sumAtYc (SPD solve via Cholesky)
-        double[] thetaHat = solveSPDCholesky(V, sumAtYc);
-
-        // (Optional) print center for sanity
-        System.out.println("Theta Order: " + trans.paramNames);
-        System.out.println("APS thetaHat (counts LS): " + java.util.Arrays.toString(thetaHat));
-
-        // Cleanup env/model (important in loops)
-        try { cxl.getModel().dispose(); } catch (Throwable ignore) {}
-        try { env.dispose(); } catch (Throwable ignore) {}
-
-        return thetaHat;
-    }
-
     private ApsEllipsoid estimateApsEllipsoidCountsLS(MDP<Double> mdp,
                                                       MDPSimple<Function> pmdp,
                                                       double lambda,
@@ -1346,32 +1219,60 @@ public class PACConvexEstimator extends MAPEstimator {
                                                     GRBModel model,
                                                     ExpressionTranslator trans) throws GRBException, PrismException {
 
+        // IMPORTANT:
+        //  - NO model.update() in here.
+        //  - Only add constraints that are actually needed:
+        //      * p >= 0 for each successor-probability expression
+        //      * sum_s' p(s') == 1  (with constants folded into the LHS)
+        //    We do NOT add p <= 1 because it's implied by (p >= 0 && sum == 1).
+
         for (int s = 0; s < pmdp.getNumStates(); s++) {
             int nc = pmdp.getNumChoices(s);
             for (int i = 0; i < nc; i++) {
-                boolean singleSucc = pmdp.getDistribution(s, i).getSupport().size() == 1;
-                if (singleSucc) continue;
+
+                // deterministic choice => nothing to constrain
+                if (pmdp.getDistribution(s, i).getSupport().size() == 1) continue;
 
                 GRBLinExpr sum = new GRBLinExpr();
+                int succIdx = 0;
 
-                for (Iterator<Map.Entry<Integer, Function>> it = pmdp.getTransitionsIterator(s, i); it.hasNext();) {
-                    Function f = it.next().getValue();
+                for (Iterator<Map.Entry<Integer, Function>> it = pmdp.getTransitionsIterator(s, i); it.hasNext(); ) {
+                    Map.Entry<Integer, Function> e = it.next();
+                    Function f = e.getValue();
 
-                    // translate (this can introduce aux vars later for McCormick)
+                    // Constant probabilities can be folded into the sum directly.
+                    if (f.isConstant()) {
+                        sum.addConstant(f.asBigRational().doubleValue());
+                        succIdx++;
+                        continue;
+                    }
+                    if (f.isOne()) {
+                        sum.addConstant(1.0);
+                        succIdx++;
+                        continue;
+                    }
+
+                    // Translate probability expression p(θ)
                     GRBLinExpr p = trans.translateLinearExpression(f.asExpression());
-                    model.update();
 
-                    // 0 <= p <= 1
-                    model.addConstr(p, GRB.GREATER_EQUAL, 0.0, "p_ge_0_" + s + "_" + i);
-                    model.addConstr(p, GRB.LESS_EQUAL,  1.0, "p_le_1_" + s + "_" + i);
-
-                    // accumulate into sum
+                    // Add p into row-sum
                     sum.addConstant(p.getConstant());
                     for (int k = 0; k < p.size(); k++) {
                         sum.addTerm(p.getCoeff(k), p.getVar(k));
                     }
+
+                    // Nonnegativity constraint (unique name!)
+                    model.addConstr(
+                            p,
+                            GRB.GREATER_EQUAL,
+                            0.0,
+                            "p_ge_0_" + s + "_" + i + "_" + succIdx
+                    );
+
+                    succIdx++;
                 }
 
+                // Probability simplex row-sum:
                 model.addConstr(sum, GRB.EQUAL, 1.0, "psum_" + s + "_" + i);
             }
         }

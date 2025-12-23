@@ -255,9 +255,10 @@ public class UDistribributionParametricConvex<Value> implements UDistribution<Va
             if (hi > 1.0 + epsBox) return false;
         }
 
-        if (!checkEllipsoidInsideParamBounds()) {
-            return false;
-        }
+//        if (!checkEllipsoidInsideParamBounds()) {
+//            System.out.println("returning false here");
+//            return false;
+//        }
 
         return true;
     }
