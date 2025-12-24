@@ -33,7 +33,7 @@ public class Experiment {
     public double error_tolerance = 0.999;
     public double strategyWeight = 0.9;
     public int seed = 5;
-    public int iterations = 1_00_000;
+    public int iterations = 100_000;
     public int max_episode_length = 50;
     public int multiplier = 5;
     public int maxVIIters = 20000;

@@ -88,7 +88,9 @@ public class UDistribributionParametricConvex<Value> implements UDistribution<Va
             // if APS data provided, try to enable closed-form
             if (aps != null && aps.d > 0 && aps.cholL != null) {
                 buildSuccessorTermsParamOnly();
-                this.apsClosedFormOk = checkEllipsoidInsideSimplex();
+                if (this.apsClosedFormOk) {
+                    this.apsClosedFormOk = checkEllipsoidInsideSimplex();
+                }
                 // if not ok, we simply fall back to LP/vertex like before
             }
 
@@ -227,6 +229,8 @@ public class UDistribributionParametricConvex<Value> implements UDistribution<Va
     private boolean checkEllipsoidInsideSimplex() {
         final int m = succCount;
         final int d = aps.d;
+
+        if (pC == null || pA == null) return false;
 
         final double epsSum = 1e-9;
         final double epsBox = 1e-10;

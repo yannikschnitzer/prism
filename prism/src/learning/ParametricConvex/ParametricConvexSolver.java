@@ -131,7 +131,7 @@ public class ParametricConvexSolver {
                 true);
 
         // Ellipsoid
-        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(false).setTieParameters(FULL_TYING).useOBBT(10).useAPSEllipsoid(true);
+        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(true).setTieParameters(FULL_TYING).useOBBT(10).useAPSEllipsoid(true);
         //  pmdp = parametricConvexLearner.buildParamModel(ex);
 
         parametricConvexLearner.solveIMDPUniform(ex,
@@ -267,6 +267,7 @@ public class ParametricConvexSolver {
             double durationInSeconds = (System.nanoTime() - startTime) / 1_000_000_000.0;
 
             DataProcessor dp = new DataProcessor();
+            if (ex.useApsEllipsoid) ex.useLPToIntervals = false;
             dp.dumpExperimentMetaData(makeOutputDirectory(ex), makeLabel(ex), ex, durationInSeconds, estimator.getSulOpt(), pmdp.getNumStates(), pmdp.getNumTransitions(), resIMDP.first.size(), estimator.getNumLearnableComponents());
             dp.dumpDataRobustPolicies(makeOutputDirectory(ex), makeLabel(ex), resIMDP.first);
 

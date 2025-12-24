@@ -1034,6 +1034,28 @@ public class PACConvexEstimator extends MAPEstimator {
 
         model.update();
 
+        // 3) Optional: intervalize under the APS ellipsoid to avoid SOCP-per-backup in robust VI.
+        //    This mirrors the LP intervalization path: bound each unique transition expression once.
+        if (ex.useLPToIntervals) {
+            UMDPSimple<Double> ellImdp = (ex.intervalAbstractionMode == EXACT)
+                    ? buildIntervalizedUMDPFromConvexModel(model, trans, pmdp, /*isQcp=*/true)
+                    : buildIntervalizedUMDPFromConvexModelIntervalArithmetic(model, trans, pmdp, /*isQcp=*/true);
+
+            ellImdp.addInitialState(pmdp.getFirstInitialState());
+            ellImdp.setStatesList(pmdp.getStatesList());
+            ellImdp.setConstantValues(pmdp.getConstantValues());
+            for (Map.Entry<String, BitSet> entry : pmdp.getLabelToStatesMap().entrySet()) {
+                ellImdp.addLabel(entry.getKey(), entry.getValue());
+            }
+            this.convex_estimate = ellImdp;
+
+            // Intervalized path no longer needs the shared Gurobi model
+            try { model.dispose(); } catch (Throwable ignore) {}
+            try { env.dispose(); } catch (Throwable ignore) {}
+
+            return ellImdp;
+        }
+
         // 3) build the UMDP topology from pmdp but with ellipsoid-uncertain distributions
         int n = pmdp.getNumStates();
         UMDPSimple<Double> out = new UMDPSimple<>(n);
@@ -1094,7 +1116,7 @@ public class PACConvexEstimator extends MAPEstimator {
         }
         cxl.getModel().update();
 
-        final int d = trans.getNumParameters();
+        final int d = trans.getNumDecisionVars();
         if (d == 0) return new ApsEllipsoid(new double[0], new double[0][0], 0.0, List.of());
 
         final int[] p2m = buildStateIndexMap(pmdp, mdp);
@@ -1167,7 +1189,7 @@ public class PACConvexEstimator extends MAPEstimator {
         // IMPORTANT: radius uses V (with lambda) and delta
         double beta = apsBeta(V, lambda, R, S, delta);
 
-        System.out.println("Theta Order: " + trans.paramNames);
+        System.out.println("Theta Order: " + trans.getDecisionNames());
         System.out.println("APS thetaHat: " + Arrays.toString(thetaHat) + " beta=" + beta);
 
         try { cxl.getModel().dispose(); } catch (Throwable ignore) {}
@@ -1175,7 +1197,7 @@ public class PACConvexEstimator extends MAPEstimator {
 
         // trans.paramNames used in your existing code, so reuse it here
         @SuppressWarnings("unchecked")
-        List<String> names = (List<String>) trans.paramNames;
+        List<String> names = (List<String>) trans.getDecisionNames();
 
         return new ApsEllipsoid(thetaHat, V, beta, names);
     }
@@ -1319,7 +1341,7 @@ public class PACConvexEstimator extends MAPEstimator {
     }
 
     private Affine extractAffine(Function f, ExpressionTranslator trans) throws GRBException, PrismException {
-        final int d = trans.getNumParameters();
+        final int d = trans.getNumDecisionVars();
 
         // Constant function
         if (f.isConstant()) {
@@ -1335,14 +1357,14 @@ public class PACConvexEstimator extends MAPEstimator {
             double coeff = lin.getCoeff(k);
             if (Math.abs(coeff) < 1e-15) continue;
 
-            int j = trans.getParamIndex(v);
+            // Decision var? (parameter OR McCormick aux var)
+            int j = trans.getDecisionIndex(v);
             if (j >= 0) {
-                // parameter term
                 a[j] += coeff;
                 continue;
             }
 
-            // NEW: fold fixed vars into the intercept (covers c_3.0, c_0.05, state-evaluated constants, etc.)
+            // Fold fixed vars into intercept (covers c_3.0, c_0.05, etc.)
             double lb = v.get(GRB.DoubleAttr.LB);
             double ub = v.get(GRB.DoubleAttr.UB);
             if (Double.isFinite(lb) && Double.isFinite(ub) && Math.abs(ub - lb) < 1e-12) {
@@ -1350,11 +1372,11 @@ public class PACConvexEstimator extends MAPEstimator {
                 continue;
             }
 
-            // Otherwise this is genuinely not affine in parameters
             String name = v.get(GRB.StringAttr.VarName);
             throw new RuntimeException(
-                    "Non-parameter, non-fixed var in supposedly affine function: " + name +
-                            " coeff=" + coeff + " LB=" + lb + " UB=" + ub + " in " + f);
+                    "Non-decision, non-fixed var in supposedly linear function: " + name +
+                            " coeff=" + coeff + " LB=" + lb + " UB=" + ub + " in " + f
+            );
         }
 
         return new Affine(c0, a);
@@ -1453,6 +1475,333 @@ public class PACConvexEstimator extends MAPEstimator {
         double term = (logdetV - d * Math.log(lambda)) + 2.0 * Math.log(1.0 / delta);
         term = Math.max(0.0, term);
         return R * Math.sqrt(term) + Math.sqrt(lambda) * S;
+    }
+
+    /**
+     * Intervalize an IMDP by solving min/max for each unique transition Function over an already-built
+     * convex feasibility set.
+     *
+     * Works for both:
+     *  - pure LP feasibility sets (polytope constraints only)
+     *  - APS ellipsoid feasibility sets (convex quadratic constraint + linear constraints)
+     *
+     * The only difference is the solver method: for QCP we must NOT force dual-simplex.
+     */
+    private UMDPSimple<Double> buildIntervalizedUMDPFromConvexModel(GRBModel baseModel,
+                                                                    ExpressionTranslator trans,
+                                                                    MDPSimple<Function> pmdp,
+                                                                    boolean isQcp)
+            throws GRBException, PrismException {
+
+        // Keep McCormick bounds in sync with current model bounds (OBBT may have tightened them).
+        refreshTranslatorBoundsFromModel(trans, baseModel);
+
+        final int n = pmdp.getNumStates();
+        UMDPSimple<Double> out = new UMDPSimple<>(n);
+
+        // Cache numeric bounds [lo, hi] per unique expression (keyed by f.toString()).
+        final Map<String, double[]> exprCache = new ConcurrentHashMap<>();
+
+        // ---- 1) Collect & translate all unique non-constant Functions ONCE (serial) ----
+        final LinkedHashMap<String, ObjSpec> todoSpecs = new LinkedHashMap<>();
+        for (int s = 0; s < n; s++) {
+            int numChoices = pmdp.getNumChoices(s);
+            for (int i = 0; i < numChoices; i++) {
+                boolean singleSucc = pmdp.getDistribution(s, i).getSupport().size() == 1;
+                for (Iterator<Map.Entry<Integer, Function>> it = pmdp.getTransitionsIterator(s, i); it.hasNext();) {
+                    Map.Entry<Integer, Function> e = it.next();
+                    Function f = e.getValue();
+
+                    if (singleSucc || f.isOne()) continue; // fixed 1.0
+
+                    final String key = f.toString();
+                    if (exprCache.containsKey(key) || todoSpecs.containsKey(key)) continue;
+
+                    if (f.isConstant()) {
+                        double v = f.asBigRational().doubleValue();
+                        exprCache.put(key, new double[]{v, v});
+                        continue;
+                    }
+
+                    // Translate now (may add aux vars/cons); no worker mutates the model.
+                    GRBLinExpr lin = trans.translateLinearExpression(f.asExpression());
+
+                    // Extract objective spec (names + coeffs + constant) for rebuild in worker copies
+                    final int terms = lin.size();
+                    final String[] names = new String[terms];
+                    final double[] coeffs = new double[terms];
+                    for (int k = 0; k < terms; k++) {
+                        names[k]  = lin.getVar(k).get(GRB.StringAttr.VarName);
+                        coeffs[k] = lin.getCoeff(k);
+                    }
+                    final double constant = lin.getConstant();
+                    todoSpecs.put(key, new ObjSpec(names, coeffs, constant));
+                }
+            }
+        }
+
+        if (!todoSpecs.isEmpty()) {
+            baseModel.update(); // freeze before copying / optimizing
+
+            if (ex.exprBoundWorkers > 1) {
+                // ---- 2a) PARALLEL: copy the frozen model per worker env ----
+                final int workerCount = ex.exprBoundWorkers;
+                final int threadsPerWorker = 1;
+
+                final ExecutorService pool = Executors.newFixedThreadPool(workerCount);
+
+                final List<WorkerHandle> workers = new ArrayList<>(workerCount);
+                for (int w = 0; w < workerCount; w++) {
+                    GRBEnv env = new GRBEnv(true);
+                    env.set(GRB.IntParam.LogToConsole, 0);
+                    env.set(GRB.IntParam.OutputFlag, 0);
+                    env.start();
+
+                    GRBModel m = new GRBModel(baseModel, env);
+                    m.set(GRB.IntParam.LogToConsole, 0);
+                    m.set(GRB.IntParam.OutputFlag, 0);
+                    m.set(GRB.IntParam.Threads, threadsPerWorker);
+
+                    // For LP we like dual simplex; for QCP let Gurobi pick (or barrier).
+                    if (!isQcp) {
+                        m.set(GRB.IntParam.Method, 1);
+                    }
+
+                    workers.add(new WorkerHandle(env, m));
+                }
+
+                final List<Map.Entry<String, ObjSpec>> all = new ArrayList<>(todoSpecs.entrySet());
+                final List<List<Map.Entry<String, ObjSpec>>> chunks = partition(all, workerCount);
+
+                final List<Future<?>> futures = new ArrayList<>();
+                for (int w = 0; w < chunks.size(); w++) {
+                    final List<Map.Entry<String, ObjSpec>> chunk = chunks.get(w);
+                    final WorkerHandle wh = workers.get(w);
+                    futures.add(pool.submit(() -> {
+                        try {
+                            for (Map.Entry<String, ObjSpec> entry : chunk) {
+                                final String key = entry.getKey();
+                                final ObjSpec spec = entry.getValue();
+                                final double[] b = solveMinMaxOn(wh.model, spec);
+
+                                double lo = clamp(b[0], precision, 1.0 - precision);
+                                double hi = clamp(b[1], precision, 1.0 - precision);
+                                if (hi < lo) { double t = lo; lo = hi; hi = t; }
+
+                                exprCache.put(key, new double[]{lo, hi});
+                            }
+                        } finally {
+                            try { wh.model.dispose(); } catch (Throwable ignore) {}
+                            try { wh.env.dispose(); }   catch (Throwable ignore) {}
+                        }
+                        return null;
+                    }));
+                }
+
+                for (Future<?> f : futures) {
+                    try { f.get(); }
+                    catch (InterruptedException ie) { Thread.currentThread().interrupt(); throw new RuntimeException("Interrupted", ie); }
+                    catch (ExecutionException ee) { throw new RuntimeException("Worker failed", ee.getCause()); }
+                }
+                pool.shutdown();
+
+            } else {
+                // ---- 2b) SERIAL: reuse ONE model; change objective; warm re-solve ----
+                final int oldMethod  = baseModel.get(GRB.IntParam.Method);
+                final int oldThreads = baseModel.get(GRB.IntParam.Threads);
+                final int oldOut     = baseModel.get(GRB.IntParam.OutputFlag);
+                try {
+                    baseModel.set(GRB.IntParam.OutputFlag, 0);
+
+                    // Only force dual-simplex in the LP case.
+                    if (!isQcp) {
+                        baseModel.set(GRB.IntParam.Method, 1);
+                    }
+
+                    for (Map.Entry<String, ObjSpec> e : todoSpecs.entrySet()) {
+                        final String key = e.getKey();
+                        final ObjSpec spec = e.getValue();
+
+                        GRBLinExpr expr = new GRBLinExpr();
+                        for (int k = 0; k < spec.names.length; k++) {
+                            expr.addTerm(spec.coeffs[k], baseModel.getVarByName(spec.names[k]));
+                        }
+                        expr.addConstant(spec.constant);
+
+                        baseModel.setObjective(expr, GRB.MINIMIZE);
+                        baseModel.optimize();
+                        double lo = baseModel.get(GRB.DoubleAttr.ObjVal);
+
+                        baseModel.setObjective(expr, GRB.MAXIMIZE);
+                        baseModel.optimize();
+                        double hi = baseModel.get(GRB.DoubleAttr.ObjVal);
+
+                        lo = clamp(lo, precision, 1.0 - precision);
+                        hi = clamp(hi, precision, 1.0 - precision);
+                        if (hi < lo) { double t = lo; lo = hi; hi = t; }
+
+                        exprCache.put(key, new double[]{lo, hi});
+                    }
+                } finally {
+                    baseModel.set(GRB.IntParam.Method, oldMethod);
+                    baseModel.set(GRB.IntParam.Threads, oldThreads);
+                    baseModel.set(GRB.IntParam.OutputFlag, oldOut);
+                }
+            }
+        }
+
+        // ---- 3) Build the UMDP using cached bounds ----
+        for (int s = 0; s < n; s++) {
+            int numChoices = pmdp.getNumChoices(s);
+            for (int i = 0; i < numChoices; i++) {
+                final String action = getActionString(pmdp, s, i);
+                Distribution<Interval<Double>> distrNew = new Distribution<>(Evaluator.forDoubleInterval());
+                boolean singleSucc = pmdp.getDistribution(s, i).getSupport().size() == 1;
+
+                for (Iterator<Map.Entry<Integer, Function>> it = pmdp.getTransitionsIterator(s, i); it.hasNext();) {
+                    Map.Entry<Integer, Function> e = it.next();
+                    int t = e.getKey();
+                    Function f = e.getValue();
+
+                    final Interval<Double> interval;
+                    if (singleSucc || f.isOne()) {
+                        interval = new Interval<>(1.0, 1.0);
+                    } else {
+                        final String key = f.toString();
+                        double[] b = exprCache.get(key);
+                        if (b == null) {
+                            double v = f.isConstant() ? f.asBigRational().doubleValue() : 0.0;
+                            b = new double[]{v, v};
+                        }
+                        interval = new Interval<>(b[0], b[1]);
+                    }
+                    distrNew.add(t, interval);
+                }
+
+                IntervalUtils.delimit(distrNew, Evaluator.forDouble());
+                out.addActionLabelledChoice(s, new UDistributionIntervals<>(distrNew), action);
+            }
+        }
+
+        return out;
+    }
+
+    /**
+     * Intervalize an IMDP using interval arithmetic (no per-expression optimization)
+     * over an already-built convex model (LP/QCP). This is the ellipsoid analogue of
+     * buildIntervalizedUMDPFromLPIntervalArithmetic(...).
+     *
+     * Assumption: all vars (including McCormick aux vars) already exist and model.update() was called.
+     */
+    private UMDPSimple<Double> buildIntervalizedUMDPFromConvexModelIntervalArithmetic(GRBModel model,
+                                                                                      ExpressionTranslator trans,
+                                                                                      MDPSimple<Function> pmdp,
+                                                                                      boolean isQcp)
+            throws GRBException, PrismException {
+
+        // reflect current model bounds into the translator (important for McCormick)
+        refreshTranslatorBoundsFromModel(trans, model);
+
+        final int n = pmdp.getNumStates();
+        UMDPSimple<Double> out = new UMDPSimple<>(n);
+
+        // cache raw bounds only (Interval objects get mutated by delimit())
+        Map<String, double[]> exprCache = new HashMap<>();
+
+        // 1) Precompute bounds for every model variable
+        Map<GRBVar, double[]> varBounds = new HashMap<>();
+        GRBVar[] vars = model.getVars();
+
+        for (GRBVar v : vars) {
+            double lbAttr = v.get(GRB.DoubleAttr.LB);
+            double ubAttr = v.get(GRB.DoubleAttr.UB);
+
+            if (Math.abs(ubAttr - lbAttr) < 1e-9) {
+                varBounds.put(v, new double[]{lbAttr, lbAttr});
+            } else {
+                GRBLinExpr obj = new GRBLinExpr();
+                obj.addTerm(1.0, v);
+
+                double lbOpt = optimize(model, obj, GRB.MINIMIZE);
+                double ubOpt = optimize(model, obj, GRB.MAXIMIZE);
+
+                varBounds.put(v, new double[]{lbOpt, ubOpt});
+            }
+        }
+
+        // 2) Build the interval IMDP by bounding each expression via interval arithmetic
+        for (int s = 0; s < n; s++) {
+            int numChoices = pmdp.getNumChoices(s);
+            for (int i = 0; i < numChoices; i++) {
+                final String action = getActionString(pmdp, s, i);
+                Distribution<Interval<Double>> distrNew = new Distribution<>(Evaluator.forDoubleInterval());
+
+                boolean singleSucc = pmdp.getDistribution(s, i).getSupport().size() == 1;
+
+                for (Iterator<Map.Entry<Integer, Function>> it = pmdp.getTransitionsIterator(s, i); it.hasNext();) {
+                    Map.Entry<Integer, Function> e = it.next();
+                    int t = e.getKey();
+                    Function f = e.getValue();
+
+                    Interval<Double> interval;
+                    if (singleSucc || f.isOne()) {
+                        interval = new Interval<>(1.0, 1.0);
+                    } else {
+                        String key = f.toString();
+                        double[] bounds = exprCache.get(key);
+
+                        if (bounds == null) {
+                            if (f.isConstant()) {
+                                double val = f.asBigRational().doubleValue();
+                                bounds = new double[]{val, val};
+                            } else {
+                                // must already be linearized by McCormick in the translator
+                                GRBLinExpr lin = trans.translateLinearExpression(f.asExpression());
+
+                                double lower = lin.getConstant();
+                                double upper = lin.getConstant();
+
+                                for (int j = 0; j < lin.size(); j++) {
+                                    double coeff = lin.getCoeff(j);
+                                    GRBVar var = lin.getVar(j);
+                                    double[] bnd = varBounds.get(var);
+
+                                    if (bnd == null) {
+                                        // defensive fallback: use attribute bounds
+                                        double lbA = var.get(GRB.DoubleAttr.LB);
+                                        double ubA = var.get(GRB.DoubleAttr.UB);
+                                        bnd = new double[]{lbA, ubA};
+                                    }
+
+                                    if (coeff > 0) {
+                                        lower += coeff * bnd[0];
+                                        upper += coeff * bnd[1];
+                                    } else {
+                                        lower += coeff * bnd[1];
+                                        upper += coeff * bnd[0];
+                                    }
+                                }
+
+                                lower = Math.max(0.0, Math.min(1.0, lower));
+                                upper = Math.max(0.0, Math.min(1.0, upper));
+                                bounds = new double[]{lower, upper};
+                            }
+
+                            exprCache.put(key, bounds);
+                        }
+
+                        interval = new Interval<>(bounds[0], bounds[1]);
+                    }
+
+                    distrNew.add(t, interval);
+                }
+
+                IntervalUtils.delimit(distrNew, Evaluator.forDouble());
+                out.addActionLabelledChoice(s, new UDistributionIntervals<>(distrNew), action);
+            }
+        }
+
+        return out;
     }
 
 

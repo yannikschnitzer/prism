@@ -11,6 +11,7 @@ import prism.PrismException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 /**
@@ -46,6 +47,10 @@ public class ExpressionTranslator {
     // Fast reverse lookup: parameter GRBVar -> index (identity-based)
     private final java.util.IdentityHashMap<GRBVar, Integer> paramIndex = new java.util.IdentityHashMap<>();
 
+    // Decision-variable view: parameters + McCormick aux vars (excludes fixed constant vars like c_0.1).
+    private final ArrayList<String> decisionNames = new ArrayList<>();
+    private final IdentityHashMap<GRBVar, Integer> decisionIndex = new IdentityHashMap<>();
+
     // reverse map for fixed-value "constant" variables
     private final java.util.IdentityHashMap<GRBVar, Double> constantReverse = new java.util.IdentityHashMap<>();
 
@@ -78,6 +83,7 @@ public class ExpressionTranslator {
             int idx = paramNames.size();
             paramNames.add(name);
             paramIndex.put(v, idx);
+            registerDecisionVar(v, name);
 
             return v;
         } catch (GRBException e) {
@@ -295,6 +301,7 @@ public class ExpressionTranslator {
                                      GRBVar a, GRBVar b,
                                      double La, double Ua, double Lb, double Ub) throws GRBException {
         GRBVar z = model.addVar(lowerBoundVar, upperBoundVar, 0.0, GRB.CONTINUOUS, name);
+        registerDecisionVar(z, name);
 
         // z >= La*b + Lb*a - La*Lb
         { GRBLinExpr e = new GRBLinExpr();
@@ -350,6 +357,29 @@ public class ExpressionTranslator {
     /** If v is a fixed-value constant var, return its numeric value; else null. */
     public Double getConstantValueIfKnown(GRBVar v) {
         return constantReverse.get(v);
+    }
+
+    private void registerDecisionVar(GRBVar v, String name) {
+        if (!decisionIndex.containsKey(v)) {
+            decisionIndex.put(v, decisionNames.size());
+            decisionNames.add(name);
+        }
+    }
+
+    /** Parameters + McCormick aux vars (but NOT fixed constant vars). */
+    public int getNumDecisionVars() {
+        return decisionNames.size();
+    }
+
+    /** Returns index in the decision-vector, or -1 if not a decision var. */
+    public int getDecisionIndex(GRBVar v) {
+        Integer idx = decisionIndex.get(v);
+        return (idx == null) ? -1 : idx;
+    }
+
+    /** Names in decision-vector order (params first, aux vars appended). */
+    public ArrayList<String> getDecisionNames() {
+        return decisionNames;
     }
 
     private static double literalToDouble(ExpressionLiteral lit) throws PrismException {
