@@ -48,7 +48,7 @@ public class Experiment {
     public IntervalAbstractionMode intervalAbstractionMode = FAST;
     public int exprBoundWorkers = 8;
     public double apsLambda = 1e-2;
-    public double apsR = 1.5;
+    public double apsR = 1;
     public double apsS = 1;
     public double apsDelta = 1 - error_tolerance;
     public boolean useApsEllipsoid = false;
@@ -510,11 +510,11 @@ public class Experiment {
                 this.type = Type.REWARD;
 
                 this.multiplier = 4;
-                this.max_episode_length = 150;
+                this.max_episode_length = 10;
                 this.maxVIIters = 20000;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("n", 250);
+                this.parameterValues.addValue("n", 10);
                 this.parameterValues.addValue("p", 0.55);
             }
 
@@ -994,6 +994,7 @@ public class Experiment {
                 this.optimisticSpec = "Rmaxmax=? [F \"done\"]";
                 this.dtmcSpec = "R=? [F \"done\"]";
                 this.spec = "Rmax=? [F \"done\"]";
+                this.invspec = "Rmin=? [F \"done\"]";
                 this.type = Type.REWARD;
 
 //                this.robustSpec = "Pmaxmin=? [F money + money2 >= 25]";

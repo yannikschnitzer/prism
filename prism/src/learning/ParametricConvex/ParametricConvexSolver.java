@@ -74,18 +74,18 @@ public class ParametricConvexSolver {
         ParametricConvexSolver parametricConvexLearner = new ParametricConvexSolver(new Prism(new PrismDevNullLog()));
         parametricConvexLearner.initializePrism();
 
-        Model model = Model.GLIDER;
+        Model model = Model.BETTING_GAME_CONVEX_ADAPTIVE;
 
         // Plain Naive
         Experiment ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(NO_TYING);
         MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
 
-        parametricConvexLearner.solveIMDPUniform(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
-
+//        parametricConvexLearner.solveIMDPUniform(ex,
+//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+//                pmdp,
+//                ex.parameterValues,
+//                true);
+//
 
         // Parameter Tying
         ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(FULL_TYING);
@@ -130,15 +130,15 @@ public class ParametricConvexSolver {
                 ex.parameterValues,
                 true);
 
-        // Ellipsoid
-        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(true).setTieParameters(FULL_TYING).useOBBT(10).useAPSEllipsoid(true);
-        //  pmdp = parametricConvexLearner.buildParamModel(ex);
-
-        parametricConvexLearner.solveIMDPUniform(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
+//        // Ellipsoid to Interval - Expression-wise
+//        ex = new Experiment(model).setParametricConvex(true).useAPSEllipsoid(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).setTieParameters(FULL_TYING).useOBBT(10);
+//        //  pmdp = parametricConvexLearner.buildParamModel(ex);
+//ff
+//        parametricConvexLearner.solveIMDPUniform(ex,
+//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+//                pmdp,
+//                ex.parameterValues,
+//                true);
     }
 
     @SuppressWarnings("unchecked")
@@ -375,7 +375,7 @@ public class ParametricConvexSolver {
 
     // Creates the directory path for dumping experimental results
     public String makeOutputDirectory(Experiment ex) {
-        String outputPath = String.format("plotting_paper_with_ellipsoids/results_uniform_solving/parametric_convex/%s/%s/%s/", ex.model.toString(), ex.parameterValues.getNumValues() > 10 ? ex.identParameters : ex.parameterValues, ex.seed);
+        String outputPath = String.format("plotting_paper_with_ellipsoids/results_uniform_solving_new/parametric_convex/%s/%s/%s/", ex.model.toString(), ex.parameterValues.getNumValues() > 10 ? ex.identParameters : ex.parameterValues, ex.seed);
         try {
             Files.createDirectories(Paths.get(outputPath));
         } catch (IOException e) {
