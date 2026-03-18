@@ -1,34 +1,29 @@
 package learning.Simulation;
 
 
-import common.Interval;
-import explicit.*;
-import explicit.rewards.MDPRewardsSimple;
+import explicit.MDP;
 import parser.State;
-import parser.ast.Expression;
 import parser.ast.ModulesFile;
-import parser.ast.PropertiesFile;
 import prism.Prism;
 import prism.PrismException;
-import prism.Result;
-import simulator.ModulesFileModelGenerator;
 import simulator.PathOnTheFly;
 import simulator.SimulatorEngine;
-import strat.MDStrategy;
 import strat.Strategy;
 import strat.StrategyGenerator;
 
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import static imdpcomp.Experiment.ParameterTying;
 
 public class ObservationSampler {
 
-    private final Prism prism;
+	private final Prism prism;
 	private final MDP<Double> sul;
+	private final HashMap<State, Integer> stateToIndex;
+	private final TransitionTriple transitionProbe;
 
 	private final HashMap<TransitionTriple, Integer> samplesMap;
 	private final HashMap<StateActionPair, Integer> sampleSizeMap;
@@ -52,9 +47,10 @@ public class ObservationSampler {
 		this.sampleSizeMap = new HashMap<>();
 		this.samplesMap = new HashMap<>();
 		this.accumulatedSamples = new HashMap<>();
-		this.accumulatedSamples = new HashMap<>();
 		this.transitionsOfInterest = new HashSet<>();
 		this.terminatingStates = terminatingStates;
+		this.stateToIndex = buildStateIndexMap(sul);
+		this.transitionProbe = new TransitionTriple(0, "_empty", 0);
 
 		this.prism = prism;
 		this.sul = sul;
@@ -62,8 +58,18 @@ public class ObservationSampler {
 		//load model into simulator
 		this.prism.loadModelIntoSimulator();
 		this.sim = this.prism.getSimulator();
-		this.sim.setTerminatingStates(state -> terminatingStates.contains(getIndexFromState(state)));
+		this.sim.setTerminatingStates(state -> this.terminatingStates.contains(getIndexFromState(state)));
     }
+
+	private static HashMap<State, Integer> buildStateIndexMap(MDP<Double> sul)
+	{
+		List<State> statesList = sul.getStatesList();
+		HashMap<State, Integer> indexMap = new HashMap<>(Math.max(16, statesList.size() * 2));
+		for (int i = 0; i < statesList.size(); i++) {
+			indexMap.put(statesList.get(i), i);
+		}
+		return indexMap;
+	}
 
 	public void setModulesFiles( ModulesFile modulesFileMDP, ModulesFile modulesFileIMDP) {
 		this.modulesFileIMDP = modulesFileIMDP;
@@ -72,6 +78,7 @@ public class ObservationSampler {
 
 	public void setTerminatingStates(HashSet<Integer> set) {
 		this.terminatingStates = set;
+		this.sim.setTerminatingStates(state -> this.terminatingStates.contains(getIndexFromState(state)));
 	}
 
 	public void setTransitionsOfInterest(HashSet<TransitionTriple> set) {
@@ -79,6 +86,11 @@ public class ObservationSampler {
 	}
 
 	public int getIndexFromState(State s) {
+		Integer index = stateToIndex.get(s);
+		if (index != null) {
+			return index;
+		}
+		// Conservative fallback to preserve existing behaviour in case of mismatched state encoding.
 		return sul.getStatesList().indexOf(s);
 	}
 
@@ -143,12 +155,8 @@ public class ObservationSampler {
 	private void parseLastStep(PathOnTheFly path) {
 		State s = path.getPreviousState();
 		String a = path.getPreviousActionString();
-		//System.out.println("State: " + s + a );
-		if (a.equals("process1") || a.equals("process2")) {
-			a = "[_empty]";
-		}
 		State successor = path.getCurrentState();
-		parseStep(s, a, successor);
+		parseStep(s, normalizeAction(a), successor);
 	}
 
 	public boolean collectedEnoughSamples() {
@@ -181,29 +189,42 @@ public class ObservationSampler {
 	public void parseStep(State s, String a, State sprime) {
 		int currentState = getIndexFromState(s);
 		int successorState = getIndexFromState(sprime);
-		String action = a.replace("[", "");
-		action = action.replace("]", "");
+		if (currentState < 0 || successorState < 0) {
+			return;
+		}
+		String action = normalizeAction(a);
 
-		//System.out.println("("+currentState+", " + action + ", " + successorState + ")");
+		this.transitionProbe.setAll(currentState, action, successorState);
+		// Only process transitions of interest, avoid creating objects for all other transitions.
+		if (!transitionsOfInterest.contains(this.transitionProbe)) {
+			return;
+		}
 
 		StateActionPair sa = new StateActionPair(currentState, action);
-		TransitionTriple t = new TransitionTriple(currentState, action, successorState);
-		//only process t if it is a transition of 0 < p < 1
-		if (transitionsOfInterest.contains(t)) {
-			if (this.samplesMap.containsKey(t)) {
-				this.samplesMap.put(t, this.samplesMap.get(t)+1);
-			}
-			else {
-				this.samplesMap.put(t, 1);
-			}
-
-			if (this.sampleSizeMap.containsKey(sa)) {
-				this.sampleSizeMap.put(sa, this.sampleSizeMap.get(sa)+1);
-			}
-			else {
-				this.sampleSizeMap.put(sa, 1);
-			}
+		Integer transitionCount = this.samplesMap.get(this.transitionProbe);
+		if (transitionCount == null) {
+			this.samplesMap.put(new TransitionTriple(currentState, action, successorState), 1);
+		} else {
+			this.samplesMap.put(this.transitionProbe, transitionCount + 1);
 		}
+
+		Integer stateActionCount = this.sampleSizeMap.get(sa);
+		if (stateActionCount == null) {
+			this.sampleSizeMap.put(sa, 1);
+		} else {
+			this.sampleSizeMap.put(sa, stateActionCount + 1);
+		}
+	}
+
+	private static String normalizeAction(String action)
+	{
+		if (action == null || action.isEmpty() || action.equals("process1") || action.equals("process2")) {
+			return "_empty";
+		}
+		if (action.length() >= 2 && action.charAt(0) == '[' && action.charAt(action.length() - 1) == ']') {
+			return action.substring(1, action.length() - 1);
+		}
+		return action;
 	}
 
 	/**

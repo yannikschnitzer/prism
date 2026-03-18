@@ -32,7 +32,7 @@ public class PACConvexEstimator extends MAPEstimator {
 
     protected double error_tolerance;
     double precision = 1e-8;
-    boolean useVertexPrecomp = true;
+    boolean useVertexPrecomp = false;
     boolean verbose_bisim = false;
 
     // For parameter-tying in IMDP

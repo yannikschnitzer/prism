@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -74,7 +75,7 @@ public class ParametricConvexSolver {
         ParametricConvexSolver parametricConvexLearner = new ParametricConvexSolver(new Prism(new PrismDevNullLog()));
         parametricConvexLearner.initializePrism();
 
-        Model model = Model.BETTING_GAME_CONVEX_ADAPTIVE;
+        Model model = Model.SAV2_ADAPTIVE_5;
 
         // Plain Naive
         Experiment ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(NO_TYING);
@@ -99,14 +100,14 @@ public class ParametricConvexSolver {
 
 
         // Parametric Convex
-        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(false).setTieParameters(FULL_TYING).useOBBT(10);
-      //  pmdp = parametricConvexLearner.buildParamModel(ex);
-
-        parametricConvexLearner.solveIMDPUniform(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
+//        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(false).setTieParameters(FULL_TYING).useOBBT(10);
+//      //  pmdp = parametricConvexLearner.buildParamModel(ex);
+//
+//        parametricConvexLearner.solveIMDPUniform(ex,
+//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+//                pmdp,
+//                ex.parameterValues,
+//                true);
 
 
         // LP to Interval - Expression-wise
@@ -378,9 +379,28 @@ public class ParametricConvexSolver {
         String outputPath = String.format("plotting_paper_with_ellipsoids/results_uniform_solving_new/parametric_convex/%s/%s/%s/", ex.model.toString(), ex.parameterValues.getNumValues() > 10 ? ex.identParameters : ex.parameterValues, ex.seed);
         try {
             Files.createDirectories(Paths.get(outputPath));
+            copyExperimentPrismFile(ex, outputPath);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return outputPath;
+    }
+
+    private void copyExperimentPrismFile(Experiment ex, String outputPath) throws IOException {
+        if (ex.modelFile == null || ex.modelFile.isBlank()) {
+            return;
+        }
+
+        Path source = Paths.get(ex.modelFile).normalize();
+        if (!Files.exists(source)) {
+            return;
+        }
+
+        Path target = Paths.get(outputPath).resolve(source.getFileName());
+        if (Files.exists(target)) {
+            return;
+        }
+
+        Files.copy(source, target);
     }
 }

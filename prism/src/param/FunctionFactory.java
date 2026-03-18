@@ -27,7 +27,6 @@
 
 package param;
 
-import parser.EvaluateContext;
 import parser.Values;
 import parser.ast.Expression;
 import parser.ast.ExpressionBinaryOp;
@@ -37,7 +36,6 @@ import parser.ast.ExpressionITE;
 import parser.ast.ExpressionLiteral;
 import parser.ast.ExpressionUnaryOp;
 import parser.type.TypeInt;
-import parser.visitor.ASTTraverse;
 import prism.PrismException;
 import prism.PrismLangException;
 import prism.PrismSettings;
@@ -57,8 +55,6 @@ public abstract class FunctionFactory
 	protected BigRational[] upperBounds;
 	/** maps variable name to index in {@code parameterNames}, @code lowerBounds} and {@code upperBounds} */
 	protected HashMap<String, Integer> varnameToInt;
-	/** for expression evaluation (no constants need, just a convenient way to force exact evaluation */
-	protected EvaluateContext ec = EvaluateContext.create(EvaluateContext.EvalMode.EXACT);
 
 	/**
 	 * Create a FunctionFactory based on PRISM settings and parameter details.
@@ -249,35 +245,40 @@ public abstract class FunctionFactory
 	public Function expr2function(Expression expr, Values constantValues) throws PrismLangException
 	{
 		if (expr instanceof ExpressionLiteral) {
-			String exprString = ((ExpressionLiteral) expr).getString();
-			if (exprString == null || exprString.equals("")) {
-				throw new PrismLangException("Cannot create rational function from literal for which no string is set", expr);
+			ExpressionLiteral literalExpr = (ExpressionLiteral) expr;
+			Object literalValue = literalExpr.getValue();
+			if (canConvertLiteralWithoutStringParsing(literalValue)) {
+				return fromBigRational(BigRational.from(literalValue));
 			}
-			return fromBigRational(new BigRational(exprString));
+			String literalString = literalExpr.getString();
+			if (literalString == null || literalString.equals("")) {
+				throw new PrismLangException("Cannot create rational function from literal for which no string is set", literalExpr);
+			}
+			return fromBigRational(new BigRational(literalString));
 		} else if (expr instanceof ExpressionConstant) {
 			String exprString = ((ExpressionConstant) expr).getName();
-			if (constantValues != null && constantValues.contains(exprString)) {
-				Object val = constantValues.getValueOf(exprString);
-				return fromBigRational(new BigRational(val.toString()));
-			} else {
-				return getVar(exprString);
+			int constantIndex = constantValues == null ? -1 : constantValues.getIndexOf(exprString);
+			if (constantIndex != -1) {
+				Object val = constantValues.getValue(constantIndex);
+				return fromBigRational(fromValue(val));
 			}
+			return getVar(exprString);
 		} else if (expr instanceof ExpressionBinaryOp) {
 			ExpressionBinaryOp binExpr = ((ExpressionBinaryOp) expr);
 			// power is handled differently due to some constraints
 			if (binExpr.getOperator() ==  ExpressionBinaryOp.POW) {
 				// power is supported if the exponent is an integer and doesn't refer parametric constants
 				if (!containsParameter(binExpr.getOperand2(), constantValues) && binExpr.getOperand2().getType() instanceof TypeInt) {
-					int exp = binExpr.getOperand2().evaluateInt(ec);
-					Function f1 = expr2function(binExpr.getOperand1());
+					int exp = binExpr.getOperand2().evaluateInt(constantValues);
+					Function f1 = expr2function(binExpr.getOperand1(), constantValues);
 					return f1.pow(exp);
 				} else {
 					throw new PrismLangException("Cannot create rational function for expression " + expr, expr);
 				}
 			}
 			// other arithmetic binary operators:
-			Function f1 = expr2function(binExpr.getOperand1());
-			Function f2 = expr2function(binExpr.getOperand2());
+			Function f1 = expr2function(binExpr.getOperand1(), constantValues);
+			Function f2 = expr2function(binExpr.getOperand2(), constantValues);
 			switch (binExpr.getOperator()) {
 			case ExpressionBinaryOp.PLUS:
 				return f1.add(f2);
@@ -292,7 +293,7 @@ public abstract class FunctionFactory
 			}
 		} else if (expr instanceof ExpressionUnaryOp) {
 			ExpressionUnaryOp unExpr = ((ExpressionUnaryOp) expr);
-			Function f = expr2function(unExpr.getOperand());
+			Function f = expr2function(unExpr.getOperand(), constantValues);
 			switch (unExpr.getOperator()) {
 			case ExpressionUnaryOp.MINUS:
 				return f.negate();
@@ -306,11 +307,11 @@ public abstract class FunctionFactory
 			// ITE expressions where the if-expression does not
 			// depend on a parametric constant are supported
 			if (!containsParameter(iteExpr.getOperand1(), constantValues)) {
-				boolean ifValue = iteExpr.getOperand1().evaluateBoolean(ec);
+				boolean ifValue = iteExpr.getOperand1().evaluateBoolean(constantValues);
 				if (ifValue) {
-					return expr2function(iteExpr.getOperand2());
+					return expr2function(iteExpr.getOperand2(), constantValues);
 				} else {
-					return expr2function(iteExpr.getOperand3());
+					return expr2function(iteExpr.getOperand3(), constantValues);
 				}
 			} else {
 				throw new PrismLangException("Cannot create rational function for expression " + expr, expr);
@@ -320,7 +321,7 @@ public abstract class FunctionFactory
 			// they don't refer to parametric constants in their arguments
 			// and can be exactly evaluated
 			if (!containsParameter(expr, constantValues)) {
-				BigRational value = expr.evaluateBigRational(ec);
+				BigRational value = expr.evaluateExact(constantValues);
 				return fromBigRational(value);
 			} else {
 				throw new PrismLangException("Cannot create rational function for this function: " + expr, expr);
@@ -336,21 +337,56 @@ public abstract class FunctionFactory
 	 */
 	private static boolean containsParameter(Expression expr, Values constantValues)
 	{
-		try {
-			// check for time bounds, don't recurse into P/R/SS subformulas
-			expr.accept(new ASTTraverse()
-			{
-				public void visitPre(ExpressionConstant e) throws PrismLangException
-				{
-					String exprString = ((ExpressionConstant) e).getName();
-					if (constantValues == null || !constantValues.contains(exprString)) {
-						throw new PrismLangException("Found one");
-					}
-				}
-			});
-		} catch (PrismLangException e) {
-			return true;
+		if (expr instanceof ExpressionConstant) {
+			String exprString = ((ExpressionConstant) expr).getName();
+			return constantValues == null || constantValues.getIndexOf(exprString) == -1;
 		}
-		return false;
+		if (expr instanceof ExpressionLiteral) {
+			return false;
+		}
+		if (expr instanceof ExpressionBinaryOp) {
+			ExpressionBinaryOp binary = (ExpressionBinaryOp) expr;
+			return containsParameter(binary.getOperand1(), constantValues)
+					|| containsParameter(binary.getOperand2(), constantValues);
+		}
+		if (expr instanceof ExpressionUnaryOp) {
+			return containsParameter(((ExpressionUnaryOp) expr).getOperand(), constantValues);
+		}
+		if (expr instanceof ExpressionITE) {
+			ExpressionITE ite = (ExpressionITE) expr;
+			return containsParameter(ite.getOperand1(), constantValues)
+					|| containsParameter(ite.getOperand2(), constantValues)
+					|| containsParameter(ite.getOperand3(), constantValues);
+		}
+		if (expr instanceof ExpressionFunc) {
+			ExpressionFunc func = (ExpressionFunc) expr;
+			int n = func.getNumOperands();
+			for (int i = 0; i < n; i++) {
+				if (containsParameter(func.getOperand(i), constantValues)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		// Be conservative for unsupported expression forms.
+		// If they occur, expr2function will reject them.
+		return true;
+	}
+
+	private static boolean canConvertLiteralWithoutStringParsing(Object value)
+	{
+		return value instanceof BigRational
+				|| value instanceof java.math.BigInteger
+				|| value instanceof Integer
+				|| value instanceof Long
+				|| value instanceof Boolean;
+	}
+
+	private static BigRational fromValue(Object value)
+	{
+		if (canConvertLiteralWithoutStringParsing(value)) {
+			return BigRational.from(value);
+		}
+		return new BigRational(value.toString());
 	}
 }

@@ -40,6 +40,18 @@ public class UDistribributionParametricConvex<Value> implements UDistribution<Va
     private int[][] termCols;
     private double[][] termCoeff;
     private double[] termConst;
+    private int[][] lpTermCols;
+    private double[][] lpTermCoeff;
+    private double[] lpTermConst;
+
+    // LP fallback cache in original model column space (requires fixed model shape)
+    private GRBVar[] lpVarsByCol;
+    private int lpNumVars = -1;
+    private int lpNumConstrs = -1;
+    private boolean lpModelFrozen = false;
+    private double[] lpObjCoeff = new double[0];
+    private int[] lpTouchedCols = new int[0];
+    private int lpTouchedCount = 0;
 
     // APS param-only representation: p_i(theta) = pC[i] + pA[i]^T theta
     private double[][] pA;   // [succCount][d]
@@ -116,6 +128,7 @@ public class UDistribributionParametricConvex<Value> implements UDistribution<Va
                 }
                 this.useVertices = true;
             }
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -164,16 +177,9 @@ public class UDistribributionParametricConvex<Value> implements UDistribution<Va
                 }
                 return best;
             } else {
-                // original solver path (reuse basis; only objective changes)
-                GRBLinExpr expr = new GRBLinExpr();
-                for (int i = 0; i < pd.size; i++) {
-                    expr.add(trans.translateLinearExpression(pd.probs[i].asExpression(), vect[pd.index[i]]));
-                }
-                model.setObjective(expr, minMax.isMinUnc() ? GRB.MINIMIZE : GRB.MAXIMIZE);
-                model.optimize();
-                return model.get(GRB.DoubleAttr.ObjVal);
+                return solveLpFromCachedTerms(vect, minMax);
             }
-        } catch (GRBException | PrismException e) {
+        } catch (GRBException e) {
             throw new RuntimeException(e);
         }
     }
@@ -278,44 +284,137 @@ public class UDistribributionParametricConvex<Value> implements UDistribution<Va
         this.termCols  = new int[succCount][];
         this.termCoeff = new double[succCount][];
         this.termConst = new double[succCount];
+        this.lpTermCols = new int[succCount][];
+        this.lpTermCoeff = new double[succCount][];
+        this.lpTermConst = new double[succCount];
 
         for (int i = 0; i < succCount; i++) {
             GRBLinExpr e = trans.translateLinearExpression(pd.probs[i].asExpression(), 1.0);
 
-            // aggregate but *map to reduced columns*, folding fixed vars into constant
-            HashMap<Integer, Double> map = new HashMap<>();
-            double cst = getConstantSafe(e);
+            // aggregate in both spaces:
+            // - reduced columns for vertex path
+            // - original model columns for LP objective assembly
+            HashMap<Integer, Double> mapReduced = new HashMap<>();
+            HashMap<Integer, Double> mapLp = new HashMap<>();
+            double cstLp = getConstantSafe(e);
+            double cstReduced = cstLp;
 
             int sz = e.size();
             for (int k = 0; k < sz; k++) {
                 int j = e.getVar(k).index();     // original column
                 double coef = e.getCoeff(k);
+                mapLp.put(j, mapLp.getOrDefault(j, 0.0) + coef);
+
                 int red = (shared != null) ? shared.colMap[j] : j;
                 if (shared != null && red == -1) {
                     // fixed var → fold into constant
                     double fv = shared.fixedVal[j];
-                    cst += coef * fv;
+                    cstReduced += coef * fv;
                 } else {
-                    map.put(red, map.getOrDefault(red, 0.0) + coef);
+                    mapReduced.put(red, mapReduced.getOrDefault(red, 0.0) + coef);
                 }
             }
 
-            int nnz = map.size();
-            int[] idx = new int[nnz];
-            double[] cf = new double[nnz];
+            int nnzReduced = mapReduced.size();
+            int[] idxReduced = new int[nnzReduced];
+            double[] cfReduced = new double[nnzReduced];
             int t = 0;
-            for (Map.Entry<Integer, Double> en : map.entrySet()) {
-                idx[t] = en.getKey();
-                cf[t] = en.getValue();
+            for (Map.Entry<Integer, Double> en : mapReduced.entrySet()) {
+                idxReduced[t] = en.getKey();
+                cfReduced[t] = en.getValue();
                 t++;
             }
-            sortByIndex(idx, cf);
+            sortByIndex(idxReduced, cfReduced);
 
-            termCols[i]  = idx;
-            termCoeff[i] = cf;
-            termConst[i] = cst;
-            pdIndex[i]   = pd.index[i];
+            int nnzLp = mapLp.size();
+            int[] idxLp = new int[nnzLp];
+            double[] cfLp = new double[nnzLp];
+            t = 0;
+            for (Map.Entry<Integer, Double> en : mapLp.entrySet()) {
+                idxLp[t] = en.getKey();
+                cfLp[t] = en.getValue();
+                t++;
+            }
+            sortByIndex(idxLp, cfLp);
+
+            termCols[i]    = idxReduced;
+            termCoeff[i]   = cfReduced;
+            termConst[i]   = cstReduced;
+            lpTermCols[i]  = idxLp;
+            lpTermCoeff[i] = cfLp;
+            lpTermConst[i] = cstLp;
+            pdIndex[i]     = pd.index[i];
         }
+    }
+
+    private double solveLpFromCachedTerms(double[] vect, MinMax minMax) throws GRBException {
+        assertLpModelShapeUnchanged();
+
+        GRBLinExpr expr = new GRBLinExpr();
+        double cst = 0.0;
+
+        for (int i = 0; i < succCount; i++) {
+            double w = vect[pdIndex[i]];
+            if (w == 0.0) continue;
+
+            cst += w * lpTermConst[i];
+            int[] cols = lpTermCols[i];
+            double[] cf = lpTermCoeff[i];
+            for (int k = 0; k < cols.length; k++) {
+                int col = cols[k];
+                double add = w * cf[k];
+                if (add == 0.0) continue;
+                if (lpObjCoeff[col] == 0.0) {
+                    ensureTouchedCapacity(lpTouchedCount + 1);
+                    lpTouchedCols[lpTouchedCount++] = col;
+                }
+                lpObjCoeff[col] += add;
+            }
+        }
+
+        if (cst != 0.0) expr.addConstant(cst);
+        for (int t = 0; t < lpTouchedCount; t++) {
+            int col = lpTouchedCols[t];
+            double coef = lpObjCoeff[col];
+            if (coef != 0.0) expr.addTerm(coef, lpVarsByCol[col]);
+            lpObjCoeff[col] = 0.0;
+        }
+        lpTouchedCount = 0;
+
+        model.setObjective(expr, minMax.isMinUnc() ? GRB.MINIMIZE : GRB.MAXIMIZE);
+        model.optimize();
+        return model.get(GRB.DoubleAttr.ObjVal);
+    }
+
+    private void freezeLpModelStructure() throws GRBException {
+        model.update();
+        this.lpVarsByCol = model.getVars();
+        this.lpNumVars = lpVarsByCol.length;
+        this.lpNumConstrs = model.get(GRB.IntAttr.NumConstrs);
+        this.lpModelFrozen = true;
+
+        if (lpObjCoeff.length < lpNumVars) lpObjCoeff = new double[lpNumVars];
+        if (lpTouchedCols.length < 64) lpTouchedCols = new int[64];
+    }
+
+    private void assertLpModelShapeUnchanged() throws GRBException {
+        if (!lpModelFrozen) freezeLpModelStructure();
+        int nVars = model.get(GRB.IntAttr.NumVars);
+        int nConstrs = model.get(GRB.IntAttr.NumConstrs);
+        if (nVars != lpNumVars || nConstrs != lpNumConstrs) {
+            throw new IllegalStateException(
+                    "Parametric convex LP path assumes fixed model shape during VI, " +
+                    "but detected change (vars " + lpNumVars + "->" + nVars +
+                    ", constrs " + lpNumConstrs + "->" + nConstrs + ").");
+        }
+    }
+
+    private void ensureTouchedCapacity(int need) {
+        if (lpTouchedCols.length >= need) return;
+        int newCap = lpTouchedCols.length;
+        if (newCap == 0) newCap = 64;
+        while (newCap < need) newCap <<= 1;
+        lpTouchedCols = Arrays.copyOf(lpTouchedCols, newCap);
     }
 
     /**

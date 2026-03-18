@@ -125,6 +125,7 @@ public class Experiment {
         SAV2_ADAPTIVE_100,
         AIRCRAFT_MIXTURE_ONEMOD,
         AIRCRAFT_MIXTURE_ONEMOD_ADAPTIVE,
+        AIRCRAFT_MIXTURE_POSITION,
         EPIDEMIC,
         SIMPLE_BISIM,
         SIMPLE_BISIM_MDP,
@@ -529,11 +530,11 @@ public class Experiment {
                 this.type = Type.REWARD;
 
                 this.multiplier = 2;
-                this.max_episode_length = 150;
+                this.max_episode_length = 50;
                 this.maxVIIters = 20000;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("n", 150);
+                this.parameterValues.addValue("n", 50);
                 this.parameterValues.addValue("p", 0.55);
             }
 
@@ -1170,9 +1171,12 @@ public class Experiment {
                 this.dtmcSpec = "P=? [!(\"Crash\") U (\"Target\")]";
                 this.type = Type.REACH;
 
+                this.max_episode_length = 450;
+                this.maxVIIters = 100000;
+
                 // Set Parameter Values
-                this.parameterValues.addValue("Xsize", 25);
-                this.parameterValues.addValue("Ysize", 25);
+                this.parameterValues.addValue("Xsize", 125);
+                this.parameterValues.addValue("Ysize", 125);
                 this.parameterValues.addValue("theta1", 0.4);
                 this.parameterValues.addValue("theta2", 0.2);
                 this.parameterValues.addValue("theta3", 0.15);
@@ -1240,6 +1244,33 @@ public class Experiment {
                 this.parameterValues.addValue("theta1", 0.4);
                 this.parameterValues.addValue("theta2", 0.2);
                 this.parameterValues.addValue("theta3", 0.15);
+            }
+
+            case AIRCRAFT_MIXTURE_POSITION-> {
+                this.modelFile = "../parametric_convex_models/aircraft_pos.prism";
+                this.certainModelFile = "../parametric_convex_models/aircraft_pos.prism";
+
+                this.spec = "Pmax=? [!collision U \"goal\"]";
+                this.invspec = "Pmin=? [!collision U \"goal\"]";
+                this.robustSpec = "Pmaxmin=? [!collision U \"goal\"]";
+                this.optimisticSpec = "Pmaxmax=? [!collision U \"goal\"]";
+                this.dtmcSpec = "P=?  [!collision U \"goal\"]";
+                this.type = Type.REACH;
+
+                int maxx = 50;
+                int maxy = 10;
+
+                this.multiplier = 2;
+                this.max_episode_length = maxx;
+                this.maxVIIters = 100000;
+
+                // Set Parameter Values
+                this.parameterValues.addValue("maxX", maxx);
+                this.parameterValues.addValue("maxY", maxy);
+                this.parameterValues.addValue("theta1", 0.4);
+                this.parameterValues.addValue("theta2", 0.2);
+                this.parameterValues.addValue("theta3", 0.15);
+                this.parameterValues.addValue("theta4", 0.12);
             }
 
             case DICE_2 -> {
