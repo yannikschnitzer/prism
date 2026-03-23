@@ -50,117 +50,143 @@ public class ParametricConvexSolver {
     private HashMap<TransitionTriple, Integer> cachedSamplesMap;
     private HashMap<StateActionPair, Integer> cachedSampleSizeMap;
 
+    private static final Model DEFAULT_MODEL = Model.AIRCRAFT_MIXTURE_POSITION;
+
+    // Keep this set small and explicit; pass CLI args to override without editing code.
+    private static final EnumSet<RunConfiguration> DEFAULT_RUN_CONFIGURATIONS = EnumSet.of(
+//            RunConfiguration.PARAMETRIC_CONVEX,
+//            RunConfiguration.LP_TO_INTERVAL_EXACT,
+//            RunConfiguration.LP_TO_INTERVAL_FAST,
+//            RunConfiguration.ELLIPSOID,
+            RunConfiguration.ELLIPSOID_TO_INTERVAL_EXACT,
+            RunConfiguration.ELLIPSOID_TO_INTERVAL_FAST
+    );
+
+    private enum RunConfiguration {
+        PLAIN_NAIVE {
+            @Override
+            void applyTo(Experiment experiment) {
+                experiment.setParametricConvex(false).useLPToIMDP(false).setTieParameters(NO_TYING);
+            }
+        },
+        PARAMETER_TYING {
+            @Override
+            void applyTo(Experiment experiment) {
+                experiment.setParametricConvex(false).useLPToIMDP(false).setTieParameters(FULL_TYING);
+            }
+        },
+        PARAMETRIC_CONVEX {
+            @Override
+            void applyTo(Experiment experiment) {
+                experiment.setParametricConvex(true).useLPToIMDP(false).setTieParameters(FULL_TYING).useOBBT(10);
+            }
+        },
+        LP_TO_INTERVAL_EXACT {
+            @Override
+            void applyTo(Experiment experiment) {
+                experiment.setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).useOBBT(10);
+            }
+        },
+        LP_TO_INTERVAL_FAST {
+            @Override
+            void applyTo(Experiment experiment) {
+                experiment.setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(FAST).useOBBT(10);
+            }
+        },
+        ELLIPSOID {
+            @Override
+            void applyTo(Experiment experiment) {
+                experiment.setParametricConvex(true).useAPSEllipsoid(true).setTieParameters(FULL_TYING).useOBBT(10).useLPToIMDP(false);
+            }
+        },
+        ELLIPSOID_TO_INTERVAL_EXACT {
+            @Override
+            void applyTo(Experiment experiment) {
+                experiment.setParametricConvex(true).useAPSEllipsoid(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).setTieParameters(FULL_TYING).useOBBT(10);
+            }
+        },
+        ELLIPSOID_TO_INTERVAL_FAST {
+            @Override
+            void applyTo(Experiment experiment) {
+                experiment.setParametricConvex(true).useAPSEllipsoid(true).useLPToIMDP(true).setIntervalAbstractionMode(FAST).setTieParameters(FULL_TYING).useOBBT(10);
+            }
+        };
+
+        abstract void applyTo(Experiment experiment);
+
+        Experiment createExperiment(Model model) {
+            Experiment experiment = new Experiment(model);
+            applyTo(experiment);
+            return experiment;
+        }
+
+        static String availableNames() {
+            StringJoiner joiner = new StringJoiner(", ");
+            for (RunConfiguration runConfiguration : values()) {
+                joiner.add(runConfiguration.name());
+            }
+            return joiner.toString();
+        }
+    }
+
 
     public ParametricConvexSolver(Prism prism) {
         this.prism = prism;
-    }
-
-    public static void ma3in(String[] args) throws GRBException, PrismException {
-        ParametricConvexSolver parametricConvexLearner = new ParametricConvexSolver(new Prism(new PrismDevNullLog()));
-        parametricConvexLearner.initializePrism();
-
-        Experiment ex = new Experiment(Model.AIRCRAFT_MIXTURE_ONEMOD).setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).useBisimulation(false).useOBBT(10);
-
-        MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
-        //System.out.println(pmdp);
-
-        parametricConvexLearner.solveIMDPUniform(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
     }
 
     public static void main(String[] args) throws GRBException, PrismException {
         ParametricConvexSolver parametricConvexLearner = new ParametricConvexSolver(new Prism(new PrismDevNullLog()));
         parametricConvexLearner.initializePrism();
 
-        Model model = Model.AIRCRAFT_MIXTURE_POSITION;
+        EnumSet<RunConfiguration> selectedRunConfigurations = resolveRunConfigurations(args);
+        Model model = DEFAULT_MODEL;
 
-        // Plain Naive
-        Experiment ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(NO_TYING);
-        MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
+        MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(new Experiment(model));
 
-//        parametricConvexLearner.solveIMDPUniform(ex,
-//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-//                pmdp,
-//                ex.parameterValues,
-//                true);
-//
+        for (RunConfiguration runConfiguration : selectedRunConfigurations) {
+            Experiment ex = runConfiguration.createExperiment(model);
+            parametricConvexLearner.solveIMDPUniform(ex,
+                    ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+                    pmdp,
+                    ex.parameterValues,
+                    true);
+        }
+    }
 
-//        // Parameter Tying
-//        ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(FULL_TYING);
-//        //pmdp = parametricConvexLearner.buildParamModel(ex);
-//
-//        parametricConvexLearner.solveIMDPUniform(ex,
-//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-//                pmdp,
-//                ex.parameterValues,
-//                true);
-//
-//
-        // Parametric Convex
-        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(false).setTieParameters(FULL_TYING).useOBBT(10);
-      //  pmdp = parametricConvexLearner.buildParamModel(ex);
+    private static EnumSet<RunConfiguration> resolveRunConfigurations(String[] args) {
+        if (args.length == 0) {
+            return EnumSet.copyOf(DEFAULT_RUN_CONFIGURATIONS);
+        }
 
-        parametricConvexLearner.solveIMDPUniform(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
+        EnumSet<RunConfiguration> selectedRunConfigurations = EnumSet.noneOf(RunConfiguration.class);
+        for (String arg : args) {
+            String rawToken = arg.startsWith("--runs=") ? arg.substring("--runs=".length()) : arg;
+            for (String token : rawToken.split(",")) {
+                String runName = token.trim();
+                if (runName.isEmpty()) {
+                    continue;
+                }
+                if ("all".equalsIgnoreCase(runName)) {
+                    return EnumSet.allOf(RunConfiguration.class);
+                }
+                try {
+                    selectedRunConfigurations.add(RunConfiguration.valueOf(normalizeRunConfigurationToken(runName)));
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException(
+                            "Unknown run configuration '" + runName + "'. Available: " + RunConfiguration.availableNames()
+                                    + ". Usage: --runs=PARAMETRIC_CONVEX,ELLIPSOID or pass names as positional args."
+                    );
+                }
+            }
+        }
 
+        return selectedRunConfigurations.isEmpty()
+                ? EnumSet.copyOf(DEFAULT_RUN_CONFIGURATIONS)
+                : selectedRunConfigurations;
+    }
 
-        // LP to Interval - Expression-wise
-        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).useOBBT(10);
-        //pmdp = parametricConvexLearner.buildParamModel(ex);
-
-        parametricConvexLearner.solveIMDPUniform(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
-
-
-//        // LP to Interval - Interval Arithmetic (parameter-wise, FAST)
-        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(FAST).useOBBT(10);
-        //pmdp = parametricConvexLearner.buildParamModel(ex);
-
-        parametricConvexLearner.solveIMDPUniform(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
-
-        // Ellipsoid
-        ex = new Experiment(model).setParametricConvex(true).useAPSEllipsoid(true).setTieParameters(FULL_TYING).useOBBT(10).useLPToIMDP(false);
-        //  pmdp = parametricConvexLearner.buildParamModel(ex);
-
-        parametricConvexLearner.solveIMDPUniform(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
-
-
-        // Ellipsoid to Interval - Expression-wise
-        ex = new Experiment(model).setParametricConvex(true).useAPSEllipsoid(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).setTieParameters(FULL_TYING).useOBBT(10);
-        //  pmdp = parametricConvexLearner.buildParamModel(ex);
-
-        parametricConvexLearner.solveIMDPUniform(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
-
-        // Ellipsoid to Interval - Parameter-wise
-        ex = new Experiment(model).setParametricConvex(true).useAPSEllipsoid(true).useLPToIMDP(true).setIntervalAbstractionMode(FAST).setTieParameters(FULL_TYING).useOBBT(10);
-        //  pmdp = parametricConvexLearner.buildParamModel(ex);
-
-        parametricConvexLearner.solveIMDPUniform(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
+    private static String normalizeRunConfigurationToken(String runName) {
+        return runName.toUpperCase(Locale.ROOT).replace('-', '_');
     }
 
     @SuppressWarnings("unchecked")
