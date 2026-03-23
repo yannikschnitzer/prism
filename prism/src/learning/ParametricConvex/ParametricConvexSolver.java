@@ -31,10 +31,13 @@ import strat.Strategy;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static imdpcomp.Experiment.IntervalAbstractionMode.EXACT;
 import static imdpcomp.Experiment.IntervalAbstractionMode.FAST;
@@ -50,17 +53,35 @@ public class ParametricConvexSolver {
     private HashMap<TransitionTriple, Integer> cachedSamplesMap;
     private HashMap<StateActionPair, Integer> cachedSampleSizeMap;
 
-    private static final Model DEFAULT_MODEL = Model.AIRCRAFT_MIXTURE_POSITION;
+    private static final String DEFAULT_OUTPUT_ROOT = "plotting_paper_with_ellipsoids/results_uniform_solving_new/parametric_convex";
+    private static final String DEFAULT_BENCHMARK_INPUT_ROOT = DEFAULT_OUTPUT_ROOT;
+    private static final String DEFAULT_BENCHMARK_OUTPUT_BASE = "plotting_paper_with_ellipsoids/benchmark_results";
+    private static final DateTimeFormatter BENCHMARK_TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+
+    private static final Model DEFAULT_MODEL = Model.BETTING_GAME_CONVEX_ADAPTIVE;
 
     // Keep this set small and explicit; pass CLI args to override without editing code.
     private static final EnumSet<RunConfiguration> DEFAULT_RUN_CONFIGURATIONS = EnumSet.of(
-//            RunConfiguration.PARAMETRIC_CONVEX,
-//            RunConfiguration.LP_TO_INTERVAL_EXACT,
-//            RunConfiguration.LP_TO_INTERVAL_FAST,
+            RunConfiguration.PARAMETRIC_CONVEX,
+            RunConfiguration.LP_TO_INTERVAL_EXACT,
+            RunConfiguration.LP_TO_INTERVAL_FAST,
 //            RunConfiguration.ELLIPSOID,
             RunConfiguration.ELLIPSOID_TO_INTERVAL_EXACT,
             RunConfiguration.ELLIPSOID_TO_INTERVAL_FAST
     );
+
+    // IntelliJ convenience: when no CLI args are passed, this controls what main() does.
+    private enum IdeExecutionMode {
+        DEFAULT_MODEL,
+        REPRODUCE_BENCHMARKS
+    }
+
+    private static final IdeExecutionMode IDE_EXECUTION_MODE = IdeExecutionMode.REPRODUCE_BENCHMARKS;
+    private static final Model IDE_MODEL = DEFAULT_MODEL;
+    private static final EnumSet<RunConfiguration> IDE_RUN_CONFIGURATIONS = EnumSet.copyOf(DEFAULT_RUN_CONFIGURATIONS);
+    private static final String IDE_BENCHMARK_INPUT_ROOT = DEFAULT_BENCHMARK_INPUT_ROOT;
+    // null means auto-create timestamped output directory.
+    private static final String IDE_BENCHMARK_OUTPUT_ROOT = null;
 
     private enum RunConfiguration {
         PLAIN_NAIVE {
@@ -129,6 +150,66 @@ public class ParametricConvexSolver {
         }
     }
 
+    private static final class CliOptions {
+        Model model = DEFAULT_MODEL;
+        EnumSet<RunConfiguration> runConfigurations = EnumSet.copyOf(DEFAULT_RUN_CONFIGURATIONS);
+        boolean reproduceBenchmarks = false;
+        String benchmarkInputRoot = DEFAULT_BENCHMARK_INPUT_ROOT;
+        String benchmarkOutputRoot = null;
+    }
+
+    private static final class BenchmarkInstance {
+        final Model model;
+        final String parameterDirectoryName;
+        final Values parameterValues;
+        final Values identParameters;
+        final int seed;
+        final Path modelFile;
+        final String spec;
+        final String robustSpec;
+        final String optimisticSpec;
+        final String dtmcSpec;
+        final Integer iterations;
+        final Integer maxEpisodeLength;
+        final Integer multiplier;
+        final Double errorTolerance;
+
+        BenchmarkInstance(
+                Model model,
+                String parameterDirectoryName,
+                Values parameterValues,
+                Values identParameters,
+                int seed,
+                Path modelFile,
+                String spec,
+                String robustSpec,
+                String optimisticSpec,
+                String dtmcSpec,
+                Integer iterations,
+                Integer maxEpisodeLength,
+                Integer multiplier,
+                Double errorTolerance
+        ) {
+            this.model = model;
+            this.parameterDirectoryName = parameterDirectoryName;
+            this.parameterValues = parameterValues;
+            this.identParameters = identParameters;
+            this.seed = seed;
+            this.modelFile = modelFile;
+            this.spec = spec;
+            this.robustSpec = robustSpec;
+            this.optimisticSpec = optimisticSpec;
+            this.dtmcSpec = dtmcSpec;
+            this.iterations = iterations;
+            this.maxEpisodeLength = maxEpisodeLength;
+            this.multiplier = multiplier;
+            this.errorTolerance = errorTolerance;
+        }
+    }
+
+    private String outputRoot = DEFAULT_OUTPUT_ROOT;
+    private boolean forceIdentParameterDirectory = false;
+
 
     public ParametricConvexSolver(Prism prism) {
         this.prism = prism;
@@ -138,28 +219,87 @@ public class ParametricConvexSolver {
         ParametricConvexSolver parametricConvexLearner = new ParametricConvexSolver(new Prism(new PrismDevNullLog()));
         parametricConvexLearner.initializePrism();
 
-        EnumSet<RunConfiguration> selectedRunConfigurations = resolveRunConfigurations(args);
-        Model model = DEFAULT_MODEL;
-
-        MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(new Experiment(model));
-
-        for (RunConfiguration runConfiguration : selectedRunConfigurations) {
-            Experiment ex = runConfiguration.createExperiment(model);
-            parametricConvexLearner.solveIMDPUniform(ex,
-                    ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                    pmdp,
-                    ex.parameterValues,
-                    true);
+        CliOptions options = args.length == 0 ? buildIdeOptions() : parseCliOptions(args);
+        if (options.reproduceBenchmarks) {
+            parametricConvexLearner.runBenchmarkReproduction(options);
+        } else {
+            parametricConvexLearner.runDefaultModel(options.model, options.runConfigurations);
         }
     }
 
-    private static EnumSet<RunConfiguration> resolveRunConfigurations(String[] args) {
-        if (args.length == 0) {
+    private static CliOptions buildIdeOptions() {
+        CliOptions options = new CliOptions();
+        options.model = IDE_MODEL;
+        options.runConfigurations = EnumSet.copyOf(IDE_RUN_CONFIGURATIONS);
+
+        if (IDE_EXECUTION_MODE == IdeExecutionMode.REPRODUCE_BENCHMARKS) {
+            options.reproduceBenchmarks = true;
+            options.benchmarkInputRoot = IDE_BENCHMARK_INPUT_ROOT;
+            options.benchmarkOutputRoot = IDE_BENCHMARK_OUTPUT_ROOT == null || IDE_BENCHMARK_OUTPUT_ROOT.isBlank()
+                    ? createFreshBenchmarkOutputRoot()
+                    : IDE_BENCHMARK_OUTPUT_ROOT;
+        }
+
+        return options;
+    }
+
+    private static CliOptions parseCliOptions(String[] args) {
+        CliOptions options = new CliOptions();
+        List<String> runTokens = new ArrayList<>();
+
+        for (String arg : args) {
+            if (arg == null || arg.isBlank()) {
+                continue;
+            }
+
+            if ("--reproduce-benchmarks".equals(arg)) {
+                options.reproduceBenchmarks = true;
+                continue;
+            }
+
+            if (arg.startsWith("--benchmark-input-root=")) {
+                options.benchmarkInputRoot = arg.substring("--benchmark-input-root=".length()).trim();
+                continue;
+            }
+
+            if (arg.startsWith("--benchmark-root=")) {
+                options.benchmarkInputRoot = arg.substring("--benchmark-root=".length()).trim();
+                continue;
+            }
+
+            if (arg.startsWith("--benchmark-output-root=")) {
+                options.benchmarkOutputRoot = arg.substring("--benchmark-output-root=".length()).trim();
+                continue;
+            }
+
+            if (arg.startsWith("--model=")) {
+                String modelName = arg.substring("--model=".length()).trim();
+                try {
+                    options.model = Model.valueOf(normalizeRunConfigurationToken(modelName));
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException("Unknown model '" + modelName + "'.");
+                }
+                continue;
+            }
+
+            runTokens.add(arg);
+        }
+
+        options.runConfigurations = resolveRunConfigurations(runTokens);
+        if (options.reproduceBenchmarks && (options.benchmarkOutputRoot == null || options.benchmarkOutputRoot.isBlank())) {
+            options.benchmarkOutputRoot = createFreshBenchmarkOutputRoot();
+        }
+
+        return options;
+    }
+
+    private static EnumSet<RunConfiguration> resolveRunConfigurations(List<String> rawArgs) {
+        if (rawArgs.isEmpty()) {
             return EnumSet.copyOf(DEFAULT_RUN_CONFIGURATIONS);
         }
 
         EnumSet<RunConfiguration> selectedRunConfigurations = EnumSet.noneOf(RunConfiguration.class);
-        for (String arg : args) {
+        for (String arg : rawArgs) {
             String rawToken = arg.startsWith("--runs=") ? arg.substring("--runs=".length()) : arg;
             for (String token : rawToken.split(",")) {
                 String runName = token.trim();
@@ -185,8 +325,339 @@ public class ParametricConvexSolver {
                 : selectedRunConfigurations;
     }
 
+    private void runDefaultModel(Model model, EnumSet<RunConfiguration> selectedRunConfigurations) {
+        this.outputRoot = DEFAULT_OUTPUT_ROOT;
+        this.forceIdentParameterDirectory = false;
+        clearCachedSamples();
+
+        MDPSimple<Function> pmdp = buildParamModel(new Experiment(model));
+        for (RunConfiguration runConfiguration : selectedRunConfigurations) {
+            Experiment ex = runConfiguration.createExperiment(model);
+            solveIMDPUniform(ex,
+                    ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+                    pmdp,
+                    ex.parameterValues,
+                    true);
+        }
+    }
+
+    private void runBenchmarkReproduction(CliOptions options) {
+        List<BenchmarkInstance> benchmarkInstances = discoverBenchmarkInstances(Paths.get(options.benchmarkInputRoot));
+        if (benchmarkInstances.isEmpty()) {
+            throw new IllegalArgumentException("No benchmark instances found in '" + options.benchmarkInputRoot + "'.");
+        }
+
+        this.outputRoot = options.benchmarkOutputRoot;
+        this.forceIdentParameterDirectory = true;
+
+        System.out.println("Reproducing " + benchmarkInstances.size() + " benchmark instances from " + options.benchmarkInputRoot);
+        System.out.println("Output root: " + options.benchmarkOutputRoot);
+        System.out.println("Run configurations: " + options.runConfigurations);
+
+        for (BenchmarkInstance benchmarkInstance : benchmarkInstances) {
+            clearCachedSamples();
+            System.out.println("Benchmark instance: " + benchmarkInstance.model + " / " + benchmarkInstance.parameterDirectoryName + " / seed " + benchmarkInstance.seed);
+
+            Experiment baselineExperiment = applyBenchmarkInstance(runConfigurationIndependentExperiment(benchmarkInstance.model), benchmarkInstance);
+            MDPSimple<Function> pmdp = buildParamModel(baselineExperiment);
+
+            for (RunConfiguration runConfiguration : options.runConfigurations) {
+                Experiment ex = applyBenchmarkInstance(runConfiguration.createExperiment(benchmarkInstance.model), benchmarkInstance);
+                solveIMDPUniform(ex,
+                        ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+                        pmdp,
+                        ex.parameterValues,
+                        true);
+            }
+        }
+    }
+
+    private static Experiment runConfigurationIndependentExperiment(Model model) {
+        return new Experiment(model);
+    }
+
+    private static String createFreshBenchmarkOutputRoot() {
+        String timestamp = LocalDateTime.now().format(BENCHMARK_TIMESTAMP_FORMAT);
+        return Paths.get(DEFAULT_BENCHMARK_OUTPUT_BASE, "benchmark_results_" + timestamp, "parametric_convex").toString();
+    }
+
     private static String normalizeRunConfigurationToken(String runName) {
         return runName.toUpperCase(Locale.ROOT).replace('-', '_');
+    }
+
+    private static List<BenchmarkInstance> discoverBenchmarkInstances(Path benchmarkRoot) {
+        if (!Files.exists(benchmarkRoot) || !Files.isDirectory(benchmarkRoot)) {
+            throw new IllegalArgumentException("Benchmark root does not exist or is not a directory: " + benchmarkRoot);
+        }
+
+        Map<Path, Path> metadataBySeedDirectory = new TreeMap<>();
+        try (Stream<Path> files = Files.walk(benchmarkRoot)) {
+            files.filter(Files::isRegularFile)
+                    .filter(ParametricConvexSolver::isYamlFile)
+                    .sorted()
+                    .forEach(path -> {
+                        Path seedDirectory = path.getParent();
+                        Path relativeSeedPath = benchmarkRoot.relativize(seedDirectory);
+                        if (relativeSeedPath.getNameCount() >= 3) {
+                            metadataBySeedDirectory.putIfAbsent(seedDirectory, path);
+                        }
+                    });
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to discover benchmark metadata files in " + benchmarkRoot, e);
+        }
+
+        List<BenchmarkInstance> instances = new ArrayList<>();
+        for (Map.Entry<Path, Path> entry : metadataBySeedDirectory.entrySet()) {
+            Path seedDirectory = entry.getKey();
+            Path metadataFile = entry.getValue();
+            Path modelFile = findBenchmarkModelFile(seedDirectory);
+            if (modelFile == null) {
+                throw new IllegalStateException("No benchmark .prism/.pm model file found in " + seedDirectory);
+            }
+
+            Map<String, String> metadata = parseSimpleYaml(metadataFile);
+            Path relativeSeedPath = benchmarkRoot.relativize(seedDirectory);
+            Model model = parseBenchmarkModel(metadata, relativeSeedPath);
+            if (model == null) {
+                throw new IllegalStateException("Could not resolve benchmark model for seed directory " + seedDirectory + " from metadata " + metadataFile);
+            }
+
+            String parameterDirectoryName = readParameterDirectoryName(metadata, relativeSeedPath);
+            Values parameterValues = parseParameterValues(parameterDirectoryName, true);
+            Values identParameters = parseParameterValues(parameterDirectoryName, false);
+            int seed = parseSeed(metadata, relativeSeedPath);
+
+            instances.add(new BenchmarkInstance(
+                    model,
+                    parameterDirectoryName,
+                    parameterValues,
+                    identParameters,
+                    seed,
+                    modelFile,
+                    metadata.get("Specification"),
+                    metadata.get("RobustSpecification"),
+                    metadata.get("OptimisticSpecification"),
+                    metadata.get("DTMCSpecification"),
+                    parseInteger(metadata.get("NumEpisodes")),
+                    parseInteger(metadata.get("MaxTrajectoryLength")),
+                    parseInteger(metadata.get("Multiplier")),
+                    parseDouble(metadata.get("ErrorTolerance"))
+            ));
+        }
+
+        instances.sort(Comparator
+                .comparing((BenchmarkInstance instance) -> instance.model.name())
+                .thenComparing(instance -> instance.parameterDirectoryName)
+                .thenComparingInt(instance -> instance.seed));
+        return instances;
+    }
+
+    private static boolean isYamlFile(Path file) {
+        String fileName = file.getFileName().toString().toLowerCase(Locale.ROOT);
+        return fileName.endsWith(".yaml") || fileName.endsWith(".yml");
+    }
+
+    private static Path findBenchmarkModelFile(Path seedDirectory) {
+        try (Stream<Path> files = Files.list(seedDirectory)) {
+            return files.filter(Files::isRegularFile)
+                    .filter(path -> {
+                        String name = path.getFileName().toString().toLowerCase(Locale.ROOT);
+                        return name.endsWith(".prism") || name.endsWith(".pm");
+                    })
+                    .sorted(Comparator.comparing(path -> path.getFileName().toString()))
+                    .findFirst()
+                    .orElse(null);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to inspect benchmark seed directory " + seedDirectory, e);
+        }
+    }
+
+    private static Map<String, String> parseSimpleYaml(Path yamlFile) {
+        Map<String, String> metadata = new LinkedHashMap<>();
+        List<String> lines;
+        try {
+            lines = Files.readAllLines(yamlFile);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read benchmark metadata file " + yamlFile, e);
+        }
+
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (trimmed.isEmpty() || "ExperimentInfo:".equals(trimmed)) {
+                continue;
+            }
+
+            int separatorIndex = trimmed.indexOf(':');
+            if (separatorIndex < 0) {
+                continue;
+            }
+
+            String key = trimmed.substring(0, separatorIndex).trim();
+            String value = trimmed.substring(separatorIndex + 1).trim();
+            metadata.put(key, value);
+        }
+
+        return metadata;
+    }
+
+    private static Model parseBenchmarkModel(Map<String, String> metadata, Path relativeSeedPath) {
+        String modelName = metadata.get("Model");
+        if ((modelName == null || modelName.isBlank()) && relativeSeedPath.getNameCount() >= 1) {
+            modelName = relativeSeedPath.getName(0).toString();
+        }
+
+        if (modelName == null || modelName.isBlank()) {
+            return null;
+        }
+
+        try {
+            return Model.valueOf(modelName.trim());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private static String readParameterDirectoryName(Map<String, String> metadata, Path relativeSeedPath) {
+        String parameterValues = metadata.get("ParameterValues");
+        if (parameterValues != null && !parameterValues.isBlank()) {
+            return parameterValues.trim();
+        }
+
+        if (relativeSeedPath.getNameCount() >= 2) {
+            return relativeSeedPath.getName(1).toString();
+        }
+
+        return "";
+    }
+
+    private static int parseSeed(Map<String, String> metadata, Path relativeSeedPath) {
+        Integer seed = parseInteger(metadata.get("Seed"));
+        if (seed != null) {
+            return seed;
+        }
+
+        if (relativeSeedPath.getNameCount() >= 3) {
+            Integer parsedSeed = parseInteger(relativeSeedPath.getName(2).toString());
+            if (parsedSeed != null) {
+                return parsedSeed;
+            }
+        }
+
+        return 5;
+    }
+
+    private static Values parseParameterValues(String parameterString, boolean parseTypedValues) {
+        Values values = new Values();
+        if (parameterString == null || parameterString.isBlank()) {
+            return values;
+        }
+
+        for (String entry : parameterString.split(",")) {
+            String trimmed = entry.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+
+            int separatorIndex = trimmed.indexOf('=');
+            if (separatorIndex <= 0 || separatorIndex >= trimmed.length() - 1) {
+                continue;
+            }
+
+            String parameterName = trimmed.substring(0, separatorIndex).trim();
+            String rawValue = trimmed.substring(separatorIndex + 1).trim();
+            Object value = parseTypedValues ? parseParameterValue(rawValue) : rawValue;
+            values.addValue(parameterName, value);
+        }
+
+        return values;
+    }
+
+    private static Object parseParameterValue(String rawValue) {
+        if ("true".equalsIgnoreCase(rawValue)) {
+            return Boolean.TRUE;
+        }
+        if ("false".equalsIgnoreCase(rawValue)) {
+            return Boolean.FALSE;
+        }
+
+        try {
+            return Integer.parseInt(rawValue);
+        } catch (NumberFormatException ignored) {
+            // Try double below.
+        }
+
+        try {
+            return Double.parseDouble(rawValue);
+        } catch (NumberFormatException ignored) {
+            // Fall back to raw string below.
+        }
+
+        return rawValue;
+    }
+
+    private static Integer parseInteger(String rawValue) {
+        if (rawValue == null || rawValue.isBlank()) {
+            return null;
+        }
+
+        try {
+            return Integer.parseInt(rawValue.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private static Double parseDouble(String rawValue) {
+        if (rawValue == null || rawValue.isBlank()) {
+            return null;
+        }
+
+        try {
+            return Double.parseDouble(rawValue.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private static Experiment applyBenchmarkInstance(Experiment experiment, BenchmarkInstance benchmarkInstance) {
+        experiment.modelFile = benchmarkInstance.modelFile.toString();
+        experiment.certainModelFile = benchmarkInstance.modelFile.toString();
+        experiment.parameterValues = new Values(benchmarkInstance.parameterValues);
+        experiment.identParameters = new Values(benchmarkInstance.identParameters);
+        experiment.seed = benchmarkInstance.seed;
+
+        if (benchmarkInstance.spec != null && !benchmarkInstance.spec.isBlank()) {
+            experiment.spec = benchmarkInstance.spec;
+        }
+        if (benchmarkInstance.robustSpec != null && !benchmarkInstance.robustSpec.isBlank()) {
+            experiment.robustSpec = benchmarkInstance.robustSpec;
+        }
+        if (benchmarkInstance.optimisticSpec != null && !benchmarkInstance.optimisticSpec.isBlank()) {
+            experiment.optimisticSpec = benchmarkInstance.optimisticSpec;
+        }
+        if (benchmarkInstance.dtmcSpec != null && !benchmarkInstance.dtmcSpec.isBlank()) {
+            experiment.dtmcSpec = benchmarkInstance.dtmcSpec;
+        }
+        if (benchmarkInstance.iterations != null) {
+            experiment.iterations = benchmarkInstance.iterations;
+        }
+        if (benchmarkInstance.maxEpisodeLength != null) {
+            experiment.max_episode_length = benchmarkInstance.maxEpisodeLength;
+        }
+        if (benchmarkInstance.multiplier != null) {
+            experiment.multiplier = benchmarkInstance.multiplier;
+        }
+        if (benchmarkInstance.errorTolerance != null) {
+            experiment.error_tolerance = benchmarkInstance.errorTolerance;
+            experiment.apsDelta = 1 - benchmarkInstance.errorTolerance;
+        }
+
+        return experiment;
+    }
+
+    private void clearCachedSamples() {
+        this.cachedSamplesMap = null;
+        this.cachedSampleSizeMap = null;
     }
 
     @SuppressWarnings("unchecked")
@@ -440,7 +911,11 @@ public class ParametricConvexSolver {
 
     // Creates the directory path for dumping experimental results
     public String makeOutputDirectory(Experiment ex) {
-        String outputPath = String.format("plotting_paper_with_ellipsoids/results_uniform_solving_new/parametric_convex/%s/%s/%s/", ex.model.toString(), ex.parameterValues.getNumValues() > 10 ? ex.identParameters : ex.parameterValues, ex.seed);
+        boolean useIdentParameters = this.forceIdentParameterDirectory && ex.identParameters != null && ex.identParameters.getNumValues() > 0;
+        String parameterDirectory = (useIdentParameters || ex.parameterValues.getNumValues() > 10)
+                ? ex.identParameters.toString()
+                : ex.parameterValues.toString();
+        String outputPath = Paths.get(this.outputRoot, ex.model.toString(), parameterDirectory, String.valueOf(ex.seed)).toString() + "/";
         try {
             Files.createDirectories(Paths.get(outputPath));
             copyExperimentPrismFile(ex, outputPath);

@@ -2,7 +2,7 @@ mdp
 
 // ===== Dimensions & params =====
 // Require maxX >= 1 and maxY >= 1.
-const int maxX = 20;
+const int maxX = 50;
 const int maxY = 10;
 
 // ===== Mixture weights (K=4) =====

@@ -514,7 +514,7 @@ public class Experiment {
 
                 // Set Parameter Values
                 addParameters(
-                        "n", 25,
+                        "n", 150,
                         "p", 0.55
                 );
             }
@@ -1041,7 +1041,7 @@ public class Experiment {
                 setModelFiles("../parametric_convex_models/aircraft_pos.prism");
                 setSpecsWithInverse(Type.REACH, "Pmaxmin=? [!collision U \"goal\"]", "Pmaxmax=? [!collision U \"goal\"]", "P=?  [!collision U \"goal\"]", "Pmax=? [!collision U \"goal\"]", "Pmin=? [!collision U \"goal\"]");
 
-                int maxx = 20;
+                int maxx = 50;
                 int maxy = 10;
 
                 setLearningSettings(2, maxx, 100000);
