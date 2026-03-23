@@ -530,11 +530,11 @@ public class Experiment {
                 this.type = Type.REWARD;
 
                 this.multiplier = 2;
-                this.max_episode_length = 50;
-                this.maxVIIters = 20000;
+                this.max_episode_length = 25;
+                this.maxVIIters = 200000;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("n", 50);
+                this.parameterValues.addValue("n", 25);
                 this.parameterValues.addValue("p", 0.55);
             }
 
@@ -867,11 +867,11 @@ public class Experiment {
                 this.type = Type.REWARD;
 
                 this.multiplier = 2;
-                this.max_episode_length = 50;
+                this.max_episode_length = 150;
                 this.maxVIIters = 20000;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("L", 20);
+                this.parameterValues.addValue("L", 50);
                 this.parameterValues.addValue("theta1", 0.3);
                 this.parameterValues.addValue("theta2", 0.4);
             }
@@ -883,14 +883,17 @@ public class Experiment {
                 this.optimisticSpec = "Rminmin = ? [ F (\"purchase\" | \"churn\") ]";
                 this.dtmcSpec = "R = ? [ F (\"purchase\" | \"churn\") ]";
                 this.spec = "Rmin = ? [ F (\"purchase\" | \"churn\") ]";
+                this.invspec = "Rmax = ? [ F (\"purchase\" | \"churn\") ]";
                 this.type = Type.REWARD;
 
+                int L = 1000;
+
                 this.multiplier = 2;
-                this.max_episode_length = 50;
-                this.maxVIIters = 20000;
+                this.max_episode_length = L;
+                this.maxVIIters = 300000;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("L", 300);
+                this.parameterValues.addValue("L", L);
                 this.parameterValues.addValue("theta1", 0.3);
                 this.parameterValues.addValue("theta2", 0.2);
                 this.parameterValues.addValue("theta3", 0.1);
@@ -978,8 +981,8 @@ public class Experiment {
                 this.type = Type.REWARD;
 
                 this.multiplier = 2;
-                this.max_episode_length = 50;
-                this.maxVIIters = 20000;
+                this.max_episode_length = 100;
+                this.maxVIIters = 200000;
 
                 // Set Parameter Values
                 this.parameterValues.addValue("w", 21);
@@ -1004,11 +1007,14 @@ public class Experiment {
 //                this.spec = "Pmax=? [F money + money2 >= 25]";
 //                this.type = Type.REACH;
 
+                int n = 7;
+
                 this.multiplier = 2;
-                this.max_episode_length = 10;
-                this.maxVIIters = 20000;
+                this.max_episode_length = n;
+                this.maxVIIters = 100000;
 
                 // Set Parameter Values
+                this.parameterValues.addValue("n", n);
                 this.parameterValues.addValue("p_1", 0.55);
                 this.parameterValues.addValue("p_2", 0.53);
             }
@@ -1090,10 +1096,14 @@ public class Experiment {
                 this.type = Type.REACH;
 
                 this.multiplier = 2;
-                this.max_episode_length = 100;
+                this.max_episode_length = 300;
                 this.maxVIIters = 1000000;
 
+
                 // Set Parameter Values
+                this.parameterValues.addValue("maxX", 32);
+                this.parameterValues.addValue("maxY", 32);
+                this.parameterValues.addValue("maxZ", 32);
                 this.parameterValues.addValue("theta1", 0.1);
                 this.parameterValues.addValue("theta2", 0.2);
                 this.parameterValues.addValue("theta3", 0.15);
@@ -1171,12 +1181,12 @@ public class Experiment {
                 this.dtmcSpec = "P=? [!(\"Crash\") U (\"Target\")]";
                 this.type = Type.REACH;
 
-                this.max_episode_length = 450;
+                this.max_episode_length = 50;
                 this.maxVIIters = 100000;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("Xsize", 125);
-                this.parameterValues.addValue("Ysize", 125);
+                this.parameterValues.addValue("Xsize", 10);
+                this.parameterValues.addValue("Ysize", 10);
                 this.parameterValues.addValue("theta1", 0.4);
                 this.parameterValues.addValue("theta2", 0.2);
                 this.parameterValues.addValue("theta3", 0.15);
@@ -1239,7 +1249,7 @@ public class Experiment {
                 this.type = Type.REACH;
 
                 // Set Parameter Values
-                this.parameterValues.addValue("maxX", 50);
+                this.parameterValues.addValue("maxX", 30);
                 this.parameterValues.addValue("maxY", 10);
                 this.parameterValues.addValue("theta1", 0.4);
                 this.parameterValues.addValue("theta2", 0.2);
@@ -1257,7 +1267,7 @@ public class Experiment {
                 this.dtmcSpec = "P=?  [!collision U \"goal\"]";
                 this.type = Type.REACH;
 
-                int maxx = 50;
+                int maxx = 20;
                 int maxy = 10;
 
                 this.multiplier = 2;

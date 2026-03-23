@@ -1,7 +1,7 @@
 mdp
 
 
-const int n = 50;
+const int n = 25;
 const double p;
 module bet
 

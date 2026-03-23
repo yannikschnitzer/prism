@@ -67,71 +67,71 @@ public class ParametricConvexLearner {
         ParametricConvexLearner parametricConvexLearner = new ParametricConvexLearner(new Prism(new PrismDevNullLog()));
         parametricConvexLearner.initializePrism();
 
-        Model model = Model.BETTING_GAME_CONVEX;
+        Model model = Model.AIRCRAFT_MIXTURE_POSITION;
 
         // Plain Naive
         Experiment ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(NO_TYING);
         MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
 
-        parametricConvexLearner.learnIMDP(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
+//        parametricConvexLearner.learnIMDP(ex,
+//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+//                pmdp,
+//                ex.parameterValues,
+//                true);
 
 
-        // Parameter Tying
-        ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(FULL_TYING);
-        pmdp = parametricConvexLearner.buildParamModel(ex);
-
-        parametricConvexLearner.learnIMDP(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
-
-
-        // Parametric Convex
-        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(false).setTieParameters(FULL_TYING).useOBBT(10);
-        pmdp = parametricConvexLearner.buildParamModel(ex);
-
-        parametricConvexLearner.learnIMDP(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
-
-
-        // LP to Interval - Expression-wise
-        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).useOBBT(10);
-        pmdp = parametricConvexLearner.buildParamModel(ex);
-
-        parametricConvexLearner.learnIMDP(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
-
-
-        // LP to Interval - Interval Arithmetic (parameter-wise, FAST)
-        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(FAST).useOBBT(10);
-        pmdp = parametricConvexLearner.buildParamModel(ex);
-
-        parametricConvexLearner.learnIMDP(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
-
-//        // Ellipsoid
-//        ex = new Experiment(model).setParametricConvex(true).useAPSEllipsoid(true).setTieParameters(FULL_TYING).useOBBT(10);
-//        //  pmdp = parametricConvexLearner.buildParamModel(ex);
+//        // Parameter Tying
+//        ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(FULL_TYING);
+//        //pmdp = parametricConvexLearner.buildParamModel(ex);
 //
 //        parametricConvexLearner.learnIMDP(ex,
 //                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
 //                pmdp,
 //                ex.parameterValues,
 //                true);
+//
+//
+//        // Parametric Convex
+//        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(false).setTieParameters(FULL_TYING).useOBBT(10);
+//        //pmdp = parametricConvexLearner.buildParamModel(ex);
+//
+//        parametricConvexLearner.learnIMDP(ex,
+//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+//                pmdp,
+//                ex.parameterValues,
+//                true);
+
+
+//        // LP to Interval - Expression-wise
+//        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).useOBBT(10);
+//        //pmdp = parametricConvexLearner.buildParamModel(ex);
+//
+//        parametricConvexLearner.learnIMDP(ex,
+//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+//                pmdp,
+//                ex.parameterValues,
+//                true);
+
+
+//        // LP to Interval - Interval Arithmetic (parameter-wise, FAST)
+//        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(FAST).useOBBT(10);
+//        //pmdp = parametricConvexLearner.buildParamModel(ex);
+//
+//        parametricConvexLearner.learnIMDP(ex,
+//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+//                pmdp,
+//                ex.parameterValues,
+//                true);
+
+        // Ellipsoid
+        ex = new Experiment(model).setParametricConvex(true).useAPSEllipsoid(true).setTieParameters(FULL_TYING).useOBBT(10);
+        //  pmdp = parametricConvexLearner.buildParamModel(ex);
+
+        parametricConvexLearner.learnIMDP(ex,
+                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+                pmdp,
+                ex.parameterValues,
+                true);
 
         // Ellipsoid to Interval - Expression-wise
         ex = new Experiment(model).setParametricConvex(true).useAPSEllipsoid(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).setTieParameters(FULL_TYING).useOBBT(10);
@@ -376,7 +376,7 @@ public class ParametricConvexLearner {
 
     // Creates the directory path for dumping experimental results
     public String makeOutputDirectory(Experiment ex) {
-        String outputPath = String.format("plotting_paper_with_ellipsoids/results_learning/parametric_convex/%s/%s/%s/", ex.model.toString(), ex.parameterValues.getNumValues() > 10 ? ex.identParameters : ex.parameterValues, ex.seed);
+        String outputPath = String.format("plotting_paper_with_ellipsoids/results_learning_new/parametric_convex/%s/%s/%s/", ex.model.toString(), ex.parameterValues.getNumValues() > 10 ? ex.identParameters : ex.parameterValues, ex.seed);
         try {
             Files.createDirectories(Paths.get(outputPath));
         } catch (IOException e) {

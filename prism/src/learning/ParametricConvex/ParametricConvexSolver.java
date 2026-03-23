@@ -75,7 +75,7 @@ public class ParametricConvexSolver {
         ParametricConvexSolver parametricConvexLearner = new ParametricConvexSolver(new Prism(new PrismDevNullLog()));
         parametricConvexLearner.initializePrism();
 
-        Model model = Model.SAV2_ADAPTIVE_5;
+        Model model = Model.AIRCRAFT_MIXTURE_POSITION;
 
         // Plain Naive
         Experiment ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(NO_TYING);
@@ -88,26 +88,26 @@ public class ParametricConvexSolver {
 //                true);
 //
 
-        // Parameter Tying
-        ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(FULL_TYING);
-        //pmdp = parametricConvexLearner.buildParamModel(ex);
-
-        parametricConvexLearner.solveIMDPUniform(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
-
-
-        // Parametric Convex
-//        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(false).setTieParameters(FULL_TYING).useOBBT(10);
-//      //  pmdp = parametricConvexLearner.buildParamModel(ex);
+//        // Parameter Tying
+//        ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(FULL_TYING);
+//        //pmdp = parametricConvexLearner.buildParamModel(ex);
 //
 //        parametricConvexLearner.solveIMDPUniform(ex,
 //                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
 //                pmdp,
 //                ex.parameterValues,
 //                true);
+//
+//
+        // Parametric Convex
+        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(false).setTieParameters(FULL_TYING).useOBBT(10);
+      //  pmdp = parametricConvexLearner.buildParamModel(ex);
+
+        parametricConvexLearner.solveIMDPUniform(ex,
+                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+                pmdp,
+                ex.parameterValues,
+                true);
 
 
         // LP to Interval - Expression-wise
@@ -121,7 +121,7 @@ public class ParametricConvexSolver {
                 true);
 
 
-        // LP to Interval - Interval Arithmetic (parameter-wise, FAST)
+//        // LP to Interval - Interval Arithmetic (parameter-wise, FAST)
         ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(FAST).useOBBT(10);
         //pmdp = parametricConvexLearner.buildParamModel(ex);
 
@@ -131,15 +131,36 @@ public class ParametricConvexSolver {
                 ex.parameterValues,
                 true);
 
-//        // Ellipsoid to Interval - Expression-wise
-//        ex = new Experiment(model).setParametricConvex(true).useAPSEllipsoid(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).setTieParameters(FULL_TYING).useOBBT(10);
-//        //  pmdp = parametricConvexLearner.buildParamModel(ex);
-//ff
-//        parametricConvexLearner.solveIMDPUniform(ex,
-//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-//                pmdp,
-//                ex.parameterValues,
-//                true);
+        // Ellipsoid
+        ex = new Experiment(model).setParametricConvex(true).useAPSEllipsoid(true).setTieParameters(FULL_TYING).useOBBT(10).useLPToIMDP(false);
+        //  pmdp = parametricConvexLearner.buildParamModel(ex);
+
+        parametricConvexLearner.solveIMDPUniform(ex,
+                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+                pmdp,
+                ex.parameterValues,
+                true);
+
+
+        // Ellipsoid to Interval - Expression-wise
+        ex = new Experiment(model).setParametricConvex(true).useAPSEllipsoid(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).setTieParameters(FULL_TYING).useOBBT(10);
+        //  pmdp = parametricConvexLearner.buildParamModel(ex);
+
+        parametricConvexLearner.solveIMDPUniform(ex,
+                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+                pmdp,
+                ex.parameterValues,
+                true);
+
+        // Ellipsoid to Interval - Parameter-wise
+        ex = new Experiment(model).setParametricConvex(true).useAPSEllipsoid(true).useLPToIMDP(true).setIntervalAbstractionMode(FAST).setTieParameters(FULL_TYING).useOBBT(10);
+        //  pmdp = parametricConvexLearner.buildParamModel(ex);
+
+        parametricConvexLearner.solveIMDPUniform(ex,
+                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+                pmdp,
+                ex.parameterValues,
+                true);
     }
 
     @SuppressWarnings("unchecked")
@@ -268,7 +289,7 @@ public class ParametricConvexSolver {
             double durationInSeconds = (System.nanoTime() - startTime) / 1_000_000_000.0;
 
             DataProcessor dp = new DataProcessor();
-            if (ex.useApsEllipsoid) ex.useLPToIntervals = false;
+
             dp.dumpExperimentMetaData(makeOutputDirectory(ex), makeLabel(ex), ex, durationInSeconds, estimator.getSulOpt(), pmdp.getNumStates(), pmdp.getNumTransitions(), resIMDP.first.size(), estimator.getNumLearnableComponents());
             dp.dumpDataRobustPolicies(makeOutputDirectory(ex), makeLabel(ex), resIMDP.first);
 
@@ -371,7 +392,24 @@ public class ParametricConvexSolver {
     }
 
     public String makeLabel(Experiment ex) {
-        return String.format("%s_%s_%s_%s", ex.model.toString(), ex.useParametricConvex ? (ex.useLPToIntervals ? ("LPINTERVAL_" + ((ex.intervalAbstractionMode == EXACT) ? "EXACT" : "FAST")) : (ex.useApsEllipsoid ? "ELLIPSOID" : "PARCONVEX")) : "IMDP", ex.tieParameters, ex.doBisim ? "BISIM": "NOBISIM");
+        String name = ex.model.toString();
+        if (ex.useParametricConvex) {
+            if (ex.useApsEllipsoid) {
+                name += "_ELLIPSOID";
+            } else {
+                name += "_PARCONVEX";
+            }
+        } else {
+            name += "_IMDP";
+        }
+
+        if (ex.useLPToIntervals) {
+            name += "_CPINTERVAL_" + ((ex.intervalAbstractionMode == EXACT) ? "EXACT" : "FAST");
+        }
+
+        name += "_" + ex.tieParameters;
+        //return String.format("%s_%s_%s_%s", ex.model.toString(), ex.useParametricConvex ? (ex.useLPToIntervals ? ("LPINTERVAL_" + ((ex.intervalAbstractionMode == EXACT) ? "EXACT" : "FAST")) : (ex.useApsEllipsoid ? "ELLIPSOID" : "PARCONVEX")) : "IMDP", ex.tieParameters, ex.doBisim ? "BISIM": "NOBISIM");
+        return name;
     }
 
     // Creates the directory path for dumping experimental results

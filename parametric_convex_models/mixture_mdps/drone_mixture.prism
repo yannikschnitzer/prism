@@ -1,8 +1,8 @@
 mdp
 
-const int MAXX = 16;
-const int MAXY = 16;
-const int MAXZ = 16;
+const int MAXX = 128;
+const int MAXY = 128;
+const int MAXZ = 128;
 
 const double theta1;
 const double theta2;
@@ -10,11 +10,13 @@ const double theta3;
 formula theta4 = 1 - (theta1 + theta2 + theta3);
 
 formula target = (x > MAXX - 2) & (y < 2) & (z > MAXZ - 2);
-formula obstacle1 = (x >= 3 & x <= 5 & z >= 1 & z <= 10);
-formula obstacle2 = (x >= 3 & x <= 8 & y >= 1 & y <= 12);
-formula obstacle3 = (x >= 3 & x <= 10 & y >= 3 & y <= 9);
-formula obstacle4 = (x >= 3 & x <= 6 & z >= 7 & z <= 14);
-formula crash = obstacle1 | obstacle2 | obstacle3 | obstacle4;
+formula obstacle1 = (x >= 3 & x <= 10 & z >= 1 & z <= 20);
+formula obstacle2 = (x >= 3 & x <= 80 & y >= 1 & y <= 80);
+formula obstacle3 = (x >= 3 & x <= 100 & y >= 3 & y <= 80);
+formula obstacle4 = (x >= 3 & x <= 12 & z >= 7 & z <= 65);
+formula obstacle5 = (x >= 3 & x <= 6 & z >= 7 & z <= 90);
+formula obstacle6 = (x >= 3 & x <= 80 & z >= 7 & z <= 60);
+formula crash = obstacle1 | obstacle2 | obstacle3 | obstacle4 | obstacle5 | obstacle6;
 
 // (reuse the same fL*,...,dS* constants from the base model)
 const double fL1=0.08; const double fR1=0.06; const double fS1=0.08;
