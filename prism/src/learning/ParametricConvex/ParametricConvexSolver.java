@@ -37,6 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static imdpcomp.Experiment.IntervalAbstractionMode.EXACT;
@@ -62,6 +63,7 @@ public class ParametricConvexSolver {
 
     // Keep this set small and explicit; pass CLI args to override without editing code.
     private static final EnumSet<RunConfiguration> DEFAULT_RUN_CONFIGURATIONS = EnumSet.of(
+            RunConfiguration.PARAMETER_TYING,
             RunConfiguration.PARAMETRIC_CONVEX,
             RunConfiguration.LP_TO_INTERVAL_EXACT,
             RunConfiguration.LP_TO_INTERVAL_FAST,
@@ -82,6 +84,8 @@ public class ParametricConvexSolver {
     private static final String IDE_BENCHMARK_INPUT_ROOT = DEFAULT_BENCHMARK_INPUT_ROOT;
     // null means auto-create timestamped output directory.
     private static final String IDE_BENCHMARK_OUTPUT_ROOT = null;
+    // null means no timeout.
+    private static final Integer IDE_BENCHMARK_TIMEOUT_SECONDS = null;
 
     private enum RunConfiguration {
         PLAIN_NAIVE {
@@ -156,6 +160,7 @@ public class ParametricConvexSolver {
         boolean reproduceBenchmarks = false;
         String benchmarkInputRoot = DEFAULT_BENCHMARK_INPUT_ROOT;
         String benchmarkOutputRoot = null;
+        Integer benchmarkTimeoutSeconds = null;
     }
 
     private static final class BenchmarkInstance {
@@ -173,6 +178,8 @@ public class ParametricConvexSolver {
         final Integer maxEpisodeLength;
         final Integer multiplier;
         final Double errorTolerance;
+        final Boolean useVertexPrecomp;
+        final Boolean verboseBisim;
 
         BenchmarkInstance(
                 Model model,
@@ -188,7 +195,9 @@ public class ParametricConvexSolver {
                 Integer iterations,
                 Integer maxEpisodeLength,
                 Integer multiplier,
-                Double errorTolerance
+                Double errorTolerance,
+                Boolean useVertexPrecomp,
+                Boolean verboseBisim
         ) {
             this.model = model;
             this.parameterDirectoryName = parameterDirectoryName;
@@ -204,6 +213,8 @@ public class ParametricConvexSolver {
             this.maxEpisodeLength = maxEpisodeLength;
             this.multiplier = multiplier;
             this.errorTolerance = errorTolerance;
+            this.useVertexPrecomp = useVertexPrecomp;
+            this.verboseBisim = verboseBisim;
         }
     }
 
@@ -238,6 +249,7 @@ public class ParametricConvexSolver {
             options.benchmarkOutputRoot = IDE_BENCHMARK_OUTPUT_ROOT == null || IDE_BENCHMARK_OUTPUT_ROOT.isBlank()
                     ? createFreshBenchmarkOutputRoot()
                     : IDE_BENCHMARK_OUTPUT_ROOT;
+            options.benchmarkTimeoutSeconds = IDE_BENCHMARK_TIMEOUT_SECONDS;
         }
 
         return options;
@@ -269,6 +281,16 @@ public class ParametricConvexSolver {
 
             if (arg.startsWith("--benchmark-output-root=")) {
                 options.benchmarkOutputRoot = arg.substring("--benchmark-output-root=".length()).trim();
+                continue;
+            }
+
+            if (arg.startsWith("--benchmark-timeout-seconds=")) {
+                String timeoutToken = arg.substring("--benchmark-timeout-seconds=".length()).trim();
+                Integer timeoutSeconds = parseInteger(timeoutToken);
+                if (timeoutSeconds == null || timeoutSeconds <= 0) {
+                    throw new IllegalArgumentException("Invalid benchmark timeout '" + timeoutToken + "'. Use a positive integer number of seconds.");
+                }
+                options.benchmarkTimeoutSeconds = timeoutSeconds;
                 continue;
             }
 
@@ -353,6 +375,9 @@ public class ParametricConvexSolver {
         System.out.println("Reproducing " + benchmarkInstances.size() + " benchmark instances from " + options.benchmarkInputRoot);
         System.out.println("Output root: " + options.benchmarkOutputRoot);
         System.out.println("Run configurations: " + options.runConfigurations);
+        if (options.benchmarkTimeoutSeconds != null) {
+            System.out.println("Per-run timeout: " + options.benchmarkTimeoutSeconds + "s");
+        }
 
         for (BenchmarkInstance benchmarkInstance : benchmarkInstances) {
             clearCachedSamples();
@@ -367,7 +392,8 @@ public class ParametricConvexSolver {
                         ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
                         pmdp,
                         ex.parameterValues,
-                        true);
+                        true,
+                        options.benchmarkTimeoutSeconds);
             }
         }
     }
@@ -441,7 +467,9 @@ public class ParametricConvexSolver {
                     parseInteger(metadata.get("NumEpisodes")),
                     parseInteger(metadata.get("MaxTrajectoryLength")),
                     parseInteger(metadata.get("Multiplier")),
-                    parseDouble(metadata.get("ErrorTolerance"))
+                    parseDouble(metadata.get("ErrorTolerance")),
+                    parseBoolean(metadata.get("UseVertexPrecomp")),
+                    parseBoolean(metadata.get("VerboseBisim"))
             ));
         }
 
@@ -619,6 +647,22 @@ public class ParametricConvexSolver {
         }
     }
 
+    private static Boolean parseBoolean(String rawValue) {
+        if (rawValue == null || rawValue.isBlank()) {
+            return null;
+        }
+
+        String normalizedValue = rawValue.trim();
+        if ("true".equalsIgnoreCase(normalizedValue)) {
+            return Boolean.TRUE;
+        }
+        if ("false".equalsIgnoreCase(normalizedValue)) {
+            return Boolean.FALSE;
+        }
+
+        return null;
+    }
+
     private static Experiment applyBenchmarkInstance(Experiment experiment, BenchmarkInstance benchmarkInstance) {
         experiment.modelFile = benchmarkInstance.modelFile.toString();
         experiment.certainModelFile = benchmarkInstance.modelFile.toString();
@@ -650,6 +694,12 @@ public class ParametricConvexSolver {
         if (benchmarkInstance.errorTolerance != null) {
             experiment.error_tolerance = benchmarkInstance.errorTolerance;
             experiment.apsDelta = 1 - benchmarkInstance.errorTolerance;
+        }
+        if (benchmarkInstance.useVertexPrecomp != null) {
+            experiment.useVertexPrecomp = benchmarkInstance.useVertexPrecomp;
+        }
+        if (benchmarkInstance.verboseBisim != null) {
+            experiment.verboseBisim = benchmarkInstance.verboseBisim;
         }
 
         return experiment;
@@ -741,6 +791,10 @@ public class ParametricConvexSolver {
     }
 
     public Pair<List<List<IMDP<Double>>>, List<MDP<Double>>> solveIMDPUniform(Experiment ex, EstimatorConstructor estimatorConstructor, MDPSimple<Function> pmdp, Values parameterValuation, boolean verification) {
+        return solveIMDPUniform(ex, estimatorConstructor, pmdp, parameterValuation, verification, null);
+    }
+
+    public Pair<List<List<IMDP<Double>>>, List<MDP<Double>>> solveIMDPUniform(Experiment ex, EstimatorConstructor estimatorConstructor, MDPSimple<Function> pmdp, Values parameterValuation, boolean verification, Integer timeoutSeconds) {
         resetAll(ex.seed);
 
         System.out.println("\n\n\n\n%------\n%  Learning UMDP\n%  Model: " + ex.model +
@@ -782,7 +836,7 @@ public class ParametricConvexSolver {
             long startTime = System.nanoTime();
             // Iterate and run experiments for each of the sampled parameter vectors
             //ex.setTieParamters(verification);
-            Pair<ArrayList<DataPoint>, ArrayList<IMDP<Double>>> resIMDP = runSolvingUniform(ex, estimator, verification);
+            Pair<ArrayList<DataPoint>, ArrayList<IMDP<Double>>> resIMDP = runSolvingUniform(ex, estimator, 0, verification, timeoutSeconds);
             double durationInSeconds = (System.nanoTime() - startTime) / 1_000_000_000.0;
 
             DataProcessor dp = new DataProcessor();
@@ -798,12 +852,18 @@ public class ParametricConvexSolver {
     }
 
     public Pair<ArrayList<DataPoint>, ArrayList<IMDP<Double>>> runSolvingUniform(Experiment ex, Estimator estimator, boolean verifcation) {
-        return runSolvingUniform(ex, estimator, 0, verifcation);
+        return runSolvingUniform(ex, estimator, 0, verifcation, null);
     }
 
     public Pair<ArrayList<DataPoint>, ArrayList<IMDP<Double>>> runSolvingUniform(Experiment ex, Estimator estimator, int past_iterations, boolean verficiation) {
+        return runSolvingUniform(ex, estimator, past_iterations, verficiation, null);
+    }
+
+    public Pair<ArrayList<DataPoint>, ArrayList<IMDP<Double>>> runSolvingUniform(Experiment ex, Estimator estimator, int past_iterations, boolean verficiation, Integer timeoutSeconds) {
         try {
             MDP<Double> SUL = estimator.getSUL();
+            long timeoutDeadlineNanos = computeTimeoutDeadline(timeoutSeconds);
+            boolean timeoutEnabled = timeoutDeadlineNanos != Long.MAX_VALUE;
 
             if (true/*this.modelStats == null*/) {
                 System.out.println("======");
@@ -813,6 +873,11 @@ public class ParametricConvexSolver {
             }
 
             if (this.cachedSamplesMap != null) {
+                if (timeoutEnabled && hasTimedOut(timeoutDeadlineNanos)) {
+                    System.out.println("Skipping solve because benchmark timeout reached before solving with cached samples (" + timeoutSeconds + "s).");
+                    return new Pair<>(new ArrayList<>(), new ArrayList<>());
+                }
+
                 double[] currentResults;
 
                 ArrayList<DataPoint> results = new ArrayList<>();
@@ -848,8 +913,17 @@ public class ParametricConvexSolver {
 
             int samples = 0;
             Strategy samplingStrategy = estimator.buildUniformStrat();
+            boolean timeoutReported = false;
 
             for (int i = past_iterations; i < ex.iterations + past_iterations; i++) {
+                if (timeoutEnabled && hasTimedOut(timeoutDeadlineNanos)) {
+                    if (!timeoutReported) {
+                        System.out.println("Timeout reached after " + (i - past_iterations) + " sampled episodes (limit " + timeoutSeconds + "s).");
+                        timeoutReported = true;
+                    }
+                    break;
+                }
+
                 int sampled = observationSampler.simulateEpisode(ex.max_episode_length, samplingStrategy);
                 samples += sampled;
 
@@ -857,7 +931,8 @@ public class ParametricConvexSolver {
                     System.out.println("Sampled episodes: " + i + " of " + ex.iterations);
                 }
 
-                boolean last_iteration = i == ex.iterations + past_iterations - 1;
+                boolean timeoutReached = timeoutEnabled && hasTimedOut(timeoutDeadlineNanos);
+                boolean last_iteration = i == ex.iterations + past_iterations - 1 || timeoutReached;
                 if (last_iteration || ex.resultIteration(i)) {
                     estimator.setObservationMaps(observationSampler.getSamplesMap(), observationSampler.getSampleSizeMap());
 
@@ -876,6 +951,13 @@ public class ParametricConvexSolver {
                     if (this.verbose) System.out.println();
 
                     results.add(new DataPoint(samples, i + 1, solvingTime, currentResults));
+
+                    if (timeoutReached) {
+                        if (!timeoutReported) {
+                            System.out.println("Timeout reached after " + (i - past_iterations + 1) + " sampled episodes (limit " + timeoutSeconds + "s).");
+                        }
+                        break;
+                    }
                 }
             }
 
@@ -886,6 +968,23 @@ public class ParametricConvexSolver {
         }
         prism.closeDown();
         return null;
+    }
+
+    private static long computeTimeoutDeadline(Integer timeoutSeconds) {
+        if (timeoutSeconds == null || timeoutSeconds <= 0) {
+            return Long.MAX_VALUE;
+        }
+
+        long timeoutNanos = TimeUnit.SECONDS.toNanos(timeoutSeconds.longValue());
+        long now = System.nanoTime();
+        if (Long.MAX_VALUE - now < timeoutNanos) {
+            return Long.MAX_VALUE;
+        }
+        return now + timeoutNanos;
+    }
+
+    private static boolean hasTimedOut(long timeoutDeadlineNanos) {
+        return timeoutDeadlineNanos != Long.MAX_VALUE && System.nanoTime() >= timeoutDeadlineNanos;
     }
 
     public String makeLabel(Experiment ex) {

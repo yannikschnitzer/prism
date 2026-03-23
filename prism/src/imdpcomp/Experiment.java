@@ -54,6 +54,8 @@ public class Experiment {
     public double apsDelta = 1 - error_tolerance;
     public boolean useApsEllipsoid = false;
     public boolean forceEllipsoidSOCP = true;
+    public boolean useVertexPrecomp = true;
+    public boolean verboseBisim = false;
 
 
     public enum ParameterTying {
@@ -195,6 +197,16 @@ public class Experiment {
 
     public Experiment useLPToIMDP(boolean useLPToIMDP) {
         this.useLPToIntervals = useLPToIMDP;
+        return this;
+    }
+
+    public Experiment useVertexPrecomp(boolean useVertexPrecomp) {
+        this.useVertexPrecomp = useVertexPrecomp;
+        return this;
+    }
+
+    public Experiment setVerboseBisim(boolean verboseBisim) {
+        this.verboseBisim = verboseBisim;
         return this;
     }
 

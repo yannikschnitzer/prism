@@ -57,6 +57,8 @@ public class DataProcessor {
             writer.write("ParameterTying: " + ex.tieParameters + System.lineSeparator());
             writer.write("ParameterValues: " + ex.parameterValues + System.lineSeparator());
             writer.write("ErrorTolerance: " + ex.error_tolerance + System.lineSeparator());
+            writer.write("UseVertexPrecomp: " + ex.useVertexPrecomp + System.lineSeparator());
+            writer.write("VerboseBisim: " + ex.verboseBisim + System.lineSeparator());
             writer.write("Specification: " + ex.spec + System.lineSeparator());
             writer.write("RobustSpecification: " + ex.robustSpec + System.lineSeparator());
             writer.write("OptimisticSpecification: " + ex.optimisticSpec + System.lineSeparator());

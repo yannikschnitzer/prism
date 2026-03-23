@@ -43,6 +43,8 @@ public class PACConvexEstimator extends MAPEstimator {
     public PACConvexEstimator(Prism prism, Experiment ex) {
         super(prism, ex);
         error_tolerance = ex.error_tolerance;
+        useVertexPrecomp = ex.useVertexPrecomp;
+        verbose_bisim = ex.verboseBisim;
         this.name = "PAC";
     }
 
