@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -42,106 +43,94 @@ public class ParametricConvexLearner {
     Prism prism;
 
     private final boolean verbose = true;
+    private static final String DEFAULT_OUTPUT_ROOT = "plotting_paper_with_ellipsoids/results_learning_new/parametric_convex";
+    private static final Model DEFAULT_MODEL = Model.AIRCRAFT_MIXTURE_POSITION;
+    private static final EnumSet<RunConfiguration> DEFAULT_RUN_CONFIGURATIONS = EnumSet.of(
+            RunConfiguration.PARAMETER_TYING,
+            RunConfiguration.PARAMETRIC_CONVEX,
+            RunConfiguration.LP_TO_INTERVAL_EXACT,
+            RunConfiguration.LP_TO_INTERVAL_FAST
+    );
+
+    private enum RunConfiguration {
+        PLAIN_NAIVE {
+            @Override
+            void applyTo(Experiment experiment) {
+                experiment.setParametricConvex(false).useLPToIMDP(false).setTieParameters(NO_TYING);
+            }
+        },
+        PARAMETER_TYING {
+            @Override
+            void applyTo(Experiment experiment) {
+                experiment.setParametricConvex(false).useLPToIMDP(false).setTieParameters(FULL_TYING);
+            }
+        },
+        PARAMETRIC_CONVEX {
+            @Override
+            void applyTo(Experiment experiment) {
+                experiment.setParametricConvex(true).useLPToIMDP(false).setTieParameters(FULL_TYING).useOBBT(10);
+            }
+        },
+        LP_TO_INTERVAL_EXACT {
+            @Override
+            void applyTo(Experiment experiment) {
+                experiment.setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).useOBBT(10);
+            }
+        },
+        LP_TO_INTERVAL_FAST {
+            @Override
+            void applyTo(Experiment experiment) {
+                experiment.setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(FAST).useOBBT(10);
+            }
+        },
+        ELLIPSOID {
+            @Override
+            void applyTo(Experiment experiment) {
+                experiment.setParametricConvex(true).useAPSEllipsoid(true).setTieParameters(FULL_TYING).useOBBT(10).useLPToIMDP(false);
+            }
+        },
+        ELLIPSOID_TO_INTERVAL_EXACT {
+            @Override
+            void applyTo(Experiment experiment) {
+                experiment.setParametricConvex(true).useAPSEllipsoid(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).setTieParameters(FULL_TYING).useOBBT(10);
+            }
+        },
+        ELLIPSOID_TO_INTERVAL_FAST {
+            @Override
+            void applyTo(Experiment experiment) {
+                experiment.setParametricConvex(true).useAPSEllipsoid(true).useLPToIMDP(true).setIntervalAbstractionMode(FAST).setTieParameters(FULL_TYING).useOBBT(10);
+            }
+        };
+
+        abstract void applyTo(Experiment experiment);
+
+        Experiment createExperiment(Model model) {
+            Experiment experiment = new Experiment(model);
+            applyTo(experiment);
+            return experiment;
+        }
+    }
 
     public ParametricConvexLearner(Prism prism) {
         this.prism = prism;
-    }
-
-    public static void main2(String[] args) throws GRBException, PrismException {
-        ParametricConvexLearner parametricConvexLearner = new ParametricConvexLearner(new Prism(new PrismDevNullLog()));
-        parametricConvexLearner.initializePrism();
-
-        Experiment ex = new Experiment(Model.BETTING_GAME_CONVEX_ADAPTIVE).setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).useBisimulation(false).useOBBT(10);
-
-        MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
-        System.out.println(pmdp);
-
-        parametricConvexLearner.learnIMDP(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
     }
 
     public static void main(String[] args) throws GRBException, PrismException {
         ParametricConvexLearner parametricConvexLearner = new ParametricConvexLearner(new Prism(new PrismDevNullLog()));
         parametricConvexLearner.initializePrism();
 
-        Model model = Model.AIRCRAFT_MIXTURE_POSITION;
+        Model model = DEFAULT_MODEL;
+        EnumSet<RunConfiguration> runConfigurations = EnumSet.copyOf(DEFAULT_RUN_CONFIGURATIONS);
+        MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(new Experiment(model));
 
-        // Plain Naive
-        Experiment ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(NO_TYING);
-        MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(ex);
-
-//        parametricConvexLearner.learnIMDP(ex,
-//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-//                pmdp,
-//                ex.parameterValues,
-//                true);
-
-
-//        // Parameter Tying
-//        ex = new Experiment(model).setParametricConvex(false).useLPToIMDP(false).setTieParameters(FULL_TYING);
-//        //pmdp = parametricConvexLearner.buildParamModel(ex);
-//
-//        parametricConvexLearner.learnIMDP(ex,
-//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-//                pmdp,
-//                ex.parameterValues,
-//                true);
-//
-//
-//        // Parametric Convex
-//        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(false).setTieParameters(FULL_TYING).useOBBT(10);
-//        //pmdp = parametricConvexLearner.buildParamModel(ex);
-//
-//        parametricConvexLearner.learnIMDP(ex,
-//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-//                pmdp,
-//                ex.parameterValues,
-//                true);
-
-
-//        // LP to Interval - Expression-wise
-//        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).useOBBT(10);
-//        //pmdp = parametricConvexLearner.buildParamModel(ex);
-//
-//        parametricConvexLearner.learnIMDP(ex,
-//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-//                pmdp,
-//                ex.parameterValues,
-//                true);
-
-
-//        // LP to Interval - Interval Arithmetic (parameter-wise, FAST)
-//        ex = new Experiment(model).setParametricConvex(true).useLPToIMDP(true).setIntervalAbstractionMode(FAST).useOBBT(10);
-//        //pmdp = parametricConvexLearner.buildParamModel(ex);
-//
-//        parametricConvexLearner.learnIMDP(ex,
-//                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-//                pmdp,
-//                ex.parameterValues,
-//                true);
-
-        // Ellipsoid
-        ex = new Experiment(model).setParametricConvex(true).useAPSEllipsoid(true).setTieParameters(FULL_TYING).useOBBT(10);
-        //  pmdp = parametricConvexLearner.buildParamModel(ex);
-
-        parametricConvexLearner.learnIMDP(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
-
-        // Ellipsoid to Interval - Expression-wise
-        ex = new Experiment(model).setParametricConvex(true).useAPSEllipsoid(true).useLPToIMDP(true).setIntervalAbstractionMode(EXACT).setTieParameters(FULL_TYING).useOBBT(10);
-        //  pmdp = parametricConvexLearner.buildParamModel(ex);
-
-        parametricConvexLearner.learnIMDP(ex,
-                ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                pmdp,
-                ex.parameterValues,
-                true);
+        for (RunConfiguration runConfiguration : runConfigurations) {
+            Experiment ex = runConfiguration.createExperiment(model);
+            parametricConvexLearner.learnIMDP(ex,
+                    ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+                    pmdp,
+                    ex.parameterValues,
+                    true);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -183,7 +172,7 @@ public class ParametricConvexLearner {
         Expression expr;
         ArrayList<String> propNames = new ArrayList<>();
         ArrayList<BitSet> propBSs = new ArrayList<>();
-        StateModelChecker mc = new StateModelChecker(null);
+        explicit.StateModelChecker mc = new explicit.StateModelChecker(null);
         Expression exprNew;
 
         pf = prism.parsePropertiesString(experiment.dtmcSpec);
@@ -376,12 +365,37 @@ public class ParametricConvexLearner {
 
     // Creates the directory path for dumping experimental results
     public String makeOutputDirectory(Experiment ex) {
-        String outputPath = String.format("plotting_paper_with_ellipsoids/results_learning_new/parametric_convex/%s/%s/%s/", ex.model.toString(), ex.parameterValues.getNumValues() > 10 ? ex.identParameters : ex.parameterValues, ex.seed);
+        String outputPath = String.format("%s/%s/%s/%s/", DEFAULT_OUTPUT_ROOT, ex.model.toString(), ex.parameterValues.getNumValues() > 10 ? ex.identParameters : ex.parameterValues, ex.seed);
         try {
             Files.createDirectories(Paths.get(outputPath));
+            copyExperimentPrismFile(ex, outputPath);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return outputPath;
+    }
+
+    private void copyExperimentPrismFile(Experiment ex, String outputPath) throws IOException {
+        String modelPath = (ex.modelFile != null && !ex.modelFile.isBlank()) ? ex.modelFile : ex.certainModelFile;
+        if (modelPath == null || modelPath.isBlank()) {
+            return;
+        }
+
+        Path source = Paths.get(modelPath).normalize();
+        if (!Files.exists(source)) {
+            return;
+        }
+
+        String fileName = source.getFileName().toString().toLowerCase(Locale.ROOT);
+        if (!fileName.endsWith(".prism") && !fileName.endsWith(".pm")) {
+            return;
+        }
+
+        Path target = Paths.get(outputPath).resolve(source.getFileName());
+        if (Files.exists(target)) {
+            return;
+        }
+
+        Files.copy(source, target);
     }
 }

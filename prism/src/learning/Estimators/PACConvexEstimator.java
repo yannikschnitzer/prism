@@ -472,7 +472,7 @@ public class PACConvexEstimator extends MAPEstimator {
 //        }
 
         // Printing Model
-        ConvexLearner.printModel(cxl.getModel());
+        //ConvexLearner.printModel(cxl.getModel());
 
         // 2) Build intervals by optimizing each unique function once
         if (ex.useLPToIntervals) {
@@ -537,7 +537,7 @@ public class PACConvexEstimator extends MAPEstimator {
         }
 
         // Printing Model
-        ConvexLearner.printModel(cxl.getModel());
+        //ConvexLearner.printModel(cxl.getModel());
 
         UMDPSimple<Double> convex_mdp = cxl.getUMDP();
         convex_mdp.addInitialState(imdpBisim.getFirstInitialState());
