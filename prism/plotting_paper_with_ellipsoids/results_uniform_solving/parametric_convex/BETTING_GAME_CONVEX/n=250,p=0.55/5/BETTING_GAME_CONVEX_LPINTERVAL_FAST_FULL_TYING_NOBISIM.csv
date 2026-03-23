@@ -1,0 +1,2 @@
+Episode,Robust Guarantee UMDP,Performance UMDP Robust Policy,Performance UMDP Optimistic Policy,Optimistic Guarantee UMDP,Total Runtime,Model Building Time,Model Checking Time Robust,Model Checking Time Optimistic,Model Checking Time DTMC,UDTMC Result Optimal Policy Robust,UDTMC Result Optimal Polciy Optimistic
+100000,312.08907866,316.87580662,316.87681241,320.77623512,441.690090583,17.858623083,121.390158917,111.408821375,27.059554917,312.08642509,320.78374301

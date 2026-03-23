@@ -1,0 +1,25 @@
+ExperimentInfo:
+Model: SYSADMIN_CONVEX
+NumStates: 31
+NumTransitions: 91
+NumLearnableComponents: 91
+NumParameters: 3
+Seed: 5
+Type: REACH
+Factored: false
+CompositionType: INTERVAL_PRODUCT
+ParameterTying: FULL_TYING
+ParameterValues: N=30,p=0.0166666666667,q=0.016583747927
+ErrorTolerance: 0.999
+Specification: Pmax=? [ !"fail" U "goal" ]
+RobustSpecification: Pmaxmin=? [ !"fail" U "goal" ]
+OptimisticSpecification: Pmaxmax=? [ !"fail" U "goal" ]
+DTMCSpecification: P=? [ !"fail" U "goal" ]
+TrueOptimum: 4.1626570383088997E-4
+Multiplier: 5
+NumEpisodes: 100000
+MaxTrajectoryLength: 30
+ModelFile: ../parametric_convex_models/sys_admin.prism
+StrategyWeight: 0.9
+Recomputations: 1
+Runtime: 0.285299584

@@ -1,0 +1,25 @@
+ExperimentInfo:
+Model: AIRCRAFT_MIXTURE_ONEMOD_ADAPTIVE
+NumStates: 303
+NumTransitions: 3468
+NumLearnableComponents: 3360
+NumParameters: 5
+Seed: 5
+Type: REACH
+Factored: false
+CompositionType: INTERVAL_PRODUCT
+ParameterTying: NO_TYING
+ParameterValues: maxX=10,maxY=5,theta1=0.4,theta2=0.2,theta3=0.15
+ErrorTolerance: 0.999
+Specification: Pmax=? [!collision U "goal"]
+RobustSpecification: Pmaxmin=? [!collision U "goal"]
+OptimisticSpecification: Pmaxmax=? [!collision U "goal"]
+DTMCSpecification: P=?  [!collision U "goal"]
+TrueOptimum: 0.5474861469711431
+Multiplier: 5
+NumEpisodes: 100000
+MaxTrajectoryLength: 50
+ModelFile: ../parametric_convex_models/mixture_mdps/aircraft_mixture_onemod_adaptive.prism
+StrategyWeight: 0.9
+Recomputations: 1
+Runtime: 7.480018917

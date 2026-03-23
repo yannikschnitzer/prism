@@ -1,0 +1,25 @@
+ExperimentInfo:
+Model: BETTING_GAME_CONVEX
+NumStates: 13500
+NumTransitions: 111678
+NumLearnableComponents: 9
+NumParameters: 2
+Seed: 5
+Type: REWARD
+Factored: false
+CompositionType: INTERVAL_PRODUCT
+ParameterTying: FULL_TYING
+ParameterValues: n=50,p=0.55
+ErrorTolerance: 0.999
+Specification: Rmax=? [F "done"]
+RobustSpecification: Rmaxmin=? [F "done"]
+OptimisticSpecification: Rmaxmax=? [F "done"]
+DTMCSpecification: R=? [F "done"]
+TrueOptimum: 60.000789588238824
+Multiplier: 4
+NumEpisodes: 100000
+MaxTrajectoryLength: 50
+ModelFile: ../parametric_convex_models/bet_fav.prism
+StrategyWeight: 0.9
+Recomputations: 1
+Runtime: 5.428071834

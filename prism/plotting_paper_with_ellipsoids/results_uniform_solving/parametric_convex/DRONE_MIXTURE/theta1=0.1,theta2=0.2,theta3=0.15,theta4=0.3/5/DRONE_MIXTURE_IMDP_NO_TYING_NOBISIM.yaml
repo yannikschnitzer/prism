@@ -1,0 +1,25 @@
+ExperimentInfo:
+Model: DRONE_MIXTURE
+NumStates: 3192
+NumTransitions: 53752
+NumLearnableComponents: 53076
+NumParameters: 4
+Seed: 5
+Type: REACH
+Factored: false
+CompositionType: INTERVAL_PRODUCT
+ParameterTying: NO_TYING
+ParameterValues: theta1=0.1,theta2=0.2,theta3=0.15,theta4=0.3
+ErrorTolerance: 0.999
+Specification: Pmax=? [!crash U target]
+RobustSpecification: Pmaxmin=? [!crash U target]
+OptimisticSpecification: Pmaxmax=? [!crash U target]
+DTMCSpecification: P=? [!crash U target]
+TrueOptimum: 0.8605317873966241
+Multiplier: 2
+NumEpisodes: 100000
+MaxTrajectoryLength: 100
+ModelFile: ../parametric_convex_models/mixture_mdps/drone_mixture.prism
+StrategyWeight: 0.9
+Recomputations: 1
+Runtime: 78.31325325

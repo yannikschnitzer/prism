@@ -1,0 +1,25 @@
+ExperimentInfo:
+Model: BETTING_GAME_PARALLEL
+NumStates: 151556
+NumTransitions: 1846840
+NumLearnableComponents: 185209
+NumParameters: 3
+Seed: 5
+Type: REWARD
+Factored: false
+CompositionType: INTERVAL_PRODUCT
+ParameterTying: FULL_TYING
+ParameterValues: n=20,p_1=0.55,p_2=0.53
+ErrorTolerance: 0.999
+Specification: Rmax=? [F "done"]
+RobustSpecification: Rmaxmin=? [F "done"]
+OptimisticSpecification: Rmaxmax=? [F "done"]
+DTMCSpecification: R=? [F "done"]
+TrueOptimum: 28.51008597779879
+Multiplier: 2
+NumEpisodes: 100000
+MaxTrajectoryLength: 20
+ModelFile: ../parametric_convex_models/polynomial_mdps/bet_parallel.prism
+StrategyWeight: 0.9
+Recomputations: 1
+Runtime: 708.537783917

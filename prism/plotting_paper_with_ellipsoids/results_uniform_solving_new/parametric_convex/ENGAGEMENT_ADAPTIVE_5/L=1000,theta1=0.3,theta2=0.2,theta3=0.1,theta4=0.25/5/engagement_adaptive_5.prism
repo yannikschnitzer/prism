@@ -1,0 +1,295 @@
+mdp
+
+// ===== Engagement ladder =====
+const int L = 1000;                       // levels 0..L (0=churn, L=purchase)
+
+// In the transformed model, "observable/original" states are phase=0.
+label "churn"    = (phase = 0 & e = 0);
+label "purchase" = (phase = 0 & e = L);
+
+// ===== Mixture weights (K=5) =====
+const double theta1;
+const double theta2;
+const double theta3;
+const double theta4;
+formula theta5 = 1 - theta1 - theta2 - theta3 - theta4;
+
+// ===== Base kernels (per action, per type) =====
+// LIGHT
+const double uL1 = 0.10;
+const double dL1 = 0.02;
+const double uL2 = 0.06;
+const double dL2 = 0.01;
+const double uL3 = 0.04;
+const double dL3 = 0.02;
+const double uL4 = 0.03;
+const double dL4 = 0.015;
+const double uL5 = 0.02;
+const double dL5 = 0.03;
+
+// MEDIUM
+const double uM1 = 0.18;
+const double dM1 = 0.06;
+const double uM2 = 0.12;
+const double dM2 = 0.03;
+const double uM3 = 0.08;
+const double dM3 = 0.08;
+const double uM4 = 0.06;
+const double dM4 = 0.10;
+const double uM5 = 0.04;
+const double dM5 = 0.12;
+
+// AGGRESSIVE
+const double uA1 = 0.28;
+const double dA1 = 0.20;
+const double uA2 = 0.20;
+const double dA2 = 0.10;
+const double uA3 = 0.12;
+const double dA3 = 0.25;
+const double uA4 = 0.08;
+const double dA4 = 0.30;
+const double uA5 = 0.05;
+const double dA5 = 0.35;
+
+// ===== Mixture-combined (state-free baselines; still affine in θ) =====
+formula pU_L0 = theta1*uL1 + theta2*uL2 + theta3*uL3 + theta4*uL4 + theta5*uL5;
+formula pD_L0 = theta1*dL1 + theta2*dL2 + theta3*dL3 + theta4*dL4 + theta5*dL5;
+
+formula pU_M0 = theta1*uM1 + theta2*uM2 + theta3*uM3 + theta4*uM4 + theta5*uM5;
+formula pD_M0 = theta1*dM1 + theta2*dM2 + theta3*dM3 + theta4*dM4 + theta5*dM5;
+
+formula pU_A0 = theta1*uA1 + theta2*uA2 + theta3*uA3 + theta4*uA4 + theta5*uA5;
+formula pD_A0 = theta1*dA1 + theta2*dA2 + theta3*dA3 + theta4*dA4 + theta5*dA5;
+
+// ===== State-dependent structure =====
+formula zCOLD = (e <= 3);
+formula zWARM = (e >= 4 & e <= L-3);
+formula zHOT  = (e >= L-2 & e < L);
+
+// "last action" codes and cooldown
+const int A_NONE  = 0;
+const int A_LIGHT = 1;
+const int A_MED   = 2;
+const int A_AGGR  = 3;
+
+const int CMAX = 2;   // cooldown memory (0..CMAX)
+
+// Repetition multipliers
+const double repL = 0.90;
+const double repM = 0.90;
+const double repA = 0.80;
+
+// Cooldown multiplier for AGGRESSIVE if cooldown < CMAX
+const double coolA = 0.70;
+
+// Zone multipliers
+const double mUL_cold = 1.15;
+const double mDL_cold = 0.90;
+const double mUM_cold = 1.05;
+const double mDM_cold = 0.95;
+const double mUA_cold = 1.00;
+const double mDA_cold = 1.10;
+
+const double mUL_warm = 1.00;
+const double mDL_warm = 1.00;
+const double mUM_warm = 1.15;
+const double mDM_warm = 0.95;
+const double mUA_warm = 1.05;
+const double mDA_warm = 1.05;
+
+const double mUL_hot = 0.85;
+const double mDL_hot = 1.05;
+const double mUM_hot = 1.00;
+const double mDM_hot = 1.00;
+const double mUA_hot = 1.10;
+const double mDA_hot = 0.95;
+
+// Small additive nudges by zone
+const double dUL_cold = 0.02;
+const double dDL_cold = 0.00;
+const double dUM_cold = 0.01;
+const double dDM_cold = 0.00;
+const double dUA_cold = 0.00;
+const double dDA_cold = 0.02;
+
+const double dUL_warm = 0.00;
+const double dDL_warm = 0.00;
+const double dUM_warm = 0.02;
+const double dDM_warm = 0.00;
+const double dUA_warm = 0.01;
+const double dDA_warm = 0.01;
+
+const double dUL_hot = -0.02;
+const double dDL_hot = 0.00;
+const double dUM_hot = 0.00;
+const double dDM_hot = 0.00;
+const double dUA_hot = 0.01;
+const double dDA_hot = -0.01;
+
+// ===== Costs =====
+const double cost_light = 0.05;
+const double cost_med   = 0.10;
+const double cost_aggr  = 0.30;
+const double time_cost  = 1.0;
+const double churn_pen  = 5.0;
+
+// ===== Two-phase state space =====
+// phase=0: original decision state
+// phase=1: auxiliary state after action chosen, before probabilistic resolution
+module engage
+  e     : [0..L] init 2;
+  last  : [0..3] init A_NONE;
+  cool  : [0..CMAX] init CMAX;
+
+  phase : [0..1] init 0;
+  pend  : [0..3] init A_NONE;
+
+  // terminals
+  [stop] phase=0 & e=0 -> (e'=e) & (last'=last) & (cool'=cool) & (phase'=0) & (pend'=A_NONE);
+  [stop] phase=0 & e=L -> (e'=e) & (last'=last) & (cool'=cool) & (phase'=0) & (pend'=A_NONE);
+
+  // ============================================================
+  // Phase 0: choose action nondeterministically
+  // ============================================================
+  [light]  phase=0 & e>0 & e<L -> (phase'=1) & (pend'=A_LIGHT) & (e'=e) & (last'=last) & (cool'=cool);
+  [medium] phase=0 & e>0 & e<L -> (phase'=1) & (pend'=A_MED)   & (e'=e) & (last'=last) & (cool'=cool);
+  [aggr]   phase=0 & e>0 & e<L -> (phase'=1) & (pend'=A_AGGR)  & (e'=e) & (last'=last) & (cool'=cool);
+
+  // ============================================================
+  // Phase 1: resolve probabilistically according to chosen action
+  // ============================================================
+
+  // ---------- LIGHT ----------
+  [light_res] phase=1 & pend=A_LIGHT & e>0 & e<L & zCOLD & !(last = A_LIGHT) ->
+     (mUL_cold*pU_L0 + dUL_cold) : (e' = min(e+1,L)) & (last' = A_LIGHT) & (cool' = min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (mDL_cold*pD_L0 + dDL_cold) : (e' = max(e-1,0)) & (last' = A_LIGHT) & (cool' = min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (mUL_cold*pU_L0 + dUL_cold) - (mDL_cold*pD_L0 + dDL_cold)) : (e' = e) & (last' = A_LIGHT) & (cool' = min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE);
+
+  [light_res] phase=1 & pend=A_LIGHT & e>0 & e<L & zCOLD & (last = A_LIGHT) ->
+     (repL*mUL_cold*pU_L0 + dUL_cold) : (e' = min(e+1,L)) & (last' = A_LIGHT) & (cool' = min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (repL*mDL_cold*pD_L0 + dDL_cold) : (e' = max(e-1,0)) & (last' = A_LIGHT) & (cool' = min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (repL*mUL_cold*pU_L0 + dUL_cold) - (repL*mDL_cold*pD_L0 + dDL_cold)) : (e' = e) & (last' = A_LIGHT) & (cool' = min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE);
+
+  [light_res] phase=1 & pend=A_LIGHT & e>0 & e<L & zWARM & !(last = A_LIGHT) ->
+     (mUL_warm*pU_L0 + dUL_warm) : (e' = min(e+1,L)) & (last'=A_LIGHT) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (mDL_warm*pD_L0 + dDL_warm) : (e' = max(e-1,0)) & (last'=A_LIGHT) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (mUL_warm*pU_L0 + dUL_warm) - (mDL_warm*pD_L0 + dDL_warm)) : (e'=e) & (last'=A_LIGHT) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE);
+
+  [light_res] phase=1 & pend=A_LIGHT & e>0 & e<L & zWARM & (last = A_LIGHT) ->
+     (repL*mUL_warm*pU_L0 + dUL_warm) : (e' = min(e+1,L)) & (last'=A_LIGHT) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (repL*mDL_warm*pD_L0 + dDL_warm) : (e' = max(e-1,0)) & (last'=A_LIGHT) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (repL*mUL_warm*pU_L0 + dUL_warm) - (repL*mDL_warm*pD_L0 + dDL_warm)) : (e'=e) & (last'=A_LIGHT) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE);
+
+  [light_res] phase=1 & pend=A_LIGHT & e>0 & e<L & zHOT & !(last = A_LIGHT) ->
+     (mUL_hot*pU_L0 + dUL_hot) : (e' = min(e+1,L)) & (last'=A_LIGHT) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (mDL_hot*pD_L0 + dDL_hot) : (e' = max(e-1,0)) & (last'=A_LIGHT) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (mUL_hot*pU_L0 + dUL_hot) - (mDL_hot*pD_L0 + dDL_hot)) : (e'=e) & (last'=A_LIGHT) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE);
+
+  [light_res] phase=1 & pend=A_LIGHT & e>0 & e<L & zHOT & (last = A_LIGHT) ->
+     (repL*mUL_hot*pU_L0 + dUL_hot) : (e' = min(e+1,L)) & (last'=A_LIGHT) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (repL*mDL_hot*pD_L0 + dDL_hot) : (e' = max(e-1,0)) & (last'=A_LIGHT) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (repL*mUL_hot*pU_L0 + dUL_hot) - (repL*mDL_hot*pD_L0 + dDL_hot)) : (e'=e) & (last'=A_LIGHT) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE);
+
+  // ---------- MEDIUM ----------
+  [medium_res] phase=1 & pend=A_MED & e>0 & e<L & zCOLD & !(last = A_MED) ->
+     (mUM_cold*pU_M0 + dUM_cold) : (e'=min(e+1,L)) & (last'=A_MED) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (mDM_cold*pD_M0 + dDM_cold) : (e'=max(e-1,0)) & (last'=A_MED) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (mUM_cold*pU_M0 + dUM_cold) - (mDM_cold*pD_M0 + dDM_cold)) : (e'=e) & (last'=A_MED) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE);
+
+  [medium_res] phase=1 & pend=A_MED & e>0 & e<L & zCOLD & (last = A_MED) ->
+     (repM*mUM_cold*pU_M0 + dUM_cold) : (e'=min(e+1,L)) & (last'=A_MED) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (repM*mDM_cold*pD_M0 + dDM_cold) : (e'=max(e-1,0)) & (last'=A_MED) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (repM*mUM_cold*pU_M0 + dUM_cold) - (repM*mDM_cold*pD_M0 + dDM_cold)) : (e'=e) & (last'=A_MED) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE);
+
+  [medium_res] phase=1 & pend=A_MED & e>0 & e<L & zWARM & !(last = A_MED) ->
+     (mUM_warm*pU_M0 + dUM_warm) : (e'=min(e+1,L)) & (last'=A_MED) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (mDM_warm*pD_M0 + dDM_warm) : (e'=max(e-1,0)) & (last'=A_MED) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (mUM_warm*pU_M0 + dUM_warm) - (mDM_warm*pD_M0 + dDM_warm)) : (e'=e) & (last'=A_MED) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE);
+
+  [medium_res] phase=1 & pend=A_MED & e>0 & e<L & zWARM & (last = A_MED) ->
+     (repM*mUM_warm*pU_M0 + dUM_warm) : (e'=min(e+1,L)) & (last'=A_MED) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (repM*mDM_warm*pD_M0 + dDM_warm) : (e'=max(e-1,0)) & (last'=A_MED) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (repM*mUM_warm*pU_M0 + dUM_warm) - (repM*mDM_warm*pD_M0 + dDM_warm)) : (e'=e) & (last'=A_MED) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE);
+
+  [medium_res] phase=1 & pend=A_MED & e>0 & e<L & zHOT & !(last = A_MED) ->
+     (mUM_hot*pU_M0 + dUM_hot) : (e'=min(e+1,L)) & (last'=A_MED) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (mDM_hot*pD_M0 + dDM_hot) : (e'=max(e-1,0)) & (last'=A_MED) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (mUM_hot*pU_M0 + dUM_hot) - (mDM_hot*pD_M0 + dDM_hot)) : (e'=e) & (last'=A_MED) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE);
+
+  [medium_res] phase=1 & pend=A_MED & e>0 & e<L & zHOT & (last = A_MED) ->
+     (repM*mUM_hot*pU_M0 + dUM_hot) : (e'=min(e+1,L)) & (last'=A_MED) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (repM*mDM_hot*pD_M0 + dDM_hot) : (e'=max(e-1,0)) & (last'=A_MED) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (repM*mUM_hot*pU_M0 + dUM_hot) - (repM*mDM_hot*pD_M0 + dDM_hot)) : (e'=e) & (last'=A_MED) & (cool'=min(cool+1,CMAX)) & (phase'=0) & (pend'=A_NONE);
+
+  // ---------- AGGRESSIVE ----------
+  [aggr_res] phase=1 & pend=A_AGGR & e>0 & e<L & zCOLD & !(last = A_AGGR) & (cool < CMAX) ->
+     (coolA*mUA_cold*pU_A0 + dUA_cold) : (e'=min(e+1,L)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (coolA*mDA_cold*pD_A0 + dDA_cold) : (e'=max(e-1,0)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (coolA*mUA_cold*pU_A0 + dUA_cold) - (coolA*mDA_cold*pD_A0 + dDA_cold)) : (e'=e) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE);
+
+  [aggr_res] phase=1 & pend=A_AGGR & e>0 & e<L & zCOLD & !(last = A_AGGR) & (cool = CMAX) ->
+     (mUA_cold*pU_A0 + dUA_cold) : (e'=min(e+1,L)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (mDA_cold*pD_A0 + dDA_cold) : (e'=max(e-1,0)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (mUA_cold*pU_A0 + dUA_cold) - (mDA_cold*pD_A0 + dDA_cold)) : (e'=e) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE);
+
+  [aggr_res] phase=1 & pend=A_AGGR & e>0 & e<L & zCOLD & (last = A_AGGR) & (cool < CMAX) ->
+     (repA*coolA*mUA_cold*pU_A0 + dUA_cold) : (e'=min(e+1,L)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (repA*coolA*mDA_cold*pD_A0 + dDA_cold) : (e'=max(e-1,0)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (repA*coolA*mUA_cold*pU_A0 + dUA_cold) - (repA*coolA*mDA_cold*pD_A0 + dDA_cold)) : (e'=e) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE);
+
+  [aggr_res] phase=1 & pend=A_AGGR & e>0 & e<L & zCOLD & (last = A_AGGR) & (cool = CMAX) ->
+     (repA*mUA_cold*pU_A0 + dUA_cold) : (e'=min(e+1,L)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (repA*mDA_cold*pD_A0 + dDA_cold) : (e'=max(e-1,0)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (repA*mUA_cold*pU_A0 + dUA_cold) - (repA*mDA_cold*pD_A0 + dDA_cold)) : (e'=e) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE);
+
+  [aggr_res] phase=1 & pend=A_AGGR & e>0 & e<L & zWARM & !(last = A_AGGR) & (cool < CMAX) ->
+     (coolA*mUA_warm*pU_A0 + dUA_warm) : (e'=min(e+1,L)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (coolA*mDA_warm*pD_A0 + dDA_warm) : (e'=max(e-1,0)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (coolA*mUA_warm*pU_A0 + dUA_warm) - (coolA*mDA_warm*pD_A0 + dDA_warm)) : (e'=e) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE);
+
+  [aggr_res] phase=1 & pend=A_AGGR & e>0 & e<L & zWARM & !(last = A_AGGR) & (cool = CMAX) ->
+     (mUA_warm*pU_A0 + dUA_warm) : (e'=min(e+1,L)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (mDA_warm*pD_A0 + dDA_warm) : (e'=max(e-1,0)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (mUA_warm*pU_A0 + dUA_warm) - (mDA_warm*pD_A0 + dDA_warm)) : (e'=e) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE);
+
+  [aggr_res] phase=1 & pend=A_AGGR & e>0 & e<L & zWARM & (last = A_AGGR) & (cool < CMAX) ->
+     (repA*coolA*mUA_warm*pU_A0 + dUA_warm) : (e'=min(e+1,L)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (repA*coolA*mDA_warm*pD_A0 + dDA_warm) : (e'=max(e-1,0)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (repA*coolA*mUA_warm*pU_A0 + dUA_warm) - (repA*coolA*mDA_warm*pD_A0 + dDA_warm)) : (e'=e) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE);
+
+  [aggr_res] phase=1 & pend=A_AGGR & e>0 & e<L & zWARM & (last = A_AGGR) & (cool = CMAX) ->
+     (repA*mUA_warm*pU_A0 + dUA_warm) : (e'=min(e+1,L)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (repA*mDA_warm*pD_A0 + dDA_warm) : (e'=max(e-1,0)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (repA*mUA_warm*pU_A0 + dUA_warm) - (repA*mDA_warm*pD_A0 + dDA_warm)) : (e'=e) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE);
+
+  [aggr_res] phase=1 & pend=A_AGGR & e>0 & e<L & zHOT & !(last = A_AGGR) & (cool < CMAX) ->
+     (coolA*mUA_hot*pU_A0 + dUA_hot) : (e'=min(e+1,L)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (coolA*mDA_hot*pD_A0 + dDA_hot) : (e'=max(e-1,0)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (coolA*mUA_hot*pU_A0 + dUA_hot) - (coolA*mDA_hot*pD_A0 + dDA_hot)) : (e'=e) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE);
+
+  [aggr_res] phase=1 & pend=A_AGGR & e>0 & e<L & zHOT & !(last = A_AGGR) & (cool = CMAX) ->
+     (mUA_hot*pU_A0 + dUA_hot) : (e'=min(e+1,L)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (mDA_hot*pD_A0 + dDA_hot) : (e'=max(e-1,0)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (mUA_hot*pU_A0 + dUA_hot) - (mDA_hot*pD_A0 + dDA_hot)) : (e'=e) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE);
+
+  [aggr_res] phase=1 & pend=A_AGGR & e>0 & e<L & zHOT & (last = A_AGGR) & (cool < CMAX) ->
+     (repA*coolA*mUA_hot*pU_A0 + dUA_hot) : (e'=min(e+1,L)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (repA*coolA*mDA_hot*pD_A0 + dDA_hot) : (e'=max(e-1,0)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (repA*coolA*mUA_hot*pU_A0 + dUA_hot) - (repA*coolA*mDA_hot*pD_A0 + dDA_hot)) : (e'=e) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE);
+
+  [aggr_res] phase=1 & pend=A_AGGR & e>0 & e<L & zHOT & (last = A_AGGR) & (cool = CMAX) ->
+     (repA*mUA_hot*pU_A0 + dUA_hot) : (e'=min(e+1,L)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (repA*mDA_hot*pD_A0 + dDA_hot) : (e'=max(e-1,0)) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE) +
+     (1 - (repA*mUA_hot*pU_A0 + dUA_hot) - (repA*mDA_hot*pD_A0 + dDA_hot)) : (e'=e) & (last'=A_AGGR) & (cool'=0) & (phase'=0) & (pend'=A_NONE);
+endmodule
+
+// ===== Purely state-based rewards =====
+rewards "eng_cost"
+  (phase=0 & e>0 & e<L) : time_cost;
+
+  (phase=1 & pend=A_LIGHT) : cost_light;
+  (phase=1 & pend=A_MED)   : cost_med;
+  (phase=1 & pend=A_AGGR)  : cost_aggr;
+
+  (phase=0 & e=0) : churn_pen;
+endrewards

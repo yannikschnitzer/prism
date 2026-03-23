@@ -1,0 +1,236 @@
+mdp
+
+// ========= grid size (change as you like; default ~paper scale) =========
+const int w = 21;        // width  (x = 0..w-1)
+const int h = 17;        // height (y = 0..h-1)
+
+// start / goal (must be within the grid)
+const int startx = 0;
+const int starty = 0;
+const int goalx  = 20;
+const int goaly  = 16;
+
+// ========= unknown parameters in [0,1] (learned) =========
+const double theta_h;     // sensitivity to horizontal current (east-west)
+const double theta_v;     // sensitivity to vertical   current (north-south)
+
+// ========= smooth current field u(x,y), v(x,y) ∈ [-1,1] =========
+// replace these with your data-driven fields if you have them
+formula fx = (2.0*x)/(w-1) - 1.0;      // normalized x ∈ [-1,1]
+formula fy = (2.0*y)/(h-1) - 1.0;      // normalized y ∈ [-1,1]
+
+// u>0 = eastward, u<0 = westward; v>0 = northward, v<0 = southward
+formula u = 0.6*fx + 0.2*fy;
+formula v = -0.2*fx + 0.7*fy;
+
+formula ah = max(u, -u);               // |u| ∈ [0,1]
+formula av = max(v, -v);               // |v| ∈ [0,1]
+
+// ========= factorized 2×2 outcome weights (monomials only) =========
+// hh = prob to "fail" along commanded axis due to horizontal current
+// vv = prob to "drift" across axis due to vertical current
+// hhvv = bilinear interaction (no squares)
+formula hh   = ah*theta_h;
+formula vv   = av*theta_v;
+formula hhvv = ah*av*theta_h*theta_v;
+
+// four outcomes; they always sum to 1.0
+formula p_succ_nodrift = 1.0 - hh - vv + hhvv;   // (1-ah*th)*(1-av*tv)
+formula p_succ_drift   =        vv     - hhvv;   // (1-ah*th)*(av*tv)
+formula p_fail_nodrift =        hh     - hhvv;   // (ah*th)*(1-av*tv)
+formula p_fail_drift   =                 hhvv;   // (ah*th)*(av*tv)
+
+// ========= goal label & optional time reward =========
+label "goal" = (x=goalx & y=goaly);
+
+rewards "time"
+  !(x=goalx & y=goaly) : 1;
+endrewards
+
+module glider
+  x : [0..w-1] init startx;
+  y : [0..h-1] init starty;
+
+  // absorbing goal
+  [hold] (x=goalx & y=goaly) -> (x'=x) & (y'=y);
+
+  // ======================= WEST action =======================
+  // cross-axis drift is vertical; sign(v) chooses north vs south
+
+  // v >= 0, interior for west-diagonal: x>0 & y<h-1
+  [west] x>0 & y<h-1 & v>=0 & !(x=goalx & y=goaly) ->
+      p_succ_nodrift : (x'=x-1) & (y'=y)     +   // west
+      p_succ_drift   : (x'=x-1) & (y'=y+1)   +   // north-west
+      p_fail_nodrift : (x'=x)   & (y'=y)     +   // stay
+      p_fail_drift   : (x'=x)   & (y'=y+1);      // north
+
+  // v >= 0, at left edge x=0 (west & NW clamp); merge targets
+  [west] x=0 & y<h-1 & v>=0 & !(x=goalx & y=goaly) ->
+      (p_succ_nodrift + p_fail_nodrift) : (x'=x) & (y'=y)   +   // stay
+      (p_succ_drift   + p_fail_drift)   : (x'=x) & (y'=y+1);    // north
+
+  // v >= 0, at top edge y=h-1 (NW & N clamp)
+  [west] x>0 & y=h-1 & v>=0 & !(x=goalx & y=goaly) ->
+      (p_succ_drift + p_fail_drift)   : (x'=x-1) & (y'=y) +      // west
+      (p_succ_nodrift + p_fail_nodrift) : (x'=x) & (y'=y);       // stay
+
+  // v >= 0, corner x=0 & y=h-1
+  [west] x=0 & y=h-1 & v>=0 & !(x=goalx & y=goaly) ->
+      1.0 : (x'=x) & (y'=y);
+
+  // v < 0, interior for west-diagonal: x>0 & y>0 (southward drift)
+  [west] x>0 & y>0 & v<0 & !(x=goalx & y=goaly) ->
+      p_succ_nodrift : (x'=x-1) & (y'=y)     +   // west
+      p_succ_drift   : (x'=x-1) & (y'=y-1)   +   // south-west
+      p_fail_nodrift : (x'=x)   & (y'=y)     +   // stay
+      p_fail_drift   : (x'=x)   & (y'=y-1);      // south
+
+  // v < 0, at left edge x=0
+  [west] x=0 & y>0 & v<0 & !(x=goalx & y=goaly) ->
+      (p_succ_nodrift + p_fail_nodrift) : (x'=x) & (y'=y)   +   // stay
+      (p_succ_drift   + p_fail_drift)   : (x'=x) & (y'=y-1);    // south
+
+  // v < 0, at bottom edge y=0
+  [west] x>0 & y=0 & v<0 & !(x=goalx & y=goaly) ->
+      (p_succ_drift + p_fail_drift)     : (x'=x-1) & (y'=y) +   // west
+      (p_succ_nodrift + p_fail_nodrift) : (x'=x)   & (y'=y);    // stay
+
+  // v < 0, corner x=0 & y=0
+  [west] x=0 & y=0 & v<0 & !(x=goalx & y=goaly) ->
+      1.0 : (x'=x) & (y'=y);
+
+  // ======================= EAST action =======================
+  // mirror of WEST; drift still vertical by sign(v)
+
+  // v >= 0, interior: x<w-1 & y<h-1
+  [east] x<w-1 & y<h-1 & v>=0 & !(x=goalx & y=goaly) ->
+      p_succ_nodrift : (x'=x+1) & (y'=y)     +   // east
+      p_succ_drift   : (x'=x+1) & (y'=y+1)   +   // north-east
+      p_fail_nodrift : (x'=x)   & (y'=y)     +   // stay
+      p_fail_drift   : (x'=x)   & (y'=y+1);      // north
+
+  // v >= 0, right edge
+  [east] x=w-1 & y<h-1 & v>=0 & !(x=goalx & y=goaly) ->
+      (p_succ_nodrift + p_fail_nodrift) : (x'=x) & (y'=y)   +   // stay
+      (p_succ_drift   + p_fail_drift)   : (x'=x) & (y'=y+1);    // north
+
+  // v >= 0, top edge
+  [east] x<w-1 & y=h-1 & v>=0 & !(x=goalx & y=goaly) ->
+      (p_succ_drift + p_fail_drift)     : (x'=x+1) & (y'=y) +   // east
+      (p_succ_nodrift + p_fail_nodrift) : (x'=x)   & (y'=y);    // stay
+
+  // v >= 0, top-right corner
+  [east] x=w-1 & y=h-1 & v>=0 & !(x=goalx & y=goaly) ->
+      1.0 : (x'=x) & (y'=y);
+
+  // v < 0, interior: x<w-1 & y>0
+  [east] x<w-1 & y>0 & v<0 & !(x=goalx & y=goaly) ->
+      p_succ_nodrift : (x'=x+1) & (y'=y)     +   // east
+      p_succ_drift   : (x'=x+1) & (y'=y-1)   +   // south-east
+      p_fail_nodrift : (x'=x)   & (y'=y)     +   // stay
+      p_fail_drift   : (x'=x)   & (y'=y-1);      // south
+
+  // v < 0, right edge
+  [east] x=w-1 & y>0 & v<0 & !(x=goalx & y=goaly) ->
+      (p_succ_nodrift + p_fail_nodrift) : (x'=x) & (y'=y)   +   // stay
+      (p_succ_drift   + p_fail_drift)   : (x'=x) & (y'=y-1);    // south
+
+  // v < 0, bottom edge
+  [east] x<w-1 & y=0 & v<0 & !(x=goalx & y=goaly) ->
+      (p_succ_drift + p_fail_drift)     : (x'=x+1) & (y'=y) +   // east
+      (p_succ_nodrift + p_fail_nodrift) : (x'=x)   & (y'=y);    // stay
+
+  // v < 0, bottom-right corner
+  [east] x=w-1 & y=0 & v<0 & !(x=goalx & y=goaly) ->
+      1.0 : (x'=x) & (y'=y);
+
+  // ======================= NORTH action =======================
+  // cross-axis drift is horizontal; sign(u) chooses east vs west
+
+  // u >= 0, interior: y<h-1 & x<w-1
+  [north] y<h-1 & x<w-1 & u>=0 & !(x=goalx & y=goaly) ->
+      p_succ_nodrift : (x'=x)   & (y'=y+1)   +   // north
+      p_succ_drift   : (x'=x+1) & (y'=y+1)   +   // north-east
+      p_fail_nodrift : (x'=x)   & (y'=y)     +   // stay
+      p_fail_drift   : (x'=x+1) & (y'=y);        // east
+
+  // u >= 0, top edge
+  [north] y=h-1 & x<w-1 & u>=0 & !(x=goalx & y=goaly) ->
+      (p_succ_drift + p_fail_drift)     : (x'=x)   & (y'=y)   +  // stay
+      (p_succ_nodrift + p_fail_nodrift) : (x'=x)   & (y'=y);     // stay  (all clamp)
+
+  // u >= 0, right edge
+  [north] y<h-1 & x=w-1 & u>=0 & !(x=goalx & y=goaly) ->
+      (p_succ_drift + p_fail_drift)     : (x'=x) & (y'=y+1) +    // north
+      (p_succ_nodrift + p_fail_nodrift) : (x'=x) & (y'=y);       // stay
+
+  // u >= 0, top-right corner
+  [north] y=h-1 & x=w-1 & u>=0 & !(x=goalx & y=goaly) ->
+      1.0 : (x'=x) & (y'=y);
+
+  // u < 0, interior: y<h-1 & x>0
+  [north] y<h-1 & x>0 & u<0 & !(x=goalx & y=goaly) ->
+      p_succ_nodrift : (x'=x)   & (y'=y+1)   +   // north
+      p_succ_drift   : (x'=x-1) & (y'=y+1)   +   // north-west
+      p_fail_nodrift : (x'=x)   & (y'=y)     +   // stay
+      p_fail_drift   : (x'=x-1) & (y'=y);        // west
+
+  // u < 0, top edge
+  [north] y=h-1 & x>0 & u<0 & !(x=goalx & y=goaly) ->
+      (p_succ_drift + p_fail_drift)     : (x'=x) & (y'=y)   +    // stay
+      (p_succ_nodrift + p_fail_nodrift) : (x'=x) & (y'=y);       // stay
+
+  // u < 0, left edge
+  [north] y<h-1 & x=0 & u<0 & !(x=goalx & y=goaly) ->
+      (p_succ_drift + p_fail_drift)     : (x'=x) & (y'=y+1) +    // north
+      (p_succ_nodrift + p_fail_nodrift) : (x'=x) & (y'=y);       // stay
+
+  // u < 0, top-left corner
+  [north] y=h-1 & x=0 & u<0 & !(x=goalx & y=goaly) ->
+      1.0 : (x'=x) & (y'=y);
+
+  // ======================= SOUTH action =======================
+  // drift horizontal; sign(u) chooses east vs west
+
+  // u >= 0, interior: y>0 & x<w-1
+  [south] y>0 & x<w-1 & u>=0 & !(x=goalx & y=goaly) ->
+      p_succ_nodrift : (x'=x)   & (y'=y-1)   +   // south
+      p_succ_drift   : (x'=x+1) & (y'=y-1)   +   // south-east
+      p_fail_nodrift : (x'=x)   & (y'=y)     +   // stay
+      p_fail_drift   : (x'=x+1) & (y'=y);        // east
+
+  // u >= 0, bottom edge
+  [south] y=0 & x<w-1 & u>=0 & !(x=goalx & y=goaly) ->
+      (p_succ_drift + p_fail_drift)     : (x'=x) & (y'=y)   +    // stay
+      (p_succ_nodrift + p_fail_nodrift) : (x'=x) & (y'=y);       // stay
+
+  // u >= 0, right edge
+  [south] y>0 & x=w-1 & u>=0 & !(x=goalx & y=goaly) ->
+      (p_succ_drift + p_fail_drift)     : (x'=x) & (y'=y-1) +    // south
+      (p_succ_nodrift + p_fail_nodrift) : (x'=x) & (y'=y);       // stay
+
+  // u >= 0, bottom-right corner
+  [south] y=0 & x=w-1 & u>=0 & !(x=goalx & y=goaly) ->
+      1.0 : (x'=x) & (y'=y);
+
+  // u < 0, interior: y>0 & x>0
+  [south] y>0 & x>0 & u<0 & !(x=goalx & y=goaly) ->
+      p_succ_nodrift : (x'=x)   & (y'=y-1)   +   // south
+      p_succ_drift   : (x'=x-1) & (y'=y-1)   +   // south-west
+      p_fail_nodrift : (x'=x)   & (y'=y)     +   // stay
+      p_fail_drift   : (x'=x-1) & (y'=y);        // west
+
+  // u < 0, bottom edge
+  [south] y=0 & x>0 & u<0 & !(x=goalx & y=goaly) ->
+      (p_succ_drift + p_fail_drift)     : (x'=x) & (y'=y)   +    // stay
+      (p_succ_nodrift + p_fail_nodrift) : (x'=x) & (y'=y);       // stay
+
+  // u < 0, left edge
+  [south] y>0 & x=0 & u<0 & !(x=goalx & y=goaly) ->
+      (p_succ_drift + p_fail_drift)     : (x'=x) & (y'=y-1) +    // south
+      (p_succ_nodrift + p_fail_nodrift) : (x'=x) & (y'=y);       // stay
+
+  // u < 0, bottom-left corner
+  [south] y=0 & x=0 & u<0 & !(x=goalx & y=goaly) ->
+      1.0 : (x'=x) & (y'=y);
+endmodule

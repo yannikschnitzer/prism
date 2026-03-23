@@ -1,0 +1,25 @@
+ExperimentInfo:
+Model: ENGAGEMENT_ADAPTIVE_5
+NumStates: 19994
+NumTransitions: 59962
+NumLearnableComponents: 61
+NumParameters: 5
+Seed: 5
+Type: REWARD
+Factored: false
+CompositionType: INTERVAL_PRODUCT
+ParameterTying: FULL_TYING
+ParameterValues: L=1000,theta1=0.3,theta2=0.2,theta3=0.1,theta4=0.25
+ErrorTolerance: 0.999
+Specification: Rmin = ? [ F ("purchase" | "churn") ]
+RobustSpecification: Rminmax = ? [ F ("purchase" | "churn") ]
+OptimisticSpecification: Rminmin = ? [ F ("purchase" | "churn") ]
+DTMCSpecification: R = ? [ F ("purchase" | "churn") ]
+TrueOptimum: 42.442769938160495
+Multiplier: 2
+NumEpisodes: 100000
+MaxTrajectoryLength: 1000
+ModelFile: ../parametric_convex_models/mixture_mdps/engagement_adaptive_5.prism
+StrategyWeight: 0.9
+Recomputations: 1
+Runtime: 313.16838025

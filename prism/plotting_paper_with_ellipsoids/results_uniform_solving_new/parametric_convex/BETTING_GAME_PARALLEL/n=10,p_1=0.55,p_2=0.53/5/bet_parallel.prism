@@ -1,0 +1,44 @@
+mdp
+
+
+const int n = 10;
+const double p_1;
+const double p_2;
+
+module bet
+
+	money : [0..(n+1)*10] init 10;
+	steps : [0..n+1] init 0; // +1 for terminal state
+
+	[bet0]  steps < n & money >= 0 -> 1 : (money'=money) & (steps'=steps+1);
+	[bet1]  steps < n & money >= 1 & money <= n*10 -> p_1 : (money'=money+1) & (steps'=steps+1) + 1 - p_1 : (money'=money-1) & (steps'=steps+1);
+	[bet2]  steps < n & money >= 2 & money <= n*10 -> p_1 + 0.1 : (money'=money+2) & (steps'=steps+1) + 1 - p_1 - 0.1: (money'=money-2) & (steps'=steps+1);
+	[bet5]  steps < n & money >= 5 & money <= n*10 -> p_1 + 0.05 : (money'=money+5) & (steps'=steps+1) + 1 - p_1 - 0.05: (money'=money-5) & (steps'=steps+1);
+	[bet10] steps < n & money >=10 & money <= n*10 -> (1/2) * p_1 + 0.3 : (money'=money+10) & (steps'=steps+1) + 1 - (1/2) * p_1 - 0.3 : (money'=money-10) & (steps'=steps+1);
+	[end] steps = n -> 1: (steps'=n+1);
+	[end] steps = n+1 -> 1: true;
+
+endmodule
+
+module bet2
+
+	money2 : [0..(n+1)*10] init 10;
+	steps2 : [0..n+1] init 0; // +1 for terminal state
+
+	[bet0]  steps2 < n & money2 >= 0 -> 1 : (money2'=money2) & (steps2'=steps2+1);
+	[bet1]  steps2 < n & money2 >= 1 & money2 <= n*10 -> p_2 : (money2'=money2+1) & (steps2'=steps2+1) + 1 - p_2 : (money2'=money2-1) & (steps2'=steps2+1);
+	[bet2]  steps2 < n & money2 >= 2 & money2 <= n*10 -> p_2 + 0.002 * money2 : (money2'=money2+2) & (steps2'=steps2+1) + 1 - p_2 - 0.002 * money2: (money2'=money2-2) & (steps2'=steps2+1);
+	[bet5]  steps2 < n & money2 >= 5 & money2 <= n*10 -> p_2 + 0.003 * money2 : (money2'=money2+5) & (steps2'=steps2+1) + 1 - p_2 - 0.003 * money2: (money2'=money2-5) & (steps2'=steps2+1);
+	[bet10] steps2 < n & money2 >=10 & money2 <= n*10 -> (1/2) * p_2 + 0.004 * money2 : (money2'=money2+10) & (steps2'=steps2+1) + 1 - (1/2) * p_2 - 0.004 * money2 : (money2'=money2-10) & (steps2'=steps2+1);
+	[end] steps2 = n -> 1: (steps2'=n+1);
+	[end] steps2 = n+1 -> 1: true;
+
+endmodule
+
+rewards
+	steps < n : 0;
+	steps = n : money + money2;
+	steps = n+1 : 0;
+endrewards
+
+label "done" = steps = n+1;

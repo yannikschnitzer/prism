@@ -1,0 +1,144 @@
+mdp
+
+// ===== Dimensions & params =====
+// Require maxX >= 1 and maxY >= 1.
+const int maxX = 100;
+const int maxY = 20;
+
+// ===== Mixture weights (K=4) =====
+const double theta1;
+const double theta2;
+const double theta3;
+formula theta4 = 1 - (theta1 + theta2 + theta3);
+
+// ============================================================
+// Normalized x-position in [0,1]
+// This makes the benchmark robust to changing maxX.
+// ============================================================
+formula nx = x / (1.0 * maxX);
+
+// ============================================================
+// State-dependent per-mode coefficients
+// These depend only on x (via nx).
+// ============================================================
+
+// ----- Aircraft response probabilities r_k(x) -----
+formula r1 = 0.16 + 0.08*nx;
+formula r2 = 0.18 + 0.06*(1-nx);
+formula r3 = 0.14 + 0.10*nx;
+formula r4 = 0.20 + 0.04*(1-nx);
+
+// ----- Adversary move probabilities p^U_k(x), p^D_k(x) -----
+// Chosen so pUk + pDk <= 0.5 always, hence pSk >= 0.5.
+
+// Mode 1
+formula pU1 = 0.08 + 0.04*nx;
+formula pD1 = 0.10 + 0.02*(1-nx);
+formula pS1 = 1 - pU1 - pD1;
+
+// Mode 2
+formula pU2 = 0.07 + 0.03*(1-nx);
+formula pD2 = 0.09 + 0.03*nx;
+formula pS2 = 1 - pU2 - pD2;
+
+// Mode 3
+formula pU3 = 0.09 + 0.02*nx;
+formula pD3 = 0.08 + 0.04*(1-nx);
+formula pS3 = 1 - pU3 - pD3;
+
+// Mode 4
+formula pU4 = 0.06 + 0.05*nx;
+formula pD4 = 0.11 + 0.01*(1-nx);
+formula pS4 = 1 - pU4 - pD4;
+
+// ============================================================
+// Derived affine-in-theta probabilities
+// ============================================================
+
+formula r_eff =
+    theta1*r1 + theta2*r2 + theta3*r3 + theta4*r4;
+
+formula qRU =
+    theta1*(r1*pU1) + theta2*(r2*pU2) + theta3*(r3*pU3) + theta4*(r4*pU4);
+
+formula qRD =
+    theta1*(r1*pD1) + theta2*(r2*pD2) + theta3*(r3*pD3) + theta4*(r4*pD4);
+
+formula qRS =
+    theta1*(r1*pS1) + theta2*(r2*pS2) + theta3*(r3*pS3) + theta4*(r4*pS4);
+
+formula qNU =
+    theta1*((1-r1)*pU1) + theta2*((1-r2)*pU2) + theta3*((1-r3)*pU3) + theta4*((1-r4)*pU4);
+
+formula qND =
+    theta1*((1-r1)*pD1) + theta2*((1-r2)*pD2) + theta3*((1-r3)*pD3) + theta4*((1-r4)*pD4);
+
+formula qNS =
+    theta1*((1-r1)*pS1) + theta2*((1-r2)*pS2) + theta3*((1-r3)*pS3) + theta4*((1-r4)*pS4);
+
+formula aU =
+    theta1*pU1 + theta2*pU2 + theta3*pU3 + theta4*pU4;
+
+formula aD =
+    theta1*pD1 + theta2*pD2 + theta3*pD3 + theta4*pD4;
+
+formula aS =
+    theta1*pS1 + theta2*pS2 + theta3*pS3 + theta4*pS4;
+
+// ===== Proximity/collision labels =====
+formula xclose = ((x-ax >= 0) & (x-ax < 3)) | ((ax-x >= 0) & (ax-x < 3));
+formula yclose = ((y-ay >= 0) & (y-ay < 5)) | ((ay-y >= 0) & (ay-y < 5));
+formula collision = xclose & yclose;
+
+// ===== Single module with both aircraft and adversary state =====
+module scene
+  x  : [0..maxX] init 0;
+  y  : [0..maxY] init 1;
+  ax : [0..maxX] init maxX;
+  ay : [0..maxY] init 1;
+
+  [up] (x < maxX) & (ax > 0) ->
+     qRU : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     qRD : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     qRS : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax-1) & (ay' = ay) +
+     qNU : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     qND : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     qNS : (x' = x+1) & (y' = y)             & (ax' = ax-1) & (ay' = ay);
+
+  [up] (x < maxX) & (ax = 0) ->
+     r_eff       : (x' = x+1) & (y' = min(y+1,maxY)) & (ax' = ax) & (ay' = ay) +
+     (1-r_eff)   : (x' = x+1) & (y' = y)             & (ax' = ax) & (ay' = ay);
+
+  [down] (x < maxX) & (ax > 0) ->
+     qRU : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     qRD : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     qRS : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax-1) & (ay' = ay) +
+     qNU : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     qND : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     qNS : (x' = x+1) & (y' = y)          & (ax' = ax-1) & (ay' = ay);
+
+  [down] (x < maxX) & (ax = 0) ->
+     r_eff       : (x' = x+1) & (y' = max(y-1,0)) & (ax' = ax) & (ay' = ay) +
+     (1-r_eff)   : (x' = x+1) & (y' = y)          & (ax' = ax) & (ay' = ay);
+
+  [stay] (x < maxX) & (ax > 0) ->
+     aU : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = max(ay-1,0)) +
+     aD : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = min(ay+1,maxY)) +
+     aS : (x' = x+1) & (y' = y) & (ax' = ax-1) & (ay' = ay);
+
+  [stay] (x < maxX) & (ax = 0) ->
+     1 : (x' = x+1) & (y' = y) & (ax' = ax) & (ay' = ay);
+
+  [up]   (x = maxX) -> true;
+  [down] (x = maxX) -> true;
+  [stay] (x = maxX) -> true;
+endmodule
+
+label "goal"      = (x = maxX);
+label "collision" = collision;
+
+rewards
+  [up]   true : 1;
+  [down] true : 1;
+  [stay] true : 1;
+endrewards

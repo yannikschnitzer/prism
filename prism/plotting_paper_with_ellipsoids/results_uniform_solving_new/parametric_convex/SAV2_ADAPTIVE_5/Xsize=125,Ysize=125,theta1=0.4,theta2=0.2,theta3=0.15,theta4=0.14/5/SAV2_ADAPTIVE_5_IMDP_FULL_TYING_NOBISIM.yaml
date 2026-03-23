@@ -1,0 +1,25 @@
+ExperimentInfo:
+Model: SAV2_ADAPTIVE_5
+NumStates: 1749083
+NumTransitions: 9591771
+NumLearnableComponents: 1543
+NumParameters: 6
+Seed: 5
+Type: REACH
+Factored: false
+CompositionType: INTERVAL_PRODUCT
+ParameterTying: FULL_TYING
+ParameterValues: Xsize=125,Ysize=125,theta1=0.4,theta2=0.2,theta3=0.15,theta4=0.14
+ErrorTolerance: 0.999
+Specification: Pmax=? [!("Crash") U ("Target")]
+RobustSpecification: Pmaxmin=? [!("Crash") U ("Target")]
+OptimisticSpecification: Pmaxmax=? [!("Crash") U ("Target")]
+DTMCSpecification: P=? [!("Crash") U ("Target")]
+TrueOptimum: 0.6173149215372825
+Multiplier: 5
+NumEpisodes: 100000
+MaxTrajectoryLength: 450
+ModelFile: ../parametric_convex_models/mixture_mdps/sav_mixture_adaptive_5.prism
+StrategyWeight: 0.9
+Recomputations: 1
+Runtime: 5084.450530167

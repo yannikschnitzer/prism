@@ -1,0 +1,25 @@
+ExperimentInfo:
+Model: SAV2_ADAPTIVE_100
+NumStates: 7603
+NumTransitions: 36611
+NumLearnableComponents: 179
+NumParameters: 102
+Seed: 5
+Type: REACH
+Factored: false
+CompositionType: INTERVAL_PRODUCT
+ParameterTying: FULL_TYING
+ParameterValues: Xsize=12,Ysize=12,theta0=0.009,theta1=0.009,theta2=0.009,theta3=0.009,theta4=0.009,theta5=0.009,theta6=0.009,theta7=0.009,theta8=0.009,theta9=0.009,theta10=0.009,theta11=0.009,theta12=0.009,theta13=0.009,theta14=0.009,theta15=0.009,theta16=0.009,theta17=0.009,theta18=0.009,theta19=0.009,theta20=0.009,theta21=0.009,theta22=0.009,theta23=0.009,theta24=0.009,theta25=0.009,theta26=0.009,theta27=0.009,theta28=0.009,theta29=0.009,theta30=0.009,theta31=0.009,theta32=0.009,theta33=0.009,theta34=0.009,theta35=0.009,theta36=0.009,theta37=0.009,theta38=0.009,theta39=0.009,theta40=0.009,theta41=0.009,theta42=0.009,theta43=0.009,theta44=0.009,theta45=0.009,theta46=0.009,theta47=0.009,theta48=0.009,theta49=0.009,theta50=0.009,theta51=0.009,theta52=0.009,theta53=0.009,theta54=0.009,theta55=0.009,theta56=0.009,theta57=0.009,theta58=0.009,theta59=0.009,theta60=0.009,theta61=0.009,theta62=0.009,theta63=0.009,theta64=0.009,theta65=0.009,theta66=0.009,theta67=0.009,theta68=0.009,theta69=0.009,theta70=0.009,theta71=0.009,theta72=0.009,theta73=0.009,theta74=0.009,theta75=0.009,theta76=0.009,theta77=0.009,theta78=0.009,theta79=0.009,theta80=0.009,theta81=0.009,theta82=0.009,theta83=0.009,theta84=0.009,theta85=0.009,theta86=0.009,theta87=0.009,theta88=0.009,theta89=0.009,theta90=0.009,theta91=0.009,theta92=0.009,theta93=0.009,theta94=0.009,theta95=0.009,theta96=0.009,theta97=0.009,theta98=0.009,theta99=0.009
+ErrorTolerance: 0.999
+Specification: Pmax=? [!("Crash") U ("Target")]
+RobustSpecification: Pmaxmin=? [!("Crash") U ("Target")]
+OptimisticSpecification: Pmaxmax=? [!("Crash") U ("Target")]
+DTMCSpecification: P=? [!("Crash") U ("Target")]
+TrueOptimum: 0.7980835362011429
+Multiplier: 5
+NumEpisodes: 100000
+MaxTrajectoryLength: 50
+ModelFile: ../parametric_convex_models/mixture_mdps/sav_mixture_adaptive_100.prism
+StrategyWeight: 0.9
+Recomputations: 1
+Runtime: 16.745956042

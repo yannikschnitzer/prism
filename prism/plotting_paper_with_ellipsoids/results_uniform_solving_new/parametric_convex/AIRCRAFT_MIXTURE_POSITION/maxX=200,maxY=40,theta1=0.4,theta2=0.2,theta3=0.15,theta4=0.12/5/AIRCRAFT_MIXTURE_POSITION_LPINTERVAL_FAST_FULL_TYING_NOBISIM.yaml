@@ -1,0 +1,25 @@
+ExperimentInfo:
+Model: AIRCRAFT_MIXTURE_POSITION
+NumStates: 294458
+NumTransitions: 4285228
+NumLearnableComponents: 2881
+NumParameters: 6
+Seed: 5
+Type: REACH
+Factored: false
+CompositionType: INTERVAL_PRODUCT
+ParameterTying: FULL_TYING
+ParameterValues: maxX=200,maxY=40,theta1=0.4,theta2=0.2,theta3=0.15,theta4=0.12
+ErrorTolerance: 0.999
+Specification: Pmax=? [!collision U "goal"]
+RobustSpecification: Pmaxmin=? [!collision U "goal"]
+OptimisticSpecification: Pmaxmax=? [!collision U "goal"]
+DTMCSpecification: P=?  [!collision U "goal"]
+TrueOptimum: 0.8065151558830772
+Multiplier: 2
+NumEpisodes: 100000
+MaxTrajectoryLength: 200
+ModelFile: ../parametric_convex_models/aircraft_pos.prism
+StrategyWeight: 0.9
+Recomputations: 1
+Runtime: 1886.949894541
