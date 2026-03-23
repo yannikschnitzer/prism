@@ -389,9 +389,7 @@ public class ParametricConvexSolver {
             System.out.println("Benchmark instance: " + benchmarkInstance.model + " / " + benchmarkInstance.parameterDirectoryName + " / seed " + benchmarkInstance.seed);
 
             if (options.benchmarkTimeoutSeconds != null) {
-                for (RunConfiguration runConfiguration : options.runConfigurations) {
-                    runBenchmarkConfigurationWithHardTimeout(benchmarkInstance, runConfiguration, options.benchmarkTimeoutSeconds);
-                }
+                runBenchmarkInstanceWithHardTimeout(benchmarkInstance, options.runConfigurations, options.benchmarkTimeoutSeconds);
             } else {
                 Experiment baselineExperiment = applyBenchmarkInstance(runConfigurationIndependentExperiment(benchmarkInstance.model), benchmarkInstance);
                 MDPSimple<Function> pmdp = buildParamModel(baselineExperiment);
@@ -409,52 +407,90 @@ public class ParametricConvexSolver {
         }
     }
 
-    private void runBenchmarkConfigurationWithHardTimeout(BenchmarkInstance benchmarkInstance, RunConfiguration runConfiguration, int timeoutSeconds) {
-        String runDescriptor = benchmarkInstance.model + " / " + benchmarkInstance.parameterDirectoryName + " / seed " + benchmarkInstance.seed + " / " + runConfiguration;
-        ExecutorService executor = Executors.newSingleThreadExecutor(runnable -> {
-            Thread worker = new Thread(runnable, "benchmark-timeout-" + runConfiguration.name());
-            worker.setDaemon(true);
-            return worker;
-        });
+    private void runBenchmarkInstanceWithHardTimeout(BenchmarkInstance benchmarkInstance, EnumSet<RunConfiguration> runConfigurations, int timeoutSeconds) {
+        List<RunConfiguration> runConfigurationsInOrder = new ArrayList<>(runConfigurations);
+        int runConfigurationIndex = 0;
 
-        Future<?> future = executor.submit(() -> runBenchmarkConfigurationIsolated(benchmarkInstance, runConfiguration));
-        try {
-            future.get(timeoutSeconds, TimeUnit.SECONDS);
-        } catch (TimeoutException e) {
-            future.cancel(true);
-            System.out.println("Timed out after " + timeoutSeconds + "s: " + runDescriptor);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Interrupted while running benchmark configuration: " + runDescriptor, e);
-        } catch (ExecutionException e) {
-            Throwable cause = e.getCause() == null ? e : e.getCause();
-            throw new RuntimeException("Benchmark configuration failed: " + runDescriptor, cause);
-        } finally {
-            executor.shutdownNow();
+        while (runConfigurationIndex < runConfigurationsInOrder.size()) {
+            ExecutorService executor = Executors.newSingleThreadExecutor(runnable -> {
+                Thread worker = new Thread(runnable, "benchmark-timeout-" + benchmarkInstance.model + "-" + benchmarkInstance.seed);
+                worker.setDaemon(true);
+                return worker;
+            });
+            final ParametricConvexSolver[] isolatedSolverHolder = new ParametricConvexSolver[1];
+            final MDPSimple<Function>[] pmdpHolder = new MDPSimple[1];
+
+            try {
+                Future<?> initFuture = executor.submit(() -> {
+                    try {
+                        ParametricConvexSolver isolatedSolver = new ParametricConvexSolver(new Prism(new PrismDevNullLog()));
+                        isolatedSolver.initializePrism();
+                        isolatedSolver.outputRoot = this.outputRoot;
+                        isolatedSolver.forceIdentParameterDirectory = this.forceIdentParameterDirectory;
+                        isolatedSolver.clearCachedSamples();
+
+                        Experiment baselineExperiment = applyBenchmarkInstance(runConfigurationIndependentExperiment(benchmarkInstance.model), benchmarkInstance);
+                        isolatedSolverHolder[0] = isolatedSolver;
+                        pmdpHolder[0] = isolatedSolver.buildParamModel(baselineExperiment);
+                    } catch (PrismException e) {
+                        throw new RuntimeException("Failed to initialize isolated benchmark solver.", e);
+                    }
+                });
+
+                if (!awaitBenchmarkTask(initFuture, timeoutSeconds, benchmarkDescriptor(benchmarkInstance, "INIT"))) {
+                    return;
+                }
+
+                boolean restartWithFreshContext = false;
+                for (; runConfigurationIndex < runConfigurationsInOrder.size(); runConfigurationIndex++) {
+                    RunConfiguration runConfiguration = runConfigurationsInOrder.get(runConfigurationIndex);
+                    Experiment ex = applyBenchmarkInstance(runConfiguration.createExperiment(benchmarkInstance.model), benchmarkInstance);
+                    Future<?> runFuture = executor.submit(() -> isolatedSolverHolder[0].solveIMDPUniform(
+                            ex,
+                            ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+                            pmdpHolder[0],
+                            ex.parameterValues,
+                            true,
+                            null
+                    ));
+
+                    if (!awaitBenchmarkTask(runFuture, timeoutSeconds, benchmarkDescriptor(benchmarkInstance, runConfiguration.name()))) {
+                        runConfigurationIndex++;
+                        restartWithFreshContext = true;
+                        break;
+                    }
+                }
+
+                if (!restartWithFreshContext) {
+                    return;
+                }
+            } finally {
+                if (isolatedSolverHolder[0] != null) {
+                    isolatedSolverHolder[0].closePrismQuietly();
+                }
+                executor.shutdownNow();
+            }
         }
     }
 
-    private void runBenchmarkConfigurationIsolated(BenchmarkInstance benchmarkInstance, RunConfiguration runConfiguration) {
-        ParametricConvexSolver isolatedSolver = new ParametricConvexSolver(new Prism(new PrismDevNullLog()));
-        try {
-            isolatedSolver.initializePrism();
-            isolatedSolver.outputRoot = this.outputRoot;
-            isolatedSolver.forceIdentParameterDirectory = this.forceIdentParameterDirectory;
-            isolatedSolver.clearCachedSamples();
+    private static String benchmarkDescriptor(BenchmarkInstance benchmarkInstance, String suffix) {
+        return benchmarkInstance.model + " / " + benchmarkInstance.parameterDirectoryName + " / seed " + benchmarkInstance.seed + " / " + suffix;
+    }
 
-            Experiment baselineExperiment = applyBenchmarkInstance(runConfigurationIndependentExperiment(benchmarkInstance.model), benchmarkInstance);
-            MDPSimple<Function> pmdp = isolatedSolver.buildParamModel(baselineExperiment);
-            Experiment ex = applyBenchmarkInstance(runConfiguration.createExperiment(benchmarkInstance.model), benchmarkInstance);
-            isolatedSolver.solveIMDPUniform(ex,
-                    ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                    pmdp,
-                    ex.parameterValues,
-                    true,
-                    null);
-        } catch (PrismException e) {
-            throw new RuntimeException("Failed to initialize isolated benchmark solver.", e);
-        } finally {
-            isolatedSolver.closePrismQuietly();
+    private static boolean awaitBenchmarkTask(Future<?> future, int timeoutSeconds, String descriptor) {
+        try {
+            future.get(timeoutSeconds, TimeUnit.SECONDS);
+            return true;
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            System.out.println("Timed out after " + timeoutSeconds + "s: " + descriptor);
+            return false;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Interrupted while running benchmark task: " + descriptor, e);
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause() == null ? e : e.getCause();
+            throw new RuntimeException("Benchmark task failed: " + descriptor, cause);
         }
     }
 
