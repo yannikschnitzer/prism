@@ -1,0 +1,27 @@
+ExperimentInfo:
+Model: GLIDER
+NumStates: 4757
+NumTransitions: 74299
+NumLearnableComponents: 9768
+NumParameters: 4
+Seed: 5
+Type: REWARD
+Factored: false
+CompositionType: INTERVAL_PRODUCT
+ParameterTying: FULL_TYING
+ParameterValues: w=71,h=67,theta_h=0.3,theta_v=0.7
+ErrorTolerance: 0.999
+UseVertexPrecomp: true
+VerboseBisim: false
+Specification: Rmin = ? [ F "goal"]
+RobustSpecification: Rminmax = ? [ F "goal"]
+OptimisticSpecification: Rminmin = ? [ F "goal"]
+DTMCSpecification: R = ? [ F "goal"]
+TrueOptimum: 103.87977973573246
+Multiplier: 2
+NumEpisodes: 100000
+MaxTrajectoryLength: 100
+ModelFile: ../parametric_convex_models/polynomial_mdps/glider.prism
+StrategyWeight: 0.9
+Recomputations: 1
+Runtime: 507.49543275
