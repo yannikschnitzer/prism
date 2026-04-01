@@ -845,7 +845,7 @@ public class Experiment {
 
                 // Set Parameter Values
                 addParameters(
-                        "w", 106,
+                        "w", 105,
                         "h", 99,
                         "theta_h", 0.3,
                         "theta_v", 0.7

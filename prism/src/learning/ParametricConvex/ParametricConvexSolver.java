@@ -64,12 +64,12 @@ public class ParametricConvexSolver {
     private static final String DEFAULT_BENCHMARK_OUTPUT_BASE = "plotting_paper_with_ellipsoids/benchmark_results";
     private static final DateTimeFormatter BENCHMARK_TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
-    private static final Model DEFAULT_MODEL = Model.ENGAGEMENT_ADAPTIVE_5;
+    private static final Model DEFAULT_MODEL = Model.GLIDER;
 
     // Keep this set small and explicit; pass CLI args to override without editing code.
     private static final EnumSet<RunConfiguration> DEFAULT_RUN_CONFIGURATIONS = EnumSet.of(
             RunConfiguration.PARAMETER_TYING,
-            RunConfiguration.PARAMETRIC_CONVEX,
+            //RunConfiguration.PARAMETRIC_CONVEX,
             RunConfiguration.LP_TO_INTERVAL_EXACT,
             RunConfiguration.LP_TO_INTERVAL_FAST,
 //            RunConfiguration.ELLIPSOID,
@@ -83,7 +83,7 @@ public class ParametricConvexSolver {
         REPRODUCE_BENCHMARKS
     }
 
-    private static final IdeExecutionMode IDE_EXECUTION_MODE = IdeExecutionMode.REPRODUCE_BENCHMARKS;
+    private static final IdeExecutionMode IDE_EXECUTION_MODE = IdeExecutionMode.DEFAULT_MODEL;
     private static final Model IDE_MODEL = DEFAULT_MODEL;
     private static final EnumSet<RunConfiguration> IDE_RUN_CONFIGURATIONS = EnumSet.copyOf(DEFAULT_RUN_CONFIGURATIONS);
     private static final String IDE_BENCHMARK_INPUT_ROOT = DEFAULT_BENCHMARK_INPUT_ROOT;

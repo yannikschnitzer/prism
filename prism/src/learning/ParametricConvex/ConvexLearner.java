@@ -48,6 +48,10 @@ public class ConvexLearner {
     private int obbtMaxRounds = 0;       // 0 => disabled
     private double obbtEps = 1e-6;       // convergence tolerance
     private boolean hasCommittedConstraints = false;
+    private static final double SOLVER_FEAS_TOL = 1e-8;
+    private static final double SOLVER_OPT_TOL = 1e-8;
+    private static final double INTERSECTION_TOL = 1e-10;
+    private static final double FIXED_EXPR_SNAP_TOL = 1e-6;
 
     /** Enable iterative OBBT with a maximum number of rounds and a stopping eps. */
     public void enableOBBT(int maxRounds, double eps) {
@@ -63,8 +67,8 @@ public class ConvexLearner {
             // simplex tends to be nicer for repeated objective changes
             this.model.set(GRB.IntParam.Method, 1);
             this.model.set(GRB.IntParam.OutputFlag, 0);
-            this.model.set(GRB.DoubleParam.FeasibilityTol, 1e-9);
-            this.model.set(GRB.DoubleParam.OptimalityTol, 1e-9);
+            this.model.set(GRB.DoubleParam.FeasibilityTol, SOLVER_FEAS_TOL);
+            this.model.set(GRB.DoubleParam.OptimalityTol, SOLVER_OPT_TOL);
         } catch (GRBException e) {
             throw new RuntimeException(e);
         }
@@ -83,8 +87,8 @@ public class ConvexLearner {
         this.model = new GRBModel(env);
         this.model.set(GRB.IntParam.Method, 1);
         this.model.set(GRB.IntParam.OutputFlag, 0);
-        this.model.set(GRB.DoubleParam.FeasibilityTol, 1e-9);
-        this.model.set(GRB.DoubleParam.OptimalityTol, 1e-9);
+        this.model.set(GRB.DoubleParam.FeasibilityTol, SOLVER_FEAS_TOL);
+        this.model.set(GRB.DoubleParam.OptimalityTol, SOLVER_OPT_TOL);
         this.trans = new ExpressionTranslator(model);
 
         this.constrLowerBounds.clear();
@@ -135,9 +139,60 @@ public class ConvexLearner {
 
                     double lower = idist.get(i).getLower();
                     double upper = idist.get(i).getUpper();
+
+                    // If this expression is effectively fixed (all variables in it are fixed),
+                    // reconcile tiny numeric mismatches so fixed constants like c_1.0 remain feasible.
+                    double[] exprRange = expressionRangeFromBounds(exp);
+                    double exprMin = exprRange[0];
+                    double exprMax = exprRange[1];
+                    if (exprMax - exprMin <= INTERSECTION_TOL) {
+                        double fixedValue = 0.5 * (exprMin + exprMax);
+                        if (fixedValue < lower) {
+                            double gap = lower - fixedValue;
+                            if (gap > FIXED_EXPR_SNAP_TOL) {
+                                throw new PrismException(
+                                        "Interval [" + lower + ", " + upper + "] excludes fixed expression \""
+                                                + exprString + "\" value " + fixedValue + " (gap=" + gap + ")."
+                                );
+                            }
+                        }
+                        if (fixedValue > upper) {
+                            double gap = fixedValue - upper;
+                            if (gap > FIXED_EXPR_SNAP_TOL) {
+                                throw new PrismException(
+                                        "Interval [" + lower + ", " + upper + "] excludes fixed expression \""
+                                                + exprString + "\" value " + fixedValue + " (gap=" + gap + ")."
+                                );
+                            }
+                        }
+
+                        // Principled handling: if the expression is fixed by the symbolic model,
+                        // constrain it exactly to that value.
+                        lower = fixedValue;
+                        upper = fixedValue;
+                    }
+
                     if (constrUpperBounds.containsKey(exprString)) {
-                        lower = Math.max(lower, constrLowerBounds.get(exprString).second);
-                        upper = Math.min(upper, constrUpperBounds.get(exprString).second);
+                        double prevLower = constrLowerBounds.get(exprString).second;
+                        double prevUpper = constrUpperBounds.get(exprString).second;
+                        double mergedLower = Math.max(lower, prevLower);
+                        double mergedUpper = Math.min(upper, prevUpper);
+                        if (mergedLower > mergedUpper) {
+                            double gap = mergedLower - mergedUpper;
+                            if (gap <= INTERSECTION_TOL) {
+                                // Epsilon-consistent intersection: keep the tighter lower bound.
+                                mergedUpper = mergedLower;
+                            } else {
+                                throw new PrismException(
+                                        "Inconsistent interval constraints for expression \"" + exprString + "\""
+                                                + " (existing=[" + prevLower + ", " + prevUpper + "]"
+                                                + ", new=[" + lower + ", " + upper + "], gap=" + gap + "). "
+                                                + "No feasible shared parameter value exists for this expression."
+                                );
+                            }
+                        }
+                        lower = mergedLower;
+                        upper = mergedUpper;
                     }
                     constrLowerBounds.put(exprString, new Pair<>(exp, lower));
                     constrUpperBounds.put(exprString, new Pair<>(exp, upper));
@@ -156,12 +211,50 @@ public class ConvexLearner {
         }
     }
 
+    private static double[] expressionRangeFromBounds(GRBLinExpr exp) throws GRBException {
+        double min = exp.getConstant();
+        double max = exp.getConstant();
+        for (int j = 0; j < exp.size(); j++) {
+            double coeff = exp.getCoeff(j);
+            GRBVar var = exp.getVar(j);
+            double lb = var.get(GRB.DoubleAttr.LB);
+            double ub = var.get(GRB.DoubleAttr.UB);
+            if (coeff >= 0.0) {
+                min += coeff * lb;
+                max += coeff * ub;
+            } else {
+                min += coeff * ub;
+                max += coeff * lb;
+            }
+        }
+        if (min > max) {
+            double tmp = min;
+            min = max;
+            max = tmp;
+        }
+        return new double[]{min, max};
+    }
+
     /** Materialize cached bound and normalization constraints into the model. */
     public void commitConstraints() throws GRBException, PrismException {
         for (String expString : constrLowerBounds.keySet()) {
             GRBLinExpr exp = constrLowerBounds.get(expString).first;
-            model.addConstr(exp, GRB.GREATER_EQUAL, constrLowerBounds.get(expString).second, null);
-            model.addConstr(exp, GRB.LESS_EQUAL,   constrUpperBounds.get(expString).second, null);
+            double lower = constrLowerBounds.get(expString).second;
+            double upper = constrUpperBounds.get(expString).second;
+            if (lower > upper) {
+                double gap = lower - upper;
+                if (gap <= INTERSECTION_TOL) {
+                    // Epsilon-consistent intersection: keep the tighter lower bound.
+                    upper = lower;
+                } else {
+                    throw new PrismException(
+                            "Cannot commit interval constraints for expression \"" + expString + "\""
+                                    + " because lower bound " + lower + " exceeds upper bound " + upper + "."
+                    );
+                }
+            }
+            model.addConstr(exp, GRB.GREATER_EQUAL, lower, null);
+            model.addConstr(exp, GRB.LESS_EQUAL, upper, null);
         }
         for (String sumKey : sumExps.keySet()) {
             GRBLinExpr exp = trans.translateLinearExpression(sumExps.get(sumKey));

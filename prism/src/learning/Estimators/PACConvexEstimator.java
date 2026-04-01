@@ -32,6 +32,7 @@ public class PACConvexEstimator extends MAPEstimator {
 
     protected double error_tolerance;
     double precision = 1e-8;
+    private static final double PROB_EPS = 1e-12;
     boolean useVertexPrecomp = true;
     boolean verbose_bisim = false;
 
@@ -86,7 +87,8 @@ public class PACConvexEstimator extends MAPEstimator {
             Integer nTied = tiedStateActionCounts.get(t);
             Integer kTied = tiedTransitionCounts.get(t);
             if (nTied == null || nTied == 0 || kTied == null) {
-                return new Interval<>(precision, 1 - precision);
+                // No observations for this tied component: vacuous interval.
+                return new Interval<>(0.0, 1.0);
             }
             n = nTied;
             k = kTied;
@@ -144,7 +146,7 @@ public class PACConvexEstimator extends MAPEstimator {
                 modelCheckingTimeOptimistic = System.nanoTime() - startTime;
             }
         } catch (GRBException e) {
-            throw new RuntimeException(e);
+            throw asPrismException("Convex model construction failed", e);
         }
         double resconvexMDP = round((Double) resultRobustConvex.getResult());
         double resconvexMDPOptimistic = round((Double) resultOptimisticConvex.getResult());
@@ -220,7 +222,7 @@ public class PACConvexEstimator extends MAPEstimator {
             try {
                 buildConvexUMDP(imdpGround, this.pmdp);
             } catch (GRBException e) {
-                throw new RuntimeException(e);
+                throw asPrismException("Convex model warm-up failed", e);
             }
             return new double[]{resultRobustMDP, resultRobustDTMC, resultOptimisticDTMC, modelBuildingTime, modelCheckingTimeRobust, modelCheckingTimeOptimistic, modelCheckingTimeDTMC};
         } else {
@@ -228,7 +230,7 @@ public class PACConvexEstimator extends MAPEstimator {
             try {
                 buildConvexUMDP(this.estimate, this.pmdp);
             } catch (GRBException e) {
-                throw new RuntimeException(e);
+                throw asPrismException("Convex model warm-up failed", e);
             }
             return res;
         }
@@ -254,12 +256,14 @@ public class PACConvexEstimator extends MAPEstimator {
                 mdp.forEachDoubleTransition(s, i, (int sFrom, int sTo, double p) -> {
                     TransitionTriple t = new TransitionTriple(state, action, sTo);
                     Interval<Double> interval;
-                    if (0 < p && p < 1.0) {
-                        interval = getTransitionInterval(t);
+                    if (p <= PROB_EPS) {
+                        return;
+                    } else if (p >= 1.0 - PROB_EPS) {
+                        interval = new Interval<>(1.0, 1.0);
                         distrNew.add(sTo, interval);
                         this.intervalsMap.put(t, interval);
-                    } else if (p == 1.0) {
-                        interval = new Interval<>(p, p);
+                    } else {
+                        interval = getTransitionInterval(t);
                         distrNew.add(sTo, interval);
                         this.intervalsMap.put(t, interval);
                     }
@@ -403,7 +407,7 @@ public class PACConvexEstimator extends MAPEstimator {
                             interval = new Interval<>(1.0, 1.0);
                         } else {
                             interval = (N == 0)
-                                    ? new Interval<>(precision, 1.0 - precision)
+                                    ? new Interval<>(0.0, 1.0)
                                     : computeClopperPearson(N, K, alphaPerCI);
                         }
                     } else {
@@ -413,7 +417,7 @@ public class PACConvexEstimator extends MAPEstimator {
                             interval = new Interval<>(1.0, 1.0);
                         } else {
                             interval = (N == 0)
-                                    ? new Interval<>(precision, 1.0 - precision)
+                                    ? new Interval<>(0.0, 1.0)
                                     : computeClopperPearson(N, K, alphaPerCI);
                         }
                     }
@@ -694,13 +698,8 @@ public class PACConvexEstimator extends MAPEstimator {
                         }
                         expr.addConstant(spec.constant);
 
-                        baseModel.setObjective(expr, GRB.MINIMIZE);
-                        baseModel.optimize();
-                        double lo = baseModel.get(GRB.DoubleAttr.ObjVal);
-
-                        baseModel.setObjective(expr, GRB.MAXIMIZE);
-                        baseModel.optimize();
-                        double hi = baseModel.get(GRB.DoubleAttr.ObjVal);
+                        double lo = optimize(baseModel, expr, GRB.MINIMIZE);
+                        double hi = optimize(baseModel, expr, GRB.MAXIMIZE);
 
                         lo = clamp(lo, precision, 1.0 - precision);
                         hi = clamp(hi, precision, 1.0 - precision);
@@ -711,7 +710,7 @@ public class PACConvexEstimator extends MAPEstimator {
                 } finally {
                     baseModel.set(GRB.IntParam.Method, oldMethod);
                     baseModel.set(GRB.IntParam.Threads, oldThreads);
-                    baseModel.set(GRB.IntParam.OutputFlag, 0);
+                    baseModel.set(GRB.IntParam.OutputFlag, oldOut);
                 }
             }
         }
@@ -778,13 +777,8 @@ public class PACConvexEstimator extends MAPEstimator {
         }
         expr.addConstant(spec.constant);
 
-        m.setObjective(expr, GRB.MINIMIZE);
-        m.optimize();
-        double lo = m.get(GRB.DoubleAttr.ObjVal);
-
-        m.setObjective(expr, GRB.MAXIMIZE);
-        m.optimize();
-        double hi = m.get(GRB.DoubleAttr.ObjVal);
+        double lo = optimize(m, expr, GRB.MINIMIZE);
+        double hi = optimize(m, expr, GRB.MAXIMIZE);
 
         return new double[]{lo, hi};
     }
@@ -935,22 +929,74 @@ public class PACConvexEstimator extends MAPEstimator {
         }
     }
 
+    private static PrismException asPrismException(String prefix, GRBException e) {
+        String msg = (e.getMessage() == null || e.getMessage().isEmpty()) ? "unknown Gurobi error" : e.getMessage();
+        return new PrismException(prefix + ": " + msg);
+    }
+
+    private static String gurobiStatusToString(int status) {
+        switch (status) {
+            case GRB.Status.OPTIMAL: return "OPTIMAL";
+            case GRB.Status.INFEASIBLE: return "INFEASIBLE";
+            case GRB.Status.INF_OR_UNBD: return "INF_OR_UNBD";
+            case GRB.Status.UNBOUNDED: return "UNBOUNDED";
+            case GRB.Status.SUBOPTIMAL: return "SUBOPTIMAL";
+            case GRB.Status.TIME_LIMIT: return "TIME_LIMIT";
+            case GRB.Status.ITERATION_LIMIT: return "ITERATION_LIMIT";
+            case GRB.Status.NUMERIC: return "NUMERIC";
+            default: return "STATUS_" + status;
+        }
+    }
+
+    private static int optimizeWithRetry(GRBModel model) throws GRBException {
+        model.optimize();
+        int status = model.get(GRB.IntAttr.Status);
+
+        // INF_OR_UNBD can be ambiguous with dual reductions enabled.
+        if (status == GRB.Status.INF_OR_UNBD) {
+            int oldDualReductions = model.get(GRB.IntParam.DualReductions);
+            try {
+                model.set(GRB.IntParam.DualReductions, 0);
+                model.optimize();
+                status = model.get(GRB.IntAttr.Status);
+            } finally {
+                model.set(GRB.IntParam.DualReductions, oldDualReductions);
+            }
+        }
+        return status;
+    }
+
+    private static void throwIfNonOptimal(GRBModel model, int status, String context) throws GRBException {
+        if (status == GRB.Status.OPTIMAL) return;
+
+        String base = context + " not optimal, status=" + status + " (" + gurobiStatusToString(status) + ")";
+        if (status == GRB.Status.INFEASIBLE || status == GRB.Status.INF_OR_UNBD) {
+            String suffix = "";
+            try {
+                model.computeIIS();
+                model.write("expression_bound_model.ilp");
+                suffix = ". IIS written to expression_bound_model.ilp";
+            } catch (GRBException ignored) {
+                // Keep original failure reason if IIS export itself fails.
+            }
+            throw new GRBException(base + suffix);
+        }
+        throw new GRBException(base);
+    }
+
     /** Optimize a linear objective (possibly including translator's aux vars). */
     private static double optimize(GRBModel model, GRBLinExpr obj, int sense) throws GRBException {
         model.setObjective(obj);
         model.set(GRB.IntAttr.ModelSense, sense);
-        model.optimize();
-        int status = model.get(GRB.IntAttr.Status);
-        if (status != GRB.Status.OPTIMAL) {
-            throw new GRBException("Expression bound solve not optimal, status=" + status);
-        }
+        int status = optimizeWithRetry(model);
+        throwIfNonOptimal(model, status, "Expression bound solve");
         return model.get(GRB.DoubleAttr.ObjVal);
     }
 
 
     protected Interval<Double> getClopperPearsonInterval(int count, int sacount) {
         if (sacount == 0) {
-            return new Interval<>(precision, 1 - precision);
+            return new Interval<>(0.0, 1.0);
         }
 
         int m = getNumLearnableTransitions();
@@ -974,12 +1020,12 @@ public class PACConvexEstimator extends MAPEstimator {
 
     private Interval<Double> computeClopperPearson(int n, int k, double alpha) {
         double lower = (k == 0)
-                ? precision
+                ? 0.0
                 : invRegularizedBeta(alpha/2.0, (double)k, (double)(n - k + 1));
         double upper = (k == n)
-                ? 1.0 - precision
+                ? 1.0
                 : invRegularizedBeta(1.0 - alpha/2.0, (double)(k + 1), (double)(n - k));
-        return new Interval<>(Math.max(lower, precision), Math.min(upper,1-precision));
+        return new Interval<>(Math.max(lower, 0.0), Math.min(upper,1.0));
     }
 
     @Override
@@ -1630,13 +1676,8 @@ public class PACConvexEstimator extends MAPEstimator {
                         }
                         expr.addConstant(spec.constant);
 
-                        baseModel.setObjective(expr, GRB.MINIMIZE);
-                        baseModel.optimize();
-                        double lo = baseModel.get(GRB.DoubleAttr.ObjVal);
-
-                        baseModel.setObjective(expr, GRB.MAXIMIZE);
-                        baseModel.optimize();
-                        double hi = baseModel.get(GRB.DoubleAttr.ObjVal);
+                        double lo = optimize(baseModel, expr, GRB.MINIMIZE);
+                        double hi = optimize(baseModel, expr, GRB.MAXIMIZE);
 
                         lo = clamp(lo, precision, 1.0 - precision);
                         hi = clamp(hi, precision, 1.0 - precision);
