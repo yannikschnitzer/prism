@@ -331,7 +331,7 @@ public class MAPEstimator extends Estimator {
         return new double[]{resultRobustMDP, resultRobustDTMC, resultOptimisticDTMC, modelBuildingTime, modelCheckingTimeRobust, modelCheckingTimeOptimistic, modelCheckingTimeDTMC};
     }
 
-    public MDStrategy<Double> liftStrategy(MDStrategyArray<Double> abstractStrategy, NondetModel<Double> model) throws PrismException {
+    public MDStrategy<Double> liftStrategy(MDStrategyArray<Double> abstractStrategy, explicit.NondetModel<Double> model) throws PrismException {
         int[] choices = new int[model.getNumStates()];
 
         for (int i = 0; i < choices.length; i++) {
