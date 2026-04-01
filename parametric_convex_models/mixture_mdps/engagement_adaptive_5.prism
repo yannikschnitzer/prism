@@ -1,7 +1,7 @@
 mdp
 
 // ===== Engagement ladder =====
-const int L = 1000;                       // levels 0..L (0=churn, L=purchase)
+const int L = 100;                       // levels 0..L (0=churn, L=purchase)
 
 // In the transformed model, "observable/original" states are phase=0.
 label "churn"    = (phase = 0 & e = 0);

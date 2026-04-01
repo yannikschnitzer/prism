@@ -1,14 +1,14 @@
 mdp
 
 // ========= grid size (change as you like; default ~paper scale) =========
-const int w = 21;        // width  (x = 0..w-1)
-const int h = 17;        // height (y = 0..h-1)
+const int w = 51;        // width  (x = 0..w-1)
+const int h = 47;        // height (y = 0..h-1)
 
 // start / goal (must be within the grid)
 const int startx = 0;
 const int starty = 0;
-const int goalx  = 20;
-const int goaly  = 16;
+const int goalx  = 45;
+const int goaly  = 46;
 
 // ========= unknown parameters in [0,1] (learned) =========
 const double theta_h;     // sensitivity to horizontal current (east-west)

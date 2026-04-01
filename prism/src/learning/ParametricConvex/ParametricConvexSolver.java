@@ -64,7 +64,7 @@ public class ParametricConvexSolver {
     private static final String DEFAULT_BENCHMARK_OUTPUT_BASE = "plotting_paper_with_ellipsoids/benchmark_results";
     private static final DateTimeFormatter BENCHMARK_TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
-    private static final Model DEFAULT_MODEL = Model.BETTING_GAME_CONVEX_ADAPTIVE;
+    private static final Model DEFAULT_MODEL = Model.ENGAGEMENT_ADAPTIVE_5;
 
     // Keep this set small and explicit; pass CLI args to override without editing code.
     private static final EnumSet<RunConfiguration> DEFAULT_RUN_CONFIGURATIONS = EnumSet.of(
@@ -91,6 +91,8 @@ public class ParametricConvexSolver {
     private static final String IDE_BENCHMARK_OUTPUT_ROOT = null;
     // null means no timeout.
     private static final Integer IDE_BENCHMARK_TIMEOUT_SECONDS = null;
+    // If true, IDE benchmark reproduction only runs instances for IDE_MODEL.
+    private static final boolean IDE_BENCHMARK_LIMIT_TO_IDE_MODEL = true;
 
     private enum RunConfiguration {
         PLAIN_NAIVE {
@@ -166,6 +168,7 @@ public class ParametricConvexSolver {
         String benchmarkInputRoot = DEFAULT_BENCHMARK_INPUT_ROOT;
         String benchmarkOutputRoot = null;
         Integer benchmarkTimeoutSeconds = null;
+        Model benchmarkModelFilter = null;
     }
 
     private static final class BenchmarkInstance {
@@ -255,6 +258,9 @@ public class ParametricConvexSolver {
                     ? createFreshBenchmarkOutputRoot()
                     : IDE_BENCHMARK_OUTPUT_ROOT;
             options.benchmarkTimeoutSeconds = IDE_BENCHMARK_TIMEOUT_SECONDS;
+            if (IDE_BENCHMARK_LIMIT_TO_IDE_MODEL) {
+                options.benchmarkModelFilter = IDE_MODEL;
+            }
         }
 
         return options;
@@ -263,6 +269,7 @@ public class ParametricConvexSolver {
     private static CliOptions parseCliOptions(String[] args) {
         CliOptions options = new CliOptions();
         List<String> runTokens = new ArrayList<>();
+        boolean modelProvided = false;
 
         for (String arg : args) {
             if (arg == null || arg.isBlank()) {
@@ -303,6 +310,7 @@ public class ParametricConvexSolver {
                 String modelName = arg.substring("--model=".length()).trim();
                 try {
                     options.model = Model.valueOf(normalizeRunConfigurationToken(modelName));
+                    modelProvided = true;
                 } catch (IllegalArgumentException e) {
                     throw new IllegalArgumentException("Unknown model '" + modelName + "'.");
                 }
@@ -313,6 +321,9 @@ public class ParametricConvexSolver {
         }
 
         options.runConfigurations = resolveRunConfigurations(runTokens);
+        if (options.reproduceBenchmarks && modelProvided) {
+            options.benchmarkModelFilter = options.model;
+        }
         if (options.reproduceBenchmarks && (options.benchmarkOutputRoot == null || options.benchmarkOutputRoot.isBlank())) {
             options.benchmarkOutputRoot = createFreshBenchmarkOutputRoot();
         }
@@ -370,14 +381,29 @@ public class ParametricConvexSolver {
 
     private void runBenchmarkReproduction(CliOptions options) {
         List<BenchmarkInstance> benchmarkInstances = discoverBenchmarkInstances(Paths.get(options.benchmarkInputRoot));
+        if (options.benchmarkModelFilter != null) {
+            List<BenchmarkInstance> filteredInstances = new ArrayList<>();
+            for (BenchmarkInstance benchmarkInstance : benchmarkInstances) {
+                if (benchmarkInstance.model == options.benchmarkModelFilter) {
+                    filteredInstances.add(benchmarkInstance);
+                }
+            }
+            benchmarkInstances = filteredInstances;
+        }
         if (benchmarkInstances.isEmpty()) {
-            throw new IllegalArgumentException("No benchmark instances found in '" + options.benchmarkInputRoot + "'.");
+            String filterDetails = options.benchmarkModelFilter == null
+                    ? ""
+                    : " for model '" + options.benchmarkModelFilter + "'";
+            throw new IllegalArgumentException("No benchmark instances found in '" + options.benchmarkInputRoot + "'" + filterDetails + ".");
         }
 
         this.outputRoot = options.benchmarkOutputRoot;
         this.forceIdentParameterDirectory = true;
 
         System.out.println("Reproducing " + benchmarkInstances.size() + " benchmark instances from " + options.benchmarkInputRoot);
+        if (options.benchmarkModelFilter != null) {
+            System.out.println("Model filter: " + options.benchmarkModelFilter);
+        }
         System.out.println("Output root: " + options.benchmarkOutputRoot);
         System.out.println("Run configurations: " + options.runConfigurations);
         if (options.benchmarkTimeoutSeconds != null) {

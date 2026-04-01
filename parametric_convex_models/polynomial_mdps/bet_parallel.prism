@@ -1,7 +1,7 @@
 mdp
 
 
-const int n = 5;
+const int n = 6;
 const double p_1;
 const double p_2;
 

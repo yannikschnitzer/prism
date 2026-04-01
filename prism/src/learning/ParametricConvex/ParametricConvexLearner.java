@@ -44,7 +44,7 @@ public class ParametricConvexLearner {
 
     private final boolean verbose = true;
     private static final String DEFAULT_OUTPUT_ROOT = "plotting_paper_with_ellipsoids/results_learning_new/parametric_convex";
-    private static final Model DEFAULT_MODEL = Model.AIRCRAFT_MIXTURE_POSITION;
+    private static final Model DEFAULT_MODEL = Model.GLIDER;
     private static final EnumSet<RunConfiguration> DEFAULT_RUN_CONFIGURATIONS = EnumSet.of(
             RunConfiguration.PARAMETER_TYING,
             RunConfiguration.PARAMETRIC_CONVEX,

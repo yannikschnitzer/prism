@@ -11,6 +11,8 @@ CompositionType: INTERVAL_PRODUCT
 ParameterTying: FULL_TYING
 ParameterValues: maxX=20,maxY=10,theta1=0.4,theta2=0.2,theta3=0.15,theta4=0.12
 ErrorTolerance: 0.999
+UseVertexPrecomp: true
+VerboseBisim: false
 Specification: Pmax=? [!collision U "goal"]
 RobustSpecification: Pmaxmin=? [!collision U "goal"]
 OptimisticSpecification: Pmaxmax=? [!collision U "goal"]
@@ -22,4 +24,4 @@ MaxTrajectoryLength: 20
 ModelFile: ../parametric_convex_models/aircraft_pos.prism
 StrategyWeight: 0.9
 Recomputations: 53
-Runtime: 46.686710208
+Runtime: 53.386646167

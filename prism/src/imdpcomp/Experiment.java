@@ -776,7 +776,7 @@ public class Experiment {
                 setModelFiles("../parametric_convex_models/mixture_mdps/engagement_adaptive_5.prism");
                 setSpecsWithInverse(Type.REWARD, "Rminmax = ? [ F (\"purchase\" | \"churn\") ]", "Rminmin = ? [ F (\"purchase\" | \"churn\") ]", "R = ? [ F (\"purchase\" | \"churn\") ]", "Rmin = ? [ F (\"purchase\" | \"churn\") ]", "Rmax = ? [ F (\"purchase\" | \"churn\") ]");
 
-                int L = 1000;
+                int L = 100;
 
                 setLearningSettings(2, L, 300000);
 
@@ -845,8 +845,8 @@ public class Experiment {
 
                 // Set Parameter Values
                 addParameters(
-                        "w", 21,
-                        "h", 17,
+                        "w", 106,
+                        "h", 99,
                         "theta_h", 0.3,
                         "theta_v", 0.7
                 );
@@ -862,7 +862,7 @@ public class Experiment {
 //                this.spec = "Pmax=? [F money + money2 >= 25]";
 //                this.type = Type.REACH;
 
-                int n = 7;
+                int n = 6;
 
                 setLearningSettings(2, n, 100000);
 

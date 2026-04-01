@@ -186,7 +186,7 @@ public class ConvexLearner {
         for (int round = 0; round < obbtMaxRounds; round++) {
             model.update();
 
-            System.out.println("Running OBBT round " + round + " of " + obbtMaxRounds + " ...");
+            System.out.println("Running OBBT round " + (round + 1) +  " ...");
             Map<String, double[]> bounds = solveBoundsForBaseParams();
             if (bounds.isEmpty()) break;
 

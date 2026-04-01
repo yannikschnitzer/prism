@@ -11,6 +11,8 @@ CompositionType: INTERVAL_PRODUCT
 ParameterTying: FULL_TYING
 ParameterValues: n=25,p=0.55
 ErrorTolerance: 0.999
+UseVertexPrecomp: true
+VerboseBisim: false
 Specification: Rmax=? [F "done"]
 RobustSpecification: Rmaxmin=? [F "done"]
 OptimisticSpecification: Rmaxmax=? [F "done"]
@@ -22,4 +24,4 @@ MaxTrajectoryLength: 25
 ModelFile: ../parametric_convex_models/bet_fav_adaptive.prism
 StrategyWeight: 0.9
 Recomputations: 155
-Runtime: 130.198896542
+Runtime: 124.023338541

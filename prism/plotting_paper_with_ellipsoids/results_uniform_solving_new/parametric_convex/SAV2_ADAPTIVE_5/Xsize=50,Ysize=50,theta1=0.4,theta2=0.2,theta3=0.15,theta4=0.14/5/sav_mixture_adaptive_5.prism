@@ -1,8 +1,8 @@
 mdp
 
 // ===== GRID & TASK =====
-const int Xsize = 50;
-const int Ysize = 50;
+const int Xsize = 10;
+const int Ysize = 10;
 const int MAXTRIES = 9;
 const int B = 6;  // max moves without a successful send
 

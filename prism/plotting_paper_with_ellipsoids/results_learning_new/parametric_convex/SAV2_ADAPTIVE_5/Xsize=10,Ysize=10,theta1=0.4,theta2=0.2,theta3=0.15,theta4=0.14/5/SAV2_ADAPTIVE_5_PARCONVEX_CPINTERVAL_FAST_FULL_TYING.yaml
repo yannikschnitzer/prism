@@ -11,6 +11,8 @@ CompositionType: INTERVAL_PRODUCT
 ParameterTying: FULL_TYING
 ParameterValues: Xsize=10,Ysize=10,theta1=0.4,theta2=0.2,theta3=0.15,theta4=0.14
 ErrorTolerance: 0.999
+UseVertexPrecomp: true
+VerboseBisim: false
 Specification: Pmax=? [!("Crash") U ("Target")]
 RobustSpecification: Pmaxmin=? [!("Crash") U ("Target")]
 OptimisticSpecification: Pmaxmax=? [!("Crash") U ("Target")]
@@ -22,4 +24,4 @@ MaxTrajectoryLength: 50
 ModelFile: ../parametric_convex_models/mixture_mdps/sav_mixture_adaptive_5.prism
 StrategyWeight: 0.9
 Recomputations: 18
-Runtime: 58.854081459
+Runtime: 53.317946292
