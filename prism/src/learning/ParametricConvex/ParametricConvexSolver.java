@@ -64,10 +64,10 @@ public class ParametricConvexSolver {
     // Keep this set small and explicit; pass CLI args to override without editing code.
     private static final EnumSet<RunConfiguration> DEFAULT_RUN_CONFIGURATIONS = EnumSet.of(
             RunConfiguration.PARAMETER_TYING,
-            //RunConfiguration.PARAMETRIC_CONVEX,
+            RunConfiguration.PARAMETRIC_CONVEX,
             RunConfiguration.LP_TO_INTERVAL_EXACT,
             RunConfiguration.LP_TO_INTERVAL_FAST,
-//            RunConfiguration.ELLIPSOID,
+            RunConfiguration.ELLIPSOID,
             RunConfiguration.ELLIPSOID_TO_INTERVAL_EXACT,
             RunConfiguration.ELLIPSOID_TO_INTERVAL_FAST
     );
