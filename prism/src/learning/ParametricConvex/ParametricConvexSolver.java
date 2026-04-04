@@ -37,12 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
 import static imdpcomp.Experiment.IntervalAbstractionMode.EXACT;
@@ -83,7 +78,7 @@ public class ParametricConvexSolver {
         REPRODUCE_BENCHMARKS
     }
 
-    private static final IdeExecutionMode IDE_EXECUTION_MODE = IdeExecutionMode.DEFAULT_MODEL;
+    private static final IdeExecutionMode IDE_EXECUTION_MODE = IdeExecutionMode.REPRODUCE_BENCHMARKS;
     private static final Model IDE_MODEL = DEFAULT_MODEL;
     private static final EnumSet<RunConfiguration> IDE_RUN_CONFIGURATIONS = EnumSet.copyOf(DEFAULT_RUN_CONFIGURATIONS);
     private static final String IDE_BENCHMARK_INPUT_ROOT = DEFAULT_BENCHMARK_INPUT_ROOT;
@@ -93,6 +88,7 @@ public class ParametricConvexSolver {
     private static final Integer IDE_BENCHMARK_TIMEOUT_SECONDS = null;
     // If true, IDE benchmark reproduction only runs instances for IDE_MODEL.
     private static final boolean IDE_BENCHMARK_LIMIT_TO_IDE_MODEL = true;
+    private static final String BENCHMARK_CHILD_FLAG = "--benchmark-child";
 
     private enum RunConfiguration {
         PLAIN_NAIVE {
@@ -226,6 +222,18 @@ public class ParametricConvexSolver {
         }
     }
 
+    private static final class ChildBenchmarkRequest {
+        final RunConfiguration runConfiguration;
+        final BenchmarkInstance benchmarkInstance;
+        final String outputRoot;
+
+        ChildBenchmarkRequest(RunConfiguration runConfiguration, BenchmarkInstance benchmarkInstance, String outputRoot) {
+            this.runConfiguration = runConfiguration;
+            this.benchmarkInstance = benchmarkInstance;
+            this.outputRoot = outputRoot;
+        }
+    }
+
     private String outputRoot = DEFAULT_OUTPUT_ROOT;
     private boolean forceIdentParameterDirectory = false;
 
@@ -235,6 +243,11 @@ public class ParametricConvexSolver {
     }
 
     public static void main(String[] args) throws GRBException, PrismException {
+        if (isBenchmarkChildInvocation(args)) {
+            runBenchmarkChildProcess(args);
+            return;
+        }
+
         ParametricConvexSolver parametricConvexLearner = new ParametricConvexSolver(new Prism(new PrismDevNullLog()));
         parametricConvexLearner.initializePrism();
 
@@ -243,6 +256,47 @@ public class ParametricConvexSolver {
             parametricConvexLearner.runBenchmarkReproduction(options);
         } else {
             parametricConvexLearner.runDefaultModel(options.model, options.runConfigurations);
+        }
+    }
+
+    private static boolean isBenchmarkChildInvocation(String[] args) {
+        for (String arg : args) {
+            if (BENCHMARK_CHILD_FLAG.equals(arg)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void runBenchmarkChildProcess(String[] args) throws GRBException, PrismException {
+        ChildBenchmarkRequest request = parseChildBenchmarkRequest(args);
+        ParametricConvexSolver solver = new ParametricConvexSolver(new Prism(new PrismDevNullLog()));
+        solver.initializePrism();
+        try {
+            solver.outputRoot = request.outputRoot;
+            solver.forceIdentParameterDirectory = true;
+            solver.clearCachedSamples();
+
+            Experiment baselineExperiment = applyBenchmarkInstance(
+                    runConfigurationIndependentExperiment(request.benchmarkInstance.model),
+                    request.benchmarkInstance
+            );
+            MDPSimple<Function> pmdp = solver.buildParamModel(baselineExperiment);
+
+            Experiment experiment = applyBenchmarkInstance(
+                    request.runConfiguration.createExperiment(request.benchmarkInstance.model),
+                    request.benchmarkInstance
+            );
+            solver.solveIMDPUniform(
+                    experiment,
+                    experiment.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+                    pmdp,
+                    experiment.parameterValues,
+                    true,
+                    null
+            );
+        } finally {
+            solver.closePrismQuietly();
         }
     }
 
@@ -435,67 +489,8 @@ public class ParametricConvexSolver {
 
     private void runBenchmarkInstanceWithHardTimeout(BenchmarkInstance benchmarkInstance, EnumSet<RunConfiguration> runConfigurations, int timeoutSeconds) {
         List<RunConfiguration> runConfigurationsInOrder = new ArrayList<>(runConfigurations);
-        int runConfigurationIndex = 0;
-
-        while (runConfigurationIndex < runConfigurationsInOrder.size()) {
-            ExecutorService executor = Executors.newSingleThreadExecutor(runnable -> {
-                Thread worker = new Thread(runnable, "benchmark-timeout-" + benchmarkInstance.model + "-" + benchmarkInstance.seed);
-                worker.setDaemon(true);
-                return worker;
-            });
-            final ParametricConvexSolver[] isolatedSolverHolder = new ParametricConvexSolver[1];
-            final MDPSimple<Function>[] pmdpHolder = new MDPSimple[1];
-
-            try {
-                Future<?> initFuture = executor.submit(() -> {
-                    try {
-                        ParametricConvexSolver isolatedSolver = new ParametricConvexSolver(new Prism(new PrismDevNullLog()));
-                        isolatedSolver.initializePrism();
-                        isolatedSolver.outputRoot = this.outputRoot;
-                        isolatedSolver.forceIdentParameterDirectory = this.forceIdentParameterDirectory;
-                        isolatedSolver.clearCachedSamples();
-
-                        Experiment baselineExperiment = applyBenchmarkInstance(runConfigurationIndependentExperiment(benchmarkInstance.model), benchmarkInstance);
-                        isolatedSolverHolder[0] = isolatedSolver;
-                        pmdpHolder[0] = isolatedSolver.buildParamModel(baselineExperiment);
-                    } catch (PrismException e) {
-                        throw new RuntimeException("Failed to initialize isolated benchmark solver.", e);
-                    }
-                });
-
-                if (!awaitBenchmarkTask(initFuture, timeoutSeconds, benchmarkDescriptor(benchmarkInstance, "INIT"))) {
-                    return;
-                }
-
-                boolean restartWithFreshContext = false;
-                for (; runConfigurationIndex < runConfigurationsInOrder.size(); runConfigurationIndex++) {
-                    RunConfiguration runConfiguration = runConfigurationsInOrder.get(runConfigurationIndex);
-                    Experiment ex = applyBenchmarkInstance(runConfiguration.createExperiment(benchmarkInstance.model), benchmarkInstance);
-                    Future<?> runFuture = executor.submit(() -> isolatedSolverHolder[0].solveIMDPUniform(
-                            ex,
-                            ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                            pmdpHolder[0],
-                            ex.parameterValues,
-                            true,
-                            null
-                    ));
-
-                    if (!awaitBenchmarkTask(runFuture, timeoutSeconds, benchmarkDescriptor(benchmarkInstance, runConfiguration.name()))) {
-                        runConfigurationIndex++;
-                        restartWithFreshContext = true;
-                        break;
-                    }
-                }
-
-                if (!restartWithFreshContext) {
-                    return;
-                }
-            } finally {
-                if (isolatedSolverHolder[0] != null) {
-                    isolatedSolverHolder[0].closePrismQuietly();
-                }
-                executor.shutdownNow();
-            }
+        for (RunConfiguration runConfiguration : runConfigurationsInOrder) {
+            runBenchmarkRunInSubprocess(benchmarkInstance, runConfiguration, timeoutSeconds);
         }
     }
 
@@ -503,21 +498,185 @@ public class ParametricConvexSolver {
         return benchmarkInstance.model + " / " + benchmarkInstance.parameterDirectoryName + " / seed " + benchmarkInstance.seed + " / " + suffix;
     }
 
-    private static boolean awaitBenchmarkTask(Future<?> future, int timeoutSeconds, String descriptor) {
+    private boolean runBenchmarkRunInSubprocess(BenchmarkInstance benchmarkInstance, RunConfiguration runConfiguration, int timeoutSeconds) {
+        String descriptor = benchmarkDescriptor(benchmarkInstance, runConfiguration.name());
+        List<String> command = buildBenchmarkChildCommand(benchmarkInstance, runConfiguration);
+
+        Process process;
         try {
-            future.get(timeoutSeconds, TimeUnit.SECONDS);
-            return true;
-        } catch (TimeoutException e) {
-            future.cancel(true);
-            System.out.println("Timed out after " + timeoutSeconds + "s: " + descriptor);
+            process = new ProcessBuilder(command)
+                    .inheritIO()
+                    .start();
+        } catch (IOException e) {
+            System.out.println("Failed to start benchmark subprocess: " + descriptor + " (" + e.getMessage() + "). Continuing with next benchmark run.");
             return false;
+        }
+
+        try {
+            boolean finished = process.waitFor(timeoutSeconds, TimeUnit.SECONDS);
+            if (!finished) {
+                System.out.println("Timed out after " + timeoutSeconds + "s: " + descriptor);
+                process.destroy();
+                if (!process.waitFor(2, TimeUnit.SECONDS)) {
+                    process.destroyForcibly();
+                    process.waitFor();
+                }
+                return false;
+            }
+
+            int exitCode = process.exitValue();
+            if (exitCode != 0) {
+                System.out.println("Benchmark subprocess failed (exit " + exitCode + "): " + descriptor + ". Continuing with next benchmark run.");
+                return false;
+            }
+            return true;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException("Interrupted while running benchmark task: " + descriptor, e);
-        } catch (ExecutionException e) {
-            Throwable cause = e.getCause() == null ? e : e.getCause();
-            throw new RuntimeException("Benchmark task failed: " + descriptor, cause);
+            throw new RuntimeException("Interrupted while waiting for benchmark subprocess: " + descriptor, e);
         }
+    }
+
+    private List<String> buildBenchmarkChildCommand(BenchmarkInstance benchmarkInstance, RunConfiguration runConfiguration) {
+        List<String> command = new ArrayList<>();
+        command.add(resolveJavaExecutable());
+        command.add("-cp");
+        command.add(resolveChildClassPath());
+        command.add(ParametricConvexSolver.class.getName());
+        command.add(BENCHMARK_CHILD_FLAG);
+
+        addChildArgument(command, "run-configuration", runConfiguration.name());
+        addChildArgument(command, "output-root", this.outputRoot);
+        addChildArgument(command, "model", benchmarkInstance.model.name());
+        addChildArgument(command, "parameter-directory", benchmarkInstance.parameterDirectoryName);
+        addChildArgument(command, "seed", benchmarkInstance.seed);
+        addChildArgument(command, "model-file", benchmarkInstance.modelFile.toString());
+        addChildArgument(command, "spec", benchmarkInstance.spec);
+        addChildArgument(command, "robust-spec", benchmarkInstance.robustSpec);
+        addChildArgument(command, "optimistic-spec", benchmarkInstance.optimisticSpec);
+        addChildArgument(command, "dtmc-spec", benchmarkInstance.dtmcSpec);
+        addChildArgument(command, "iterations", benchmarkInstance.iterations);
+        addChildArgument(command, "max-episode-length", benchmarkInstance.maxEpisodeLength);
+        addChildArgument(command, "multiplier", benchmarkInstance.multiplier);
+        addChildArgument(command, "error-tolerance", benchmarkInstance.errorTolerance);
+        addChildArgument(command, "use-vertex-precomp", benchmarkInstance.useVertexPrecomp);
+        addChildArgument(command, "verbose-bisim", benchmarkInstance.verboseBisim);
+
+        return command;
+    }
+
+    private static void addChildArgument(List<String> command, String key, Object value) {
+        if (value == null) {
+            return;
+        }
+        command.add("--child-" + key + "=" + value);
+    }
+
+    private static String resolveJavaExecutable() {
+        String javaHome = System.getProperty("java.home");
+        if (javaHome == null || javaHome.isBlank()) {
+            return "java";
+        }
+        Path candidate = Paths.get(javaHome, "bin", "java");
+        if (Files.isRegularFile(candidate) && Files.isExecutable(candidate)) {
+            return candidate.toString();
+        }
+        return "java";
+    }
+
+    private static String resolveChildClassPath() {
+        String classPath = System.getProperty("java.class.path");
+        if (classPath == null || classPath.isBlank()) {
+            return "";
+        }
+
+        String separator = File.pathSeparator;
+        String[] entries = classPath.split(java.util.regex.Pattern.quote(separator));
+        StringJoiner sanitized = new StringJoiner(separator);
+        for (String entry : entries) {
+            if (entry == null || entry.isBlank()) {
+                continue;
+            }
+            Path path = Paths.get(entry);
+            Path fileName = path.getFileName();
+            if (fileName != null && "prism.jar".equalsIgnoreCase(fileName.toString())) {
+                // Prefer freshly compiled classes in subprocesses.
+                continue;
+            }
+            sanitized.add(entry);
+        }
+        String sanitizedClassPath = sanitized.toString();
+        return sanitizedClassPath.isBlank() ? classPath : sanitizedClassPath;
+    }
+
+    private static ChildBenchmarkRequest parseChildBenchmarkRequest(String[] args) {
+        Map<String, String> childArgs = new HashMap<>();
+        for (String arg : args) {
+            if (arg == null || arg.isBlank() || BENCHMARK_CHILD_FLAG.equals(arg) || !arg.startsWith("--child-")) {
+                continue;
+            }
+            int separatorIndex = arg.indexOf('=');
+            if (separatorIndex < 0) {
+                continue;
+            }
+            String key = arg.substring("--child-".length(), separatorIndex).trim();
+            String value = arg.substring(separatorIndex + 1);
+            childArgs.put(key, value);
+        }
+
+        String runConfigurationName = requireChildArg(childArgs, "run-configuration");
+        RunConfiguration runConfiguration;
+        try {
+            runConfiguration = RunConfiguration.valueOf(normalizeRunConfigurationToken(runConfigurationName));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Unknown child run configuration '" + runConfigurationName + "'.");
+        }
+
+        String modelName = requireChildArg(childArgs, "model");
+        Model model;
+        try {
+            model = Model.valueOf(normalizeRunConfigurationToken(modelName));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Unknown child model '" + modelName + "'.");
+        }
+
+        String parameterDirectoryName = childArgs.getOrDefault("parameter-directory", "");
+        Values parameterValues = parseParameterValues(parameterDirectoryName, true);
+        Values identParameters = parseParameterValues(parameterDirectoryName, false);
+        Integer seed = parseInteger(requireChildArg(childArgs, "seed"));
+        if (seed == null) {
+            throw new IllegalArgumentException("Invalid child benchmark seed.");
+        }
+
+        Path modelFile = Paths.get(requireChildArg(childArgs, "model-file"));
+        BenchmarkInstance benchmarkInstance = new BenchmarkInstance(
+                model,
+                parameterDirectoryName,
+                parameterValues,
+                identParameters,
+                seed,
+                modelFile,
+                childArgs.get("spec"),
+                childArgs.get("robust-spec"),
+                childArgs.get("optimistic-spec"),
+                childArgs.get("dtmc-spec"),
+                parseInteger(childArgs.get("iterations")),
+                parseInteger(childArgs.get("max-episode-length")),
+                parseInteger(childArgs.get("multiplier")),
+                parseDouble(childArgs.get("error-tolerance")),
+                parseBoolean(childArgs.get("use-vertex-precomp")),
+                parseBoolean(childArgs.get("verbose-bisim"))
+        );
+
+        String outputRoot = requireChildArg(childArgs, "output-root");
+        return new ChildBenchmarkRequest(runConfiguration, benchmarkInstance, outputRoot);
+    }
+
+    private static String requireChildArg(Map<String, String> childArgs, String key) {
+        String value = childArgs.get(key);
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("Missing required child benchmark argument --child-" + key + "=...");
+        }
+        return value;
     }
 
     private static Experiment runConfigurationIndependentExperiment(Model model) {
