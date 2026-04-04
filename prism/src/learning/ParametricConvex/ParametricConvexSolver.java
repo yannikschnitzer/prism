@@ -31,8 +31,11 @@ import strat.Strategy;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -58,6 +61,9 @@ public class ParametricConvexSolver {
     private static final String DEFAULT_BENCHMARK_INPUT_ROOT = DEFAULT_OUTPUT_ROOT;
     private static final String DEFAULT_BENCHMARK_OUTPUT_BASE = "plotting_paper_with_ellipsoids/benchmark_results";
     private static final DateTimeFormatter BENCHMARK_TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+    private static final String SAMPLE_CACHE_HEADER = "# trajectory-cache-v1";
+    private static final String SAMPLE_CACHE_TRANSITION_PREFIX = "T";
+    private static final String SAMPLE_CACHE_STATE_ACTION_PREFIX = "S";
 
     private static final Model DEFAULT_MODEL = Model.GLIDER;
 
@@ -226,11 +232,21 @@ public class ParametricConvexSolver {
         final RunConfiguration runConfiguration;
         final BenchmarkInstance benchmarkInstance;
         final String outputRoot;
+        final Integer timeoutSeconds;
+        final Path sampleCacheFile;
 
-        ChildBenchmarkRequest(RunConfiguration runConfiguration, BenchmarkInstance benchmarkInstance, String outputRoot) {
+        ChildBenchmarkRequest(
+                RunConfiguration runConfiguration,
+                BenchmarkInstance benchmarkInstance,
+                String outputRoot,
+                Integer timeoutSeconds,
+                Path sampleCacheFile
+        ) {
             this.runConfiguration = runConfiguration;
             this.benchmarkInstance = benchmarkInstance;
             this.outputRoot = outputRoot;
+            this.timeoutSeconds = timeoutSeconds;
+            this.sampleCacheFile = sampleCacheFile;
         }
     }
 
@@ -276,6 +292,7 @@ public class ParametricConvexSolver {
             solver.outputRoot = request.outputRoot;
             solver.forceIdentParameterDirectory = true;
             solver.clearCachedSamples();
+            solver.tryLoadTrajectoryCache(request.sampleCacheFile);
 
             Experiment baselineExperiment = applyBenchmarkInstance(
                     runConfigurationIndependentExperiment(request.benchmarkInstance.model),
@@ -287,14 +304,18 @@ public class ParametricConvexSolver {
                     request.runConfiguration.createExperiment(request.benchmarkInstance.model),
                     request.benchmarkInstance
             );
-            solver.solveIMDPUniform(
-                    experiment,
-                    experiment.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
-                    pmdp,
-                    experiment.parameterValues,
-                    true,
-                    null
-            );
+            try {
+                solver.solveIMDPUniform(
+                        experiment,
+                        experiment.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
+                        pmdp,
+                        experiment.parameterValues,
+                        true,
+                        request.timeoutSeconds
+                );
+            } finally {
+                solver.tryPersistTrajectoryCache(request.sampleCacheFile);
+            }
         } finally {
             solver.closePrismQuietly();
         }
@@ -488,9 +509,12 @@ public class ParametricConvexSolver {
     }
 
     private void runBenchmarkInstanceWithHardTimeout(BenchmarkInstance benchmarkInstance, EnumSet<RunConfiguration> runConfigurations, int timeoutSeconds) {
+        Path sampleCacheFile = benchmarkSampleCacheFile(benchmarkInstance);
+        resetTrajectoryCacheFile(sampleCacheFile);
+
         List<RunConfiguration> runConfigurationsInOrder = new ArrayList<>(runConfigurations);
         for (RunConfiguration runConfiguration : runConfigurationsInOrder) {
-            runBenchmarkRunInSubprocess(benchmarkInstance, runConfiguration, timeoutSeconds);
+            runBenchmarkRunInSubprocess(benchmarkInstance, runConfiguration, timeoutSeconds, sampleCacheFile);
         }
     }
 
@@ -498,9 +522,9 @@ public class ParametricConvexSolver {
         return benchmarkInstance.model + " / " + benchmarkInstance.parameterDirectoryName + " / seed " + benchmarkInstance.seed + " / " + suffix;
     }
 
-    private boolean runBenchmarkRunInSubprocess(BenchmarkInstance benchmarkInstance, RunConfiguration runConfiguration, int timeoutSeconds) {
+    private boolean runBenchmarkRunInSubprocess(BenchmarkInstance benchmarkInstance, RunConfiguration runConfiguration, int timeoutSeconds, Path sampleCacheFile) {
         String descriptor = benchmarkDescriptor(benchmarkInstance, runConfiguration.name());
-        List<String> command = buildBenchmarkChildCommand(benchmarkInstance, runConfiguration);
+        List<String> command = buildBenchmarkChildCommand(benchmarkInstance, runConfiguration, timeoutSeconds, sampleCacheFile);
 
         Process process;
         try {
@@ -536,7 +560,7 @@ public class ParametricConvexSolver {
         }
     }
 
-    private List<String> buildBenchmarkChildCommand(BenchmarkInstance benchmarkInstance, RunConfiguration runConfiguration) {
+    private List<String> buildBenchmarkChildCommand(BenchmarkInstance benchmarkInstance, RunConfiguration runConfiguration, Integer timeoutSeconds, Path sampleCacheFile) {
         List<String> command = new ArrayList<>();
         command.add(resolveJavaExecutable());
         command.add("-cp");
@@ -560,6 +584,10 @@ public class ParametricConvexSolver {
         addChildArgument(command, "error-tolerance", benchmarkInstance.errorTolerance);
         addChildArgument(command, "use-vertex-precomp", benchmarkInstance.useVertexPrecomp);
         addChildArgument(command, "verbose-bisim", benchmarkInstance.verboseBisim);
+        addChildArgument(command, "timeout-seconds", timeoutSeconds);
+        if (sampleCacheFile != null) {
+            addChildArgument(command, "sample-cache-file", sampleCacheFile.toAbsolutePath().normalize().toString());
+        }
 
         return command;
     }
@@ -668,7 +696,16 @@ public class ParametricConvexSolver {
         );
 
         String outputRoot = requireChildArg(childArgs, "output-root");
-        return new ChildBenchmarkRequest(runConfiguration, benchmarkInstance, outputRoot);
+        Integer timeoutSeconds = parseInteger(childArgs.get("timeout-seconds"));
+        if (timeoutSeconds != null && timeoutSeconds <= 0) {
+            throw new IllegalArgumentException("Invalid child benchmark timeout '" + timeoutSeconds + "'.");
+        }
+        String sampleCacheFileToken = childArgs.get("sample-cache-file");
+        Path sampleCacheFile = (sampleCacheFileToken == null || sampleCacheFileToken.isBlank())
+                ? null
+                : Paths.get(sampleCacheFileToken);
+
+        return new ChildBenchmarkRequest(runConfiguration, benchmarkInstance, outputRoot, timeoutSeconds, sampleCacheFile);
     }
 
     private static String requireChildArg(Map<String, String> childArgs, String key) {
@@ -681,6 +718,128 @@ public class ParametricConvexSolver {
 
     private static Experiment runConfigurationIndependentExperiment(Model model) {
         return new Experiment(model);
+    }
+
+    private Path benchmarkSampleCacheFile(BenchmarkInstance benchmarkInstance) {
+        String fileName = ".trajectory_cache_" + (benchmarkInstance.iterations == null ? "default" : benchmarkInstance.iterations) + ".tsv";
+        return Paths.get(this.outputRoot, benchmarkInstance.model.toString(), benchmarkInstance.parameterDirectoryName, String.valueOf(benchmarkInstance.seed), fileName);
+    }
+
+    private void resetTrajectoryCacheFile(Path sampleCacheFile) {
+        if (sampleCacheFile == null) {
+            return;
+        }
+        try {
+            Path parent = sampleCacheFile.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            Files.deleteIfExists(sampleCacheFile);
+        } catch (IOException e) {
+            System.out.println("Warning: failed to reset trajectory cache file '" + sampleCacheFile + "' (" + e.getMessage() + ").");
+        }
+    }
+
+    private static String encodeCacheAction(String action) {
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(action.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static String decodeCacheAction(String encoded) {
+        return new String(Base64.getUrlDecoder().decode(encoded), StandardCharsets.UTF_8);
+    }
+
+    private void tryLoadTrajectoryCache(Path sampleCacheFile) {
+        if (sampleCacheFile == null || !Files.isRegularFile(sampleCacheFile)) {
+            return;
+        }
+
+        HashMap<TransitionTriple, Integer> loadedSamplesMap = new HashMap<>();
+        HashMap<StateActionPair, Integer> loadedSampleSizeMap = new HashMap<>();
+        try (BufferedReader reader = Files.newBufferedReader(sampleCacheFile, StandardCharsets.UTF_8)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.isBlank() || line.startsWith("#")) {
+                    continue;
+                }
+
+                String[] tokens = line.split("\t", -1);
+                if (tokens.length == 0) {
+                    continue;
+                }
+                if (SAMPLE_CACHE_TRANSITION_PREFIX.equals(tokens[0])) {
+                    if (tokens.length != 5) {
+                        throw new IllegalArgumentException("Malformed transition cache entry.");
+                    }
+                    int state = Integer.parseInt(tokens[1]);
+                    String action = decodeCacheAction(tokens[2]);
+                    int successor = Integer.parseInt(tokens[3]);
+                    int count = Integer.parseInt(tokens[4]);
+                    loadedSamplesMap.put(new TransitionTriple(state, action, successor), count);
+                } else if (SAMPLE_CACHE_STATE_ACTION_PREFIX.equals(tokens[0])) {
+                    if (tokens.length != 4) {
+                        throw new IllegalArgumentException("Malformed state-action cache entry.");
+                    }
+                    int state = Integer.parseInt(tokens[1]);
+                    String action = decodeCacheAction(tokens[2]);
+                    int count = Integer.parseInt(tokens[3]);
+                    loadedSampleSizeMap.put(new StateActionPair(state, action), count);
+                }
+            }
+        } catch (IOException | IllegalArgumentException e) {
+            System.out.println("Warning: failed to load trajectory cache '" + sampleCacheFile + "' (" + e.getMessage() + "). Re-sampling.");
+            clearCachedSamples();
+            return;
+        }
+
+        if (loadedSamplesMap.isEmpty() || loadedSampleSizeMap.isEmpty()) {
+            return;
+        }
+        this.cachedSamplesMap = loadedSamplesMap;
+        this.cachedSampleSizeMap = loadedSampleSizeMap;
+        System.out.println("Loaded shared trajectory cache: " + sampleCacheFile);
+    }
+
+    private void tryPersistTrajectoryCache(Path sampleCacheFile) {
+        if (sampleCacheFile == null || this.cachedSamplesMap == null || this.cachedSampleSizeMap == null) {
+            return;
+        }
+
+        try {
+            Path parent = sampleCacheFile.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            try (BufferedWriter writer = Files.newBufferedWriter(sampleCacheFile, StandardCharsets.UTF_8)) {
+                writer.write(SAMPLE_CACHE_HEADER);
+                writer.newLine();
+                for (Map.Entry<TransitionTriple, Integer> entry : this.cachedSamplesMap.entrySet()) {
+                    TransitionTriple transition = entry.getKey();
+                    writer.write(SAMPLE_CACHE_TRANSITION_PREFIX);
+                    writer.write('\t');
+                    writer.write(String.valueOf(transition.getState()));
+                    writer.write('\t');
+                    writer.write(encodeCacheAction(transition.getAction()));
+                    writer.write('\t');
+                    writer.write(String.valueOf(transition.getSuccessor()));
+                    writer.write('\t');
+                    writer.write(String.valueOf(entry.getValue()));
+                    writer.newLine();
+                }
+                for (Map.Entry<StateActionPair, Integer> entry : this.cachedSampleSizeMap.entrySet()) {
+                    StateActionPair stateActionPair = entry.getKey();
+                    writer.write(SAMPLE_CACHE_STATE_ACTION_PREFIX);
+                    writer.write('\t');
+                    writer.write(String.valueOf(stateActionPair.getState()));
+                    writer.write('\t');
+                    writer.write(encodeCacheAction(stateActionPair.getAction()));
+                    writer.write('\t');
+                    writer.write(String.valueOf(entry.getValue()));
+                    writer.newLine();
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Warning: failed to persist trajectory cache '" + sampleCacheFile + "' (" + e.getMessage() + ").");
+        }
     }
 
     private static String createFreshBenchmarkOutputRoot() {
