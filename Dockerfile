@@ -19,7 +19,7 @@ COPY . .
 
 # Build PRISM (Java classes + native libs for Linux).
 WORKDIR /workspace/prism_convex/prism
-RUN make -j"$(nproc)"
+RUN make
 
 # Convenience defaults used by docker/run-benchmarks.sh
 ENV PRISM_DIR=/workspace/prism_convex/prism
@@ -38,7 +38,8 @@ ENV LD_LIBRARY_PATH=/workspace/prism_convex/prism/lib:/opt/gurobi/linux64/lib
 COPY docker/run-benchmarks.sh /usr/local/bin/run-benchmarks
 COPY docker/run-learner.sh /usr/local/bin/run-learner
 COPY docker/run-ae.sh /usr/local/bin/run-ae
-RUN chmod +x /usr/local/bin/run-benchmarks /usr/local/bin/run-learner /usr/local/bin/run-ae
+COPY docker/run-postprocess.sh /usr/local/bin/run-postprocess
+RUN chmod +x /usr/local/bin/run-benchmarks /usr/local/bin/run-learner /usr/local/bin/run-ae /usr/local/bin/run-postprocess
 
 WORKDIR /workspace/prism_convex/prism
 CMD ["bash"]

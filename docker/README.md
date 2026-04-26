@@ -1,41 +1,68 @@
-# PRISM Convex Artifact (QEST+FORMATS 2026)
+# QEST+FORMATS 2026 Artifact Instructions (For Reviewers)
 
-This directory contains an Artifact Evaluation workflow for the experiments based on:
+This README is only for running and checking the artifact.
+
+The artifact evaluates:
 
 - `learning.ParametricConvex.ParametricConvexLearner`
 - `learning.ParametricConvex.ParametricConvexSolver`
 
-It provides:
+The main entrypoint for reviewers is:
 
-- a Docker image build (`../Dockerfile`),
-- wrapper scripts:
-  - `run-learner` (learner entrypoint),
-  - `run-benchmarks` (solver benchmark entrypoint),
-  - `run-ae` (quick/paper/full presets).
+- `run-ae` (quick check + paper subset + full runs)
 
-## 1) Host prerequisites
+## 0) Important: image transferability
 
-- Docker Engine / Docker Desktop (Linux containers).
-- Linux Gurobi installation on the host (mounted into the container).
-- A valid Gurobi license file (recommended: WLS).
-- Recommended resources for larger runs: 32 GB RAM, multi-core CPU.
-- Default JVM settings in the image are conservative (`-Xms2g -Xmx8g`). For larger runs, override with `-e JAVA_INITIAL_HEAP=12g -e JAVA_MAX_HEAP=28g`.
+Docker images here are Linux container images.
 
-Notes:
+- They are usable on Linux/macOS/Windows hosts **if Docker is installed**.
+- They are **not automatically cross-architecture**.
 
-- Gurobi JNI and native libs are architecture-specific; use matching binaries for your container architecture (`linux/amd64` or `linux/arm64`).
-- The artifact itself does not need cloud services.
+In practice:
 
-## 2) Free Gurobi academic setup (recommended)
+- An image built on `linux/arm64` is for ARM64 machines.
+- An image built on `linux/amd64` is for x86_64 machines.
 
-For academic reviewers/authors, Gurobi provides free academic licenses.
+`docker/package-artifact.sh` builds **both** by default and exports:
 
-1. Create/login to a Gurobi account with institutional email:
+- `prism-convex-ae-amd64.tar.gz`
+- `prism-convex-ae-arm64.tar.gz`
+
+## 1) What you need
+
+- Docker (Linux containers)
+- Linux Gurobi installation on your host machine
+- A valid Gurobi license (free academic license is sufficient)
+
+Important:
+
+- This artifact does **not** ship Gurobi itself or a license file.
+- If you use a WLS license, internet access is required while running experiments.
+
+Why Gurobi is not bundled in the Docker image:
+
+- Gurobi is commercial software and redistribution in public artifacts is legally sensitive.
+- Reviewer licenses are user-specific (WLS credentials / license terms).
+- Shipping license credentials inside an image is unsafe.
+
+Therefore the image expects the reviewer to mount their own local Gurobi installation and license file.
+
+## 2) Get a free academic Gurobi license (recommended: WLS)
+
+### Step A: Create academic account and license
+
+1. Go to Gurobi Academic Program page and sign in with institutional email:
    - https://www.gurobi.com/academia/academic-program-and-licenses/
-2. Request an academic license (WLS is recommended for containers).
-3. Create a local license file, e.g. `$HOME/.gurobi/gurobi.lic`.
+2. Request a free academic license.
+3. In the Gurobi user portal, create/access a **WLS** license.
 
-Typical WLS `gurobi.lic` format:
+### Step B: Create local `gurobi.lic`
+
+Create file:
+
+- Linux/macOS: `$HOME/.gurobi/gurobi.lic`
+
+With content:
 
 ```text
 WLSACCESSID=...
@@ -43,22 +70,38 @@ WLSSECRET=...
 LICENSEID=...
 ```
 
-Container note: WLS requires outbound network access to Gurobi's licensing service during execution.
+Secure file permissions:
 
-## 3) Install Gurobi Optimizer (host)
+```bash
+chmod 600 "$HOME/.gurobi/gurobi.lic"
+```
 
-Install Linux Gurobi on host, e.g.:
+### Step C: Why WLS is preferred here
+
+- Works well for container runs.
+- No node-locked machine activation inside the container is required.
+- Reviewers can use their own academic account.
+
+## 3) Install Gurobi Optimizer on host (Linux binaries)
+
+Install Gurobi Optimizer on your host from:
+
+- https://www.gurobi.com/downloads/
+
+Example install path:
 
 - `/opt/gurobi1203/linux64`
 
-Verify required libraries exist:
+Verify required shared libraries:
 
 ```bash
 ls /opt/gurobi1203/linux64/lib/libgurobi*.so
 ls /opt/gurobi1203/linux64/lib/libGurobiJni*.so
 ```
 
-## 4) Build Docker image
+If your path is different, use that path in the Docker run command below.
+
+## 4) Build the artifact image
 
 From repository root:
 
@@ -66,19 +109,42 @@ From repository root:
 docker build -t prism-convex:ae -f Dockerfile .
 ```
 
-Optional per-architecture builds:
+## 5) If you received prebuilt image archives (`.tar.gz`)
+
+Pick the correct one:
+
+- x86_64 host: `prism-convex-ae-amd64.tar.gz`
+- ARM64 host: `prism-convex-ae-arm64.tar.gz`
+
+Check host architecture:
 
 ```bash
-docker buildx build --platform linux/amd64 -t prism-convex:ae-amd64 --load .
-docker buildx build --platform linux/arm64 -t prism-convex:ae-arm64 --load .
+uname -m
 ```
 
-## 5) Run quick-check (Phase I friendly)
+Load chosen archive:
 
-This runs:
+```bash
+gunzip -c prism-convex-ae-<amd64|arm64>.tar.gz | docker load
+docker images | grep prism-convex
+```
 
-- a short learner smoke test,
-- a short solver subset run.
+After loading, use image tag:
+
+- `prism-convex:ae-amd64` or
+- `prism-convex:ae-arm64`
+
+Set:
+
+```bash
+IMG=prism-convex:ae-<amd64|arm64>
+```
+
+Below, use `$IMG`.
+
+## 6) Quick check (recommended first)
+
+This runs a short learner and solver sanity check.
 
 ```bash
 mkdir -p "$PWD/prism/plotting_paper_with_ellipsoids/artifact_results"
@@ -88,32 +154,13 @@ docker run --rm -it \
   -v "$HOME/.gurobi/gurobi.lic:/licenses/gurobi.lic:ro" \
   -v "$PWD/prism/plotting_paper_with_ellipsoids/artifact_results:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results" \
   -e GRB_LICENSE_FILE=/licenses/gurobi.lic \
-  prism-convex:ae \
+  "$IMG" \
   run-ae quick
 ```
 
-Output:
+## 7) Reproduce paper experiments
 
-- `prism/plotting_paper_with_ellipsoids/artifact_results/learning_quick/parametric_convex/...`
-- `prism/plotting_paper_with_ellipsoids/artifact_results/solver_quick/parametric_convex/...`
-
-## 6) Reproduce paper subset
-
-`run-ae learner-paper-subset` and `run-ae solver-paper-subset` cover:
-
-- `AIRCRAFT_MIXTURE_POSITION`
-- `BETTING_GAME_CONVEX_ADAPTIVE`
-- `BETTING_GAME_PARALLEL`
-- `ENGAGEMENT_ADAPTIVE_5`
-- `GLIDER`
-- `SAV2_ADAPTIVE_5`
-
-Default run configurations:
-
-- Learner subset: `PARAMETER_TYING,PARAMETRIC_CONVEX,LP_TO_INTERVAL_EXACT,LP_TO_INTERVAL_FAST`
-- Solver subset: `PARAMETER_TYING,PARAMETRIC_CONVEX,LP_TO_INTERVAL_EXACT,LP_TO_INTERVAL_FAST,ELLIPSOID,ELLIPSOID_TO_INTERVAL_EXACT,ELLIPSOID_TO_INTERVAL_FAST`
-
-### Learner subset
+### Learner paper subset
 
 ```bash
 docker run --rm -it \
@@ -121,11 +168,10 @@ docker run --rm -it \
   -v "$HOME/.gurobi/gurobi.lic:/licenses/gurobi.lic:ro" \
   -v "$PWD/prism/plotting_paper_with_ellipsoids/artifact_results:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results" \
   -e GRB_LICENSE_FILE=/licenses/gurobi.lic \
-  prism-convex:ae \
-  run-ae learner-paper-subset
+  "$IMG" run-ae learner-paper-subset
 ```
 
-### Solver subset
+### Solver paper subset
 
 ```bash
 docker run --rm -it \
@@ -133,11 +179,10 @@ docker run --rm -it \
   -v "$HOME/.gurobi/gurobi.lic:/licenses/gurobi.lic:ro" \
   -v "$PWD/prism/plotting_paper_with_ellipsoids/artifact_results:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results" \
   -e GRB_LICENSE_FILE=/licenses/gurobi.lic \
-  prism-convex:ae \
-  run-ae solver-paper-subset
+  "$IMG" run-ae solver-paper-subset
 ```
 
-### Solver full benchmark set
+### Solver full benchmark set (long)
 
 ```bash
 docker run --rm -it \
@@ -147,94 +192,74 @@ docker run --rm -it \
   -e GRB_LICENSE_FILE=/licenses/gurobi.lic \
   -e JAVA_INITIAL_HEAP=12g \
   -e JAVA_MAX_HEAP=28g \
-  prism-convex:ae \
-  run-ae solver-full
+  "$IMG" run-ae solver-full
 ```
 
-## 7) Direct wrappers (advanced)
+## 8) Where outputs are written
 
-Inside the container, these are available:
+All `run-ae` commands write to:
 
-- `run-learner`
-- `run-benchmarks`
-- `run-ae`
+- `plotting_paper_with_ellipsoids/artifact_results`
 
-Examples:
+Subdirectories:
+
+- `learning_quick/parametric_convex`
+- `solver_quick/parametric_convex`
+- `learning_paper_subset/parametric_convex`
+- `solver_paper_subset/parametric_convex`
+- `solver_full/parametric_convex`
+
+Because of the bind mount, these appear on your host in:
+
+- `prism/plotting_paper_with_ellipsoids/artifact_results`
+
+## 9) Table/plot postprocessing
+
+Prepared hook:
 
 ```bash
-# Learner on one model with overrides
-run-learner \
-  --model=BETTING_GAME_PARALLEL \
-  --runs=PARAMETER_TYING,PARAMETRIC_CONVEX \
-  --iterations=4000 \
-  --max-episode-length=6 \
-  --param=n=6,p_1=0.55,p_2=0.53 \
-  --output-root=plotting_paper_with_ellipsoids/artifact_results/manual_learning/parametric_convex
+run-ae postprocess all
 ```
+
+Expected scripts:
+
+- `artifact_eval/table_row_printer.py`
+- `artifact_eval/plot_results.py`
+
+Expected interface:
 
 ```bash
-# Solver benchmark reproduction for one model
-run-benchmarks \
-  --benchmark-input-root=plotting_paper_with_ellipsoids/results_uniform_solving_new/parametric_convex \
-  --benchmark-output-root=plotting_paper_with_ellipsoids/artifact_results/manual_solver/parametric_convex \
-  --model=GLIDER \
-  --runs=PARAMETER_TYING,PARAMETRIC_CONVEX,LP_TO_INTERVAL_EXACT,LP_TO_INTERVAL_FAST \
-  --benchmark-timeout-seconds=7200
+python3 <script> --input-root <results_dir> --output-root <out_dir>
 ```
 
-## 8) Runtime/network notes
+Default postprocess input:
 
-- If using WLS, network access is required during execution for license validation.
-- If using an offline/local license type, execution can be fully offline after image build.
-- The included benchmark input data for solver runs is local in the repository (`plotting_paper_with_ellipsoids/results_uniform_solving_new/parametric_convex`).
+- `plotting_paper_with_ellipsoids/artifact_results/solver_paper_subset/parametric_convex`
 
-## 9) Packaging for AE submission
+Default postprocess output:
 
-Use the helper script from repo root:
+- `plotting_paper_with_ellipsoids/artifact_results/postprocess`
+
+## 10) Troubleshooting
+
+### `ERROR: required command not found: docker`
+
+Docker is not installed/running on your machine.
+
+### `No libgurobi*.so found` or `No libGurobiJni*.so found`
+
+The mounted host path is wrong. Check `/opt/gurobi.../linux64/lib`.
+
+### `GRB_LICENSE_FILE points to a missing file`
+
+Your license file path/mount is wrong. Confirm:
 
 ```bash
-./docker/package-artifact.sh
+ls "$HOME/.gurobi/gurobi.lic"
 ```
 
-With paper PDF included:
+### Gurobi license error when using WLS
 
-```bash
-PAPER_PDF=/absolute/path/to/paper.pdf ./docker/package-artifact.sh
-```
-
-Outputs are created in `artifact_dist/` by default:
-
-- `prism-convex-ae-image.tar.gz`
-- `qest-formats-2026-ae-artifact.tar.gz`
-- `qest-formats-2026-ae-artifact.tar.gz.sha256`
-
-Manual alternative:
-
-```bash
-docker save prism-convex:ae | gzip > prism-convex-ae-image.tar.gz
-```
-
-Create artifact archive containing at least:
-
-- this README,
-- `COPYING.txt` (license),
-- paper PDF,
-- the Docker image tarball (`prism-convex-ae-image.tar.gz`).
-
-SHA-256 checksum:
-
-```bash
-shasum -a 256 artifact.tar.gz
-```
-
-## 10) Clean-build workflow recommendation
-
-- Commit only AE-relevant files on a dedicated branch.
-- Push branch and clone it on a clean machine.
-- Build there with `docker build ...` and package with `./docker/package-artifact.sh`.
-
-Do not use `git pull` inside the Dockerfile:
-
-- it makes builds non-deterministic (depends on remote HEAD),
-- it requires network access at build time,
-- it weakens future-proofness for artifact evaluation.
+- Check `WLSACCESSID`, `WLSSECRET`, `LICENSEID` values.
+- Ensure outbound internet access from the running environment.
+- Ensure no typo/extra spaces in `gurobi.lic`.

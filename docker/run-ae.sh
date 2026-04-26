@@ -39,6 +39,7 @@ Commands:
   learner-paper-subset  Run learner on the paper subset models.
   solver-paper-subset   Run solver reproduction on the paper subset models.
   solver-full           Run solver reproduction on all benchmark instances.
+  postprocess           Run table/plot post-processing hooks (delegates to run-postprocess).
   all-paper             Run learner-paper-subset, then solver-paper-subset.
   help                  Show this help.
 
@@ -121,6 +122,10 @@ run_solver_full() {
   echo "Solver full outputs: ${out_root}"
 }
 
+run_postprocess() {
+  run-postprocess "$@"
+}
+
 command="${1:-quick}"
 if [[ $# -gt 0 ]]; then
   shift
@@ -138,6 +143,9 @@ case "$command" in
     ;;
   solver-full)
     run_solver_full "$@"
+    ;;
+  postprocess)
+    run_postprocess "$@"
     ;;
   all-paper)
     run_learner_paper_subset
