@@ -11,6 +11,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     flex \
     make \
     openjdk-21-jdk-headless \
+    python3-matplotlib \
+    python3-numpy \
+    python3-pandas \
+    python3-yaml \
     python3 \
     && rm -rf /var/lib/apt/lists/*
 

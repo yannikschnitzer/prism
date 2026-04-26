@@ -31,6 +31,10 @@ For source code distributions:
  * to check the install, type `make test` or `etc/tests/run.sh`
  * to run, execute `bin/xprism` or `bin/prism`
 
+For a containerized setup for the ParametricConvex benchmark workflow, see:
+
+ * `docker/README.md`
+
 If you have problems check the manual, especially the section "Common Problems And Questions".
 
 

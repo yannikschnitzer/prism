@@ -49,39 +49,6 @@ Why Gurobi is not bundled in the Docker image:
 
 Therefore the image expects the reviewer to mount their own local Gurobi installation and license file.
 
-## 1.1) Version compatibility (must read)
-
-The Java code inside the artifact loads:
-
-- `libGurobiJni120.so`
-
-So you must mount a Gurobi installation that contains that file:
-
-- `.../lib/libGurobiJni120.so`
-
-If you see:
-
-- `java.lang.UnsatisfiedLinkError: no GurobiJni120 in java.library.path`
-
-you are mounting the wrong Gurobi major version (typically 13.x).
-
-## 1.2) Required mounts in `docker run`
-
-All `docker run` commands in this README use these mounts:
-
-- `-v "$GUROBI_HOME:/opt/gurobi/linux64:ro"`  
-  Host Gurobi installation.
-- `-v "$HOST_GUROBI_LIC:/licenses/gurobi.lic:ro"`  
-  Host license file into container.
-- `-v "$PWD/results:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results"`  
-  Host output folder for persistent results.
-
-And this environment variable:
-
-- `-e GRB_LICENSE_FILE=/licenses/gurobi.lic`
-
-Only the **left** side of `-v host_path:container_path` is machine-specific.
-
 ## 2) Get a free academic Gurobi license (recommended: WLS)
 
 ### Step A: Create academic account and license
@@ -167,15 +134,23 @@ ls "$GUROBI_HOME/lib"/libGurobiJni120.so
 grep -E '^(WLSACCESSID|WLSSECRET|LICENSEID)=' "$HOST_GUROBI_LIC"
 ```
 
-## 4) Build the artifact image
+## 3.2) Version compatibility (must read)
 
-From repository root:
+The Java code inside the artifact loads:
 
-```bash
-docker build -t prism-convex:ae -f Dockerfile .
-```
+- `libGurobiJni120.so`
 
-## 5) If you received prebuilt image archives (`.tar.gz`)
+So you must mount a Gurobi installation that contains that file:
+
+- `.../lib/libGurobiJni120.so`
+
+If you see:
+
+- `java.lang.UnsatisfiedLinkError: no GurobiJni120 in java.library.path`
+
+you are mounting the wrong Gurobi major version (typically 13.x).
+
+## 4) Load the prebuilt Docker image archive (`.tar.gz`)
 
 Pick the correct one:
 
@@ -204,6 +179,23 @@ echo "Using image: $IMG"
 
 Below, use `$IMG`.
 
+## 5) Runtime mounts used by all run commands
+
+All `docker run` commands below use these mounts:
+
+- `-v "$GUROBI_HOME:/opt/gurobi/linux64:ro"`  
+  Host Gurobi installation.
+- `-v "$HOST_GUROBI_LIC:/licenses/gurobi.lic:ro"`  
+  Host license file into container.
+- `-v "$PWD/results:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results"`  
+  Host output folder for persistent results.
+
+And this environment variable:
+
+- `-e GRB_LICENSE_FILE=/licenses/gurobi.lic`
+
+Only the **left** side of `-v host_path:container_path` is machine-specific.
+
 ## 6) Quick check (recommended first)
 
 This runs a short learner and solver sanity check.
@@ -212,6 +204,7 @@ Default quick preset:
 - model: `AIRCRAFT_MIXTURE_POSITION`
 - run configs: `PARAMETER_TYING,PARAMETRIC_CONVEX`
 - learner: `iterations=4000`, `max-episode-length=20`
+- solver benchmark size: `maxX=50,maxY=10` (fixed quick benchmark input)
 - solver: per-run timeout `900` seconds
 
 ```bash
@@ -232,8 +225,17 @@ Default subset presets:
 
 - `learner-paper-subset` runs 6 fixed models with run configs  
   `PARAMETER_TYING,PARAMETRIC_CONVEX,LP_TO_INTERVAL_EXACT,LP_TO_INTERVAL_FAST`
+- learner subset iterations: `100000` for each of the 6 models
+- learner subset size settings:
+  - `AIRCRAFT_MIXTURE_POSITION`: `maxX=50,maxY=10`
+  - `BETTING_GAME_CONVEX_ADAPTIVE`: `n=50`
+  - `BETTING_GAME_PARALLEL`: `n=5`
+  - `ENGAGEMENT_ADAPTIVE_5`: `L=100`
+  - `GLIDER`: `w=21,h=17`
+  - `SAV2_ADAPTIVE_5`: `Xsize=50,Ysize=50`
 - `solver-paper-subset` runs the same 6 models with run configs  
   `PARAMETER_TYING,PARAMETRIC_CONVEX,LP_TO_INTERVAL_EXACT,LP_TO_INTERVAL_FAST,ELLIPSOID,ELLIPSOID_TO_INTERVAL_EXACT,ELLIPSOID_TO_INTERVAL_FAST`
+- solver subset uses exactly one benchmark-parameter directory per model with the same size settings above
 - solver subset per-run timeout: `7200` seconds
 
 ### Learner paper subset
@@ -289,30 +291,67 @@ Because of the bind mount, these appear on your host in:
 
 - `results`
 
-## 9) Table/plot postprocessing
+## 9) Postprocessing (tables + statistics + learning plots)
 
-Prepared hook:
+Commands:
 
 ```bash
+# Runs all scripts (solver table + solver stats + learning plots)
+run-ae postprocess all
+
+# Only robust/optimistic interval + runtime table
+run-ae postprocess tables
+
+# Only benchmark statistics table
+run-ae postprocess stats
+
+# Learning benchmark plots
+run-ae postprocess learning-plots
+```
+
+Note: `learning-plots` requires learner outputs (e.g. after `run-ae learner-paper-subset` or `run-ae all-paper`).
+
+To postprocess a different solver result directory:
+
+```bash
+AE_POSTPROCESS_INPUT_ROOT=/path/to/solver_results/parametric_convex \
 run-ae postprocess all
 ```
 
-Expected scripts:
+To postprocess a different learning result directory:
+
+```bash
+AE_POSTPROCESS_LEARNING_INPUT_ROOT=/path/to/learning_results/parametric_convex \
+run-ae postprocess learning-plots
+```
+
+Generated files:
+
+- `postprocess/tables/benchmark_results_table_landscape_split_runtime.tex`
+- `postprocess/stats/benchmark_stats_table.tex`
+- `postprocess/learning_plots/<MODEL>/<PARAM_DIR>/*.pdf`
+
+Script locations:
 
 - `artifact_eval/table_row_printer.py`
 - `artifact_eval/plot_results.py`
+- `artifact_eval/learning_plot_results.py`
 
-Expected interface:
+Both scripts use:
 
 ```bash
 python3 <script> --input-root <results_dir> --output-root <out_dir>
 ```
 
-Default postprocess input:
+Default postprocess input root:
 
 - `plotting_paper_with_ellipsoids/artifact_results/solver_paper_subset/parametric_convex`
 
-Default postprocess output:
+Default learning-postprocess input root:
+
+- `plotting_paper_with_ellipsoids/artifact_results/learning_paper_subset/parametric_convex`
+
+Default postprocess output root:
 
 - `plotting_paper_with_ellipsoids/artifact_results/postprocess`
 
