@@ -45,6 +45,7 @@ public class ParametricConvexLearner {
     private final boolean verbose = true;
     private static final String DEFAULT_OUTPUT_ROOT = "plotting_paper_with_ellipsoids/results_learning_new/parametric_convex";
     private static final Model DEFAULT_MODEL = Model.GLIDER;
+    private String outputRoot = DEFAULT_OUTPUT_ROOT;
     private static final EnumSet<RunConfiguration> DEFAULT_RUN_CONFIGURATIONS = EnumSet.of(
             RunConfiguration.PARAMETER_TYING,
             RunConfiguration.PARAMETRIC_CONVEX,
@@ -109,6 +110,25 @@ public class ParametricConvexLearner {
             applyTo(experiment);
             return experiment;
         }
+
+        static String availableNames() {
+            StringJoiner joiner = new StringJoiner(", ");
+            for (RunConfiguration runConfiguration : values()) {
+                joiner.add(runConfiguration.name());
+            }
+            return joiner.toString();
+        }
+    }
+
+    private static final class CliOptions {
+        Model model = DEFAULT_MODEL;
+        EnumSet<RunConfiguration> runConfigurations = EnumSet.copyOf(DEFAULT_RUN_CONFIGURATIONS);
+        String outputRoot = DEFAULT_OUTPUT_ROOT;
+        Integer iterationsOverride = null;
+        Integer maxEpisodeLengthOverride = null;
+        Integer multiplierOverride = null;
+        Integer seedOverride = null;
+        final Map<String, Object> parameterOverrides = new LinkedHashMap<>();
     }
 
     public ParametricConvexLearner(Prism prism) {
@@ -116,20 +136,268 @@ public class ParametricConvexLearner {
     }
 
     public static void main(String[] args) throws GRBException, PrismException {
+        if (isHelpInvocation(args)) {
+            printUsage();
+            return;
+        }
+
+        CliOptions options = parseCliOptions(args);
+
         ParametricConvexLearner parametricConvexLearner = new ParametricConvexLearner(new Prism(new PrismDevNullLog()));
+        parametricConvexLearner.outputRoot = options.outputRoot;
         parametricConvexLearner.initializePrism();
 
-        Model model = DEFAULT_MODEL;
-        EnumSet<RunConfiguration> runConfigurations = EnumSet.copyOf(DEFAULT_RUN_CONFIGURATIONS);
-        MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(new Experiment(model));
+        Experiment baseExperiment = new Experiment(options.model);
+        applyExperimentOverrides(baseExperiment, options);
+        MDPSimple<Function> pmdp = parametricConvexLearner.buildParamModel(baseExperiment);
 
-        for (RunConfiguration runConfiguration : runConfigurations) {
-            Experiment ex = runConfiguration.createExperiment(model);
+        System.out.println("Output root: " + options.outputRoot);
+        System.out.println("Model: " + options.model);
+        System.out.println("Run configurations: " + options.runConfigurations);
+        if (options.iterationsOverride != null) {
+            System.out.println("Overriding iterations: " + options.iterationsOverride);
+        }
+        if (options.maxEpisodeLengthOverride != null) {
+            System.out.println("Overriding max episode length: " + options.maxEpisodeLengthOverride);
+        }
+        if (options.multiplierOverride != null) {
+            System.out.println("Overriding multiplier: " + options.multiplierOverride);
+        }
+        if (options.seedOverride != null) {
+            System.out.println("Overriding seed: " + options.seedOverride);
+        }
+        if (!options.parameterOverrides.isEmpty()) {
+            System.out.println("Overriding parameters: " + options.parameterOverrides);
+        }
+
+        for (RunConfiguration runConfiguration : options.runConfigurations) {
+            Experiment ex = runConfiguration.createExperiment(options.model);
+            applyExperimentOverrides(ex, options);
             parametricConvexLearner.learnIMDP(ex,
                     ex.useParametricConvex ? PACConvexEstimatorOptimistic::new : PACIntervalEstimatorOptimistic::new,
                     pmdp,
                     ex.parameterValues,
                     true);
+        }
+    }
+
+    private static boolean isHelpInvocation(String[] args) {
+        for (String arg : args) {
+            if ("--help".equals(arg) || "-h".equals(arg)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void printUsage() {
+        System.out.println("ParametricConvexLearner");
+        System.out.println("Usage:");
+        System.out.println("  java -cp \"classes:lib/*\" learning.ParametricConvex.ParametricConvexLearner [options]");
+        System.out.println();
+        System.out.println("Options:");
+        System.out.println("  --model=<MODEL>                 Model enum value (default: " + DEFAULT_MODEL + ")");
+        System.out.println("  --runs=<R1,R2,...|all>          Run configurations. Can also be passed positionally.");
+        System.out.println("  --output-root=<PATH>            Output root directory (default: " + DEFAULT_OUTPUT_ROOT + ")");
+        System.out.println("  --iterations=<N>                Override number of iterations");
+        System.out.println("  --max-episode-length=<N>        Override max episode length");
+        System.out.println("  --multiplier=<N>                Override learning multiplier");
+        System.out.println("  --seed=<N>                      Override random seed");
+        System.out.println("  --param=<k=v[,k=v...]>          Override one or more model parameters");
+        System.out.println("  --help, -h                      Show this message");
+        System.out.println();
+        System.out.println("Available run configurations:");
+        System.out.println("  " + RunConfiguration.availableNames());
+    }
+
+    private static CliOptions parseCliOptions(String[] args) {
+        CliOptions options = new CliOptions();
+        List<String> runTokens = new ArrayList<>();
+
+        for (String arg : args) {
+            if (arg == null || arg.isBlank()) {
+                continue;
+            }
+
+            if (arg.startsWith("--model=")) {
+                String modelName = arg.substring("--model=".length()).trim();
+                try {
+                    options.model = Model.valueOf(normalizeRunConfigurationToken(modelName));
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException("Unknown model '" + modelName + "'.");
+                }
+                continue;
+            }
+
+            if (arg.startsWith("--output-root=")) {
+                String outputRoot = arg.substring("--output-root=".length()).trim();
+                if (!outputRoot.isBlank()) {
+                    options.outputRoot = outputRoot;
+                }
+                continue;
+            }
+
+            if (arg.startsWith("--iterations=")) {
+                options.iterationsOverride = parsePositiveIntegerOrThrow("iterations", arg.substring("--iterations=".length()));
+                continue;
+            }
+
+            if (arg.startsWith("--max-episode-length=")) {
+                options.maxEpisodeLengthOverride = parsePositiveIntegerOrThrow("max episode length", arg.substring("--max-episode-length=".length()));
+                continue;
+            }
+
+            if (arg.startsWith("--multiplier=")) {
+                options.multiplierOverride = parsePositiveIntegerOrThrow("multiplier", arg.substring("--multiplier=".length()));
+                continue;
+            }
+
+            if (arg.startsWith("--seed=")) {
+                options.seedOverride = parsePositiveIntegerOrThrow("seed", arg.substring("--seed=".length()));
+                continue;
+            }
+
+            if (arg.startsWith("--param=")) {
+                parseParameterOverrides(options.parameterOverrides, arg.substring("--param=".length()));
+                continue;
+            }
+
+            if (arg.startsWith("--params=")) {
+                parseParameterOverrides(options.parameterOverrides, arg.substring("--params=".length()));
+                continue;
+            }
+
+            runTokens.add(arg);
+        }
+
+        options.runConfigurations = resolveRunConfigurations(runTokens);
+        return options;
+    }
+
+    private static EnumSet<RunConfiguration> resolveRunConfigurations(List<String> rawArgs) {
+        if (rawArgs.isEmpty()) {
+            return EnumSet.copyOf(DEFAULT_RUN_CONFIGURATIONS);
+        }
+
+        EnumSet<RunConfiguration> selectedRunConfigurations = EnumSet.noneOf(RunConfiguration.class);
+        for (String arg : rawArgs) {
+            String rawToken = arg.startsWith("--runs=") ? arg.substring("--runs=".length()) : arg;
+            for (String token : rawToken.split(",")) {
+                String runName = token.trim();
+                if (runName.isEmpty()) {
+                    continue;
+                }
+                if ("all".equalsIgnoreCase(runName)) {
+                    return EnumSet.allOf(RunConfiguration.class);
+                }
+                try {
+                    selectedRunConfigurations.add(RunConfiguration.valueOf(normalizeRunConfigurationToken(runName)));
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException(
+                            "Unknown run configuration '" + runName + "'. Available: " + RunConfiguration.availableNames()
+                                    + ". Usage: --runs=PARAMETRIC_CONVEX,ELLIPSOID or pass names as positional args."
+                    );
+                }
+            }
+        }
+
+        return selectedRunConfigurations.isEmpty()
+                ? EnumSet.copyOf(DEFAULT_RUN_CONFIGURATIONS)
+                : selectedRunConfigurations;
+    }
+
+    private static String normalizeRunConfigurationToken(String runName) {
+        return runName.toUpperCase(Locale.ROOT).replace('-', '_');
+    }
+
+    private static Integer parsePositiveIntegerOrThrow(String label, String token) {
+        String trimmed = token == null ? "" : token.trim();
+        Integer value = parseInteger(trimmed);
+        if (value == null || value <= 0) {
+            throw new IllegalArgumentException("Invalid " + label + " '" + token + "'. Use a positive integer.");
+        }
+        return value;
+    }
+
+    private static Integer parseInteger(String rawValue) {
+        if (rawValue == null || rawValue.isBlank()) {
+            return null;
+        }
+
+        try {
+            return Integer.parseInt(rawValue.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private static void parseParameterOverrides(Map<String, Object> parameterOverrides, String rawOverrides) {
+        if (rawOverrides == null || rawOverrides.isBlank()) {
+            throw new IllegalArgumentException("Empty --param override.");
+        }
+
+        String[] entries = rawOverrides.split(",");
+        for (String entry : entries) {
+            String trimmedEntry = entry.trim();
+            if (trimmedEntry.isEmpty()) {
+                continue;
+            }
+
+            int separatorIndex = trimmedEntry.indexOf('=');
+            if (separatorIndex <= 0 || separatorIndex >= trimmedEntry.length() - 1) {
+                throw new IllegalArgumentException("Invalid parameter override '" + trimmedEntry + "'. Expected key=value.");
+            }
+
+            String parameterName = trimmedEntry.substring(0, separatorIndex).trim();
+            String rawValue = trimmedEntry.substring(separatorIndex + 1).trim();
+            parameterOverrides.put(parameterName, parseParameterValue(rawValue));
+        }
+    }
+
+    private static Object parseParameterValue(String rawValue) {
+        if ("true".equalsIgnoreCase(rawValue)) {
+            return Boolean.TRUE;
+        }
+        if ("false".equalsIgnoreCase(rawValue)) {
+            return Boolean.FALSE;
+        }
+
+        try {
+            return Integer.parseInt(rawValue);
+        } catch (NumberFormatException ignored) {
+            // try double below
+        }
+
+        try {
+            return Double.parseDouble(rawValue);
+        } catch (NumberFormatException ignored) {
+            // keep string below
+        }
+
+        return rawValue;
+    }
+
+    private static void applyExperimentOverrides(Experiment experiment, CliOptions options) {
+        if (options.iterationsOverride != null) {
+            experiment.iterations = options.iterationsOverride;
+        }
+        if (options.maxEpisodeLengthOverride != null) {
+            experiment.max_episode_length = options.maxEpisodeLengthOverride;
+        }
+        if (options.multiplierOverride != null) {
+            experiment.multiplier = options.multiplierOverride;
+        }
+        if (options.seedOverride != null) {
+            experiment.seed = options.seedOverride;
+        }
+
+        for (Map.Entry<String, Object> entry : options.parameterOverrides.entrySet()) {
+            String parameterName = entry.getKey();
+            Object parameterValue = entry.getValue();
+            experiment.parameterValues.setValue(parameterName, parameterValue);
+            if (experiment.identParameters.contains(parameterName)) {
+                experiment.identParameters.setValue(parameterName, parameterValue);
+            }
         }
     }
 
@@ -365,7 +633,7 @@ public class ParametricConvexLearner {
 
     // Creates the directory path for dumping experimental results
     public String makeOutputDirectory(Experiment ex) {
-        String outputPath = String.format("%s/%s/%s/%s/", DEFAULT_OUTPUT_ROOT, ex.model.toString(), ex.parameterValues.getNumValues() > 10 ? ex.identParameters : ex.parameterValues, ex.seed);
+        String outputPath = String.format("%s/%s/%s/%s/", this.outputRoot, ex.model.toString(), ex.parameterValues.getNumValues() > 10 ? ex.identParameters : ex.parameterValues, ex.seed);
         try {
             Files.createDirectories(Paths.get(outputPath));
             copyExperimentPrismFile(ex, outputPath);

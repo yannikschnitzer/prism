@@ -1,0 +1,38 @@
+# VCS and editor files
+.git
+.github
+.gitignore
+.idea
+.idea 2
+
+# OS noise
+.DS_Store
+
+# Local scratch / duplicates
+tmp
+classes
+classes 2
+prism 2
+prism-tests 2
+
+# Build outputs (re-built inside Docker)
+prism/bin
+prism/obj
+prism/classes
+prism/include/jni
+
+# Local plotting/output data not needed to build/run AE image
+prism/plotting
+prism/results
+prism/plotting_paper
+prism/plotting_paper_with_ellipsoids/benchmark_results
+prism/plotting_paper_with_ellipsoids/benchmark_results_*
+prism/plotting_paper_with_ellipsoids/results_learning
+prism/plotting_paper_with_ellipsoids/results_learning_new
+prism/plotting_paper_with_ellipsoids/results_uniform_solving
+prism/plotting_paper_with_ellipsoids/results_uniform_solving_frommac
+prism/plotting_paper_with_ellipsoids/Documents
+
+# Keep this benchmark input directory (needed by solver reproduction)
+!prism/plotting_paper_with_ellipsoids/results_uniform_solving_new/
+!prism/plotting_paper_with_ellipsoids/results_uniform_solving_new/**
