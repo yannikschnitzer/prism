@@ -38,6 +38,8 @@ Important:
 
 - This artifact does **not** ship Gurobi itself or a license file.
 - If you use a WLS license, internet access is required while running experiments.
+- This artifact is built against **Gurobi Java 12.x** (`GurobiJni120`), so the host must provide a **Gurobi 12.x Linux** distribution.
+- Gurobi 13.x is not ABI-compatible with this artifact and will fail at runtime.
 
 Why Gurobi is not bundled in the Docker image:
 
@@ -46,6 +48,39 @@ Why Gurobi is not bundled in the Docker image:
 - Shipping license credentials inside an image is unsafe.
 
 Therefore the image expects the reviewer to mount their own local Gurobi installation and license file.
+
+## 1.1) Version compatibility (must read)
+
+The Java code inside the artifact loads:
+
+- `libGurobiJni120.so`
+
+So you must mount a Gurobi installation that contains that file:
+
+- `.../lib/libGurobiJni120.so`
+
+If you see:
+
+- `java.lang.UnsatisfiedLinkError: no GurobiJni120 in java.library.path`
+
+you are mounting the wrong Gurobi major version (typically 13.x).
+
+## 1.2) Required mounts in `docker run`
+
+All `docker run` commands in this README use these mounts:
+
+- `-v "$GUROBI_HOME:/opt/gurobi/linux64:ro"`  
+  Host Gurobi installation.
+- `-v "$HOST_GUROBI_LIC:/licenses/gurobi.lic:ro"`  
+  Host license file into container.
+- `-v "$PWD/results:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results"`  
+  Host output folder for persistent results.
+
+And this environment variable:
+
+- `-e GRB_LICENSE_FILE=/licenses/gurobi.lic`
+
+Only the **left** side of `-v host_path:container_path` is machine-specific.
 
 ## 2) Get a free academic Gurobi license (recommended: WLS)
 
@@ -58,9 +93,9 @@ Therefore the image expects the reviewer to mount their own local Gurobi install
 
 ### Step B: Create local `gurobi.lic`
 
-Create file:
+Create file (recommended dedicated file for Docker runs):
 
-- Linux/macOS: `$HOME/.gurobi/gurobi.lic`
+- Linux/macOS: `$HOME/.gurobi/gurobi-docker-wls.lic`
 
 With content:
 
@@ -73,7 +108,7 @@ LICENSEID=...
 Secure file permissions:
 
 ```bash
-chmod 600 "$HOME/.gurobi/gurobi.lic"
+chmod 600 "$HOME/.gurobi/gurobi-docker-wls.lic"
 ```
 
 ### Step C: Why WLS is preferred here
@@ -81,25 +116,56 @@ chmod 600 "$HOME/.gurobi/gurobi.lic"
 - Works well for container runs.
 - No node-locked machine activation inside the container is required.
 - Reviewers can use their own academic account.
+- Keeping a separate Docker WLS file avoids changing any local non-container license setup.
 
-## 3) Install Gurobi Optimizer on host (Linux binaries)
+## 3) Install Gurobi Optimizer on host (Linux binaries, version 12.x)
 
 Install Gurobi Optimizer on your host from:
 
 - https://www.gurobi.com/downloads/
 
-Example install path:
+Use **Gurobi 12.0.x** Linux package:
 
-- `/opt/gurobi1203/linux64`
+- Apple Silicon hosts: `gurobi12.0.3_armlinux64.tar.gz`
+- x86_64 hosts: `gurobi12.0.3_linux64.tar.gz`
 
-Verify required shared libraries:
+Example (Apple Silicon / ARM64):
 
 ```bash
-ls /opt/gurobi1203/linux64/lib/libgurobi*.so
-ls /opt/gurobi1203/linux64/lib/libGurobiJni*.so
+mkdir -p "$HOME/gurobi"
+tar -xzf "$HOME/Downloads/gurobi12.0.3_armlinux64.tar.gz" -C "$HOME/gurobi"
+export GUROBI_HOME="$HOME/gurobi/gurobi1203/armlinux64"
 ```
 
-If your path is different, use that path in the Docker run command below.
+Example (x86_64 / AMD64):
+
+```bash
+mkdir -p "$HOME/gurobi"
+tar -xzf "$HOME/Downloads/gurobi12.0.3_linux64.tar.gz" -C "$HOME/gurobi"
+export GUROBI_HOME="$HOME/gurobi/gurobi1203/linux64"
+```
+
+Verify required shared libraries (especially `libGurobiJni120.so`):
+
+```bash
+ls "$GUROBI_HOME/lib"/libgurobi*.so
+ls "$GUROBI_HOME/lib"/libGurobiJni120.so
+```
+
+If this check fails, do not continue to Docker runs.
+
+## 3.1) Pre-flight environment variables
+
+Set these once in the shell before running any Docker command below:
+
+```bash
+# Example for Apple Silicon; use linux64 on x86_64 machines.
+export GUROBI_HOME="$HOME/gurobi/gurobi1203/armlinux64"
+export HOST_GUROBI_LIC="$HOME/.gurobi/gurobi-docker-wls.lic"
+
+ls "$GUROBI_HOME/lib"/libGurobiJni120.so
+grep -E '^(WLSACCESSID|WLSSECRET|LICENSEID)=' "$HOST_GUROBI_LIC"
+```
 
 ## 4) Build the artifact image
 
@@ -129,15 +195,11 @@ gunzip -c prism-convex-ae-<amd64|arm64>.tar.gz | docker load
 docker images | grep prism-convex
 ```
 
-After loading, use image tag:
-
-- `prism-convex:ae-amd64` or
-- `prism-convex:ae-arm64`
-
-Set:
+Set image variable from loaded tags:
 
 ```bash
-IMG=prism-convex:ae-<amd64|arm64>
+IMG="$(docker images --format '{{.Repository}}:{{.Tag}}' | grep '^prism-convex:' | head -n1)"
+echo "Using image: $IMG"
 ```
 
 Below, use `$IMG`.
@@ -145,14 +207,20 @@ Below, use `$IMG`.
 ## 6) Quick check (recommended first)
 
 This runs a short learner and solver sanity check.
+Default quick preset:
+
+- model: `AIRCRAFT_MIXTURE_POSITION`
+- run configs: `PARAMETER_TYING,PARAMETRIC_CONVEX`
+- learner: `iterations=4000`, `max-episode-length=20`
+- solver: per-run timeout `900` seconds
 
 ```bash
-mkdir -p "$PWD/prism/plotting_paper_with_ellipsoids/artifact_results"
+mkdir -p "$PWD/results"
 
 docker run --rm -it \
-  -v /opt/gurobi1203/linux64:/opt/gurobi/linux64:ro \
-  -v "$HOME/.gurobi/gurobi.lic:/licenses/gurobi.lic:ro" \
-  -v "$PWD/prism/plotting_paper_with_ellipsoids/artifact_results:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results" \
+  -v "$GUROBI_HOME:/opt/gurobi/linux64:ro" \
+  -v "$HOST_GUROBI_LIC:/licenses/gurobi.lic:ro" \
+  -v "$PWD/results:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results" \
   -e GRB_LICENSE_FILE=/licenses/gurobi.lic \
   "$IMG" \
   run-ae quick
@@ -160,13 +228,21 @@ docker run --rm -it \
 
 ## 7) Reproduce paper experiments
 
+Default subset presets:
+
+- `learner-paper-subset` runs 6 fixed models with run configs  
+  `PARAMETER_TYING,PARAMETRIC_CONVEX,LP_TO_INTERVAL_EXACT,LP_TO_INTERVAL_FAST`
+- `solver-paper-subset` runs the same 6 models with run configs  
+  `PARAMETER_TYING,PARAMETRIC_CONVEX,LP_TO_INTERVAL_EXACT,LP_TO_INTERVAL_FAST,ELLIPSOID,ELLIPSOID_TO_INTERVAL_EXACT,ELLIPSOID_TO_INTERVAL_FAST`
+- solver subset per-run timeout: `7200` seconds
+
 ### Learner paper subset
 
 ```bash
 docker run --rm -it \
-  -v /opt/gurobi1203/linux64:/opt/gurobi/linux64:ro \
-  -v "$HOME/.gurobi/gurobi.lic:/licenses/gurobi.lic:ro" \
-  -v "$PWD/prism/plotting_paper_with_ellipsoids/artifact_results:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results" \
+  -v "$GUROBI_HOME:/opt/gurobi/linux64:ro" \
+  -v "$HOST_GUROBI_LIC:/licenses/gurobi.lic:ro" \
+  -v "$PWD/results:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results" \
   -e GRB_LICENSE_FILE=/licenses/gurobi.lic \
   "$IMG" run-ae learner-paper-subset
 ```
@@ -175,9 +251,9 @@ docker run --rm -it \
 
 ```bash
 docker run --rm -it \
-  -v /opt/gurobi1203/linux64:/opt/gurobi/linux64:ro \
-  -v "$HOME/.gurobi/gurobi.lic:/licenses/gurobi.lic:ro" \
-  -v "$PWD/prism/plotting_paper_with_ellipsoids/artifact_results:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results" \
+  -v "$GUROBI_HOME:/opt/gurobi/linux64:ro" \
+  -v "$HOST_GUROBI_LIC:/licenses/gurobi.lic:ro" \
+  -v "$PWD/results:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results" \
   -e GRB_LICENSE_FILE=/licenses/gurobi.lic \
   "$IMG" run-ae solver-paper-subset
 ```
@@ -186,9 +262,9 @@ docker run --rm -it \
 
 ```bash
 docker run --rm -it \
-  -v /opt/gurobi1203/linux64:/opt/gurobi/linux64:ro \
-  -v "$HOME/.gurobi/gurobi.lic:/licenses/gurobi.lic:ro" \
-  -v "$PWD/prism/plotting_paper_with_ellipsoids/artifact_results:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results" \
+  -v "$GUROBI_HOME:/opt/gurobi/linux64:ro" \
+  -v "$HOST_GUROBI_LIC:/licenses/gurobi.lic:ro" \
+  -v "$PWD/results:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results" \
   -e GRB_LICENSE_FILE=/licenses/gurobi.lic \
   -e JAVA_INITIAL_HEAP=12g \
   -e JAVA_MAX_HEAP=28g \
@@ -211,7 +287,7 @@ Subdirectories:
 
 Because of the bind mount, these appear on your host in:
 
-- `prism/plotting_paper_with_ellipsoids/artifact_results`
+- `results`
 
 ## 9) Table/plot postprocessing
 
@@ -248,15 +324,32 @@ Docker is not installed/running on your machine.
 
 ### `No libgurobi*.so found` or `No libGurobiJni*.so found`
 
-The mounted host path is wrong. Check `/opt/gurobi.../linux64/lib`.
+The mounted host path is wrong. Check `"$GUROBI_HOME/lib"`.
+
+### `java.lang.UnsatisfiedLinkError: no GurobiJni120 in java.library.path`
+
+You mounted an incompatible Gurobi version.
+
+- Required: Gurobi 12.x Linux package with `libGurobiJni120.so`
+- Incompatible for this artifact: Gurobi 13.x (`libGurobiJni130.so`)
 
 ### `GRB_LICENSE_FILE points to a missing file`
 
 Your license file path/mount is wrong. Confirm:
 
 ```bash
-ls "$HOME/.gurobi/gurobi.lic"
+ls "$HOST_GUROBI_LIC"
 ```
+
+### `HostID mismatch (... hostid is 0)`
+
+You mounted a node-locked license file generated by `grbgetkey`.
+
+- For Docker runs, use a WLS license file containing:
+  - `WLSACCESSID=...`
+  - `WLSSECRET=...`
+  - `LICENSEID=...`
+- Mount that file via `HOST_GUROBI_LIC`.
 
 ### Gurobi license error when using WLS
 
