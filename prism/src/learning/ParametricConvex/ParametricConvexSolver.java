@@ -170,7 +170,13 @@ public class ParametricConvexSolver {
         String benchmarkInputRoot = DEFAULT_BENCHMARK_INPUT_ROOT;
         String benchmarkOutputRoot = null;
         Integer benchmarkTimeoutSeconds = null;
+        BenchmarkTimeoutMode benchmarkTimeoutMode = BenchmarkTimeoutMode.SOFT;
         Model benchmarkModelFilter = null;
+    }
+
+    private enum BenchmarkTimeoutMode {
+        HARD,
+        SOFT
     }
 
     private static final class BenchmarkInstance {
@@ -381,6 +387,12 @@ public class ParametricConvexSolver {
                 continue;
             }
 
+            if (arg.startsWith("--benchmark-timeout-mode=")) {
+                String timeoutModeToken = arg.substring("--benchmark-timeout-mode=".length()).trim();
+                options.benchmarkTimeoutMode = parseBenchmarkTimeoutMode(timeoutModeToken);
+                continue;
+            }
+
             if (arg.startsWith("--model=")) {
                 String modelName = arg.substring("--model=".length()).trim();
                 try {
@@ -483,13 +495,14 @@ public class ParametricConvexSolver {
         System.out.println("Run configurations: " + options.runConfigurations);
         if (options.benchmarkTimeoutSeconds != null) {
             System.out.println("Per-run timeout: " + options.benchmarkTimeoutSeconds + "s");
+            System.out.println("Timeout mode: " + options.benchmarkTimeoutMode);
         }
 
         for (BenchmarkInstance benchmarkInstance : benchmarkInstances) {
             clearCachedSamples();
             System.out.println("Benchmark instance: " + benchmarkInstance.model + " / " + benchmarkInstance.parameterDirectoryName + " / seed " + benchmarkInstance.seed);
 
-            if (options.benchmarkTimeoutSeconds != null) {
+            if (options.benchmarkTimeoutSeconds != null && options.benchmarkTimeoutMode == BenchmarkTimeoutMode.HARD) {
                 runBenchmarkInstanceWithHardTimeout(benchmarkInstance, options.runConfigurations, options.benchmarkTimeoutSeconds);
             } else {
                 Experiment baselineExperiment = applyBenchmarkInstance(runConfigurationIndependentExperiment(benchmarkInstance.model), benchmarkInstance);
@@ -502,10 +515,22 @@ public class ParametricConvexSolver {
                             pmdp,
                             ex.parameterValues,
                             true,
-                            null);
+                            options.benchmarkTimeoutSeconds);
                 }
             }
         }
+    }
+
+    private static BenchmarkTimeoutMode parseBenchmarkTimeoutMode(String rawMode) {
+        if (rawMode == null || rawMode.isBlank()) {
+            throw new IllegalArgumentException("Invalid benchmark timeout mode ''. Use 'soft' or 'hard'.");
+        }
+        String normalized = rawMode.trim().toUpperCase(Locale.ROOT).replace('-', '_');
+        return switch (normalized) {
+            case "SOFT", "IN_PROCESS" -> BenchmarkTimeoutMode.SOFT;
+            case "HARD", "SUBPROCESS" -> BenchmarkTimeoutMode.HARD;
+            default -> throw new IllegalArgumentException("Invalid benchmark timeout mode '" + rawMode + "'. Use 'soft' or 'hard'.");
+        };
     }
 
     private void runBenchmarkInstanceWithHardTimeout(BenchmarkInstance benchmarkInstance, EnumSet<RunConfiguration> runConfigurations, int timeoutSeconds) {

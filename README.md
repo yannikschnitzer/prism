@@ -1,136 +1,87 @@
-# PRISM
+# PRISM Artifact for *Robust Parameter Learning for Uncertain MDPs*
 
-This is PRISM (Probabilistic Symbolic Model Checker).
+This repository contains the artifact used to evaluate the paper:
 
+- **Robust Parameter Learning for Uncertain MDPs**
+- **Yannik Schnitzer, Alessandro Abate, David Parker**
 
-## Installation
+The reviewer-oriented paper PDF is placed in:
 
-For detailed installation instructions, check the online manual at:
+- `docker/Learning_Parameters_of_Uncertain_pMDPs (43).pdf`
 
-  https://www.prismmodelchecker.org/manual/InstallingPRISM/Instructions
-  
-or see the local copy included in this distribution:
+For complete Docker setup and troubleshooting, use:
 
- * `manual/InstallingPRISM/Instructions.html`
+- [`docker/README.md`](docker/README.md)
+- Start at Section 2 for Gurobi license/setup and Section 3 for image loading.
 
-Very abbreviated instructions for installing/running PRISM are as follows:
+## Reviewer Reproduction Map
 
-For Windows binary distributions:
+All commands below are executed inside the artifact container via `run-ae` (see [`docker/README.md`](docker/README.md) for exact `docker run` wrappers and mounts).
 
- * to install, run `prism-XXX-win64-installer.exe`
- * to run, use Desktop/Start menu shortcuts or double-click `bin\xprism.bat`
+| Command | Reproduces | Outputs |
+|---|---|---|
+| `run-ae quick` | Learner + solver sanity check on one small instance | `artifact_results/learning_quick`, `artifact_results/solver_quick` |
+| `run-ae quick --appendix` | Quick sanity check + ellipsoid solver runs for that instance | same as above |
+| `run-ae learner-paper-subset` | Learning experiments on the fixed 6-model paper subset | `artifact_results/learning_paper_subset` |
+| `run-ae solver-paper-subset` | Solver experiments for the 6-model subset (main-paper runs only) | `artifact_results/solver_paper_subset` |
+| `run-ae solver-paper-subset --appendix` | Adds appendix ellipsoid solver runs | `artifact_results/solver_paper_subset` |
+| `run-ae all-paper` | `learner-paper-subset` then `solver-paper-subset` | both folders above |
+| `run-ae all-paper --appendix` | `all-paper` plus appendix ellipsoid runs | both folders above |
+| `run-ae solver-full` | Solver on full benchmark input set (main-paper runs only) | `artifact_results/solver_full` |
+| `run-ae solver-full --appendix` | Full solver sweep including appendix ellipsoid runs | `artifact_results/solver_full` |
 
-For other binary distributions:
+## Why the Default is a Subset (and Not Full)
 
- * to install, enter the PRISM directory and type `./install.sh`
- * to run, execute `bin/xprism` or `bin/prism`
+The default reviewer route focuses on `solver-paper-subset` with main-paper runs only. Appendix ellipsoid runs are opt-in via `--appendix`.
 
-For source code distributions:
+- Main subset workload: `6 instances x 4 run configurations = 24 runs`
+- Appendix subset workload: `6 instances x 7 run configurations = 42 runs`
+- Main full workload: `19 instances x 4 run configurations = 76 runs`
+- Appendix full workload: `19 instances x 7 run configurations = 133 runs`
+- Default per-run timeout: `7200s` (2h)
 
- * enter the PRISM directory and type `cd prism` then `make`
- * to check the install, type `make test` or `etc/tests/run.sh`
- * to run, execute `bin/xprism` or `bin/prism`
+Upper-bound timeout budget:
 
-For a containerized setup for the ParametricConvex benchmark workflow, see:
+- Main subset: `48h`
+- Appendix subset: `84h`
+- Main full: `152h`
+- Appendix full: `266h`
 
- * `docker/README.md`
+Most timeout-prone configurations:
 
-If you have problems check the manual, especially the section "Common Problems And Questions".
+- `ELLIPSOID`
+- `ELLIPSOID_TO_INTERVAL_EXACT`
+- `ELLIPSOID_TO_INTERVAL_FAST`
 
+## Full Postprocessing (Included)
 
-## Documentation
+Postprocessing is exposed through `run-ae postprocess ...` and includes all three reviewer-facing outputs. With the wrapper in [`docker/README.md`](docker/README.md), this now works out of the box (no `/workspace/...` script path overrides).
 
-The best source of information about using PRISM is the online manual:
+```bash
+run-ae postprocess all
+run-ae postprocess tables
+run-ae postprocess stats
+run-ae postprocess learning-plots
+```
 
-  https://www.prismmodelchecker.org/manual/
+`run-ae postprocess learning-plots` requires learner outputs (from `run-ae learner-paper-subset` or `run-ae all-paper`).
 
-You can also view the local copy included in this distribution:
+Generated artifacts:
 
-  * `manual/index.html`
+- `postprocess/tables/benchmark_results_table_landscape_split_runtime.tex`
+- `postprocess/stats/benchmark_stats_table.tex`
+- `postprocess/learning_plots/<MODEL>/<PARAM_DIR>/*.pdf`
 
-For other PRISM-related information, see the website:
+Script entrypoints:
 
-  https://www.prismmodelchecker.org/doc
+- `artifact_eval/table_row_printer.py`
+- `artifact_eval/plot_results.py`
+- `artifact_eval/learning_plot_results.py`
 
-Information for developers is kept here:
+## Upstream PRISM Information
 
-  https://github.com/prismmodelchecker/prism/wiki
+This artifact builds on PRISM (Probabilistic Symbolic Model Checker).
 
-## Licensing
-
-PRISM is distributed under the GNU General Public License (GPL), version 2.
-A copy of this license can be found in the file `COPYING.txt`.
-For more information, see:
-
-  https://www.gnu.org/licenses/
-
-PRISM also uses various other libraries (mainly to be found in the lib directory).
-For details of those, including licenses and links to downloads and source code, see:
-
-https://www.prismmodelchecker.org/other-downloads.php
-
-
-## Acknowledgements
-
-PRISM was created and is still actively maintained by:
-
- * Dave Parker (University of Oxford)
- * Gethin Norman (University of Glasgow)
- * Marta Kwiatkowska (University of Oxford) 
-
-Development of the tool is currently led from Oxford by Dave Parker.
-
-The following have made a wide range of contributions to
-PRISM covering many different aspects of the tool
-(in approximately reverse chronological order):
-
- * Steffen Märcker (Technische Universität Dresden)
- * Joachim Klein (formerly Technische Universität Dresden)
- * Vojtech Forejt (formerly University of Oxford)
-
-We also gratefully acknowledge contributions to the PRISM code-base from
-(in approximately reverse chronological order):
-
- * Max Kurze: Language parser code improvements
- * Ludwig Pauly: Reward import/export
- * Alberto Puggelli: First version of interval DTMC/MDP code
- * Xueyi Zou: Partially observable Markov decision processes (POMDPs)
- * Chris Novakovic: Build infrastructure and explicit engine improvements
- * Ernst Moritz Hahn: Parametric model checking, fast adaptive uniformisation + various other features
- * Frits Dannenberg: Fast adaptive uniformisation
- * Hongyang Qu: Multi-objective model checking
- * Mateusz Ujma: Bug fixes and GUI improvements
- * Christian von Essen: Symbolic/explicit-state model checking
- * Vincent Nimal: Approximate (simulation-based) model checking techniques
- * Mark Kattenbelt: Wide range of enhancements/additions, especially in the GUI
- * Carlos Bederian (working with Pedro D'Argenio): LTL model checking for MDPs
- * Gethin Norman: Precomputation algorithms, abstraction
- * Alistair John Strachan: Port to 64-bit architectures
- * Alistair John Strachan, Mike Arthur and Zak Cohen: Integration of JFreeChart into PRISM
- * Charles Harley and Sebastian Vermehren: GUI enhancements
- * Rashid Mehmood: Improvements to low-level data structures and numerical solution algorithms
- * Stephen Gilmore: Support for the stochastic process algebra PEPA
- * Paolo Ballarini & Kenneth Chan: Port to Mac OS X
- * Andrew Hinton: Original versions of the GUI, Windows port and simulator
- * Joachim Meyer-Kayser: Original implementation of the "Fox-Glynn" algorithm 
-
-For more details see:
-
-  https://www.prismmodelchecker.org/people.php
-
-
-## Contact
-
-If you have problems or questions regarding PRISM, please use the help forum provided. See:
-
-  https://www.prismmodelchecker.org/support.php
-
-Other comments and feedback about any aspect of PRISM are also very welcome. Please contact:
-
-  Dave Parker  
-  (david.parker@cs.ox.ac.uk)  
-  Department of Computer Science  
-  University of Oxford  
-  Oxford  
-  OX1 3QG
-  UK
+- Manual: https://www.prismmodelchecker.org/manual/
+- Installation docs: https://www.prismmodelchecker.org/manual/InstallingPRISM/Instructions
+- Local manual copy: `manual/index.html`

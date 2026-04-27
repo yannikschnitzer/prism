@@ -8,7 +8,8 @@ IMAGE_ARCHIVE_PREFIX="${IMAGE_ARCHIVE_PREFIX:-prism-convex-ae}"
 ARCHES="${ARCHES:-amd64,arm64}"
 SKIP_EXISTING="${SKIP_EXISTING:-1}"
 SUBMISSION_ARCHIVE_NAME="${SUBMISSION_ARCHIVE_NAME:-qest-formats-2026-ae-artifact.tar.gz}"
-PAPER_PDF="${PAPER_PDF:-}"
+DEFAULT_PAPER_PDF="$ROOT_DIR/docker/Learning_Parameters_of_Uncertain_pMDPs (43).pdf"
+PAPER_PDF="${PAPER_PDF:-$DEFAULT_PAPER_PDF}"
 
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || {
@@ -83,9 +84,17 @@ cp "$ROOT_DIR/COPYING.txt" "$STAGING_DIR/LICENSE"
 
 if [[ -n "$PAPER_PDF" ]]; then
   if [[ ! -f "$PAPER_PDF" ]]; then
-    echo "ERROR: PAPER_PDF is set but file does not exist: $PAPER_PDF" >&2
-    exit 1
+    if [[ "$PAPER_PDF" == "$DEFAULT_PAPER_PDF" ]]; then
+      echo "WARNING: default paper PDF not found at: $PAPER_PDF (continuing without paper.pdf)"
+      PAPER_PDF=""
+    else
+      echo "ERROR: PAPER_PDF is set but file does not exist: $PAPER_PDF" >&2
+      exit 1
+    fi
   fi
+fi
+
+if [[ -n "$PAPER_PDF" ]]; then
   cp "$PAPER_PDF" "$STAGING_DIR/paper.pdf"
 fi
 

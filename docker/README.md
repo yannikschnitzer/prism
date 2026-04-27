@@ -1,397 +1,418 @@
-# QEST+FORMATS 2026 Artifact Instructions (For Reviewers)
+# QEST+FORMATS 2026 Artifact Guide (Reviewer-Focused)
 
-This README is only for running and checking the artifact.
+This artifact accompanies the paper:
 
-The artifact evaluates:
+- **Robust Parameter Learning for Uncertain MDPs**
+- **Authors:** Yannik Schnitzer, Alessandro Abate, David Parker
 
-- `learning.ParametricConvex.ParametricConvexLearner`
-- `learning.ParametricConvex.ParametricConvexSolver`
 
-The main entrypoint for reviewers is:
 
-- `run-ae` (quick check + paper subset + full runs)
+## What Each Command Reproduces
 
-## 0) Important: image transferability
+| Command | What it reproduces | Main output folder |
+|---|---|---|
+| `run-ae quick` | End-to-end smoke test of learner + solver on one small instance (`AIRCRAFT_MIXTURE_POSITION`) | `artifact_results/learning_quick`, `artifact_results/solver_quick` |
+| `run-ae quick --appendix` | Quick smoke test plus ellipsoid solver runs for the same instance | same as above |
+| `run-ae learner-paper-subset` | Learning experiments on the fixed 6-model paper subset with the 4 learning run configurations | `artifact_results/learning_paper_subset` |
+| `run-ae solver-paper-subset` | Solver reproduction on the same 6-model paper subset with main-paper solver runs only (`PARAMETER_TYING`, `PARAMETRIC_CONVEX`, `LP_TO_INTERVAL_EXACT`, `LP_TO_INTERVAL_FAST`) | `artifact_results/solver_paper_subset` |
+| `run-ae solver-paper-subset --appendix` | Adds appendix ellipsoid solver runs (`ELLIPSOID`, `ELLIPSOID_TO_INTERVAL_EXACT`, `ELLIPSOID_TO_INTERVAL_FAST`) on top of the main-paper runs | `artifact_results/solver_paper_subset` |
+| `run-ae all-paper` | Convenience command: `learner-paper-subset` then `solver-paper-subset` | Both folders above |
+| `run-ae all-paper --appendix` | `all-paper` plus appendix ellipsoid solver runs | Both folders above |
+| `run-ae solver-full` | Solver on the full benchmark input set with main-paper solver runs only | `artifact_results/solver_full` |
+| `run-ae solver-full --appendix` | `solver-full` plus appendix ellipsoid solver runs | `artifact_results/solver_full` |
+| `run-ae postprocess all` | Full postprocessing pipeline (tables + benchmark stats + learning plots) | `artifact_results/postprocess` |
+| `run-ae postprocess tables` | Solver result LaTeX table (intervals + runtime) | `artifact_results/postprocess/tables` |
+| `run-ae postprocess stats` | Benchmark statistics LaTeX table | `artifact_results/postprocess/stats` |
+| `run-ae postprocess learning-plots` | Learning PDF plots from learner outputs | `artifact_results/postprocess/learning_plots` |
 
-Docker images here are Linux container images.
+## Why a Subset Is Used for Reviewer Reproduction
 
-- They are usable on Linux/macOS/Windows hosts **if Docker is installed**.
-- They are **not automatically cross-architecture**.
+The default reviewer target is `solver-paper-subset` (6 instances, one per model), not `solver-full` (19 instances), to keep wall-clock runtime practical.
 
-In practice:
+- Main-paper solver subset jobs: `6 instances x 4 run configurations = 24 runs`
+- Appendix solver subset jobs: `6 instances x 7 run configurations = 42 runs`
+- Main-paper solver full jobs: `19 instances x 4 run configurations = 76 runs`
+- Appendix solver full jobs: `19 instances x 7 run configurations = 133 runs`
+- Default per-run timeout: `7200s` (2h), default timeout mode: `soft` (in-process)
 
-- An image built on `linux/arm64` is for ARM64 machines.
-- An image built on `linux/amd64` is for x86_64 machines.
+Ellipsoid runs are the most timeout-prone, so they are now opt-in via `--appendix`.
 
-`docker/package-artifact.sh` builds **both** by default and exports:
+## 1) Prerequisites
 
-- `prism-convex-ae-amd64.tar.gz`
-- `prism-convex-ae-arm64.tar.gz`
+You need:
 
-## 1) What you need
+- Docker
+- A **Linux** Gurobi installation on the host
+- A valid Gurobi license file (recommended: WLS)
 
-- Docker (Linux containers)
-- Linux Gurobi installation on your host machine
-- A valid Gurobi license (free academic license is sufficient)
+Important compatibility note:
 
-Important:
+- This artifact expects **Gurobi 12.x** (`libGurobiJni120.so`)
+- Gurobi 13.x is not ABI-compatible with this build
 
-- This artifact does **not** ship Gurobi itself or a license file.
-- If you use a WLS license, internet access is required while running experiments.
-- This artifact is built against **Gurobi Java 12.x** (`GurobiJni120`), so the host must provide a **Gurobi 12.x Linux** distribution.
-- Gurobi 13.x is not ABI-compatible with this artifact and will fail at runtime.
+Gurobi is not bundled in the image (license and redistribution reasons), so you mount your own host installation and license file at runtime.
 
-Why Gurobi is not bundled in the Docker image:
 
-- Gurobi is commercial software and redistribution in public artifacts is legally sensitive.
-- Reviewer licenses are user-specific (WLS credentials / license terms).
-- Shipping license credentials inside an image is unsafe.
+## 2) Set Up Gurobi (License + Host Installation)
 
-Therefore the image expects the reviewer to mount their own local Gurobi installation and license file.
+This section is intentionally step-by-step so reviewers can start from zero.
 
-## 2) Get a free academic Gurobi license (recommended: WLS)
+### 2.1 Create an Academic Gurobi Account and WLS License
 
-### Step A: Create academic account and license
+1. Open: https://www.gurobi.com/academia/academic-program-and-licenses/
+2. Sign in with your institutional email and complete the academic eligibility flow.
+3. In the Gurobi user portal, create a **WLS** license (recommended for Docker).
+4. Copy the three WLS fields from the portal:
+   - `WLSACCESSID`
+   - `WLSSECRET`
+   - `LICENSEID`
 
-1. Go to Gurobi Academic Program page and sign in with institutional email:
-   - https://www.gurobi.com/academia/academic-program-and-licenses/
-2. Request a free academic license.
-3. In the Gurobi user portal, create/access a **WLS** license.
+Why WLS here:
 
-### Step B: Create local `gurobi.lic`
+- It works well with containers.
+- It avoids node-locked activation inside the container.
+- It keeps your local non-Docker Gurobi setup untouched.
+- It requires outbound internet access while runs are executing.
 
-Create file (recommended dedicated file for Docker runs):
+### 2.2 Create a Dedicated Docker License File
 
-- Linux/macOS: `$HOME/.gurobi/gurobi-docker-wls.lic`
-
-With content:
-
-```text
-WLSACCESSID=...
-WLSSECRET=...
-LICENSEID=...
-```
-
-Secure file permissions:
+Create a dedicated license file (recommended):
 
 ```bash
+mkdir -p "$HOME/.gurobi"
+cat > "$HOME/.gurobi/gurobi-docker-wls.lic" <<'EOF'
+WLSACCESSID=PASTE_YOURS
+WLSSECRET=PASTE_YOURS
+LICENSEID=PASTE_YOURS
+EOF
 chmod 600 "$HOME/.gurobi/gurobi-docker-wls.lic"
 ```
 
-### Step C: Why WLS is preferred here
+Validate content shape (redacted output):
 
-- Works well for container runs.
-- No node-locked machine activation inside the container is required.
-- Reviewers can use their own academic account.
-- Keeping a separate Docker WLS file avoids changing any local non-container license setup.
+```bash
+awk -F= '/^(WLSACCESSID|WLSSECRET|LICENSEID)=/{print $1"=***"}' "$HOME/.gurobi/gurobi-docker-wls.lic"
+```
 
-## 3) Install Gurobi Optimizer on host (Linux binaries, version 12.x)
+### 2.3 Install Gurobi 12.x Linux Binaries on Host
 
-Install Gurobi Optimizer on your host from:
+Download from:
 
 - https://www.gurobi.com/downloads/
 
-Use **Gurobi 12.0.x** Linux package:
+Use **Gurobi 12.x** Linux package matching your CPU:
 
-- Apple Silicon hosts: `gurobi12.0.3_armlinux64.tar.gz`
-- x86_64 hosts: `gurobi12.0.3_linux64.tar.gz`
+- ARM64: `gurobi12.0.x_armlinux64.tar.gz`
+- x86_64: `gurobi12.0.x_linux64.tar.gz`
 
-Example (Apple Silicon / ARM64):
+Example extraction:
 
 ```bash
 mkdir -p "$HOME/gurobi"
+# adjust file name as needed:
 tar -xzf "$HOME/Downloads/gurobi12.0.3_armlinux64.tar.gz" -C "$HOME/gurobi"
-export GUROBI_HOME="$HOME/gurobi/gurobi1203/armlinux64"
 ```
 
-Example (x86_64 / AMD64):
+Export runtime variables:
 
 ```bash
-mkdir -p "$HOME/gurobi"
-tar -xzf "$HOME/Downloads/gurobi12.0.3_linux64.tar.gz" -C "$HOME/gurobi"
-export GUROBI_HOME="$HOME/gurobi/gurobi1203/linux64"
+# ARM64 hosts:
+export GUROBI_HOME="$HOME/gurobi/gurobi1203/armlinux64"
+
+# x86_64 hosts (use this instead on x86_64):
+# export GUROBI_HOME="$HOME/gurobi/gurobi1203/linux64"
+
+export HOST_GUROBI_LIC="$HOME/.gurobi/gurobi-docker-wls.lic"
 ```
 
-Verify required shared libraries (especially `libGurobiJni120.so`):
+Hard checks before Docker:
+
+```bash
+ls "$GUROBI_HOME/lib"/libgurobi*.so
+ls "$GUROBI_HOME/lib"/libGurobiJni120.so
+test -f "$HOST_GUROBI_LIC" && echo "license file found"
+```
+
+If `libGurobiJni120.so` is missing, the version/path is wrong for this artifact.
+
+## 3) Load the Image Archive (Step-by-Step)
+
+### 3.1 Detect Host Architecture
+
+```bash
+uname -m
+```
+
+Use this mapping:
+
+- `x86_64` -> load `prism-convex-ae-amd64.tar.gz`
+- `arm64` or `aarch64` -> load `prism-convex-ae-arm64.tar.gz`
+
+### 3.2 Load the Matching Archive
+
+From the folder containing the archive:
+
+```bash
+gunzip -c prism-convex-ae-<amd64|arm64>.tar.gz | docker load
+```
+
+Optional integrity check before load:
+
+```bash
+shasum -a 256 prism-convex-ae-<amd64|arm64>.tar.gz
+```
+
+### 3.3 Confirm Image Is Available and Capture Tag
+
+```bash
+docker images | grep prism-convex
+IMG="$(docker images --format '{{.Repository}}:{{.Tag}}' | grep '^prism-convex:' | head -n1)"
+echo "Using image: $IMG"
+```
+
+If `IMG` is empty, the load did not succeed.
+
+## 4) Define a Reusable Docker Wrapper
+
+```bash
+ARTIFACT_ROOT="$(pwd)"
+RESULTS_DIR="$ARTIFACT_ROOT/results"
+mkdir -p "$RESULTS_DIR"
+
+ae_run() {
+  docker run --rm -it \
+    -v "$GUROBI_HOME:/opt/gurobi/linux64:ro" \
+    -v "$HOST_GUROBI_LIC:/licenses/gurobi.lic:ro" \
+    -v "$RESULTS_DIR:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results" \
+    -e GRB_LICENSE_FILE=/licenses/gurobi.lic \
+    "$IMG" run-ae "$@"
+}
+```
+
+Important:
+
+- Run `ae_run ...` from the same shell where `ARTIFACT_ROOT`/`RESULTS_DIR` were defined.
+- This avoids accidental nested mounts when calling commands from subdirectories.
+
+## 5) Recommended Reproduction Flow
+
+1. Quick sanity check:
+
+```bash
+ae_run quick
+```
+
+2. Reproduce learner paper subset:
+
+```bash
+ae_run learner-paper-subset
+```
+
+3. Reproduce solver paper subset (main-paper runs only):
+
+```bash
+ae_run solver-paper-subset
+```
+
+4. Optional appendix solver runs (ellipsoid variants):
+
+```bash
+ae_run solver-paper-subset --appendix
+```
+
+5. Optional full solver sweep (long):
+
+```bash
+ae_run solver-full
+```
+
+Timeout mode override (optional):
+
+```bash
+# Default is soft (in-process per-run timeout, no subprocess spawning)
+ae_run solver-paper-subset --benchmark-timeout-mode=soft
+
+# Hard mode uses per-run subprocesses and force-kill on timeout
+ae_run solver-paper-subset --benchmark-timeout-mode=hard
+```
+
+## 6) Full Postprocessing Walkthrough
+
+Postprocessing is driven by `run-ae postprocess ...`, which delegates to `run-postprocess`.
+It works out of the box with the default `ae_run` wrapper above (no `/workspace/...` script overrides needed).
+
+Run complete postprocessing:
+
+```bash
+ae_run postprocess all
+```
+
+Or run individual modes:
+
+```bash
+ae_run postprocess tables
+ae_run postprocess stats
+ae_run postprocess learning-plots
+```
+
+Note:
+
+- `learning-plots` needs learner outputs (run `ae_run learner-paper-subset` or `ae_run all-paper` first).
+- `tables`/`stats` can be generated from partial solver outputs, but missing runs/instances appear as blanks (`--`) or fewer rows.
+
+What each mode produces:
+
+- `tables` -> `postprocess/tables/benchmark_results_table_landscape_split_runtime.tex`
+- `stats` -> `postprocess/stats/benchmark_stats_table.tex`
+- `learning-plots` -> `postprocess/learning_plots/<MODEL>/<PARAM_DIR>/*.pdf`
+
+Python scripts invoked:
+
+- `artifact_eval/table_row_printer.py`
+- `artifact_eval/plot_results.py`
+- `artifact_eval/learning_plot_results.py`
+
+Default postprocess roots (inside container/workdir):
+
+- Solver input root: `plotting_paper_with_ellipsoids/artifact_results/solver_paper_subset/parametric_convex`
+- Learning input root: `plotting_paper_with_ellipsoids/artifact_results/learning_paper_subset/parametric_convex`
+- Output root: `plotting_paper_with_ellipsoids/artifact_results/postprocess`
+
+Override roots if needed by passing environment variables to `docker run`:
+
+```bash
+docker run --rm -it \
+  -v "$GUROBI_HOME:/opt/gurobi/linux64:ro" \
+  -v "$HOST_GUROBI_LIC:/licenses/gurobi.lic:ro" \
+  -v "$RESULTS_DIR:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results" \
+  -e GRB_LICENSE_FILE=/licenses/gurobi.lic \
+  -e AE_POSTPROCESS_INPUT_ROOT=plotting_paper_with_ellipsoids/artifact_results/solver_full/parametric_convex \
+  -e AE_POSTPROCESS_LEARNING_INPUT_ROOT=plotting_paper_with_ellipsoids/artifact_results/learning_paper_subset/parametric_convex \
+  -e AE_POSTPROCESS_OUTPUT_ROOT=plotting_paper_with_ellipsoids/artifact_results/postprocess_full \
+  "$IMG" run-ae postprocess all
+```
+
+## 7) Output Locations on Host
+
+Because of the bind mount, container outputs are written to:
+
+- `./results`
+
+Key subfolders:
+
+- `results/learning_quick/parametric_convex`
+- `results/solver_quick/parametric_convex`
+- `results/learning_paper_subset/parametric_convex`
+- `results/solver_paper_subset/parametric_convex`
+- `results/solver_full/parametric_convex`
+- `results/postprocess/tables`
+- `results/postprocess/stats`
+- `results/postprocess/learning_plots`
+
+## 8) Troubleshooting
+
+### `ERROR: required command not found: docker`
+
+Docker is not installed or not running.
+
+### `No libgurobi*.so found` or `No libGurobiJni*.so found`
+
+`$GUROBI_HOME` is wrong or incomplete. Check:
 
 ```bash
 ls "$GUROBI_HOME/lib"/libgurobi*.so
 ls "$GUROBI_HOME/lib"/libGurobiJni120.so
 ```
 
-If this check fails, do not continue to Docker runs.
-
-## 3.1) Pre-flight environment variables
-
-Set these once in the shell before running any Docker command below:
-
-```bash
-# Example for Apple Silicon; use linux64 on x86_64 machines.
-export GUROBI_HOME="$HOME/gurobi/gurobi1203/armlinux64"
-export HOST_GUROBI_LIC="$HOME/.gurobi/gurobi-docker-wls.lic"
-
-ls "$GUROBI_HOME/lib"/libGurobiJni120.so
-grep -E '^(WLSACCESSID|WLSSECRET|LICENSEID)=' "$HOST_GUROBI_LIC"
-```
-
-## 3.2) Version compatibility (must read)
-
-The Java code inside the artifact loads:
-
-- `libGurobiJni120.so`
-
-So you must mount a Gurobi installation that contains that file:
-
-- `.../lib/libGurobiJni120.so`
-
-If you see:
-
-- `java.lang.UnsatisfiedLinkError: no GurobiJni120 in java.library.path`
-
-you are mounting the wrong Gurobi major version (typically 13.x).
-
-## 4) Load the prebuilt Docker image archive (`.tar.gz`)
-
-Pick the correct one:
-
-- x86_64 host: `prism-convex-ae-amd64.tar.gz`
-- ARM64 host: `prism-convex-ae-arm64.tar.gz`
-
-Check host architecture:
-
-```bash
-uname -m
-```
-
-Load chosen archive:
-
-```bash
-gunzip -c prism-convex-ae-<amd64|arm64>.tar.gz | docker load
-docker images | grep prism-convex
-```
-
-Set image variable from loaded tags:
-
-```bash
-IMG="$(docker images --format '{{.Repository}}:{{.Tag}}' | grep '^prism-convex:' | head -n1)"
-echo "Using image: $IMG"
-```
-
-Below, use `$IMG`.
-
-## 5) Runtime mounts used by all run commands
-
-All `docker run` commands below use these mounts:
-
-- `-v "$GUROBI_HOME:/opt/gurobi/linux64:ro"`  
-  Host Gurobi installation.
-- `-v "$HOST_GUROBI_LIC:/licenses/gurobi.lic:ro"`  
-  Host license file into container.
-- `-v "$PWD/results:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results"`  
-  Host output folder for persistent results.
-
-And this environment variable:
-
-- `-e GRB_LICENSE_FILE=/licenses/gurobi.lic`
-
-Only the **left** side of `-v host_path:container_path` is machine-specific.
-
-## 6) Quick check (recommended first)
-
-This runs a short learner and solver sanity check.
-Default quick preset:
-
-- model: `AIRCRAFT_MIXTURE_POSITION`
-- run configs: `PARAMETER_TYING,PARAMETRIC_CONVEX`
-- learner: `iterations=4000`, `max-episode-length=20`
-- solver benchmark size: `maxX=50,maxY=10` (fixed quick benchmark input)
-- solver: per-run timeout `900` seconds
-
-```bash
-mkdir -p "$PWD/results"
-
-docker run --rm -it \
-  -v "$GUROBI_HOME:/opt/gurobi/linux64:ro" \
-  -v "$HOST_GUROBI_LIC:/licenses/gurobi.lic:ro" \
-  -v "$PWD/results:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results" \
-  -e GRB_LICENSE_FILE=/licenses/gurobi.lic \
-  "$IMG" \
-  run-ae quick
-```
-
-## 7) Reproduce paper experiments
-
-Default subset presets:
-
-- `learner-paper-subset` runs 6 fixed models with run configs  
-  `PARAMETER_TYING,PARAMETRIC_CONVEX,LP_TO_INTERVAL_EXACT,LP_TO_INTERVAL_FAST`
-- learner subset iterations: `100000` for each of the 6 models
-- learner subset size settings:
-  - `AIRCRAFT_MIXTURE_POSITION`: `maxX=50,maxY=10`
-  - `BETTING_GAME_CONVEX_ADAPTIVE`: `n=50`
-  - `BETTING_GAME_PARALLEL`: `n=5`
-  - `ENGAGEMENT_ADAPTIVE_5`: `L=100`
-  - `GLIDER`: `w=21,h=17`
-  - `SAV2_ADAPTIVE_5`: `Xsize=50,Ysize=50`
-- `solver-paper-subset` runs the same 6 models with run configs  
-  `PARAMETER_TYING,PARAMETRIC_CONVEX,LP_TO_INTERVAL_EXACT,LP_TO_INTERVAL_FAST,ELLIPSOID,ELLIPSOID_TO_INTERVAL_EXACT,ELLIPSOID_TO_INTERVAL_FAST`
-- solver subset uses exactly one benchmark-parameter directory per model with the same size settings above
-- solver subset per-run timeout: `7200` seconds
-
-### Learner paper subset
-
-```bash
-docker run --rm -it \
-  -v "$GUROBI_HOME:/opt/gurobi/linux64:ro" \
-  -v "$HOST_GUROBI_LIC:/licenses/gurobi.lic:ro" \
-  -v "$PWD/results:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results" \
-  -e GRB_LICENSE_FILE=/licenses/gurobi.lic \
-  "$IMG" run-ae learner-paper-subset
-```
-
-### Solver paper subset
-
-```bash
-docker run --rm -it \
-  -v "$GUROBI_HOME:/opt/gurobi/linux64:ro" \
-  -v "$HOST_GUROBI_LIC:/licenses/gurobi.lic:ro" \
-  -v "$PWD/results:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results" \
-  -e GRB_LICENSE_FILE=/licenses/gurobi.lic \
-  "$IMG" run-ae solver-paper-subset
-```
-
-### Solver full benchmark set (long)
-
-```bash
-docker run --rm -it \
-  -v "$GUROBI_HOME:/opt/gurobi/linux64:ro" \
-  -v "$HOST_GUROBI_LIC:/licenses/gurobi.lic:ro" \
-  -v "$PWD/results:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results" \
-  -e GRB_LICENSE_FILE=/licenses/gurobi.lic \
-  -e JAVA_INITIAL_HEAP=12g \
-  -e JAVA_MAX_HEAP=28g \
-  "$IMG" run-ae solver-full
-```
-
-## 8) Where outputs are written
-
-All `run-ae` commands write to:
-
-- `plotting_paper_with_ellipsoids/artifact_results`
-
-Subdirectories:
-
-- `learning_quick/parametric_convex`
-- `solver_quick/parametric_convex`
-- `learning_paper_subset/parametric_convex`
-- `solver_paper_subset/parametric_convex`
-- `solver_full/parametric_convex`
-
-Because of the bind mount, these appear on your host in:
-
-- `results`
-
-## 9) Postprocessing (tables + statistics + learning plots)
-
-Commands:
-
-```bash
-# Runs all scripts (solver table + solver stats + learning plots)
-run-ae postprocess all
-
-# Only robust/optimistic interval + runtime table
-run-ae postprocess tables
-
-# Only benchmark statistics table
-run-ae postprocess stats
-
-# Learning benchmark plots
-run-ae postprocess learning-plots
-```
-
-Note: `learning-plots` requires learner outputs (e.g. after `run-ae learner-paper-subset` or `run-ae all-paper`).
-
-To postprocess a different solver result directory:
-
-```bash
-AE_POSTPROCESS_INPUT_ROOT=/path/to/solver_results/parametric_convex \
-run-ae postprocess all
-```
-
-To postprocess a different learning result directory:
-
-```bash
-AE_POSTPROCESS_LEARNING_INPUT_ROOT=/path/to/learning_results/parametric_convex \
-run-ae postprocess learning-plots
-```
-
-Generated files:
-
-- `postprocess/tables/benchmark_results_table_landscape_split_runtime.tex`
-- `postprocess/stats/benchmark_stats_table.tex`
-- `postprocess/learning_plots/<MODEL>/<PARAM_DIR>/*.pdf`
-
-Script locations:
-
-- `artifact_eval/table_row_printer.py`
-- `artifact_eval/plot_results.py`
-- `artifact_eval/learning_plot_results.py`
-
-Both scripts use:
-
-```bash
-python3 <script> --input-root <results_dir> --output-root <out_dir>
-```
-
-Default postprocess input root:
-
-- `plotting_paper_with_ellipsoids/artifact_results/solver_paper_subset/parametric_convex`
-
-Default learning-postprocess input root:
-
-- `plotting_paper_with_ellipsoids/artifact_results/learning_paper_subset/parametric_convex`
-
-Default postprocess output root:
-
-- `plotting_paper_with_ellipsoids/artifact_results/postprocess`
-
-## 10) Troubleshooting
-
-### `ERROR: required command not found: docker`
-
-Docker is not installed/running on your machine.
-
-### `No libgurobi*.so found` or `No libGurobiJni*.so found`
-
-The mounted host path is wrong. Check `"$GUROBI_HOME/lib"`.
-
 ### `java.lang.UnsatisfiedLinkError: no GurobiJni120 in java.library.path`
 
-You mounted an incompatible Gurobi version.
-
-- Required: Gurobi 12.x Linux package with `libGurobiJni120.so`
-- Incompatible for this artifact: Gurobi 13.x (`libGurobiJni130.so`)
+Wrong Gurobi major version is mounted. Use 12.x.
 
 ### `GRB_LICENSE_FILE points to a missing file`
 
-Your license file path/mount is wrong. Confirm:
-
-```bash
-ls "$HOST_GUROBI_LIC"
-```
+`$HOST_GUROBI_LIC` path is incorrect.
 
 ### `HostID mismatch (... hostid is 0)`
 
-You mounted a node-locked license file generated by `grbgetkey`.
+You are using a node-locked license for a container run. Use a WLS license file.
 
-- For Docker runs, use a WLS license file containing:
-  - `WLSACCESSID=...`
-  - `WLSSECRET=...`
-  - `LICENSEID=...`
-- Mount that file via `HOST_GUROBI_LIC`.
+### WLS license errors
 
-### Gurobi license error when using WLS
+Check:
 
-- Check `WLSACCESSID`, `WLSSECRET`, `LICENSEID` values.
-- Ensure outbound internet access from the running environment.
-- Ensure no typo/extra spaces in `gurobi.lic`.
+- `WLSACCESSID`, `WLSSECRET`, `LICENSEID` values
+- outbound internet access from the runtime environment
+- no whitespace/typos in `gurobi.lic`
+
+### `Too many sessions, X active sessions for a baseline of Y`
+
+This is a Gurobi WLS session-cap issue. Practical mitigations:
+
+- Prefer default `soft` timeout mode (no per-run child JVM spawn): `--benchmark-timeout-mode=soft`
+- Run main-paper solver set first (`run-ae solver-paper-subset`), then appendix only if needed (`--appendix`)
+- Stop concurrent runs using the same license and wait/clear sessions in the Gurobi portal
+
+## 9) Maintainer: Pull, Package, Push
+
+Update your branch and rebuild artifact bundles:
+
+```bash
+# in your local repo
+git checkout <your-branch>
+git pull --rebase origin <your-branch>
+make -C prism
+
+# build/repackage both arches into artifact_dist/
+ARCHES=amd64,arm64 SKIP_EXISTING=0 bash docker/package-artifact.sh
+```
+
+Outputs:
+
+- `artifact_dist/prism-convex-ae-amd64.tar.gz`
+- `artifact_dist/prism-convex-ae-arm64.tar.gz`
+- `artifact_dist/qest-formats-2026-ae-artifact.tar.gz`
+- `artifact_dist/qest-formats-2026-ae-artifact.tar.gz.sha256`
+
+Notes:
+
+- `LICENSE` in submission archive is copied from `COPYING.txt`.
+- `paper.pdf` is included automatically if `docker/Learning_Parameters_of_Uncertain_pMDPs (43).pdf` exists.
+- Override PDF path if needed:
+  `PAPER_PDF=/abs/path/paper.pdf ARCHES=amd64,arm64 SKIP_EXISTING=0 bash docker/package-artifact.sh`
+
+Push your branch:
+
+```bash
+git add README.md docker/README.md docker/run-ae.sh docker/run-benchmarks.sh docker/run-postprocess.sh docker/package-artifact.sh prism/src/learning/ParametricConvex/ParametricConvexSolver.java
+git commit -m "Artifact UX: appendix flag, per-run timeout modes, robust postprocess and docs"
+git push origin <your-branch>
+```
+
+## 10) Fresh-Machine Reviewer Flow (Clean)
+
+On the target machine:
+
+1. Extract submission archive.
+2. Load correct image tar for host architecture.
+3. Set `GUROBI_HOME`, `HOST_GUROBI_LIC`, and `IMG`.
+4. Define wrapper from Section 4.
+5. Run:
+
+```bash
+ae_run quick
+ae_run postprocess all
+```
+
+Optional full reviewer flow:
+
+```bash
+ae_run learner-paper-subset
+ae_run solver-paper-subset
+ae_run postprocess all
+```
+
+Appendix solver flow:
+
+```bash
+ae_run solver-paper-subset --appendix
+```

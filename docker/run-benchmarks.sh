@@ -60,6 +60,9 @@ cmd=(
 if [[ -n "${BENCHMARK_TIMEOUT_SECONDS:-}" ]]; then
   cmd+=(--benchmark-timeout-seconds="${BENCHMARK_TIMEOUT_SECONDS}")
 fi
+if [[ -n "${BENCHMARK_TIMEOUT_MODE:-}" ]]; then
+  cmd+=(--benchmark-timeout-mode="${BENCHMARK_TIMEOUT_MODE}")
+fi
 if [[ -n "${BENCHMARK_OUTPUT_ROOT:-}" ]]; then
   cmd+=(--benchmark-output-root="${BENCHMARK_OUTPUT_ROOT}")
 fi
