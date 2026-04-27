@@ -14,6 +14,8 @@ classes
 classes 2
 prism 2
 prism-tests 2
+results
+artifact_dist
 
 # Build outputs (re-built inside Docker)
 prism/bin
@@ -31,8 +33,14 @@ prism/plotting_paper_with_ellipsoids/results_learning
 prism/plotting_paper_with_ellipsoids/results_learning_new
 prism/plotting_paper_with_ellipsoids/results_uniform_solving
 prism/plotting_paper_with_ellipsoids/results_uniform_solving_frommac
+prism/plotting_paper_with_ellipsoids/artifact_results
 prism/plotting_paper_with_ellipsoids/Documents
 
 # Keep this benchmark input directory (needed by solver reproduction)
 !prism/plotting_paper_with_ellipsoids/results_uniform_solving_new/
 !prism/plotting_paper_with_ellipsoids/results_uniform_solving_new/**
+
+# Packaged artifacts should never be part of Docker build context.
+prism-convex-ae-*.tar.gz
+qest-formats-*-artifact.tar.gz
+*.sha256

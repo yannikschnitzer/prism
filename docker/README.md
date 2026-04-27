@@ -352,6 +352,15 @@ This is a Gurobi WLS session-cap issue. Practical mitigations:
 - Run main-paper solver set first (`run-ae solver-paper-subset`), then appendix only if needed (`--appendix`)
 - Stop concurrent runs using the same license and wait/clear sessions in the Gurobi portal
 
+### Packaging/export unexpectedly huge (e.g., tens of GB)
+
+If `docker/package-artifact.sh` spends a long time on `Exporting Docker image` and produces very large archives, you are likely packaging with local result/archive files included in build context. This is fixed by current `.dockerignore`; pull latest changes and remove stale local archives before repackaging:
+
+```bash
+rm -rf artifact_dist
+ARCHES=amd64,arm64 SKIP_EXISTING=0 bash docker/package-artifact.sh
+```
+
 ## 9) Maintainer: Pull, Package, Push
 
 Update your branch and rebuild artifact bundles:
