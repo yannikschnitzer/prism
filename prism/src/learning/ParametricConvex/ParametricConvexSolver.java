@@ -151,6 +151,8 @@ public class ParametricConvexSolver {
         Experiment createExperiment(Model model) {
             Experiment experiment = new Experiment(model);
             applyTo(experiment);
+            // Keep Gurobi session usage low for artifact runs with small WLS baselines.
+            experiment.exprBoundWorkers = 1;
             return experiment;
         }
 

@@ -5,6 +5,7 @@ import com.gurobi.gurobi.GRBEnv;
 import com.gurobi.gurobi.GRBException;
 import com.gurobi.gurobi.GRBModel;
 import common.Interval;
+import common.GurobiEnvManager;
 import explicit.*;
 import imdpcomp.Experiment;
 import learning.Simulation.StateActionPair;
@@ -58,16 +59,7 @@ public class PACIntervalEstimator extends MAPEstimator {
 
     //NormalDistribution distribution = NormalDistribution.of(0, 1);
 
-    GRBEnv env;
-    {
-        try {
-            env = new GRBEnv(true);
-            env.set(GRB.IntParam.OutputFlag, 0);
-            env.start();
-        } catch (GRBException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    GRBEnv env = GurobiEnvManager.getSharedEnv();
 
     public HashMap<Integer, Integer> lengths = new HashMap<>(); //TODO: delete
 

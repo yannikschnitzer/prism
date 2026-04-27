@@ -36,6 +36,7 @@ import com.gurobi.gurobi.GRBEnv;
 import com.gurobi.gurobi.GRBException;
 import com.gurobi.gurobi.GRBModel;
 import common.Interval;
+import common.GurobiEnvManager;
 import learning.Factored.DependencyIdentiferStockTrading;
 import learning.Factored.DependencyIdentiferSysAdmin;
 import learning.Factored.DependencyIdentifier;
@@ -82,16 +83,7 @@ public class ConstructModel extends PrismComponent
 
 	protected final DependencyIdentifier dependencyIdentifier = new DependencyIdentiferStockTrading();
 
-	GRBEnv env;
-    {
-        try {
-            env = new GRBEnv(true);
-			env.set(GRB.IntParam.OutputFlag, 0);
-			env.start();
-        } catch (GRBException e) {
-            throw new RuntimeException(e);
-        }
-    }
+	GRBEnv env = GurobiEnvManager.getSharedEnv();
 
 	/** How to resolve interval parallel composition */
 	public enum CompositionType {

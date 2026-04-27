@@ -2,6 +2,7 @@ package learning.Estimators;
 
 import com.gurobi.gurobi.*;
 import common.Interval;
+import common.GurobiEnvManager;
 import explicit.*;
 import imdpcomp.Experiment;
 import imdpcomp.Experiment.IntervalAbstractionMode;
@@ -448,9 +449,7 @@ public class PACConvexEstimator extends MAPEstimator {
 
 
     public UMDP<Double> buildConvexUMDP(UMDP<Double> imdp, MDPSimple<Function> pmdp) throws GRBException, PrismException {
-        GRBEnv env = new GRBEnv(true);
-        env.set(GRB.IntParam.OutputFlag, 0);
-        env.start();
+        GRBEnv env = GurobiEnvManager.getSharedEnv();
 
 //        double[] thetaHat = estimateThetaHatCountsLS(mdp, pmdp, ex.apsLambda > 0 ? ex.apsLambda : 1e-2);
 //        System.out.println("Theta Hat: " + Arrays.toString(thetaHat));
@@ -516,9 +515,7 @@ public class PACConvexEstimator extends MAPEstimator {
     }
 
     public UMDP<Double> buildConvexUMDPCombinedBisim(UMDP<Double> imdpGround, MDPSimple<Function> pmdpGround, UMDP<Double> imdpBisim, MDPSimple<Function> pmdpBisim) throws GRBException, PrismException {
-        GRBEnv env = new GRBEnv(true);
-        env.set(GRB.IntParam.OutputFlag, 0);
-        env.start();
+        GRBEnv env = GurobiEnvManager.getSharedEnv();
 
         ConvexLearner cxl = new ConvexLearner(env);
         // Set both constraints, from ground and abstract model, setConstraints() only keeps tighter constraints
