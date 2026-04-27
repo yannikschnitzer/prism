@@ -25,7 +25,7 @@ This artifact accompanies the paper:
 | `run-ae postprocess stats` | Benchmark statistics LaTeX table | `artifact_results/postprocess/stats` |
 | `run-ae postprocess learning-plots` | Learning PDF plots from learner outputs | `artifact_results/postprocess/learning_plots` |
 
-## Why a Subset Is Used for Reviewer Reproduction
+## Why a Subset Is Used
 
 The default reviewer target is `solver-paper-subset` (6 instances, one per model), not `solver-full` (19 instances), to keep wall-clock runtime practical.
 
@@ -66,13 +66,6 @@ This section is intentionally step-by-step so reviewers can start from zero.
    - `WLSACCESSID`
    - `WLSSECRET`
    - `LICENSEID`
-
-Why WLS here:
-
-- It works well with containers.
-- It avoids node-locked activation inside the container.
-- It keeps your local non-Docker Gurobi setup untouched.
-- It requires outbound internet access while runs are executing.
 
 ### 2.2 Create a Dedicated Docker License File
 
@@ -185,6 +178,12 @@ ae_run() {
     -v "$HOST_GUROBI_LIC:/licenses/gurobi.lic:ro" \
     -v "$RESULTS_DIR:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results" \
     -e GRB_LICENSE_FILE=/licenses/gurobi.lic \
+    -e AE_POSTPROCESS_INPUT_ROOT \
+    -e AE_POSTPROCESS_LEARNING_INPUT_ROOT \
+    -e AE_POSTPROCESS_OUTPUT_ROOT \
+    -e AE_TABLE_SCRIPT \
+    -e AE_STATS_SCRIPT \
+    -e AE_LEARNING_PLOT_SCRIPT \
     "$IMG" run-ae "$@"
 }
 ```
@@ -193,6 +192,15 @@ Important:
 
 - Run `ae_run ...` from the same shell where `ARTIFACT_ROOT`/`RESULTS_DIR` were defined.
 - This avoids accidental nested mounts when calling commands from subdirectories.
+
+Path mapping (container -> host):
+
+- The container writes to `plotting_paper_with_ellipsoids/artifact_results/...`.
+- With the wrapper above, this is mounted to host `results/...`.
+- Example:
+  `plotting_paper_with_ellipsoids/artifact_results/solver_quick/parametric_convex`
+  appears on host as
+  `results/solver_quick/parametric_convex`.
 
 ## 5) Recommended Reproduction Flow
 
@@ -259,6 +267,9 @@ Note:
 
 - `learning-plots` needs learner outputs (run `ae_run learner-paper-subset` or `ae_run all-paper` first).
 - `tables`/`stats` can be generated from partial solver outputs, but missing runs/instances appear as blanks (`--`) or fewer rows.
+- Defaults auto-detect available roots:
+  solver input `solver_paper_subset -> solver_quick -> solver_full`,
+  learning input `learning_paper_subset -> learning_quick`.
 
 What each mode produces:
 
@@ -272,24 +283,25 @@ Python scripts invoked:
 - `artifact_eval/plot_results.py`
 - `artifact_eval/learning_plot_results.py`
 
-Default postprocess roots (inside container/workdir):
+Default postprocess roots (inside container/workdir, auto-detected):
 
-- Solver input root: `plotting_paper_with_ellipsoids/artifact_results/solver_paper_subset/parametric_convex`
-- Learning input root: `plotting_paper_with_ellipsoids/artifact_results/learning_paper_subset/parametric_convex`
-- Output root: `plotting_paper_with_ellipsoids/artifact_results/postprocess`
+- Solver input root: `solver_paper_subset` fallback to `solver_quick` then `solver_full`
+- Learning input root: `learning_paper_subset` fallback to `learning_quick`
+- Output root: `postprocess` / `postprocess_quick` / `postprocess_full` (based on selected solver input)
 
-Override roots if needed by passing environment variables to `docker run`:
+Host equivalents (with the wrapper mount in Section 4):
+
+- `results/solver_paper_subset/parametric_convex`
+- `results/learning_paper_subset/parametric_convex`
+- `results/postprocess`
+
+Override roots if needed by passing environment variables (wrapper forwards them):
 
 ```bash
-docker run --rm -it \
-  -v "$GUROBI_HOME:/opt/gurobi/linux64:ro" \
-  -v "$HOST_GUROBI_LIC:/licenses/gurobi.lic:ro" \
-  -v "$RESULTS_DIR:/workspace/prism_convex/prism/plotting_paper_with_ellipsoids/artifact_results" \
-  -e GRB_LICENSE_FILE=/licenses/gurobi.lic \
-  -e AE_POSTPROCESS_INPUT_ROOT=plotting_paper_with_ellipsoids/artifact_results/solver_full/parametric_convex \
-  -e AE_POSTPROCESS_LEARNING_INPUT_ROOT=plotting_paper_with_ellipsoids/artifact_results/learning_paper_subset/parametric_convex \
-  -e AE_POSTPROCESS_OUTPUT_ROOT=plotting_paper_with_ellipsoids/artifact_results/postprocess_full \
-  "$IMG" run-ae postprocess all
+AE_POSTPROCESS_INPUT_ROOT=plotting_paper_with_ellipsoids/artifact_results/solver_full/parametric_convex \
+AE_POSTPROCESS_LEARNING_INPUT_ROOT=plotting_paper_with_ellipsoids/artifact_results/learning_paper_subset/parametric_convex \
+AE_POSTPROCESS_OUTPUT_ROOT=plotting_paper_with_ellipsoids/artifact_results/postprocess_full \
+ae_run postprocess all
 ```
 
 ## 7) Output Locations on Host
@@ -359,65 +371,6 @@ If `docker/package-artifact.sh` spends a long time on `Exporting Docker image` a
 ```bash
 rm -rf artifact_dist
 ARCHES=amd64,arm64 SKIP_EXISTING=0 bash docker/package-artifact.sh
-```
-
-## 9) Maintainer: Pull, Package, Push
-
-Update your branch and rebuild artifact bundles:
-
-```bash
-# in your local repo
-git checkout <your-branch>
-git pull --rebase origin <your-branch>
-make -C prism
-
-# build/repackage both arches into artifact_dist/
-ARCHES=amd64,arm64 SKIP_EXISTING=0 bash docker/package-artifact.sh
-```
-
-Outputs:
-
-- `artifact_dist/prism-convex-ae-amd64.tar.gz`
-- `artifact_dist/prism-convex-ae-arm64.tar.gz`
-- `artifact_dist/qest-formats-2026-ae-artifact.tar.gz`
-- `artifact_dist/qest-formats-2026-ae-artifact.tar.gz.sha256`
-
-Notes:
-
-- `LICENSE` in submission archive is copied from `COPYING.txt`.
-- `paper.pdf` is included automatically if `docker/Learning_Parameters_of_Uncertain_pMDPs (43).pdf` exists.
-- Override PDF path if needed:
-  `PAPER_PDF=/abs/path/paper.pdf ARCHES=amd64,arm64 SKIP_EXISTING=0 bash docker/package-artifact.sh`
-
-Push your branch:
-
-```bash
-git add README.md docker/README.md docker/run-ae.sh docker/run-benchmarks.sh docker/run-postprocess.sh docker/package-artifact.sh prism/src/learning/ParametricConvex/ParametricConvexSolver.java
-git commit -m "Artifact UX: appendix flag, per-run timeout modes, robust postprocess and docs"
-git push origin <your-branch>
-```
-
-## 10) Fresh-Machine Reviewer Flow (Clean)
-
-On the target machine:
-
-1. Extract submission archive.
-2. Load correct image tar for host architecture.
-3. Set `GUROBI_HOME`, `HOST_GUROBI_LIC`, and `IMG`.
-4. Define wrapper from Section 4.
-5. Run:
-
-```bash
-ae_run quick
-ae_run postprocess all
-```
-
-Optional full reviewer flow:
-
-```bash
-ae_run learner-paper-subset
-ae_run solver-paper-subset
-ae_run postprocess all
 ```
 
 Appendix solver flow:

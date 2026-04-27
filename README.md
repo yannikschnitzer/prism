@@ -18,6 +18,11 @@ For complete Docker setup and troubleshooting, use:
 
 All commands below are executed inside the artifact container via `run-ae` (see [`docker/README.md`](docker/README.md) for exact `docker run` wrappers and mounts).
 
+Path mapping for reviewer runs:
+
+- Commands/logs use container paths like `plotting_paper_with_ellipsoids/artifact_results/...`.
+- With the documented wrapper, these map to host `results/...` (same suffix after `artifact_results/`).
+
 | Command | Reproduces | Outputs |
 |---|---|---|
 | `run-ae quick` | Learner + solver sanity check on one small instance | `artifact_results/learning_quick`, `artifact_results/solver_quick` |
